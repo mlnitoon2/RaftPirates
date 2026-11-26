@@ -1,4 +1,5 @@
 #include "rp/PortView.h"
+#include "rp/LocalSession.h"
 #include "rp/SplashScreen.h"
 #include "rp/TitleScreen.h"
 #include "sys/EngineBase.h"
@@ -19,6 +20,7 @@ namespace {
     struct Runtime {
         std::recursive_mutex mutex;
         rp::Game game;
+        std::unique_ptr<rp::LocalSession> local;
         sys::EngineBase engine;
         Presenter presenter;
         std::unique_ptr<rp::PortView> view;
@@ -106,6 +108,11 @@ namespace {
     }
 
     void send(JNIEnv* e, const sfs::Message& msg) {
+        if (rt.local) {
+            rt.local->dispatch(rt.game, msg);
+            rt.status = "LOCAL SANDBOX";
+            return;
+        }
         try {
             if (!rt.connected || !rt.game.ready)
                 throw std::runtime_error("Connect to a private test server first");
@@ -132,6 +139,7 @@ namespace {
         rt.game.pendingDiscovery.reset();
         rt.status = "DISCONNECTED";
         rt.session.clear();
+        rt.local.reset();
     }
 } // namespace
 
@@ -219,6 +227,7 @@ extern "C" JNIEXPORT void JNICALL RP(tick)(JNIEnv* e, jobject) {
         rt.time += dt;
         rt.engine.Tick(dt);
         rt.game.tick(dt);
+        rt.view->tick(dt);
         if (rt.splash) {
             rt.splash->tick(dt);
             if (!rt.splash->finished()) {
@@ -252,6 +261,8 @@ extern "C" JNIEXPORT void JNICALL RP(touchDown)(JNIEnv* e, jobject, jfloat x, jf
             rt.title->touchDown(x * 640 / rt.width, y * 400 / rt.height);
             return;
         }
+        if (rt.view)
+            rt.view->touchDown(x * 640 / rt.width, y * 400 / rt.height);
         sys::msg::MsgTouchDown m;
         m.x = x * 640 / rt.width;
         m.y = y * 400 / rt.height;
@@ -283,6 +294,15 @@ extern "C" JNIEXPORT void JNICALL RP(touchUp)(JNIEnv* e, jobject obj, jfloat x, 
         m.y = py;
         rt.engine.engineReceiver().SendGeneric(m);
         auto result = rt.view->touch(rt.game, px, py);
+        if (rt.view->offlineRequested) {
+            rt.view->offlineRequested = false;
+            if (rt.connected || rt.connecting)
+                return;
+            rt.local = std::make_unique<rp::LocalSession>();
+            rt.local->start(rt.game);
+            rt.status = "LOCAL SANDBOX";
+            return;
+        }
         if (rt.view->connectRequested) {
             rt.view->connectRequested = false;
             if (rt.connecting)
@@ -304,6 +324,8 @@ extern "C" JNIEXPORT void JNICALL RP(touchMove)(JNIEnv* e, jobject, jfloat x, jf
             rt.title->touchDrag(x * 640 / rt.width, y * 400 / rt.height);
             return;
         }
+        if (rt.view)
+            rt.view->touchDrag(x * 640 / rt.width, y * 400 / rt.height);
         sys::msg::MsgTouchDrag m;
         m.x = x * 640 / rt.width;
         m.y = y * 400 / rt.height;
@@ -399,6 +421,7 @@ extern "C" JNIEXPORT void JNICALL HY(sendMsgKeyboardEntryResult)(JNIEnv* e, jobj
                 sfs::JavaClient::disconnect(e);
                 lost();
             }
+            rt.local.reset();
             rt.session = std::move(s);
             rt.game = rp::Game{};
             rt.view = std::make_unique<rp::PortView>(cacheRoot(e, obj, rt.archivePath));

@@ -34,34 +34,12 @@ namespace rp {
                         f(**p);
         }
 
-        Component component(const O& o) {
-            return {num(o, "user_raft_component_id"),
-                    num(o, "component"),
-                    num(o, "pos_x"),
-                    num(o, "pos_y"),
-                    num(o, "current_bp"),
-                    num(o, "state"),
-                    num(o, "time_remaining_secs")};
-        }
-
-        Raft raft(const O& o) {
-            Raft r{num(o, "user_raft_id"),
-                   num(o, "raft"),
-                   num(o, "pos_x"),
-                   num(o, "pos_y"),
-                   num(o, "current_bp"),
-                   num(o, "state"),
-                   {}};
-            each(o, "components", [&](auto& x) { r.components.push_back(component(x)); });
-            return r;
-        }
-
         void delta(Game& g, const O& o) {
             each(o, "materials_changed", [&](auto& v) {
                 int id = num(v, "id", num(v, "material"));
                 int amt = num(v, "amt", num(v, "amount"));
                 if (id > 0)
-                    g.materials[id] += amt;
+                    g.giveMaterial(unsigned(id), amt);
             });
         }
     } // namespace
@@ -162,9 +140,9 @@ namespace rp {
         } else if (cmd == "lib_bp_data") {
             blueprints.clear();
             each(p, "blueprint_data", [&](auto& x) {
-                Blueprint b{num(x, "blueprint_id"), num(x, "object_id"), num(x, "unlock_level"),
-                            x.getString("name")};
-                blueprints[b.id] = b;
+                Blueprint b;
+                b.initWithSFSObject(x);
+                blueprints[b.id()] = std::move(b);
             });
         } else if (cmd == "lib_mat_data") {
             materialNames.clear();
@@ -219,18 +197,11 @@ namespace rp {
             auto o = p.getSFSObj("player_object");
             if (!o)
                 throw std::runtime_error("gs_player lacks player_object");
-            rafts.clear();
-            materials.clear();
-            owned.clear();
-            playerName = o->getString("display_name");
-            each(*o, "rafts", [&](auto& x) { rafts.push_back(raft(x)); });
-            each(*o, "materials",
-                 [&](auto& x) { materials[num(x, "material")] = num(x, "amount"); });
-            each(*o, "blueprints", [&](auto& x) { owned.insert(num(x, "blueprint")); });
+            initWithSFSObject(*o);
             zone = num(p, "zone_id", 1);
             mapX = std::clamp(num(p, "map_x"), -95, 95);
             mapY = std::clamp(num(p, "map_y"), -95, 95);
-            safe = num(p, "safe", 1) != 0;
+            setSafe(num(p, "safe", 1) != 0);
             daring = num(p, "daring_level");
             daringRemaining = std::max(0, num(p, "daring_timeremaining"));
             daringFraction = 0;
@@ -249,7 +220,7 @@ namespace rp {
             questCount = 0;
             each(p, "result", [&](auto&) { ++questCount; });
         } else if (cmd == "gs_ocean") {
-            safe = p.getBool("safe_water", safe);
+            setSafe(p.getBool("safe_water", safe));
             if (pendingMap) {
                 mapX = pendingMap->x;
                 mapY = pendingMap->y;
@@ -269,15 +240,20 @@ namespace rp {
             }
             daringTotal = num(p, "totaltime", daringTotal);
             daringPaused = num(p, "paused", daringPaused) != 0;
-        } else if (cmd == "gs_materials_changed")
+        } else if (cmd == "gs_materials_changed") {
             delta(*this, p);
-        else if (cmd == "gs_blueprints_changed")
-            each(p, "blueprints_added", [&](auto& x) { owned.insert(num(x, "blueprint_id")); });
+            if (p.getBool("diver")) {
+                diveState = {};
+                diveSeconds = 0;
+                diveFraction = 0;
+            }
+        } else if (cmd == "gs_blueprints_changed")
+            each(p, "blueprints_added", [&](auto& x) { giveBlueprint(num(x, "blueprint_id")); });
         else if (cmd == "purchase_response") {
             if (p.getBool("result")) {
                 auto b = num(p, "blueprint_id");
                 if (b > 0)
-                    owned.insert(b);
+                    giveBlueprint(b);
                 delta(*this, p);
             } else
                 status = "Purchase failed";
@@ -358,12 +334,12 @@ namespace rp {
             for (auto& r : rafts) {
                 if (num(p, "object_type", 1) == 0 && r.id == num(p, "object_id")) {
                     r.bp = num(p, "battle_points", r.bp);
-                    r.state = num(p, "state", r.state);
+                    r.SetState(num(p, "state", r.state));
                 }
                 if (r.id == num(p, "parent_id"))
                     for (auto& c : r.components)
                         if (c.id == num(p, "object_id")) {
-                            c.state = num(p, "state", c.state);
+                            c.SetState(num(p, "state", c.state));
                             c.bp = num(p, "battle_points", c.bp);
                             if (p.get("time_remaining_secs"))
                                 c.SetRemainingTime(num(p, "time_remaining_secs"));
@@ -377,9 +353,11 @@ namespace rp {
             if (num(p, "success"))
                 discovery = num(p, "discoveryid", pendingDiscovery.value_or(0));
             pendingDiscovery.reset();
-        } else if (cmd == "dive_fail")
+        } else if (cmd == "dive_fail") {
+            diveState = {};
+            diveSeconds = 0;
             status = "Dive rejected";
-        else if (cmd == "zone_goto_result") {
+        } else if (cmd == "zone_goto_result") {
             if (num(p, "success"))
                 zone = num(p, "zoneid", pendingZone.value_or(zone));
             else
@@ -397,7 +375,7 @@ namespace rp {
             return false;
         for (auto cell : o->second.cells) {
             int64_t xx = int64_t(x) + cell.x, yy = int64_t(y) + cell.y;
-            if (xx < 0 || yy < 0 || xx >= 6 || yy >= 6)
+            if (xx < 0 || yy < 0 || xx >= r->GridDimensionsX() || yy >= r->GridDimensionsY())
                 return false;
             for (const auto& c : r->components) {
                 if (parent == ignoreParent && c.id == ignoreId)
@@ -445,13 +423,7 @@ namespace rp {
         auto o = objects.find(object);
         if (o == objects.end())
             throw std::runtime_error("Unknown grid object");
-        bool has = false;
-        for (auto id : owned) {
-            auto bp = blueprints.find(id);
-            if (bp != blueprints.end() && bp->second.object == object)
-                has = true;
-        }
-        if (!has)
+        if (!ownsObject(object))
             throw std::runtime_error("Blueprint not owned");
         if (o->second.type == 1) {
             if (!canPlaceComponent(object, parent, x, y))
@@ -484,16 +456,13 @@ namespace rp {
     Message Game::dive(const std::string& command) const {
         if (command != "dive_start" && command != "dive_info" && command != "dive_collect")
             throw std::runtime_error("Unknown dive action");
-        for (auto& r : rafts)
-            for (auto& c : r.components) {
-                auto o = objects.find(c.type);
-                if (o != objects.end() && o->second.name == "DivingUnit") {
-                    O p;
-                    p.put("parent_id", int32_t(r.id));
-                    p.put("object_id", int32_t(c.id));
-                    return request(command, p);
-                }
-            }
+        const auto unit = GetDiveUnit();
+        if (unit.second) {
+            O p;
+            p.put("parent_id", int32_t(unit.first));
+            p.put("object_id", int32_t(unit.second));
+            return request(command, p);
+        }
         throw std::runtime_error("No diving unit");
     }
 
@@ -511,7 +480,7 @@ namespace rp {
         if (b == blueprints.end())
             throw std::runtime_error("Unknown blueprint");
         O p;
-        p.put("itemname", b->second.name);
+        p.put("itemname", b->second.name());
         return request("purchase_item", p);
     }
 
@@ -642,8 +611,8 @@ namespace rp {
         std::ostringstream o;
         for (auto& kv : blueprints) {
             auto& b = kv.second;
-            o << b.id << '\t' << b.object << '\t' << (owned.count(b.id) ? 1 : 0) << '\t' << b.name
-              << '\n';
+            o << b.id() << '\t' << b.object << '\t' << (owned.count(b.id()) ? 1 : 0) << '\t'
+              << b.name() << '\n';
         }
         return o.str();
     }

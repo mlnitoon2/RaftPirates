@@ -10,13 +10,15 @@ namespace rp {
         int id = 0, type = 0, x = 0, y = 0, bp = 0, state = 0;
         std::vector<Component> components;
         int bonusBattlePoints = 0;
+        void initWithSFSObject(const sfs::SFSObjectWrapper& data);
         int GetBattlePoints() const;
         int GetTotalBattlePoints(const std::map<int, GridObject>& objects) const;
         float GetHealth(const std::map<int, GridObject>& objects) const;
 
-        bool Destroyed() const {
-            return state == 2;
-        }
+        bool Destroyed() const;
+        int GridDimensionsX() const;
+        int GridDimensionsY() const;
+        void SetState(int value);
     };
 
 } // namespace rp

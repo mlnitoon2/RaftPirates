@@ -38,4 +38,20 @@ namespace rp {
             current += c.GetBattlePoints();
         return static_cast<float>(current) / total;
     }
+
+    bool Raft::Destroyed() const {
+        return state == 2;
+    }
+
+    int Raft::GridDimensionsX() const {
+        return 6;
+    }
+
+    int Raft::GridDimensionsY() const {
+        return 6;
+    }
+
+    void Raft::SetState(int value) {
+        state = value;
+    }
 } // namespace rp

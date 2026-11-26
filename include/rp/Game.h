@@ -1,6 +1,6 @@
 #pragma once
 #include "sfs/SFSWire.h"
-#include "rp/Raft.h"
+#include "rp/Player.h"
 #include "rp/Zone.h"
 #include "rp/Discovery.h"
 #include "sys/gfx/AnimationRenderer.h"
@@ -8,31 +8,6 @@
 #include <set>
 
 namespace rp {
-    struct Cell {
-        int x = 0, y = 0;
-    };
-
-    struct GridPiece {
-        std::string asset;
-        int offsetX = 0, offsetY = 0;
-        std::vector<Cell> cells;
-    };
-
-    struct GridObject {
-        int id = 0, type = 0, bp = 0;
-        std::string name, asset;
-        int offsetX = 0, offsetY = 0;
-        std::vector<Cell> cells;
-        std::vector<GridPiece> pieces;
-    };
-
-    GridObject readGridObject(const sfs::SFSObjectWrapper&);
-
-    struct Blueprint {
-        int id = 0, object = 0, unlock = 0;
-        std::string name;
-    };
-
     struct StoreItem {
         int id = 0, currency = 0, price = 0, amount = 0;
         std::string name, group, title;
@@ -56,21 +31,15 @@ namespace rp {
         int parent = 0, id = 0, newParent = 0, x = 0, y = 0;
     };
 
-    class Game {
+    class Game : public Player {
       public:
-        std::map<int, GridObject> objects;
-        std::map<int, Blueprint> blueprints;
-        std::map<int, std::string> materialNames;
-        std::map<int, int> materials;
-        std::set<int> owned;
-        std::vector<Raft> rafts;
         std::map<int, std::string> zones, zoneMaps;
         std::map<int, std::string> discoveries;
         std::map<int, Zone> zoneData;
         std::map<int, Discovery> discoveryData;
         bool badZone = false;
         int questCount = 0;
-        std::string knownZones, knownDiscoveries;
+        std::string knownDiscoveries;
         std::map<int, StoreItem> storeItems;
         std::map<int, StoreCurrency> storeCurrencies;
         std::map<int, std::string> storeGroups;
@@ -78,8 +47,8 @@ namespace rp {
         int daringRemaining = 0, daringTotal = 0;
         bool daringPaused = false;
         int zone = 1, mapX = 0, mapY = 0, daring = 0, buildLimit = 0, diveSeconds = 0;
-        bool safe = true, ready = false;
-        std::string playerName, token, status = "Not connected";
+        bool ready = false;
+        std::string token, status = "Not connected";
         std::optional<PendingBuild> pending;
         std::optional<PendingMove> pendingMove;
         std::optional<int> pendingZone;

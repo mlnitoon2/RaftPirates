@@ -20,6 +20,11 @@ namespace rp {
         remainingFraction = 0;
     }
 
+    void RaftComponent::SetState(int value) {
+        // Native SetState promotes state 1 with zero remaining time to state 5.
+        state = (value == 1 && state == 1 && GetRemainingTime() == 0) ? 5 : value;
+    }
+
     int RaftComponent::GetBattlePoints() const {
         return Building() ? 0 : bp;
     }

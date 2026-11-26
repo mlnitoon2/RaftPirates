@@ -2,6 +2,7 @@
 """Native-only NDK build. Does not modify an APK, package Java code, or sign anything."""
 
 import argparse
+import json
 import os
 import pathlib
 import shutil
@@ -54,6 +55,8 @@ def main():
         help="HydraLegacy source directory",
     )
     parser.add_argument("--jobs", type=int, default=min(os.cpu_count() or 2, 4))
+    parser.add_argument("--minimal", action="store_true",
+                        help="Disable optional Lua 5.1 and FreeType adapters for a native smoke build")
     args = parser.parse_args()
 
     if not args.sdk:
@@ -87,6 +90,7 @@ def main():
     build = ROOT / "build-android-arm64"
     output = ROOT / "out/lib/arm64-v8a/libraftpirates.so"
 
+    optional = "OFF" if args.minimal else "ON"
     run(
         cmake,
         "-S", ROOT,
@@ -101,6 +105,8 @@ def main():
         "-DCMAKE_BUILD_TYPE=Release",
         "-DHYDRA_FETCH_DEPS=ON",
         "-DHYDRA_TOOLS=OFF",
+        "-DHYDRA_LUA=" + optional,
+        "-DHYDRA_FREETYPE=" + optional,
         "-DBUILD_TESTING=OFF",
     )
     run(cmake, "--build", build, "--target", "raftpirates", "--parallel", str(max(args.jobs, 1)))
@@ -113,6 +119,22 @@ def main():
         or struct.unpack_from("<H", data, 18)[0] != 183
     ):
         raise RuntimeError("Build did not produce an AArch64 ELF64 shared object.")
+
+    # Verify every native declaration of the original APK before publishing the library.
+    name = "llvm-nm.exe" if WIN else "llvm-nm"
+    candidates = list((ndk / "toolchains/llvm/prebuilt").glob("*/bin/" + name))
+    if len(candidates) != 1:
+        raise RuntimeError("Could not locate the NDK llvm-nm tool.")
+    exports = subprocess.check_output(
+        [str(candidates[0]), "-D", "--defined-only", str(library)], text=True
+    )
+    exported_names = {line.split()[-1] for line in exports.splitlines() if line.split()}
+    inventory = json.loads((ROOT / "evidence/jni_inventory.json").read_text(encoding="utf-8"))
+    required = {entry["symbol"] for entry in inventory}
+    missing = required - exported_names
+    if missing:
+        raise RuntimeError("Missing JNI exports: " + ", ".join(sorted(missing)))
+    print(f"Verified {len(required)} JNI export names.")
 
     output.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(library, output)

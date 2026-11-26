@@ -1,0 +1,235 @@
+#include "rp/Player.h"
+#include "rp/Material.h"
+#include <algorithm>
+#include <limits>
+#include <sstream>
+#include <stdexcept>
+
+namespace rp {
+    namespace {
+        using O = sfs::SFSObjectWrapper;
+
+        int num(const O& o, const std::string& k, int fallback = 0) {
+            auto v = o.get(k);
+            if (!v)
+                return fallback;
+            if (auto n = std::get_if<int32_t>(v))
+                return *n;
+            if (auto n = std::get_if<int16_t>(v))
+                return *n;
+            if (auto n = std::get_if<int8_t>(v))
+                return *n;
+            if (auto n = std::get_if<bool>(v))
+                return *n;
+            return fallback;
+        }
+
+        template <class F> void each(const O& o, const std::string& key, F f) {
+            auto a = o.getSFSArray(key);
+            if (a)
+                for (auto& v : a->values)
+                    if (auto p = std::get_if<std::shared_ptr<O>>(&v); p && *p)
+                        f(**p);
+        }
+
+    } // namespace
+
+    void RaftComponent::initWithSFSObject(const O& data) {
+        id = num(data, "user_raft_component_id");
+        type = num(data, "component");
+        x = num(data, "pos_x");
+        y = num(data, "pos_y");
+        bp = num(data, "current_bp");
+        state = num(data, "state");
+        SetRemainingTime(num(data, "time_remaining_secs"));
+    }
+
+    void Raft::initWithSFSObject(const O& data) {
+        id = num(data, "user_raft_id");
+        type = num(data, "raft");
+        x = num(data, "pos_x");
+        y = num(data, "pos_y");
+        bp = num(data, "current_bp");
+        state = num(data, "state");
+        bonusBattlePoints = 0;
+        components.clear();
+        each(data, "components", [&](const O& item) {
+            Component component;
+            component.initWithSFSObject(item);
+            components.push_back(std::move(component));
+        });
+    }
+
+    void Player::initWithSFSObject(const O& data) {
+        std::vector<Raft> nextRafts;
+        std::map<int, int> nextMaterials;
+        std::set<int> nextOwned;
+        each(data, "rafts", [&](const O& x) {
+            Raft raft;
+            raft.initWithSFSObject(x);
+            nextRafts.push_back(std::move(raft));
+        });
+        each(data, "materials", [&](const O& x) {
+            Material m;
+            m.initWithSFSObject(x);
+            nextMaterials[m.id()] = m.amount();
+        });
+        each(data, "blueprints", [&](const O& x) { nextOwned.insert(num(x, "blueprint")); });
+        rafts = std::move(nextRafts);
+        materials = std::move(nextMaterials);
+        owned = std::move(nextOwned);
+        playerName = data.getString("display_name");
+    }
+
+    int Player::currentBP() const {
+        long long total = 0;
+        for (const auto& r : rafts)
+            total += r.GetBattlePoints();
+        return int(std::min(total, static_cast<long long>(std::numeric_limits<int>::max())));
+    }
+
+    bool Player::isSafe() const {
+        return safe;
+    }
+
+    void Player::setSafe(bool value) {
+        safe = value;
+    }
+
+    Raft* Player::GetRaftByID(int id) {
+        for (auto& r : rafts)
+            if (r.id == id)
+                return &r;
+        return nullptr;
+    }
+
+    const Raft* Player::GetRaftByID(int id) const {
+        for (const auto& r : rafts)
+            if (r.id == id)
+                return &r;
+        return nullptr;
+    }
+
+    const Raft* Player::GetRaftAtPosition(Cell p) const {
+        for (const auto& r : rafts)
+            if (r.x == p.x && r.y == p.y)
+                return &r;
+        return nullptr;
+    }
+
+    const Raft* Player::mainRaft() const {
+        for (const auto& r : rafts) {
+            auto i = objects.find(r.type);
+            if (i != objects.end() && i->second.name == "CoreRaft")
+                return &r;
+        }
+        return nullptr;
+    }
+
+    bool Player::hasRaft(int id) const {
+        return GetRaftByID(id) != nullptr;
+    }
+
+    bool Player::AddRaft(Raft r) {
+        if (r.id <= 0 || hasRaft(r.id) || GetRaftAtPosition({r.x, r.y}))
+            return false;
+        rafts.push_back(std::move(r));
+        return true;
+    }
+
+    bool Player::RemoveRaft(int id) {
+        auto n = rafts.size();
+        rafts.erase(
+            std::remove_if(rafts.begin(), rafts.end(), [&](const auto& r) { return r.id == id; }),
+            rafts.end());
+        return n != rafts.size();
+    }
+
+    int Player::numOfMaterialPossessed(unsigned id) const {
+        if (id > unsigned(std::numeric_limits<int>::max()))
+            return 0;
+        auto i = materials.find(int(id));
+        return i == materials.end() ? 0 : i->second;
+    }
+
+    int Player::numOfMaterialPossessed(const std::string& name) const {
+        for (const auto& m : materialNames)
+            if (m.second == name)
+                return numOfMaterialPossessed(unsigned(m.first));
+        return 0;
+    }
+
+    bool Player::hasMaterial(int id, int count) const {
+        return id > 0 && count >= 0 && numOfMaterialPossessed(unsigned(id)) >= count;
+    }
+
+    bool Player::hasMaterial(const std::string& name, int count) const {
+        return count >= 0 && numOfMaterialPossessed(name) >= count;
+    }
+
+    void Player::giveMaterial(unsigned id, int count) {
+        if (!id || id > unsigned(std::numeric_limits<int>::max()))
+            return;
+        auto& amount = materials[int(id)];
+        amount = int(std::clamp(static_cast<long long>(amount) + count, 0ll,
+                                static_cast<long long>(std::numeric_limits<int>::max())));
+    }
+
+    void Player::giveBlueprint(int id) {
+        if (id > 0)
+            owned.insert(id);
+    }
+
+    bool Player::hasBlueprint(const std::string& name) const {
+        for (const auto& b : blueprints)
+            if (b.second.name() == name && owned.count(b.first))
+                return true;
+        return false;
+    }
+
+    bool Player::ownsObject(int id) const {
+        for (int b : owned) {
+            auto i = blueprints.find(b);
+            if (i != blueprints.end() && i->second.object == id)
+                return true;
+        }
+        return false;
+    }
+
+    bool Player::RaftRepairRequired() const {
+        for (const auto& r : rafts)
+            if (!r.Destroyed() && r.GetHealth(objects) < 1)
+                return true;
+        return false;
+    }
+
+    bool Player::RaftCleanupRequired() const {
+        for (const auto& r : rafts)
+            if (r.Destroyed())
+                return true;
+        return false;
+    }
+
+    bool Player::isZoneKnown(unsigned id) const {
+        std::string text = knownZones;
+        for (char& c : text)
+            if (c == ',' || c == ';' || c == '|')
+                c = ' ';
+        std::istringstream stream(text);
+        unsigned n;
+        while (stream >> n)
+            if (n == id)
+                return true;
+        return false;
+    }
+
+    std::pair<int, int> Player::GetDiveUnit() const {
+        for (const auto& r : rafts)
+            for (const auto& c : r.components) {
+                auto o = objects.find(c.type);
+                if (o != objects.end() && o->second.name == "DivingUnit")
+                    return {r.id, c.id};
+            }
+        return {};
+    }
+} // namespace rp

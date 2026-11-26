@@ -32,7 +32,7 @@ Output on successful compilation:
 out/lib/arm64-v8a/libraftpirates.so
 ```
 
-The script checks ELF64, little-endian, ET_DYN and machine AArch64 before copying the output. It selects API 23, static libc++, and a 16 KiB maximum ELF page size. The resulting file is the intended replacement at `lib/arm64-v8a/libraftpirates.so` in the specific archived APK. **Do not copy the desktop test library into an APK.** Keep the original archive backed up. No signing steps are included.
+The script checks ELF64, little-endian, ET_DYN, machine AArch64 and every required JNI export name before copying the output. Use `--minimal` for a native smoke build without optional Lua and FreeType adapters; the original startup and gameplay adapters do not depend on them. It selects API 23, static libc++, and a 16 KiB maximum ELF page size. The resulting file is the intended replacement at `lib/arm64-v8a/libraftpirates.so` in the specific archived APK. **Do not copy the desktop test library into an APK.** Keep the original archive backed up. No signing steps are included.
 
 The Android build itself has not been run: no Android NDK was available in the reconstruction environment. No working Android library is bundled. Older Android target-SDK restrictions, native library packaging, original Java SDK behavior on new Android, and GLES behavior remain possible blockers. This is not guaranteed to launch on an ARM64-only phone.
 
@@ -43,7 +43,9 @@ The Android build itself has not been run: no Android NDK was available in the r
 - Loads the original BBB splash and Raft Pirates title and normal HUD XML, animations and atlas resources. The original normal HUD appears when player data arrives; login, map and incomplete menu panels use a temporary native research interface. The Set Sail button uses the original atlas and font. A CPU renderer is used, not the complete original GPU engine.
 - The Connect control asks for a private server host, a BBB ID, and a session token from your local test server. The Java SDK's `Login(user,session,zone,params)` is used. The official HTTP auth flow is not restored; no account credentials are saved, and no official server endpoint is used by the bridge. Port 9933 is currently fixed. Use test-only tokens, not live credentials. Other old Java SDK code bundled in the APK is outside the scope of the bridge.
 - Incoming libraries/player packets, raft health and battle-point totals, map movement, placement, basic blueprint purchases, dive start/collection, build completion, repair response state, and discovery response state are represented in C++ to varying degrees. The game model also reads shop item, currency and group libraries, retains dive depth and state, and records daring timer and pause fields. The temporary Menu panel exposes owned blueprints, component movement/removal, store purchases, material inventory and zone travel. Component moves are applied on server acknowledgement. Not all actions have controls. Placement and purchase use temporary controls, not the original shop. Map rendering and safe-water testing are approximate; normalized map wire keys are verified. No actual player persistence.
-- The remaining original gameplay menus, full Lua API, diving minigame, combat, discovery scenes, music/audio playback, social platform functions, advertising/billing integrations, and many more native behaviors remain missing.
+- Offline play (select Set Sail, then OFFLINE PLAY) starts an in-memory sandbox. Build, move, remove, shop, travel, daring progression and salvage requests use the same response handlers as online play. Sandbox values are provisional and not saved.
+- A playable diving reconstruction uses original sprite resources, with drag movement, gears, mines, timing and collection. Mechanics and scoring are provisional; online salvage is server-authoritative.
+- The remaining original gameplay menus, full Lua API, exact diving behavior, combat, discovery scenes, music/audio playback, social platform functions, advertising/billing integrations, and many more native behaviors remain missing.
 
 ## Verify locally (desktop)
 
@@ -57,6 +59,8 @@ python tests/java/smoke.py build/libraftpirates.so /path/to/original.apk
 ```
 
 The smoke test uses generated Java test doubles with recovered signatures and synthetic SFS fixtures. It is not an Android/real-server test. If you only need the portable runtime, omit `HYDRA_DESKTOP_JNI` and the Java smoke test. Windows desktop builds can use MSYS2 (see [HydraLegacy build guide](https://github.com/mlnitoon2/HydraLegacy/blob/main/docs/BUILDING.md)).
+
+See [matching status](docs/MATCHING_STATUS.md) for measured method-name and signature overlap (not binary equivalence) and [local gameplay](docs/LOCAL_PLAY.md) for the sandbox.
 
 See the [normal HUD adapter](docs/HUD.md) for supported controls and optional original-asset integration tests.
 

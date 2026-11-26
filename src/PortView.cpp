@@ -160,8 +160,45 @@ namespace rp {
         mapPath_ = i->second;
     }
 
+    void PortView::tick(float dt) {
+        if (diving_)
+            diving_->tick(dt);
+    }
+
+    void PortView::touchDown(float x, float y) {
+        if (diving_)
+            diving_->touchDown({x, y});
+    }
+
+    void PortView::touchDrag(float x, float y) {
+        if (diving_)
+            diving_->touchDrag({x, y});
+    }
+
     Image PortView::render(const Game& g, float time, const std::string& status) {
         Image out(640, 400, {36, 133, 168, 255});
+        if (g.diveState.state != 3)
+            diveSeen_ = false;
+        if (diveStarted_ && g.diveState.state == 3 && !diveSeen_) {
+            diveSeen_ = true;
+            diveStarted_ = false;
+            try {
+                diving_ = std::make_unique<diving_game::DivingGame>(
+                    root_, unsigned(g.diveState.depth + 1));
+                diving_->setDuration(float(std::max(8, g.diveState.totalSeconds)));
+            } catch (const std::exception&) {
+                diving_.reset();
+            }
+        }
+        if (diving_) {
+            diving_->render(out);
+            text(out, 12, 15, "GEARS " + std::to_string(diving_->gears()), 2);
+            text(out, 450, 15, "TIME " + std::to_string(int(std::ceil(diving_->remaining()))), 2);
+            text(out, 15, 365, diving_->finished() ? "TAP TO RETURN" : "TAP / HOLD TO MOVE", 1);
+            text(out, 470, 365, "CENTER: EXIT", 1);
+            return out;
+        }
+
         if (!map)
             out = ocean_.render(g, time, grid);
         else {
@@ -254,7 +291,7 @@ namespace rp {
         button(out, 2, map ? "OCEAN" : "MAP", map);
         button(out, 3, "DIVE");
         button(out, 4, "COLLECT");
-        button(out, 5, "MENU", panel_ != Panel::None);
+        button(out, 5, g.ready ? "MENU" : "OFFLINE PLAY", panel_ != Panel::None);
         if (panel_ != Panel::None) {
             renderPanel(out, g);
             return out;
@@ -263,7 +300,7 @@ namespace rp {
             auto b = g.blueprints.find(selectedBlueprint_);
             rect(out, 0, 32, 640, 16, {15, 38, 54, 255});
             std::string message = moving_                   ? "MOVE: TAP DESTINATION"
-                                  : b != g.blueprints.end() ? "PLACE: " + b->second.name
+                                  : b != g.blueprints.end() ? "PLACE: " + b->second.name()
                                                             : "TAP COMPONENT TO SELECT";
             text(out, 8, 35, message, 1);
         }
@@ -273,6 +310,14 @@ namespace rp {
     std::optional<sfs::Message> PortView::touch(Game& g, float x, float y) {
         if (x < 0 || x >= 640 || y < 0 || y >= 400)
             return {};
+        if (diving_) {
+            diving_->touchUp({x, y});
+            if (diving_->confirmed()) {
+                diving_.reset();
+                return g.dive("dive_collect");
+            }
+            return {};
+        }
         if (hudEnabled(g)) {
             hud_->update(g);
             auto action = hud_->touch(x, y);
@@ -304,6 +349,8 @@ namespace rp {
                 break;
             }
             if (y >= 356 && x >= 210 && x < 430) {
+                if (x < 320)
+                    diveStarted_ = true;
                 return g.dive(x < 320 ? "dive_start" : "dive_collect");
             }
             if (y >= 350)
@@ -327,10 +374,15 @@ namespace rp {
                 map = !map;
                 return {};
             case 3:
+                diveStarted_ = true;
                 return g.dive("dive_start");
             case 4:
                 return g.dive("dive_collect");
             case 5:
+                if (!g.ready) {
+                    offlineRequested = true;
+                    return {};
+                }
                 panel_ = panel_ == Panel::None ? Panel::Build : Panel::None;
                 page_ = 0;
                 return {};
@@ -409,7 +461,7 @@ namespace rp {
             std::vector<PanelRow> result;
             for (auto& [id, bp] : game.blueprints)
                 if (game.owned.count(id))
-                    result.push_back({id, bp.name});
+                    result.push_back({id, bp.name()});
             return result;
         }
 
