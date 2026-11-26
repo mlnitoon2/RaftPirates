@@ -14,7 +14,7 @@ git clone https://github.com/mlnitoon2/RaftPirates.git
 cd RaftPirates
 ```
 
-The default engine checkout is `../HydraLegacy`. To choose another location pass `--hydra` to the Python build script or `-DHYDRA_LEGACY_DIR=/path/to/HydraLegacy` to CMake. The tested engine snapshot is `7adac3752475e4c0eb90df8b3bc7691ea5780447`.
+The default engine checkout is `../HydraLegacy`. To choose another location pass `--hydra` to the Python build script or `-DHYDRA_LEGACY_DIR=/path/to/HydraLegacy` to CMake. The tested engine snapshot is `b21b680871a830992377bc3c8f2584cf3904a27a`.
 
 The two repositories are independent CMake targets. The game links Hydra statically. The root build produces one shared library named `libraftpirates.so`. It does not build an APK, modify the original APK, create a Java frontend or sign anything.
 
@@ -69,3 +69,7 @@ Read the [engine README](https://github.com/mlnitoon2/HydraLegacy) and [game por
 - `evidence/`: recovered JNI descriptors and test reports.
 
 No license for the new reconstruction code has been selected. Original game and engine belong to their respective rights holders; this project is unofficial. Do not commit original APKs, proprietary scripts, credentials or private server data.
+
+## Contributing
+
+Follow the shared [C++ style and formatting guide](docs/STYLE.md). Run `python tools/format.py` before submitting changes.
