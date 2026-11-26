@@ -130,6 +130,69 @@ namespace rp {
         return GetRaftByID(id) != nullptr;
     }
 
+    std::vector<Cell> Player::GetAvailableEdgeGridSpace() const {
+        std::set<std::pair<int, int>> cells;
+        for (auto& r : rafts)
+            if (!r.Destroyed())
+                for (auto d : {Cell{1, 0}, Cell{-1, 0}, Cell{0, 1}, Cell{0, -1}}) {
+                    long long x = static_cast<long long>(r.x) + d.x,
+                              y = static_cast<long long>(r.y) + d.y;
+                    if (x < std::numeric_limits<int>::min() ||
+                        x > std::numeric_limits<int>::max() ||
+                        y < std::numeric_limits<int>::min() || y > std::numeric_limits<int>::max())
+                        continue;
+                    if (!GetRaftAtPosition({int(x), int(y)}))
+                        cells.emplace(int(x), int(y));
+                }
+        std::vector<Cell> result;
+        for (auto p : cells)
+            result.push_back({p.first, p.second});
+        return result;
+    }
+
+    bool Player::canBuildRaft(Cell pos) const {
+        auto spaces = GetAvailableEdgeGridSpace();
+        return std::any_of(spaces.begin(), spaces.end(),
+                           [&](Cell p) { return p.x == pos.x && p.y == pos.y; });
+    }
+
+    std::vector<int> Player::RaftsConnectedToRaft(int id) const {
+        std::vector<int> result;
+        if (!GetRaftByID(id))
+            return result;
+        result.push_back(id);
+        for (size_t i = 0; i < result.size(); ++i) {
+            auto a = GetRaftByID(result[i]);
+            for (auto& b : rafts)
+                if (std::abs(static_cast<long long>(a->x) - b.x) +
+                            std::abs(static_cast<long long>(a->y) - b.y) ==
+                        1 &&
+                    std::find(result.begin(), result.end(), b.id) == result.end())
+                    result.push_back(b.id);
+        }
+        return result;
+    }
+
+    std::set<std::string> Player::getResourceFiles() const {
+        std::set<std::string> files;
+        auto add = [&](int id) {
+            auto i = objects.find(id);
+            if (i == objects.end())
+                return;
+            if (!i->second.asset.empty())
+                files.insert(i->second.asset);
+            for (auto& p : i->second.pieces)
+                if (!p.asset.empty())
+                    files.insert(p.asset);
+        };
+        for (auto& r : rafts) {
+            add(r.type);
+            for (auto& c : r.components)
+                add(c.type);
+        }
+        return files;
+    }
+
     bool Player::AddRaft(Raft r) {
         if (r.id <= 0 || hasRaft(r.id) || GetRaftAtPosition({r.x, r.y}))
             return false;

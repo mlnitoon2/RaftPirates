@@ -50,6 +50,10 @@ namespace rp {
         const Raft* GetRaftAtPosition(Cell position) const;
         const Raft* mainRaft() const;
         bool hasRaft(int id) const;
+        std::vector<Cell> GetAvailableEdgeGridSpace() const;
+        std::vector<int> RaftsConnectedToRaft(int id) const;
+        bool canBuildRaft(Cell pos) const;
+        std::set<std::string> getResourceFiles() const;
         bool AddRaft(Raft raft);
         bool RemoveRaft(int id);
         int numOfMaterialPossessed(unsigned id) const;

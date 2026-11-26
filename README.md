@@ -1,5 +1,9 @@
 # Raft Pirates
 
+[![RaftPirates original method-name coverage: 12.2586%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
+
+**146/1191 original method names (12.2586%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
+
 Unofficial native source reconstruction for game preservation. Engine dependency: [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy).
 
 An experimental source reconstruction of parts of the 2013–2015 Hydra engine and Raft Pirates. The original Java/Dalvik classes and assets are supplied by your existing APK. This is **not** the recovered original source and **not yet a fully playable replacement** for the original native game.
@@ -76,3 +80,7 @@ Read the [engine README](https://github.com/mlnitoon2/HydraLegacy) and [game por
 - `evidence/`: recovered JNI descriptors and test reports.
 
 No license for the new reconstruction code has been selected. Original game and engine belong to their respective rights holders; this project is unofficial. Do not commit original APKs, proprietary scripts, credentials or private server data.
+
+## Playable scope
+
+The tested desktop sandbox supports entering the game, purchasing available store items, inspecting quest records and progress, expanding the raft along free hull edges, placing and moving components, repairs and clocks, sailing between water tiles, travelling to the second zone, diving for salvage, and advancing the daring meter. The original Java API is exercised through a host mock; the offline quest is deliberately synthetic. The original Android APK has not yet been tested on a device. Complete combat and boss progression are not implemented.

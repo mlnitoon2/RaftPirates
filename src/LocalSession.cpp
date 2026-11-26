@@ -46,6 +46,9 @@ namespace rp {
                            "Boom-Boom Buddha",
                            "thumbs_weapons.xml",
                            "thumb_boom_buddha_green"};
+        g.objects[5] = {5, 0, 1000, "WoodRaft", "gfx/rafts/raft_wood.png", -192, 0, {{0, 0}}};
+        g.blueprints[3] = {3, 5, 1, "Wooden Raft"};
+        g.owned.insert(3);
         g.zones[2] = "The Big Blue";
         g.zoneMaps[2] = "xml_resources/maps/map_big_blue.tmx";
         g.status = "LOCAL SANDBOX";
@@ -167,8 +170,22 @@ namespace rp {
             response.put("totaltime", int32_t(60));
             g.extension("daring_advanceresult", response);
         } else if (cmd == "gs_quest") {
-            response.put("result", std::make_shared<A>());
+            auto entries = std::make_shared<A>();
+            auto q = std::make_shared<O>();
+            q->put("id", int32_t(1));
+            q->put("name", "Local salvage test");
+            q->put(
+                "description",
+                "Collect wood from the ocean. This is a local test quest, not original game data.");
+            q->put("new", !g.quests.count(1) || g.quests.at(1).unread);
+            q->put("progress", int32_t(std::min(100, g.numOfMaterialPossessed(2) / 20)));
+            entries->add(q);
+            response.put("result", entries);
             g.extension(cmd, response);
+        } else if (cmd == "gs_quest_read") {
+            auto q = g.quests.find(number(*p, "quest_id"));
+            if (q != g.quests.end())
+                q->second.markRead();
         } else
             throw std::runtime_error("Local action not implemented: " + cmd);
     }

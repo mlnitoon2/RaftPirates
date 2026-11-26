@@ -28,3 +28,7 @@ The portable implementation has an integer wire-time field with fractional local
 ## Java audio bridge
 
 The original DEX contains `HydraGame.playMusic(String)`, `pauseMusic()`, `resumeMusic()`, `stopMusic()`, `playSound(String,float)` and the `SoundMan` implementation using Android MediaPlayer and AssetManager. The port calls them with bundled asset names and never swaps in an unrelated SDK. The Java mock verifies calls, including pause/resume and shutdown. Actual playback on Android remains untested.
+
+## Menu, quest and map classes
+
+`rp::Quest::initWithSFSObject` (ELF address `0x496dec`) reads `id` and `new` from one object and definition fields from a second; the portable handler accepts paired records or flat test fixtures. `quest_progress` uses `quest_dataid`, `quest_logid`, and `progress` (extension handler around `0x4b3b0c`). `gs_quest_read` sends `quest_id`. Live quest envelopes and reward flows remain unverified. `RPMenuHandler` uses typed arguments rather than the original native message ABI; it filters owned or unknown blueprint purchases and exposes recipe checks. `MapView::isPosOnLand` and `isPosInSafeWater` use the original TMX island and safe-water layers; map viewport and selection semantics are approximated. `SparseGrid` implements cell occupancy with a portable 64-bit coordinate key instead of the original overlap-tree implementation. The player edge-grid helper supports actual adjacent hull placement; original adjacency edge cases and network authority remain unverified.

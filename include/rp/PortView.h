@@ -2,7 +2,7 @@
 #include "rp/Game.h"
 #include "rp/Hud.h"
 #include "rp/DivingGame.h"
-#include "sys/res/TmxMap.h"
+#include "rp/MapView.h"
 
 namespace rp {
     // Temporary native controls for the original APK's GLSurfaceView. Not original Menu Redux UI.
@@ -38,8 +38,8 @@ namespace rp {
         bool diveStarted_ = false;
         bool diveSeen_ = false;
         bool hudEnabled(const Game& game) const;
-        std::optional<sys::res::TmxMap> tmx_;
-        std::string mapPath_;
+        MapView mapView_;
+        int selectedQuest_ = 0;
         std::map<std::string, std::shared_ptr<sys::gfx::Image>> tiles_;
         std::map<std::string, std::pair<std::shared_ptr<sys::res::ResourceSpriteSheet>,
                                         std::shared_ptr<sys::gfx::Image>>>

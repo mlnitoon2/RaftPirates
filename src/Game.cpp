@@ -1,4 +1,5 @@
 #include "rp/Game.h"
+#include "rp/SparseGrid.h"
 #include <algorithm>
 #include <cmath>
 #include <sstream>
@@ -186,7 +187,36 @@ namespace rp {
             badZone = num(p, "bad") != 0;
         } else if (cmd == "gs_quest") {
             questCount = 0;
-            each(p, "result", [&](auto&) { ++questCount; });
+            quests.clear();
+            auto result = p.getSFSArray("result");
+            if (result)
+                for (const auto& entry : result->values) {
+                    const O* state = nullptr;
+                    const O* definition = nullptr;
+                    if (auto item = std::get_if<std::shared_ptr<O>>(&entry); item && *item) {
+                        state = item->get();
+                        definition = state;
+                    } else if (auto pair = std::get_if<std::shared_ptr<A>>(&entry);
+                               pair && *pair && (*pair)->values.size() >= 2) {
+                        auto a = std::get_if<std::shared_ptr<O>>(&(*pair)->values[0]);
+                        auto b = std::get_if<std::shared_ptr<O>>(&(*pair)->values[1]);
+                        if (a && *a && b && *b) {
+                            state = a->get();
+                            definition = b->get();
+                        }
+                    }
+                    if (!state || !definition)
+                        continue;
+                    ++questCount;
+                    Quest q;
+                    q.initWithSFSObject(*state, *definition);
+                    if (q.id > 0)
+                        quests[q.id] = std::move(q);
+                }
+        } else if (cmd == "quest_progress") {
+            auto q = quests.find(num(p, "quest_logid"));
+            if (q != quests.end())
+                q->second.setProgressPercentage(num(p, "progress", q->second.progress));
         } else if (cmd == "gs_ocean") {
             setSafe(p.getBool("safe_water", safe));
             if (pendingMap) {
@@ -245,9 +275,11 @@ namespace rp {
                     }
             } else if (auto o = p.getSFSObj("user_raft")) {
                 int id = num(*o, "user_raft_id");
-                if (id > 0)
-                    rafts.push_back(
-                        {id, b.type, b.x, b.y, num(*o, "current_bp"), num(*o, "state"), {}});
+                if (id > 0 &&
+                    AddRaft({id, b.type, b.x, b.y, num(*o, "current_bp"), num(*o, "state"), {}}))
+                    buildLimit = num(*o, "build_limit_left", buildLimit);
+                else
+                    status = "Raft construction rejected";
             } else
                 status = "Construction response missing object";
         } else if (cmd == "gs_build_update") {
@@ -347,15 +379,20 @@ namespace rp {
             int64_t xx = int64_t(x) + cell.x, yy = int64_t(y) + cell.y;
             if (xx < 0 || yy < 0 || xx >= r->GridDimensionsX() || yy >= r->GridDimensionsY())
                 return false;
-            for (const auto& c : r->components) {
-                if (parent == ignoreParent && c.id == ignoreId)
-                    continue;
-                auto other = c.getResourceData(objects);
-                if (c.Contains({int(xx), int(yy)}, other))
-                    return false;
-            }
         }
-        return true;
+        SparseGrid grid;
+        int occupancyId = 1;
+        for (const auto& c : r->components) {
+            if (parent == ignoreParent && c.id == ignoreId)
+                continue;
+            auto other = c.getResourceData(objects);
+            // Existing server state can contain overlapping definitions. Refuse new placement
+            // rather than treating malformed/unknown occupancy as free space.
+            if (!grid.addObject(occupancyId++, other ? other->cells : std::vector<Cell>{{0, 0}},
+                                {c.x, c.y}))
+                return false;
+        }
+        return grid.CanAddObject(o->second.cells, {x, y});
     }
 
     Message Game::moveComponent(int parent, int id, int newParent, int x, int y) {
@@ -395,9 +432,8 @@ namespace rp {
                 throw std::runtime_error("Footprint outside raft or occupied");
         } else {
             parent = 0;
-            for (auto& r : rafts)
-                if (r.x == x && r.y == y)
-                    throw std::runtime_error("Raft position occupied");
+            if (!canBuildRaft({x, y}))
+                throw std::runtime_error("Raft must attach to an existing hull edge");
         }
         pending = PendingBuild{object, parent, x, y};
         O p;
@@ -456,6 +492,16 @@ namespace rp {
         O p;
         p.put("itemname", i->second.name);
         return request("purchase_item", p);
+    }
+
+    Message Game::openQuest(int id) {
+        auto q = quests.find(id);
+        if (q == quests.end())
+            throw std::runtime_error("Unknown quest");
+        q->second.markOpened();
+        O p;
+        p.put("quest_id", int32_t(id));
+        return request("gs_quest_read", p);
     }
 
     Message Game::discover(int id) {

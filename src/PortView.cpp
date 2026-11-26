@@ -1,4 +1,5 @@
 #include "rp/PortView.h"
+#include "rp/RPMenuHandler.h"
 #include "rp/BuildModeState.h"
 #include "sys/gfx/AssetImage.h"
 #include <algorithm>
@@ -150,15 +151,7 @@ namespace rp {
 
     void PortView::loadMap(const Game& g) {
         auto i = g.zoneMaps.find(g.zone);
-        if (i == g.zoneMaps.end() || i->second.empty()) {
-            tmx_.reset();
-            mapPath_.clear();
-            return;
-        }
-        if (i->second == mapPath_ && tmx_)
-            return;
-        tmx_ = TmxMap::Load(root_ / i->second);
-        mapPath_ = i->second;
+        mapView_.setMapFile(root_, i == g.zoneMaps.end() ? std::string{} : i->second);
     }
 
     void PortView::tick(float dt) {
@@ -205,8 +198,8 @@ namespace rp {
         else {
             try {
                 loadMap(g);
-                if (tmx_) {
-                    auto& m = *tmx_;
+                if (mapView_.data()) {
+                    auto& m = *mapView_.data();
                     for (auto& l : m.layers)
                         for (int y = 0; y < l.height; ++y)
                             for (int x = 0; x < l.width; ++x) {
@@ -325,6 +318,7 @@ namespace rp {
             switch (action) {
             case Hud::Action::Quest:
                 panel_ = Panel::Quest;
+                selectedQuest_ = 0;
                 page_ = 0;
                 return Game::request("gs_quest");
             case Hud::Action::Safety:
@@ -393,16 +387,32 @@ namespace rp {
         }
         if (map) {
             loadMap(g);
-            if (!tmx_ || x < 48 || x >= 592 || y < 36 || y >= 342)
+            if (!mapView_.data() || x < 48 || x >= 592 || y < 36 || y >= 342)
                 return {};
             float u = (x - 48) / 544.f, v = (y - 36) / 306.f;
-            auto safe = tmx_->tileAtWorld("Safe Water", u * tmx_->width * tmx_->tileWidth,
-                                          v * tmx_->height * tmx_->tileHeight);
-            if (!safe)
+            float wx = u * mapView_.data()->width * mapView_.data()->tileWidth;
+            float wy = v * mapView_.data()->height * mapView_.data()->tileHeight;
+            if (!mapView_.isValidIconLocation(wx, wy)) {
+                g.status = "Cannot sail onto land";
                 return {};
-            return g.moveMap(int(u * 200 - 100), int(v * 200 - 100), *safe != 0);
+            }
+            return g.moveMap(int(u * 200 - 100), int(v * 200 - 100),
+                             mapView_.isPosInSafeWater(wx, wy));
         }
         if (grid && !g.rafts.empty()) {
+            auto chosen = g.blueprints.find(selectedBlueprint_);
+            if (chosen != g.blueprints.end()) {
+                auto object = g.objects.find(chosen->second.object);
+                if (object != g.objects.end() && object->second.type == 0) {
+                    float dx = (x - 320) / 192.f, dy = (y - 86) / 96.f;
+                    // Tile centre is half a raft down its projected diamond.
+                    Cell pos{int(std::floor((dx + dy) / 2)), int(std::floor((dy - dx) / 2))};
+                    if (g.canBuildRaft(pos))
+                        return g.build(object->first, 0, pos.x, pos.y);
+                    g.status = "Select a free edge next to your raft";
+                    return {};
+                }
+            }
             for (auto it = g.rafts.rbegin(); it != g.rafts.rend(); ++it) {
                 auto& r = *it;
                 float bx = 320 + (r.x - r.y) * 192.f, by = 86 + (r.x + r.y) * 96.f;
@@ -446,8 +456,11 @@ namespace rp {
 
         std::vector<PanelRow> shopRows(const Game& game) {
             std::vector<PanelRow> result;
-            for (auto& [id, item] : game.storeItems)
+            RPMenuHandler menu(game);
+            for (int id : menu.gotMsgGetAvailStoreItemRequest()) {
+                const auto& item = game.storeItems.at(id);
                 result.push_back({id, item.name + " - " + std::to_string(item.price)});
+            }
             return result;
         }
 
@@ -460,9 +473,13 @@ namespace rp {
 
         std::vector<PanelRow> blueprintRows(const Game& game) {
             std::vector<PanelRow> result;
-            for (auto& [id, bp] : game.blueprints)
-                if (game.owned.count(id))
-                    result.push_back({id, bp.name()});
+            RPMenuHandler menu(game);
+            for (int id : menu.gotMsgGetAvailBlueprintsRequest()) {
+                auto& bp = game.blueprints.at(id);
+                result.push_back(
+                    {id,
+                     bp.name() + (menu.gotMsgHaveMaterialsRequest(id) ? "" : " - NEED MATERIALS")});
+            }
             return result;
         }
 
@@ -517,8 +534,31 @@ namespace rp {
                                 : panel_ == Panel::Safety ? "OCEAN SAFETY"
                                                           : "DARING";
             text(image, 25, 52, title, 2);
-            if (panel_ == Panel::Quest)
-                text(image, 25, 90, "QUESTS RECEIVED: " + std::to_string(game.questCount), 2);
+            if (panel_ == Panel::Quest) {
+                auto ids = RPMenuHandler(game).gotMsgQuestInformationRequest();
+                auto selected = game.quests.find(selectedQuest_);
+                if (selected != game.quests.end()) {
+                    text(image, 25, 90, selected->second.name.substr(0, 85), 1);
+                    text(image, 25, 122,
+                         "PROGRESS: " + std::to_string(selected->second.progress) + "%", 1);
+                    const auto& description = selected->second.description;
+                    for (size_t i = 0; i < description.size() && i < 450; i += 85)
+                        text(image, 25, 150 + int(i / 85) * 18, description.substr(i, 85), 1);
+                    text(image, 25, 265, "TAP TO RETURN TO QUESTS", 1);
+                } else {
+                    for (size_t i = 0; i < 6 && i + page_ * 6 < ids.size(); ++i) {
+                        const auto& q = game.quests.at(ids[i + page_ * 6]);
+                        text(image, 25, 90 + int(i) * 29,
+                             (q.unread ? "NEW: " : "") + q.name.substr(0, 65) + " " +
+                                 std::to_string(q.progress) + "%",
+                             1);
+                    }
+                    if (ids.empty())
+                        text(image, 25, 90, "NO QUESTS", 1);
+                    text(image, 25, 275, "PREV", 1);
+                    text(image, 560, 275, "NEXT", 1);
+                }
+            }
             if (panel_ == Panel::Safety)
                 text(image, 25, 90,
                      game.badZone ? "LOW WATER"
@@ -574,7 +614,32 @@ namespace rp {
 
     std::optional<sfs::Message> PortView::panelTouch(Game& game, float x, float y) {
         if (panel_ == Panel::Quest || panel_ == Panel::Safety || panel_ == Panel::Daring) {
-            if (y >= 280)
+            if (panel_ == Panel::Quest) {
+                if (y >= 290) {
+                    panel_ = Panel::None;
+                    selectedQuest_ = 0;
+                    return {};
+                }
+                if (selectedQuest_) {
+                    selectedQuest_ = 0;
+                    return {};
+                }
+                auto ids = RPMenuHandler(game).gotMsgQuestInformationRequest();
+                if (y >= 260) {
+                    if (x < 150 && page_)
+                        --page_;
+                    else if (x > 490 && (page_ + 1) * 6 < ids.size())
+                        ++page_;
+                    return {};
+                }
+                if (y >= 80 && y < 254) {
+                    size_t row = page_ * 6 + size_t(y - 80) / 29;
+                    if (row < ids.size()) {
+                        selectedQuest_ = ids[row];
+                        return game.openQuest(selectedQuest_);
+                    }
+                }
+            } else if (y >= 280)
                 panel_ = Panel::None;
             return {};
         }
@@ -624,8 +689,13 @@ namespace rp {
         if (row >= rows.size())
             return {};
         int id = rows[row].id;
-        if (panel_ == Panel::Shop)
+        if (panel_ == Panel::Shop) {
+            if (!RPMenuHandler(game).canPurchase(id)) {
+                game.status = "Item unavailable or insufficient currency";
+                return {};
+            }
             return game.buyStoreItem(id);
+        }
         if (panel_ == Panel::Travel) {
             panel_ = Panel::None;
             return game.travel(id);

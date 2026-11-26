@@ -129,7 +129,10 @@ namespace rp {
             if (auto id = part(owner, component))
                 menu_.node(id).set(key, std::move(value));
         };
-        set("QuestMenu", "IsNew", "visible", game.questCount > 0);
+        set("QuestMenu", "IsNew", "visible",
+            game.quests.empty() ? game.questCount > 0
+                                : std::any_of(game.quests.begin(), game.quests.end(),
+                                              [](const auto& q) { return q.second.unread; }));
         const bool locked = game.daringLocked();
         const bool ready = game.canAdvanceDaring();
         set("DaringMeter", "Fill", "maskWidth", 100.0 * game.daringProgress());

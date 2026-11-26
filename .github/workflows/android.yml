@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: mlnitoon2/HydraLegacy
-          ref: a4d4920a3f5f671cd493b9f56429d39bc4f23890
+          ref: 48b79d95a58eb314ae5a55a5e7def4ef30d1e874
           path: HydraLegacy
       - uses: actions/setup-java@v4
         with:

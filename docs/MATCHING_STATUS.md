@@ -4,7 +4,7 @@ Generated from defined function symbols. Name coverage is unique qualified metho
 
 | Original build | Names matched | Coverage | Names with signature overlap | Binary match |
 |---|---:|---:|---:|---|
-| Raft Pirates (2013) | 112/1191 | 9.4039% | 69 | Not compared |
+| Raft Pirates (2013) | 146/1191 | 12.2586% | 78 | Not compared |
 
 ## Raft Pirates (2013)
 
@@ -64,7 +64,7 @@ Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d
 | `rp::LoaderSpriteSheet` | 0/5 | 0.00% | 0 |
 | `rp::LoaderXml` | 0/5 | 0.00% | 0 |
 | `rp::LoadingManager` | 0/13 | 0.00% | 0 |
-| `rp::MapView` | 0/46 | 0.00% | 0 |
+| `rp::MapView` | 7/46 | 15.22% | 2 |
 | `rp::MapView::EnemyShipPoints` | 0/2 | 0.00% | 0 |
 | `rp::MapView::TreasureMapPoints` | 0/1 | 0.00% | 0 |
 | `rp::Material` | 3/6 | 50.00% | 2 |
@@ -257,11 +257,11 @@ Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d
 | `rp::PerimeterWallSprite` | 0/10 | 0.00% | 0 |
 | `rp::PerimeterWallSprite::SpriteBalloon` | 0/1 | 0.00% | 0 |
 | `rp::PlacementSprite` | 0/9 | 0.00% | 0 |
-| `rp::Player` | 20/30 | 66.67% | 14 |
-| `rp::Quest` | 0/6 | 0.00% | 0 |
+| `rp::Player` | 23/30 | 76.67% | 15 |
+| `rp::Quest` | 6/6 | 100.00% | 5 |
 | `rp::QuestTypeDB` | 0/5 | 0.00% | 0 |
 | `rp::QuestTypeInfo` | 0/1 | 0.00% | 0 |
-| `rp::RPMenuHandler` | 0/47 | 0.00% | 0 |
+| `rp::RPMenuHandler` | 8/47 | 17.02% | 0 |
 | `rp::Raft` | 10/16 | 62.50% | 5 |
 | `rp::RaftAttackSprite` | 0/5 | 0.00% | 0 |
 | `rp::RaftComponent` | 11/15 | 73.33% | 7 |
@@ -273,7 +273,7 @@ Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d
 | `rp::RaftPiratesGameState` | 0/6 | 0.00% | 0 |
 | `rp::SelectedWallSprite` | 0/7 | 0.00% | 0 |
 | `rp::ShipPlacementSprite` | 0/11 | 0.00% | 0 |
-| `rp::SparseGrid` | 0/15 | 0.00% | 0 |
+| `rp::SparseGrid` | 10/15 | 66.67% | 1 |
 | `rp::SplashFXSprite` | 0/6 | 0.00% | 0 |
 | `rp::StoreDB` | 0/6 | 0.00% | 0 |
 | `rp::ThrobingIndicatorSprite` | 0/3 | 0.00% | 0 |
@@ -325,17 +325,27 @@ Matched names:
 - `rp::GridObject::~GridObject`
 - `rp::GridObjectPiece::GridObjectPiece`
 - `rp::GridObjectPiece::~GridObjectPiece`
+- `rp::MapView::MapView`
+- `rp::MapView::isPosInSafeWater`
+- `rp::MapView::isPosOnLand`
+- `rp::MapView::isValidIconLocation`
+- `rp::MapView::limitPlayerPos`
+- `rp::MapView::setMapFile`
+- `rp::MapView::~MapView`
 - `rp::Material::id`
 - `rp::Material::init`
 - `rp::Material::initWithSFSObject`
 - `rp::OceanView::~OceanView`
 - `rp::Player::AddRaft`
+- `rp::Player::GetAvailableEdgeGridSpace`
 - `rp::Player::GetDiveUnit`
 - `rp::Player::GetRaftAtPosition`
 - `rp::Player::GetRaftByID`
 - `rp::Player::RaftCleanupRequired`
 - `rp::Player::RaftRepairRequired`
+- `rp::Player::RaftsConnectedToRaft`
 - `rp::Player::RemoveRaft`
+- `rp::Player::canBuildRaft`
 - `rp::Player::currentBP`
 - `rp::Player::giveBlueprint`
 - `rp::Player::giveMaterial`
@@ -349,6 +359,20 @@ Matched names:
 - `rp::Player::numOfMaterialPossessed`
 - `rp::Player::setSafe`
 - `rp::Player::~Player`
+- `rp::Quest::Quest`
+- `rp::Quest::initWithSFSObject`
+- `rp::Quest::markOpened`
+- `rp::Quest::markRead`
+- `rp::Quest::setProgressPercentage`
+- `rp::Quest::~Quest`
+- `rp::RPMenuHandler::gotMsgGetAllBlueprintsRequest`
+- `rp::RPMenuHandler::gotMsgGetAvailBlueprintsRequest`
+- `rp::RPMenuHandler::gotMsgGetAvailMaterialsRequest`
+- `rp::RPMenuHandler::gotMsgGetAvailStoreItemRequest`
+- `rp::RPMenuHandler::gotMsgHaveMaterialsRequest`
+- `rp::RPMenuHandler::gotMsgQuestInformationRequest`
+- `rp::RPMenuHandler::gotMsgRecipeInformationRequest`
+- `rp::RPMenuHandler::gotMsgSpecificMaterialAvailAmountRequest`
 - `rp::Raft::GetBattlePoints`
 - `rp::Raft::GetHealth`
 - `rp::Raft::GetTotalBattlePoints`
@@ -370,6 +394,16 @@ Matched names:
 - `rp::RaftComponent::TempTick`
 - `rp::RaftComponent::initWithSFSObject`
 - `rp::RaftComponent::~RaftComponent`
+- `rp::SparseGrid::CanAddObject`
+- `rp::SparseGrid::GenerateKey`
+- `rp::SparseGrid::SparseGrid`
+- `rp::SparseGrid::addObject`
+- `rp::SparseGrid::getObjectAt`
+- `rp::SparseGrid::getObjectByID`
+- `rp::SparseGrid::hasObject`
+- `rp::SparseGrid::moveObject`
+- `rp::SparseGrid::removeObject`
+- `rp::SparseGrid::~SparseGrid`
 - `rp::Zone::buffer_bp`
 - `rp::Zone::daringLimit`
 - `rp::Zone::defaultpos_open_x`

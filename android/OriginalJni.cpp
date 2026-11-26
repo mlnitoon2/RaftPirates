@@ -132,9 +132,9 @@ namespace {
         auto base = string(e, s);
         if (base.empty())
             throw std::runtime_error("No app cache directory");
-        auto name =
-            std::to_string(std::filesystem::file_size(apk)) + "-" +
-            std::to_string(std::filesystem::last_write_time(apk).time_since_epoch().count());
+        auto name = std::to_string(std::filesystem::file_size(apk)) + "-" +
+                    std::to_string(static_cast<long long>(
+                        std::filesystem::last_write_time(apk).time_since_epoch().count()));
         auto root = std::filesystem::path(base) / "hydra-legacy-v03" / name;
         if (!std::filesystem::exists(root / ".complete")) {
             sys::res::Archive a(apk);

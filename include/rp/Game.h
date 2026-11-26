@@ -3,6 +3,7 @@
 #include "rp/Player.h"
 #include "rp/Zone.h"
 #include "rp/Discovery.h"
+#include "rp/Quest.h"
 #include "sys/gfx/AnimationRenderer.h"
 #include <optional>
 #include <set>
@@ -39,6 +40,8 @@ namespace rp {
         std::map<int, Discovery> discoveryData;
         bool badZone = false;
         int questCount = 0;
+        std::map<int, Quest> quests;
+        sfs::Message openQuest(int id);
         std::string knownDiscoveries;
         std::map<int, StoreItem> storeItems;
         std::map<int, StoreCurrency> storeCurrencies;

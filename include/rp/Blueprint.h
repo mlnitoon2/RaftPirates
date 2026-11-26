@@ -1,6 +1,7 @@
 #pragma once
 #include "sfs/SFSObjectWrapper.h"
 #include <string>
+#include <map>
 
 namespace rp {
     // Static catalogue entry; ID lookup is also used by owned blueprints.
@@ -14,6 +15,9 @@ namespace rp {
         const std::string& name() const;
         int object = 0, unlock = 0;
         std::string sheet, image;
+        bool deprecated = false;
+        int purchaseZone = 0, displayOrder = 0, buildSeconds = 0;
+        std::map<int, int> recipe;
 
       private:
         int id_ = 0;
