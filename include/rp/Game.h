@@ -1,6 +1,6 @@
 #pragma once
 #include "sfs/SFSWire.h"
-#include "rp/RaftComponent.h"
+#include "rp/Raft.h"
 #include "sys/gfx/AnimationRenderer.h"
 #include <optional>
 #include <set>
@@ -25,11 +25,6 @@ namespace rp {
     };
 
     GridObject readGridObject(const sfs::SFSObjectWrapper&);
-
-    struct Raft {
-        int id = 0, type = 0, x = 0, y = 0, bp = 0, state = 0;
-        std::vector<Component> components;
-    };
 
     struct Blueprint {
         int id = 0, object = 0, unlock = 0;

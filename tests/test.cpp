@@ -177,6 +177,19 @@ int main() {
         dive.put("state", int32_t(3));
         g.extension("dive_info", dive);
         CHECK(g.diveState.depth == 2 && g.diveState.maxDepth == 10 && g.diveState.state == 3);
+        rp::Raft health;
+        health.type = 1;
+        health.bp = 50;
+        health.bonusBattlePoints = 3;
+        health.components.push_back({1, 2, 0, 0, 25, 0, 0});
+        health.components.push_back({2, 2, 1, 0, 25, 1, 5});
+        std::map<int, rp::GridObject> definitions;
+        definitions[1].bp = 100;
+        definitions[2].bp = 50;
+        CHECK(health.GetBattlePoints() == 78 && health.GetTotalBattlePoints(definitions) == 150);
+        CHECK(std::abs(health.GetHealth(definitions) - .5f) < .001f);
+        health.state = 2;
+        CHECK(health.Destroyed());
         std::cout << "Raft model and SFS framing tests passed\n";
         return 0;
     } catch (const std::exception& e) {
