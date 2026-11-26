@@ -7,6 +7,7 @@
 #include "rp/StaticDatabases.h"
 #include "rp/StoreDB.h"
 #include "rp/DivingUnit.h"
+#include "rp/OnlineBattle.h"
 #include "sys/gfx/AnimationRenderer.h"
 #include <optional>
 #include <set>
@@ -42,6 +43,9 @@ namespace rp {
         std::map<int, StoreCurrency> storeCurrencies;
         std::map<int, std::string> storeGroups;
         DiveState diveState;
+        OnlineBattle onlineBattle;
+        bool sonarPending = false, readyForBattle = false;
+        std::optional<sfs::Message> pingSonar();
         int daringRemaining = 0, daringTotal = 0;
         bool daringPaused = false;
         int zone = 1, mapX = 0, mapY = 0, daring = 0, buildLimit = 0, diveSeconds = 0;

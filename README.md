@@ -1,8 +1,8 @@
 # Raft Pirates
 
-[![RaftPirates original method-name coverage: 33.2494%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
+[![RaftPirates original method-name coverage: 34.0890%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
 
-**396/1191 original method names (33.2494%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
+**406/1191 original method names (34.0890%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
 
 Unofficial native source reconstruction for game preservation. Engine dependency: [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy).
 
@@ -40,7 +40,7 @@ out/lib/arm64-v8a/libraftpirates.so
 
 The script checks ELF64, little-endian, ET_DYN, machine AArch64 and every required JNI export name before copying the output. Use `--minimal` for a native smoke build without optional Lua and FreeType adapters; the original startup and gameplay adapters do not depend on them. It selects API 23, static libc++, and a 16 KiB maximum ELF page size. The resulting file is the intended replacement at `lib/arm64-v8a/libraftpirates.so` in the specific archived APK. **Do not copy the desktop test library into an APK.** Keep the original archive backed up. No signing steps are included.
 
-GitHub Actions successfully built the ARM64 library at commit `3b24e4cacf4f866764eb7fa352808938e384eabd` ([build artifact](https://github.com/mlnitoon2/RaftPirates/actions/runs/45900728166/artifacts/15155158333)). The current source may differ from that build; Pass 21 physical device launch remains unverified. No compiled library is bundled in this source tree. Older Android target-SDK restrictions, native library packaging, original Java SDK behavior on new Android, and GLES behavior remain possible blockers. This is not guaranteed to launch on an ARM64-only phone.
+GitHub Actions successfully built the ARM64 library at commit `3b24e4cacf4f866764eb7fa352808938e384eabd` ([build artifact](https://github.com/mlnitoon2/RaftPirates/actions/runs/45900728166/artifacts/15155158333)). The current source may differ from that build; Pass 23 physical device launch remains unverified. No compiled library is bundled in this source tree. Older Android target-SDK restrictions, native library packaging, original Java SDK behavior on new Android, and GLES behavior remain possible blockers. This is not guaranteed to launch on an ARM64-only phone.
 
 ## What the experimental replacement does
 
@@ -57,7 +57,8 @@ Static library packets are validated by typed catalogue classes. An explicit lib
 - Incoming libraries/player packets, raft health and battle-point totals, map movement, placement, basic blueprint purchases, dive start/collection, build completion, repair response state, and discovery response state are represented in C++ to varying degrees. Not all actions have controls. Placement and purchase use temporary controls with original item sprite thumbnails, not the complete original shop. Map rendering and safe-water testing are approximate; normalized map wire keys are verified. No actual player persistence.
 - The diagnostic Connect and OFFLINE PLAY controls have been removed from the Android flow. The in-memory sandbox is retained only in the C++ desktop preview and regression tests; no offline mode is exposed in the APK.
 - A playable diving reconstruction uses original sprite resources, with drag movement, gears, mines, timing and collection. Mechanics and scoring are provisional; online salvage is server-authoritative.
-- The original Java audio backend receives theme, ambient and diving music calls and menu/gear/finish effects. Desktop JNI mock validates calls, not actual audio playback. Construction controls support repair and clocks using recovered request fields. Battle outcome application updates hull/component BP and state. Local practice battles in pirate water support attacks, retaliation, win/loss and a one-time gold reward. The Barnacle Bill discovery displays its original animation and supports return to the ocean. Neither feature restores the original live battle protocol or discovery quest rewards.
+- The original Java audio backend receives theme, ambient and diving music calls and menu/gear/finish effects. Desktop JNI mock validates calls, not actual audio playback. Construction controls support repair and clocks using recovered request fields. Battle outcome application updates hull/component BP and state. Local practice battles in pirate water support attacks, retaliation, win/loss and a one-time gold reward. The Barnacle Bill discovery displays its original animation and supports return to the ocean. Discovery quest rewards remain unimplemented. The separate online transport now sends reconstructed battle actions; it does not grant practice rewards online.
+- Pass 23 adds sonar, encounter response, opponent snapshots, raft selection, ready, attack/defend dice, retreat and plunder requests using the original SmartFox extension transport. The controls and server state machine are experimental. See [multiplayer protocol evidence](docs/MULTIPLAYER.md); live two-client combat, damage ownership and exact turn progression remain unverified.
 - Remaining original menus, full Lua API, exact diving behavior, original multiplayer/boss combat, discovery quest/reward flow, social platform functions, advertising/billing integrations, and many more native behaviors remain missing.
 
 ## Verify locally (desktop)
@@ -91,4 +92,4 @@ No license for the new reconstruction code has been selected. Original game and 
 
 ## Playable scope
 
-The tested desktop sandbox supports entering the game, purchasing available store items, inspecting quest records and progress, expanding the raft along free hull edges, placing and moving components, repairs and clocks, sailing between water tiles, travelling to the second zone, diving for salvage, and advancing the daring meter. The original Java API is exercised through a host mock; the offline quest is deliberately synthetic. The user confirmed the earlier ARM64 build launches after Java compatibility fixes; Pass 21 itself is not yet tested on a physical device. Complete combat and boss progression are not implemented.
+The tested desktop sandbox supports entering the game, purchasing available store items, inspecting quest records and progress, expanding the raft along free hull edges, placing and moving components, repairs and clocks, sailing between water tiles, travelling to the second zone, diving for salvage, and advancing the daring meter. The original Java API is exercised through a host mock; the offline quest is deliberately synthetic. The user confirmed the earlier ARM64 build launches after Java compatibility fixes; Pass 23 itself is not yet tested on a physical device. Complete combat and boss progression are not implemented.

@@ -43,6 +43,8 @@ namespace rp {
         std::unique_ptr<diving_game::DivingGame> diving_;
         std::unique_ptr<BattleModeState> battle_;
         std::unique_ptr<DiscoveryModeState> discovery_;
+        size_t ownBattleIndex_ = 0, enemyBattleIndex_ = 0;
+        int battleDice_ = 1;
         bool diveStarted_ = false;
         bool diveSeen_ = false;
         bool hudEnabled(const Game& game) const;

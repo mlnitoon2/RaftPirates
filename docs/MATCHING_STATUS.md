@@ -4,7 +4,7 @@ Generated from defined function symbols. Name coverage is unique qualified metho
 
 | Original build | Names matched | Coverage | Names with signature overlap | Binary match |
 |---|---:|---:|---:|---|
-| Raft Pirates 2013 | 396/1191 | 33.2494% | 191 | Not compared |
+| Raft Pirates 2013 | 406/1191 | 34.0890% | 196 | Not compared |
 
 ## Raft Pirates 2013
 
@@ -250,7 +250,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::MsgZoneGetAllKnownResult` | 0/1 | 0.00% | 0 |
 | `rp::MsgZoneMoveTo` | 0/1 | 0.00% | 0 |
 | `rp::MsgZoneMoveToResult` | 0/1 | 0.00% | 0 |
-| `rp::Ocean` | 0/10 | 0.00% | 0 |
+| `rp::Ocean` | 9/10 | 90.00% | 5 |
 | `rp::OceanView` | 24/62 | 38.71% | 17 |
 | `rp::OverlapTree` | 0/4 | 0.00% | 0 |
 | `rp::PerimeterTree` | 0/3 | 0.00% | 0 |
@@ -261,7 +261,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::Quest` | 6/6 | 100.00% | 5 |
 | `rp::QuestTypeDB` | 5/5 | 100.00% | 2 |
 | `rp::QuestTypeInfo` | 0/1 | 0.00% | 0 |
-| `rp::RPMenuHandler` | 38/47 | 80.85% | 6 |
+| `rp::RPMenuHandler` | 39/47 | 82.98% | 6 |
 | `rp::Raft` | 10/16 | 62.50% | 5 |
 | `rp::RaftAttackSprite` | 0/5 | 0.00% | 0 |
 | `rp::RaftComponent` | 12/15 | 80.00% | 8 |
@@ -464,6 +464,15 @@ Matched names:
 - `rp::MaterialsDB::initWithSFSObject`
 - `rp::MaterialsDB::load`
 - `rp::MaterialsDB::save`
+- `rp::Ocean::GetPlayer`
+- `rp::Ocean::Ocean`
+- `rp::Ocean::addPlayer`
+- `rp::Ocean::gotMsgPlayerBuiltRaft`
+- `rp::Ocean::init`
+- `rp::Ocean::movePlayer`
+- `rp::Ocean::removePlayer`
+- `rp::Ocean::tick`
+- `rp::Ocean::~Ocean`
 - `rp::OceanView::AxisX`
 - `rp::OceanView::AxisY`
 - `rp::OceanView::CalculateHelpers`
@@ -525,6 +534,7 @@ Matched names:
 - `rp::QuestTypeDB::initWithSFSObject`
 - `rp::QuestTypeDB::load`
 - `rp::QuestTypeDB::save`
+- `rp::RPMenuHandler::RPMenuHandler`
 - `rp::RPMenuHandler::destroyCurMenuData`
 - `rp::RPMenuHandler::displayPopUpImmediately`
 - `rp::RPMenuHandler::enableNewQuestPopupHandling`

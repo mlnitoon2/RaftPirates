@@ -100,6 +100,10 @@ namespace rp {
 
     void Game::extension(const std::string& cmd, const O& p) {
         status = cmd;
+        if (cmd == "ready_for_battle") readyForBattle = p.getBool("is_ready", false);
+        if (cmd == "ping_sonar" || cmd == "gs_error" || cmd == "gs_encounter") sonarPending = false;
+        if (onlineBattle.HandleExtensionResponse(cmd, p, *this))
+            return;
         if (cmd == "lib_go_data") {
             gridObjectDB.initWithSFSObject(p);
             objects = gridObjectDB.rows();
@@ -346,6 +350,13 @@ namespace rp {
                 status = "Zone travel rejected";
             pendingZone.reset();
         }
+    }
+
+    std::optional<sfs::Message> Game::pingSonar() {
+        if (!ready || localPlay || sonarPending || onlineBattle.phase()!=OnlineBattle::Phase::Idle)
+            return {};
+        sonarPending=true;
+        return request("ping_sonar");
     }
 
     bool Game::canPlaceComponent(int object, int parent, int x, int y, int ignoreParent,

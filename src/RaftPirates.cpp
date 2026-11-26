@@ -31,6 +31,8 @@ namespace rp {
         pendingMap.reset();
         pendingDiscovery.reset();
         token.clear();
+        onlineBattle.reset();
+        sonarPending = readyForBattle = false;
         queued_.clear();
         status = "Disconnected";
     }

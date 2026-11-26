@@ -161,6 +161,8 @@ namespace {
                 throw std::runtime_error("Login is required");
             sfs::JavaClient::send(e, msg);
         } catch (...) {
+            rt.game.onlineBattle.sendFailed();
+            rt.game.sonarPending = false;
             rt.game.pending.reset();
             rt.game.pendingMove.reset();
             rt.game.pendingMap.reset();
