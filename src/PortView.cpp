@@ -173,8 +173,8 @@ namespace rp {
     }
 
     void PortView::touchDown(float x, float y) {
-        oceanGesture_ = !diving_ && !battle_ && !discovery_ && !map && panel_ == Panel::None &&
-                        y > 75 && y < 290;
+        oceanGesture_ = !onlineBattleActive_ && !diving_ && !battle_ && !discovery_ && !map &&
+                        panel_ == Panel::None && y > 75 && y < 290;
         if (diving_)
             diving_->touchDown({x, y});
         else if (oceanGesture_)
@@ -192,7 +192,18 @@ namespace rp {
         Image out(640, 400, {36, 133, 168, 255});
         using Phase = BattleModeState::Phase;
         const auto& net = g.onlineBattle;
-        if (!g.localPlay && net.phase() != Phase::Idle) {
+        onlineBattleActive_ = !g.localPlay && net.phase() != Phase::Idle;
+        if (!onlineBattleActive_)
+            battleScreen_.reset();
+        if (onlineBattleActive_) {
+            if (!battleScreen_) {
+                try {
+                    battleScreen_ = std::make_unique<GfxBattleScreen>(root_);
+                } catch (const std::exception&) {
+                }
+            }
+            if (battleScreen_)
+                return battleScreen_->Render(g, time);
             out = ocean_.render(g, time, false);
             if (net.hasOpponent()) {
                 auto enemy = opponentOcean_.render(net.opponent(), time, false);
@@ -374,6 +385,22 @@ namespace rp {
                         {(std::clamp(g.mapX, -100, 100) + 100) * m.width * m.tileWidth / 200.f,
                          (std::clamp(g.mapY, -100, 100) + 100) * m.height * m.tileHeight / 200.f},
                         true);
+                    mapView_.updateBoss(g.bossData, g.zone);
+                    mapView_.updateEnemyShips(g.sonarShips);
+                    auto drawMarker = [&](const MapView::EnemyShipPoints& ship, bool boss) {
+                        int mx = 48 + int(ship.x * 544.f / (m.width * m.tileWidth)),
+                            my = 36 + int(ship.y * 306.f / (m.height * m.tileHeight));
+                        if (!renderItemIcon(out, "rp_menu.xml",
+                                            boss ? "rp_map_boss" : "rp_battle_arrow", mx - 13,
+                                            my - 13))
+                            rect(out, mx - 4, my - 4, 9, 9, {240, 110, 85, 255});
+                        text(out, std::max(48, mx - 25), std::max(36, my - 23),
+                             ship.name.substr(0, 16), 1);
+                    };
+                    if (mapView_.boss())
+                        drawMarker(*mapView_.boss(), true);
+                    for (const auto& enemy : mapView_.enemyShips())
+                        drawMarker(enemy, false);
                     if (mapView_.playerVisible()) {
                         auto marker = mapView_.playerPosition();
                         int mx = 48 + int(marker.x * 544 / (m.width * m.tileWidth)),
@@ -448,6 +475,8 @@ namespace rp {
         using Phase = BattleModeState::Phase;
         auto& net = g.onlineBattle;
         if (!g.localPlay && net.phase() != Phase::Idle) {
+            if (battleScreen_)
+                return battleScreen_->Select(g, x, y);
             if (net.waiting())
                 return {};
             if (y < 342) {
@@ -613,14 +642,27 @@ namespace rp {
             float wy = v * mapView_.data()->height * mapView_.data()->tileHeight;
             mapView_.showMap();
             mapView_.movementAllowed(!g.pendingMap.has_value());
-            mapView_.touchDown({wx, wy});
-            mapView_.touchUp({wx, wy});
+            int enemyId = 0;
+            bool usedSonar = false;
+            if (const auto* target = mapView_.enemyAt(wx, wy)) {
+                if (mapView_.selectEnemy(*target)) {
+                    enemyId = target->id;
+                    usedSonar = !mapView_.boss() || mapView_.boss()->id != enemyId;
+                    wx = float(target->x);
+                    wy = float(target->y);
+                    u = wx / (mapView_.data()->width * mapView_.data()->tileWidth);
+                    v = wy / (mapView_.data()->height * mapView_.data()->tileHeight);
+                }
+            } else
+                mapView_.touchDown({wx, wy});
+            if (!enemyId)
+                mapView_.touchUp({wx, wy});
             if (!mapView_.moveShip()) {
                 g.status = g.pendingMap ? "Waiting for movement" : "Cannot sail onto land";
                 return {};
             }
             return g.moveMap(int(u * 200 - 100), int(v * 200 - 100),
-                             mapView_.isPosInSafeWater(wx, wy));
+                             mapView_.isPosInSafeWater(wx, wy), enemyId, usedSonar);
         }
         if (grid && !g.rafts.empty()) {
             auto chosen = g.blueprints.find(selectedBlueprint_);

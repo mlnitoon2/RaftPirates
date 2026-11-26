@@ -1,4 +1,5 @@
 #include "rp/Game.h"
+#include "rp/GridSprite.h"
 #include "rp/LoadingManager.h"
 #include "rp/MapView.h"
 #include "rp/RPMenuHandler.h"
@@ -77,6 +78,17 @@ int main(int argc, char** argv) {
         b.x = 1;
         CHECK(a.Overlap(b, &def, &def));
         CHECK(a.Middleish(&def).first == .5f);
+        rp::OceanView ocean(cache);
+        auto multi = rp::GridObjectInfo::parse("0;one.png 0 0 0,0;two.png 30 0 1,0;", 800);
+        rp::GridSprite visual(ocean, a, multi, {0, 0}, 1);
+        CHECK(visual.Pieces() == 2 && visual.GetMaxOrder() == 1);
+        visual.SetOrder(0, 4, 1);
+        CHECK(visual.GetOrder(0) == 4 && visual.GetPriority(0) > visual.GetPriority(1));
+        CHECK(visual.Select(&visual[0].appearance));
+        visual.SetVisible(false);
+        CHECK(!visual.GetVisible());
+        visual.SetColour(255, 255, 255, 123);
+        CHECK(visual.Alpha() == 123);
         O zone;
         zone.put("zone_id", int32_t(1));
         zone.put("name", "Sea");
@@ -150,6 +162,22 @@ int main(int argc, char** argv) {
             CHECK(fx == x && fy == y);
             map.clearTreasureMapPoints();
             CHECK(!map.hasXNearArea(x, y));
+            O boss;
+            boss.put("user_id", int32_t(77));
+            boss.put("zone", int32_t(1));
+            boss.put("display_name", "Boss");
+            boss.put("battle_points", int32_t(1234));
+            map.updateBoss(boss, 1);
+            CHECK(map.boss() && !map.isPosInSafeWater(map.boss()->x, map.boss()->y));
+            O enemy;
+            enemy.put("user_id", int32_t(78));
+            enemy.put("display_name", "Enemy");
+            enemy.put("battle_points", int32_t(42));
+            map.updateEnemyShips(std::vector<O>{enemy});
+            CHECK(map.enemyShips().size() == 1);
+            CHECK(map.enemyAt(map.boss()->x, map.boss()->y)->id == 77);
+            map.movementAllowed(true);
+            CHECK(map.selectEnemy(*map.boss()));
             map.hideMap();
             CHECK(!map.playerVisible());
         }

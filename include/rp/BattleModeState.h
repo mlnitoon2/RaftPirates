@@ -56,6 +56,14 @@ namespace rp {
             return boss_;
         }
 
+        int ownRaftId() const {
+            return ownRaft_;
+        }
+
+        int enemyRaftId() const {
+            return enemyRaft_;
+        }
+
         bool positioned() const {
             return positioned_;
         }

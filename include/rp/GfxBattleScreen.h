@@ -1,0 +1,49 @@
+#pragma once
+#include "rp/BattlePlacementScreen.h"
+#include "sys/gfx/ResourceSpriteFont.h"
+
+namespace rp {
+    class GfxBattleScreen {
+      public:
+        explicit GfxBattleScreen(std::filesystem::path root);
+        ~GfxBattleScreen();
+        sys::gfx::Image Render(const Game& game, float time);
+        std::optional<sfs::Message> Select(Game& game, float x, float y);
+
+      private:
+        void prepare(const Game& game);
+        void updateBattleDamage(const Game& game, float time);
+        void tick(float dt);
+        void SwoopIn();
+        void SwoopOut();
+        void submitSprite(sys::gfx::GfxManager& gfx, const std::string& name, float x, float y,
+                          float w, float h) const;
+        void submitText(sys::gfx::GfxManager& gfx, const std::string& value, float cx, float y,
+                        float scale, float width) const;
+        void renderFleet(sys::gfx::Image& out, OceanView& view, const Player& player, int left,
+                         int selected, float time) const;
+        void meter(sys::gfx::GfxManager& gfx, const Player& player, int x, bool own) const;
+        int pick(const Player& player, const OceanView& view, float x, float y, int left) const;
+        OceanView ownView_, enemyView_;
+        BattlePlacementScreen placement_;
+        sys::gfx::ResourceSpriteSheet sheet_;
+        std::shared_ptr<const sys::gfx::Image> atlas_;
+        sys::gfx::ResourceSpriteFont font_;
+        BattleModeState::Phase lastPhase_ = BattleModeState::Phase::Idle;
+        bool lastAttacker_ = false, retreatConfirm_ = false;
+        int dice_ = 1;
+        std::map<int, int> ownBP_, enemyBP_;
+
+        struct Damage {
+            bool own;
+            int raft, amount;
+            float remaining;
+        };
+
+        std::vector<Damage> damage_;
+        std::optional<sys::res::ResourceAEAnim> explosion_;
+        sys::gfx::AnimationRenderer effects_;
+        float lastTime_ = -1, transition_ = 0;
+        bool exiting_ = false;
+    };
+} // namespace rp

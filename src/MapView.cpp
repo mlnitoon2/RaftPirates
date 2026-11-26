@@ -235,6 +235,99 @@ namespace rp {
         boss_ = boss && boss->id > 0 && isValidIconLocation(boss->x, boss->y) ? boss : std::nullopt;
     }
 
+    bool MapView::hasSonarIconNearArea(int x, int y) const {
+        if (!map_)
+            return false;
+        double radius = map_->tileWidth;
+        return std::any_of(enemies_.begin(), enemies_.end(), [&](const auto& e) {
+            double dx = double(x) - e.x, dy = double(y) - e.y;
+            return dx * dx + dy * dy < radius * radius;
+        });
+    }
+
+    void MapView::updateBossGfx(EnemyShipPoints& boss) {
+        // Original updateBossGfx consumes unsafe squares, rejecting player, treasure and sonar
+        // proximity. The candidate order is deterministic here, not the original shuffled order.
+        std::vector<Cell> candidates;
+        getUnsafeSquares(candidates);
+        boss.x = boss.y = -1;
+        if (!map_)
+            return;
+        for (auto it = candidates.rbegin(); it != candidates.rend(); ++it) {
+            int x = it->x * map_->tileWidth + map_->tileWidth / 2,
+                y = it->y * map_->tileHeight + map_->tileHeight / 2;
+            if (!isValidIconLocation(x, y) || hasPlayerNearArea(x, y) || hasXNearArea(x, y) ||
+                hasSonarIconNearArea(x, y) ||
+                (boss_ && boss_->id != boss.id && hasBossNearArea(x, y)))
+                continue;
+            boss.x = x;
+            boss.y = y;
+            break;
+        }
+    }
+
+    void MapView::updateBoss(const std::optional<sfs::SFSObjectWrapper>& data, int zone) {
+        if (!data || data->getInt("zone") != zone || data->getInt("user_id") <= 0) {
+            boss_.reset();
+            return;
+        }
+        EnemyShipPoints next;
+        next.id = data->getInt("user_id");
+        next.name = data->getString("display_name");
+        next.battlePoints = data->getInt("battle_points");
+        if (boss_ && boss_->id == next.id) {
+            next.x = boss_->x;
+            next.y = boss_->y;
+        } else
+            updateBossGfx(next);
+        updateBoss(next);
+    }
+
+    void MapView::updateEnemyShips(const std::vector<sfs::SFSObjectWrapper>& records) {
+        if (!map_)
+            return;
+        auto previous = std::move(enemies_);
+        enemies_.clear();
+        for (const auto& data : records) {
+            EnemyShipPoints next;
+            next.id = data.getInt("user_id");
+            next.name = data.getString("display_name");
+            next.battlePoints = data.getInt("battle_points");
+            next.nemesis = data.getBool("is_nemesis");
+            if (next.id <= 0 || std::any_of(enemies_.begin(), enemies_.end(),
+                                            [&](const auto& e) { return e.id == next.id; }))
+                continue;
+            auto old = std::find_if(previous.begin(), previous.end(),
+                                    [&](const auto& e) { return e.id == next.id; });
+            if (old != previous.end()) {
+                next.x = old->x;
+                next.y = old->y;
+            } else
+                updateBossGfx(next);
+            if (isValidIconLocation(next.x, next.y) && !hasBossNearArea(next.x, next.y))
+                enemies_.push_back(std::move(next));
+        }
+    }
+
+    const MapView::EnemyShipPoints* MapView::enemyAt(float x, float y) const {
+        if (!map_)
+            return nullptr;
+        double best = double(map_->tileWidth) * map_->tileWidth;
+        const EnemyShipPoints* out = nullptr;
+        auto consider = [&](const EnemyShipPoints& e) {
+            double dx = e.x - x, dy = e.y - y, d = dx * dx + dy * dy;
+            if (d < best) {
+                best = d;
+                out = &e;
+            }
+        };
+        if (boss_)
+            consider(*boss_);
+        for (const auto& e : enemies_)
+            consider(e);
+        return out;
+    }
+
     bool MapView::hasBossNearArea(int x, int y) const {
         if (!map_ || !boss_)
             return false;
@@ -270,6 +363,11 @@ namespace rp {
     bool MapView::selectEnemy(const EnemyShipPoints& enemy) {
         if (!canMove_ || !visible_ || !isValidIconLocation(enemy.x, enemy.y))
             return false;
+        if (boss_ && boss_->id == enemy.id && boss_->x == enemy.x && boss_->y == enemy.y) {
+            target_ = {float(enemy.x), float(enemy.y)};
+            targetVisible_ = true;
+            return true;
+        }
         auto it = std::find_if(enemies_.begin(), enemies_.end(), [&](const auto& p) {
             return p.id == enemy.id && p.x == enemy.x && p.y == enemy.y;
         });

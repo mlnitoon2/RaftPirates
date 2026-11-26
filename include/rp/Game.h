@@ -45,6 +45,7 @@ namespace rp {
         DiveState diveState;
         BattleModeState onlineBattle;
         std::optional<sfs::SFSObjectWrapper> bossData;
+        std::vector<sfs::SFSObjectWrapper> sonarShips;
         bool sonarPending = false, readyForBattle = false;
         std::optional<sfs::Message> pingSonar();
         int daringRemaining = 0, daringTotal = 0;
@@ -76,7 +77,8 @@ namespace rp {
         sfs::Message buy(int id) const;
         sfs::Message buyStoreItem(int id) const;
         sfs::Message discover(int id);
-        sfs::Message moveMap(int x, int y, bool destinationSafe);
+        sfs::Message moveMap(int x, int y, bool destinationSafe, int enemy = 0,
+                             bool usedSonar = false);
         bool daringLocked() const;
         bool canAdvanceDaring() const;
         double daringProgress() const;

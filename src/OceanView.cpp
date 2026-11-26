@@ -1,4 +1,5 @@
 #include "rp/Game.h"
+#include "rp/GridSprite.h"
 #include "sys/gfx/AssetImage.h"
 #include <cmath>
 #include <algorithm>
@@ -133,29 +134,16 @@ namespace rp {
     Image OceanView::render(const Player& game, float time, bool grid) {
         Image out(640, 400, {36, 133, 168, 255});
         GfxManager mgr;
-        auto load = [&](const std::string& p) {
-            auto it = images_.find(p);
-            if (it == images_.end())
-                it = images_.emplace(p, std::make_shared<Image>(loadAssetImage(root_ / p))).first;
-            return it->second;
-        };
         auto base = [this](const Raft& r) { return WorldToScreen({float(r.x), float(r.y)}); };
-        for (auto& r : game.rafts) {
-            auto b = base(r);
+        for (const auto& r : game.rafts) {
             auto it = game.objects.find(r.type);
             if (it == game.objects.end())
                 continue;
-            try {
-                auto im = load(it->second.asset);
-                GfxSprite s;
-                s.image = im;
-                s.cell = {"raft", 0, 0, im->width, im->height, 0, 0, im->width, im->height, false};
-                s.SetPos(b.x + it->second.offsetX * zoom_, b.y + it->second.offsetY * zoom_);
-                s.SetScale(zoom_, zoom_);
-                s.SetPriority((r.x + r.y) * 100.f);
-                mgr.submit(s);
-            } catch (const std::exception&) {
-            }
+            GridSprite sprite(*this, r, it->second, {float(r.x), float(r.y)}, zoom_);
+            if (r.Destroyed())
+                sprite.SetColour(150, 150, 150, 210);
+            sprite.UpdateAnimations(std::max(0.f, time));
+            sprite.submit(mgr, images_, bins_, animations_, root_, true);
         }
         mgr.RenderScreen(out);
         for (auto& r : game.rafts) {
@@ -174,36 +162,15 @@ namespace rp {
                 if (it == game.objects.end())
                     continue;
                 float x = b.x + (c.x - c.y) * 32 * zoom_, y = b.y + (c.x + c.y + 1) * 16 * zoom_;
-                try {
-                    const auto& path = it->second.asset;
-                    auto a = bins_.find(path);
-                    if (a == bins_.end())
-                        a = bins_
-                                .emplace(path, ResourceAEAnim::Create(root_ / path,
-                                                                      AEFormat::RaftPirates2013))
-                                .first;
-                    auto& bin = a->second;
-                    const AEComp* comp = nullptr;
-                    for (auto& v : bin.comps)
-                        if (v.name == "idle" || v.name == "Idle" ||
-                            v.name.find("idle") != std::string::npos) {
-                            comp = &v;
-                            break;
-                        }
-                    if (!comp && !bin.comps.empty())
-                        comp = &bin.comps.front();
-                    if (comp && comp->width > 0 && comp->height > 0) {
-                        float t = comp->duration() > 0 ? std::fmod(time, comp->duration()) : 0;
-                        float scale = .5f * zoom_;
-                        auto m =
-                            Matrix::translation(x - comp->width * scale / 2,
-                                                y - comp->height * scale * .5f - 12.f * zoom_) *
-                            Matrix::scale(scale, scale);
-                        if (animations_.submit(mgr, bin, *comp, t, m, y) > 0)
-                            continue;
-                    }
-                } catch (const std::exception&) {
-                }
+                GridSprite sprite(*this, c, it->second,
+                                  {float(r.x) + float(c.x) / 6 + 1.f / 12,
+                                   float(r.y) + float(c.y) / 6 + 1.f / 12},
+                                  zoom_);
+                if (c.Destroyed())
+                    sprite.SetColour(150, 150, 150, 180);
+                sprite.UpdateAnimations(std::max(0.f, time));
+                if (sprite.submit(mgr, images_, bins_, animations_, root_, false) > 0)
+                    continue;
                 line(out, int(x - 10), int(y - 10), int(x + 10), int(y + 10), {250, 192, 70, 255});
                 line(out, int(x - 10), int(y + 10), int(x + 10), int(y - 10), {250, 192, 70, 255});
             }

@@ -18,6 +18,7 @@ add_library(raftpirates_game STATIC
     src/BuildModeState.cpp
     src/GridObject.cpp
     src/GridObjectInfo.cpp
+    src/GridSprite.cpp
     src/Player.cpp
     src/Material.cpp
     src/Blueprint.cpp
@@ -38,6 +39,9 @@ add_library(raftpirates_game STATIC
     src/RPMenuHandler.cpp
     src/SparseGrid.cpp
     src/BattleModeState.cpp
+    src/BattlePlacementScreen.cpp
+    src/BattleShipPlacementSprite.cpp
+    src/GfxBattleScreen.cpp
     src/DiscoveryModeState.cpp
     src/StaticDatabases.cpp
     src/StoreDB.cpp
@@ -106,4 +110,8 @@ if(NOT ANDROID AND BUILD_TESTING)
   add_executable(raftpirates_multiplayer_tests tests/multiplayer.cpp)
   target_link_libraries(raftpirates_multiplayer_tests PRIVATE raftpirates_game)
   add_test(NAME raftpirates_multiplayer COMMAND raftpirates_multiplayer_tests)
+  if(RAFT_ASSET_ROOT)
+    add_test(NAME raftpirates_original_battle COMMAND raftpirates_multiplayer_tests "${RAFT_ASSET_ROOT}")
+    add_test(NAME hydra_original_menu_components COMMAND $<TARGET_FILE:hydra_menu_component_tests> "${RAFT_ASSET_ROOT}")
+  endif()
 endif()

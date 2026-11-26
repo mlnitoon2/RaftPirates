@@ -377,8 +377,10 @@ extern "C" JNIEXPORT void JNICALL RP(tick)(JNIEnv* e, jobject obj) {
         }
         music(e, obj,
               rt.view->isDiving() ? "audio/music/underwater.mp3"
-              : rt.game.ready     ? "audio/music/ambient.mp3"
-                                  : "audio/music/theme.mp3");
+              : rt.game.onlineBattle.phase() != rp::BattleModeState::Phase::Idle
+                  ? "audio/music/battle.mp3"
+              : rt.game.ready ? "audio/music/ambient.mp3"
+                              : "audio/music/theme.mp3");
         int gears = rt.view->diveGears();
         bool finished = rt.view->diveFinished();
         if (gears > rt.lastGears)

@@ -107,6 +107,15 @@ namespace rp {
             else
                 bossData.reset();
         }
+        if (cmd == "ping_sonar") {
+            if (p.getSFSArray("infos")) {
+                sonarShips.clear();
+                each(p, "infos", [&](const O& info) {
+                    if (num(info, "user_id") > 0)
+                        sonarShips.push_back(info);
+                });
+            }
+        }
         if (cmd == "ready_for_battle")
             readyForBattle = p.getBool("is_ready", false);
         if (cmd == "ping_sonar" || cmd == "gs_error" || cmd == "gs_encounter")
@@ -353,9 +362,11 @@ namespace rp {
             diveSeconds = 0;
             status = "Dive rejected";
         } else if (cmd == "zone_goto_result") {
-            if (num(p, "success"))
+            if (num(p, "success")) {
                 zone = num(p, "zoneid", pendingZone.value_or(zone));
-            else
+                sonarShips.clear();
+                sonarPending = false;
+            } else
                 status = "Zone travel rejected";
             pendingZone.reset();
         }
@@ -514,7 +525,7 @@ namespace rp {
         return request("discovery_goto", p);
     }
 
-    Message Game::moveMap(int x, int y, bool destinationSafe) {
+    Message Game::moveMap(int x, int y, bool destinationSafe, int enemy, bool usedSonar) {
         if (pendingMap)
             throw std::runtime_error("Wait for previous movement");
         x = std::clamp(x, -95, 95);
@@ -525,8 +536,8 @@ namespace rp {
         p.put("map_y", int32_t(y));
         p.put("safe", destinationSafe);
         p.put("treasure_id", int32_t(0));
-        p.put("enemy_id", int32_t(0));
-        p.put("usedSonar", int32_t(0));
+        p.put("enemy_id", int32_t(std::max(0, enemy)));
+        p.put("usedSonar", int32_t(usedSonar));
         return request("gs_map_move", p);
     }
 

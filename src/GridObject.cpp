@@ -113,7 +113,7 @@ namespace rp {
     }
 
     bool GridObject::Contains(Cell pos, const GridObjectInfo* definition) const {
-        if (!definition)
+        if (!definition || definition->cells.empty())
             return pos.x == x && pos.y == y;
         for (auto c : definition->cells)
             if (int64_t(x) + c.x == pos.x && int64_t(y) + c.y == pos.y)

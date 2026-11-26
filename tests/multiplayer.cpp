@@ -1,4 +1,5 @@
 #include "rp/Game.h"
+#include "rp/GfxBattleScreen.h"
 #include <stdexcept>
 
 namespace {
@@ -17,7 +18,7 @@ namespace {
     }
 } // namespace
 
-int main() {
+int main(int argc, char** argv) {
     rp::Game game;
     game.ready = true;
     O map, boss;
@@ -28,7 +29,19 @@ int main() {
     map.put("boss_data", std::make_shared<O>(boss));
     game.extension("gs_ocean", map);
     check(game.bossData && game.bossData->getInt("battle_points") == 1200, "boss map record");
-    game.objects[1] = rp::GridObjectInfo(1, 0, 100, "Core", "", 0, 0, {});
+    O info;
+    info.put("user_id", int32_t(9));
+    auto infos = std::make_shared<A>();
+    infos->add(std::make_shared<O>(info));
+    O sonar;
+    sonar.put("infos", infos);
+    game.extension("ping_sonar", sonar);
+    check(game.sonarShips.size() == 1, "sonar list");
+    auto move = payload(game.moveMap(15, -8, false, 9, true), "gs_map_move");
+    check(move.getInt("enemy_id") == 9 && move.getInt("usedSonar") == 1 && !move.getBool("safe"),
+          "enemy movement fields");
+    game.extension("gs_ocean", {});
+    game.objects[1] = rp::GridObjectInfo(1, 0, 100, "Core", "gfx/rafts/raft_core", -192, 0, {});
     game.rafts.emplace_back(1, 1, 0, 0, 100, 0, std::vector<rp::Component>{});
     auto& battle = game.onlineBattle;
     using Phase = rp::BattleModeState::Phase;
@@ -55,6 +68,23 @@ int main() {
     check(battle.hasOpponent() && battle.opponent().GetRaftByID(2), "opponent snapshot");
     check(!battle.SendRaftSelection(1, 9, game), "invalid raft");
     check(battle.isBoss(), "boss flag");
+    if (argc == 2) {
+        rp::GfxBattleScreen view(argv[1]);
+        auto image = view.Render(game, 0);
+        check(image.width == 640 && image.height == 400, "battle asset render");
+        view.Select(game, 370, 180);
+        image = view.Render(game, .1f);
+        auto request = payload(view.Select(game, 320, 370), "gs_battle_position");
+        check(request.getInt("attack_x", 9999) != 9999 && request.getInt("attack_y", 9999) != 9999,
+              "battle screen sends position");
+        O ack;
+        ack.put("sync_counter", int32_t(0));
+        ack.put("attack_position_okay", false);
+        game.extension("gs_battle_position", ack);
+        battle.reset();
+        game.extension("gs_start_battle", start);
+        game.extension("gs_opponent", other);
+    }
     auto placement = payload(battle.gotMsgBattleScreenRaftsSelected(2, -1), "gs_battle_position");
     check(placement.getInt("attack_x") == 2 && placement.getInt("attack_y") == -1,
           "position fields");

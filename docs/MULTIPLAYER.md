@@ -28,8 +28,14 @@ The original `gotMsgBattleScreenRaftsSelected` sends `gs_battle_position` with i
 
 `gs_opponent.is_boss` marks a boss encounter. The map's `boss_data` object (`0x44a934`) contains `user_id`, `display_name`, `battle_points`, `zone`, and `raft_info`; the client retains this record and shows the boss name and BP when its zone matches. Exact boss map position and encounter initiation are not yet recovered. No fake boss coordinates, AI, damage or loot are generated.
 
+## Pass 25: battle presentation and map encounters
+
+`BattlePlacementScreen`, `BattleShipPlacementSprite` and `GfxBattleScreen` implement selection, shared-world placement previews, adjacency and collision feedback, opponent and player fleet views, original atlas-backed BP meters, dice selection and retreat confirmation. `GridSprite` draws all pieces of a grid object rather than just the first asset. Visual priorities, camera motion and asset placement remain approximations. Changes to authoritative raft BP trigger a floating damage amount and the original explosion animation; no damage is computed locally for online battles.
+
+The original `MapView::updateBoss` at `0x44a914` reads the boss record without coordinates, and `updateBossGfx` at `0x44759c` selects an unsafe-water square. `updateEnemyShips` at `0x44dbd4` reads sonar `infos`, including IDs, names, fleets, BP and nemesis flags. The reconstruction selects stable unsafe-water squares locally, avoiding player, treasure and other encounter markers. The original `RaftPirates::gotMsgMapMarkerMoved` at `0x4a3e9c` sends `gs_map_move` with `map_x`, `map_y`, boolean `safe`, integer `treasure_id`, integer `enemy_id`, and integer `usedSonar` (0/1). Selecting a reconstructed marker now sends its ID using that existing command. The original random placement distribution and distance thresholds are not reproduced exactly.
+
 ## Current limitations
 
-The battle HUD is still a temporary interface, not the original battle layout. Exact result ownership when raft IDs collide, synchronization ordering, selection after destruction, timing and animation, boss world-map encounter entry, boss phases and reward eligibility are not completely recovered. The server must send authoritative outcomes and implement matching commands. No actual multiplayer server session or complete boss fight was tested.
+The battle controls now use original sprites and font assets, but the complete original battle XML, scripts and layout are not restored. Exact result ownership when raft IDs collide, synchronization ordering, selection after destruction, timing and animation, boss phases and reward eligibility are not completely recovered. The server must send authoritative outcomes and implement matching commands. No actual multiplayer server session or complete boss fight was tested.
 
 `tests/multiplayer.cpp` exercises synthetic map/boss and opponent records, position requests, raft selection, ready gating, dice fields, server-authoritative damage, counter advancement, stance swaps, duplicate handling, retreat, decline and plunder. Host JNI smoke testing checks the login/SFS bridge, not live combat.

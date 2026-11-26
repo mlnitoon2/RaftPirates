@@ -1,12 +1,14 @@
 # Raft Pirates
 
-[![RaftPirates original method-name coverage: 34.4249%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
+[![RaftPirates original method-name coverage: 39.0428%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
 
-**410/1191 original method names (34.4249%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
+**465/1191 original method names (39.0428%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
 
 Unofficial native source reconstruction for game preservation. Engine dependency: [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy).
 
 An experimental source reconstruction of parts of the 2013–2015 Hydra engine and Raft Pirates. The original Java/Dalvik classes and assets are supplied by your existing APK. This is **not** the recovered original source and **not yet a fully playable replacement** for the original native game.
+
+Pass 25 adds original-atlas battle controls, shared-fleet placement previews, selectable boss and sonar markers, server-driven damage effects, and multi-piece grid-object rendering. See [multiplayer reconstruction](docs/MULTIPLAYER.md). Live multiplayer and complete boss progression remain unverified.
 
 ## Native-only Android build
 
@@ -40,7 +42,7 @@ out/lib/arm64-v8a/libraftpirates.so
 
 The script checks ELF64, little-endian, ET_DYN, machine AArch64 and every required JNI export name before copying the output. Use `--minimal` for a native smoke build without optional Lua and FreeType adapters; the original startup and gameplay adapters do not depend on them. It selects API 23, static libc++, and a 16 KiB maximum ELF page size. The resulting file is the intended replacement at `lib/arm64-v8a/libraftpirates.so` in the specific archived APK. **Do not copy the desktop test library into an APK.** Keep the original archive backed up. No signing steps are included.
 
-GitHub Actions successfully built the ARM64 library at commit `3b24e4cacf4f866764eb7fa352808938e384eabd` ([build artifact](https://github.com/mlnitoon2/RaftPirates/actions/runs/45900728166/artifacts/15155158333)). The current source may differ from that build; Pass 24 physical device launch remains unverified. The updated [ARM64 workflow](.github/workflows/android.yml) builds against HydraLegacy, validates the native output, uploads an artifact and commits/replaces `libraftpirates.so` at the root of `main` only after a successful build. Source changes trigger the workflow; it can also be started manually after engine-only changes. Configure the repository variable `RAFT_AUTH_URL` if a public test endpoint is intended; that URL is embedded in the binary, so never put credentials or secret URLs in it. Without an endpoint, the published build cannot authenticate. Older Android target-SDK restrictions, native library packaging, original Java SDK behavior on new Android, and GLES behavior remain possible blockers. This is not guaranteed to launch on an ARM64-only phone.
+GitHub Actions published the Pass 24 ARM64 library in commit `72e7279ed96ddc6a934de1968dcb3b864b2aa1f6`. The current source may differ from that build; Pass 25 physical device launch remains unverified. The updated [ARM64 workflow](.github/workflows/android.yml) builds against HydraLegacy, validates the native output, uploads an artifact and commits/replaces `libraftpirates.so` at the root of `main` only after a successful build. Source changes trigger the workflow; it can also be started manually after engine-only changes. Configure the repository variable `RAFT_AUTH_URL` if a public test endpoint is intended; that URL is embedded in the binary, so never put credentials or secret URLs in it. Without an endpoint, the published build cannot authenticate. Older Android target-SDK restrictions, native library packaging, original Java SDK behavior on new Android, and GLES behavior remain possible blockers. This is not guaranteed to launch on an ARM64-only phone.
 
 ## What the experimental replacement does
 

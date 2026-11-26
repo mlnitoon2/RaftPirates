@@ -1,6 +1,7 @@
 #pragma once
 #include "sys/res/TmxMap.h"
 #include "rp/GridObject.h"
+#include "sfs/SFSObjectWrapper.h"
 #include "sys/gfx/Gfx.h"
 
 namespace rp {
@@ -55,11 +56,28 @@ namespace rp {
 
         struct EnemyShipPoints {
             int id = 0, x = 0, y = 0;
+            std::string name;
+            int battlePoints = 0;
+            bool nemesis = false;
         };
 
         void clearEnemyShips();
         void updateEnemyShips(std::vector<EnemyShipPoints> enemies);
         void updateBoss(std::optional<EnemyShipPoints> boss);
+        void updateBoss(const std::optional<sfs::SFSObjectWrapper>& boss, int zone);
+        void updateBossGfx(EnemyShipPoints& boss);
+        void updateEnemyShips(const std::vector<sfs::SFSObjectWrapper>& records);
+        bool hasSonarIconNearArea(int x, int y) const;
+        const EnemyShipPoints* enemyAt(float x, float y) const;
+
+        const std::vector<EnemyShipPoints>& enemyShips() const {
+            return enemies_;
+        }
+
+        const std::optional<EnemyShipPoints>& boss() const {
+            return boss_;
+        }
+
         bool hasBossNearArea(int x, int y) const;
         void snapPlayerToBoss(float& x, float& y) const;
         void snapPlayerToEnemyShips(float& x, float& y) const;

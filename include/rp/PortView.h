@@ -5,6 +5,7 @@
 #include "rp/MapView.h"
 #include "rp/LoadingManager.h"
 #include "rp/BattleModeState.h"
+#include "rp/GfxBattleScreen.h"
 #include "rp/DiscoveryModeState.h"
 #include "rp/TouchControls.h"
 
@@ -43,6 +44,8 @@ namespace rp {
         std::unique_ptr<Hud> hud_;
         std::unique_ptr<diving_game::DivingGame> diving_;
         std::unique_ptr<BattleModeState> battle_;
+        std::unique_ptr<GfxBattleScreen> battleScreen_;
+        bool onlineBattleActive_ = false;
         std::unique_ptr<DiscoveryModeState> discovery_;
         size_t ownBattleIndex_ = 0, enemyBattleIndex_ = 0;
         int battleDice_ = 1;

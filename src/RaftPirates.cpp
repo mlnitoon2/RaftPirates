@@ -33,6 +33,8 @@ namespace rp {
         token.clear();
         onlineBattle.reset();
         sonarPending = readyForBattle = false;
+        sonarShips.clear();
+        bossData.reset();
         queued_.clear();
         status = "Disconnected";
     }

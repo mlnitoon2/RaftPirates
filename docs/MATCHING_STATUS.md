@@ -4,7 +4,7 @@ Generated from defined function symbols. Name coverage is unique qualified metho
 
 | Original build | Names matched | Coverage | Names with signature overlap | Binary match |
 |---|---:|---:|---:|---|
-| Raft Pirates 2013 | 410/1191 | 34.4249% | 196 | Not compared |
+| Raft Pirates 2013 | 465/1191 | 39.0428% | 223 | Not compared |
 
 ## Raft Pirates 2013
 
@@ -18,9 +18,9 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::BattleArrowSprite` | 0/3 | 0.00% | 0 |
 | `rp::BattleModeState` | 17/31 | 54.84% | 9 |
 | `rp::BattleModeState::BattleDice` | 0/2 | 0.00% | 0 |
-| `rp::BattlePlacementScreen` | 0/15 | 0.00% | 0 |
+| `rp::BattlePlacementScreen` | 12/15 | 80.00% | 5 |
 | `rp::BattlePointsViewSprite` | 0/4 | 0.00% | 0 |
-| `rp::BattleShipPlacementSprite` | 0/23 | 0.00% | 0 |
+| `rp::BattleShipPlacementSprite` | 12/23 | 52.17% | 3 |
 | `rp::Blueprint` | 5/6 | 83.33% | 3 |
 | `rp::BlueprintInfo` | 0/1 | 0.00% | 0 |
 | `rp::BlueprintsDB` | 8/8 | 100.00% | 4 |
@@ -41,7 +41,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::FootprintSprite` | 0/7 | 0.00% | 0 |
 | `rp::FootprintSprite::SpriteFootprint` | 0/1 | 0.00% | 0 |
 | `rp::GfxBattleInfoDropDown` | 0/5 | 0.00% | 0 |
-| `rp::GfxBattleScreen` | 0/11 | 0.00% | 0 |
+| `rp::GfxBattleScreen` | 6/11 | 54.55% | 4 |
 | `rp::GfxOceanCheckerBoard` | 0/6 | 0.00% | 0 |
 | `rp::GfxOceanGradient` | 0/7 | 0.00% | 0 |
 | `rp::GfxOceanGrid` | 0/6 | 0.00% | 0 |
@@ -52,7 +52,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::GridObjectInfo` | 1/1 | 100.00% | 0 |
 | `rp::GridObjectPiece` | 2/2 | 100.00% | 1 |
 | `rp::GridObjectsDB` | 7/8 | 87.50% | 1 |
-| `rp::GridSprite` | 0/33 | 0.00% | 0 |
+| `rp::GridSprite` | 23/33 | 69.70% | 15 |
 | `rp::GridSprite::SpritePiece` | 0/1 | 0.00% | 0 |
 | `rp::ItemOnRaftPlacementSprite` | 0/3 | 0.00% | 0 |
 | `rp::ItemPlacementSprite` | 0/7 | 0.00% | 0 |
@@ -64,7 +64,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::LoaderSpriteSheet` | 0/5 | 0.00% | 0 |
 | `rp::LoaderXml` | 0/5 | 0.00% | 0 |
 | `rp::LoadingManager` | 13/13 | 100.00% | 6 |
-| `rp::MapView` | 35/46 | 76.09% | 15 |
+| `rp::MapView` | 37/46 | 80.43% | 15 |
 | `rp::MapView::EnemyShipPoints` | 0/2 | 0.00% | 0 |
 | `rp::MapView::TreasureMapPoints` | 0/1 | 0.00% | 0 |
 | `rp::Material` | 5/6 | 83.33% | 4 |
@@ -311,6 +311,30 @@ Matched names:
 - `rp::BattleModeState::gotMsgExitBattleModeRequest`
 - `rp::BattleModeState::tick`
 - `rp::BattleModeState::~BattleModeState`
+- `rp::BattlePlacementScreen::BattlePlacementScreen`
+- `rp::BattlePlacementScreen::GetClosestPosition`
+- `rp::BattlePlacementScreen::GetWorldPosition`
+- `rp::BattlePlacementScreen::OkayToPlace`
+- `rp::BattlePlacementScreen::Pieces`
+- `rp::BattlePlacementScreen::Reset`
+- `rp::BattlePlacementScreen::Select`
+- `rp::BattlePlacementScreen::SetPosition`
+- `rp::BattlePlacementScreen::SetToObject`
+- `rp::BattlePlacementScreen::Update`
+- `rp::BattlePlacementScreen::gotMsgRequestBattlePlacementState`
+- `rp::BattlePlacementScreen::~BattlePlacementScreen`
+- `rp::BattleShipPlacementSprite::BattleShipPlacementSprite`
+- `rp::BattleShipPlacementSprite::GetClosestPosition`
+- `rp::BattleShipPlacementSprite::HighlightRaftsNextTo`
+- `rp::BattleShipPlacementSprite::OkayToPlace`
+- `rp::BattleShipPlacementSprite::OnlyNextToWreckage`
+- `rp::BattleShipPlacementSprite::Pieces`
+- `rp::BattleShipPlacementSprite::Revert`
+- `rp::BattleShipPlacementSprite::SelectRaft`
+- `rp::BattleShipPlacementSprite::SetObjectPosition`
+- `rp::BattleShipPlacementSprite::SetPositionOfSprites`
+- `rp::BattleShipPlacementSprite::Update`
+- `rp::BattleShipPlacementSprite::~BattleShipPlacementSprite`
 - `rp::Blueprint::Blueprint`
 - `rp::Blueprint::id`
 - `rp::Blueprint::init`
@@ -380,6 +404,12 @@ Matched names:
 - `rp::DivingUnit::numAvailableBonusMaterials`
 - `rp::DivingUnit::numCollectedBonusMaterials`
 - `rp::DivingUnit::~DivingUnit`
+- `rp::GfxBattleScreen::GfxBattleScreen`
+- `rp::GfxBattleScreen::Render`
+- `rp::GfxBattleScreen::SwoopIn`
+- `rp::GfxBattleScreen::SwoopOut`
+- `rp::GfxBattleScreen::tick`
+- `rp::GfxBattleScreen::~GfxBattleScreen`
 - `rp::GridObject::Beside`
 - `rp::GridObject::Contains`
 - `rp::GridObject::Destroyed`
@@ -408,6 +438,29 @@ Matched names:
 - `rp::GridObjectsDB::initWithSFSObject`
 - `rp::GridObjectsDB::load`
 - `rp::GridObjectsDB::save`
+- `rp::GridSprite::AddAnimSlack`
+- `rp::GridSprite::Alpha`
+- `rp::GridSprite::Attack`
+- `rp::GridSprite::ContainsGfx`
+- `rp::GridSprite::GetMaxOrder`
+- `rp::GridSprite::GetOrder`
+- `rp::GridSprite::GetPriority`
+- `rp::GridSprite::GetVisible`
+- `rp::GridSprite::GetWorldPosition`
+- `rp::GridSprite::GridSprite`
+- `rp::GridSprite::HasAttack`
+- `rp::GridSprite::Init`
+- `rp::GridSprite::Pieces`
+- `rp::GridSprite::Select`
+- `rp::GridSprite::SetAnimation`
+- `rp::GridSprite::SetColour`
+- `rp::GridSprite::SetOrder`
+- `rp::GridSprite::SetPriorities`
+- `rp::GridSprite::SetPriority`
+- `rp::GridSprite::SetVisible`
+- `rp::GridSprite::Update`
+- `rp::GridSprite::UpdateAnimations`
+- `rp::GridSprite::~GridSprite`
 - `rp::LoadingManager::LoadingManager`
 - `rp::LoadingManager::addAEAnim`
 - `rp::LoadingManager::addManifest`
@@ -430,6 +483,7 @@ Matched names:
 - `rp::MapView::getUnsafeSquares`
 - `rp::MapView::hasBossNearArea`
 - `rp::MapView::hasPlayerNearArea`
+- `rp::MapView::hasSonarIconNearArea`
 - `rp::MapView::hasXNearArea`
 - `rp::MapView::hideMap`
 - `rp::MapView::isPosInSafeWater`
@@ -453,6 +507,7 @@ Matched names:
 - `rp::MapView::touchDrag`
 - `rp::MapView::touchUp`
 - `rp::MapView::updateBoss`
+- `rp::MapView::updateBossGfx`
 - `rp::MapView::updateEnemyShips`
 - `rp::MapView::updateTreasureMapPoints`
 - `rp::MapView::~MapView`
