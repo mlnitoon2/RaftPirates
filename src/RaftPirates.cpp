@@ -52,6 +52,8 @@ namespace rp {
         connecting_ = false;
         connected_ = true;
         status = "Loading player";
+        if (processing_)
+            setNetworkMsgProcessingEnabled(true);
     }
 
     void RaftPirates::gotMsgOnLoginError() {
@@ -60,7 +62,7 @@ namespace rp {
     }
 
     void RaftPirates::gotMsgOnRoomJoin() {
-        if (connected_)
+        if (connected_ || connecting_)
             roomJoined_ = true;
     }
 
@@ -76,7 +78,7 @@ namespace rp {
                                                 const sfs::SFSObjectWrapper& data) {
         if (!connected_ && !connecting_)
             return;
-        if (!processing_) {
+        if (!processing_ || !connected_) {
             if (queued_.size() >= 1024)
                 throw std::runtime_error("Network queue limit");
             queued_.push_back(Game::request(command, data));
@@ -87,7 +89,7 @@ namespace rp {
 
     void RaftPirates::setNetworkMsgProcessingEnabled(bool enabled) {
         processing_ = enabled;
-        while (processing_ && !queued_.empty()) {
+        while (connected_ && processing_ && !queued_.empty()) {
             auto packet = std::move(queued_.front());
             queued_.pop_front();
             accept(packet);
@@ -113,7 +115,7 @@ namespace rp {
     }
 
     bool RaftPirates::checkKeepAlive(float elapsed) {
-        return connected_ && ready && elapsed >= 20;
+        return connected_ && std::isfinite(elapsed) && elapsed >= 30;
     }
 
     bool RaftPirates::GotMsgBadZoneStatusRequest() {

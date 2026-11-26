@@ -70,7 +70,7 @@ namespace rp {
 
     Message Game::login(const std::string& id, const std::string& hash) const {
         O o, p;
-        p.put("client_version", "1.0.0");
+        p.put("client_version", "1.0.4");
         p.put("last_updated", int64_t(0));
         p.put("language", int32_t(0));
         o.put("zn", "RaftPirates");
@@ -120,6 +120,16 @@ namespace rp {
             readyForBattle = p.getBool("is_ready", false);
         if (cmd == "ping_sonar" || cmd == "gs_error" || cmd == "gs_encounter")
             sonarPending = false;
+        if (cmd == "gs_error") {
+            // Legacy generic rejection has no correlation ID. Release pending actions without
+            // applying optimistic movement or construction.
+            pending.reset();
+            pendingMove.reset();
+            pendingZone.reset();
+            pendingDiscovery.reset();
+            pendingMap.reset();
+            status = p.getString("message", "Request rejected");
+        }
         if (onlineBattle.HandleExtensionResponse(cmd, p, *this))
             return;
         if (cmd == "lib_go_data") {
@@ -169,8 +179,9 @@ namespace rp {
             knownDiscoveries = p.getString("discoveries");
         else if (cmd == "gs_player") {
             auto o = p.getSFSObj("player_object");
-            if (!o)
-                throw std::runtime_error("gs_player lacks player_object");
+            if (!o || !o->getSFSArray("rafts") || !o->getSFSArray("materials") ||
+                !o->getSFSArray("blueprints"))
+                throw std::runtime_error("Incomplete gs_player snapshot");
             initWithSFSObject(*o);
             zone = num(p, "zone_id", 1);
             mapX = std::clamp(num(p, "map_x"), -95, 95);
@@ -224,9 +235,9 @@ namespace rp {
                 q->second.setProgressPercentage(num(p, "progress", q->second.progress));
         } else if (cmd == "gs_ocean") {
             setSafe(p.getBool("safe_water", safe));
-            if (pendingMap) {
-                mapX = pendingMap->x;
-                mapY = pendingMap->y;
+            if (pendingMap || p.get("map_x") || p.get("map_y")) {
+                mapX = std::clamp(num(p, "map_x", pendingMap ? pendingMap->x : mapX), -95, 95);
+                mapY = std::clamp(num(p, "map_y", pendingMap ? pendingMap->y : mapY), -95, 95);
                 pendingMap.reset();
             }
             if (p.getString("eventType") == "discovery")

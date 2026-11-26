@@ -4,94 +4,80 @@
 
 **465/1191 original method names (39.0428%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
 
-Unofficial native source reconstruction for game preservation. Engine dependency: [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy).
+An unofficial C++ source reconstruction of Raft Pirates for research and game preservation, built on [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy). The project is not the recovered original source and is not a complete or binary-equivalent replacement. Original Java classes and resources are supplied by a locally available, compatible APK; they are not distributed by this repository.
 
-An experimental source reconstruction of parts of the 2013–2015 Hydra engine and Raft Pirates. The original Java/Dalvik classes and assets are supplied by your existing APK. This is **not** the recovered original source and **not yet a fully playable replacement** for the original native game.
+## Build for Android
 
-Pass 25 adds original-atlas battle controls, shared-fleet placement previews, selectable boss and sonar markers, server-driven damage effects, and multi-piece grid-object rendering. See [multiplayer reconstruction](docs/MULTIPLAYER.md). Live multiplayer and complete boss progression remain unverified.
-
-## Native-only Android build
-
-Clone both repositories next to each other (not nested):
+Requires an Android SDK, NDK r28c (28.2.13676358), CMake 3.22.1, Python 3 and a JDK for SDK tooling. Clone the two repositories side by side:
 
 ```sh
 git clone https://github.com/mlnitoon2/HydraLegacy.git
 git clone https://github.com/mlnitoon2/RaftPirates.git
 cd RaftPirates
+python build_arm64.py --sdk /path/to/android-sdk
 ```
 
-The default engine checkout is `../HydraLegacy`. To choose another location pass `--hydra` to the Python build script or `-DHYDRA_LEGACY_DIR=/path/to/HydraLegacy` to CMake. Use the current HydraLegacy main branch for compatible targets.
+`--install-tools` installs the required NDK and CMake through the existing SDK manager. `--hydra` selects an alternative engine checkout; `--minimal` disables optional Lua and FreeType adapters. The native build targets API 23, static libc++ and a 16 KiB maximum ELF page size. Output:
 
-The two repositories are independent CMake targets. The game links Hydra and the separate `sfs_legacy` library statically, plus their JNI adapters on Android. The root build produces one shared library named `libraftpirates.so`. It does not build an APK, modify the original APK, create a Java frontend or sign anything.
-
-Use Android NDK r28c (or compatible NDK) and CMake, not Visual Studio or Android Studio. On Windows, if the SDK is already at `C:\godot-android`, run:
-
-```powershell
-python build_arm64.py --sdk "C:\godot-android" --auth-url "http://YOUR_TEST_SERVER:900/"
-```
-
-Pass 21 requires a configured private BBB authentication endpoint (a base URL or a complete `auth.php` URL). If left empty, the menu displays an error instead of connecting. Legacy GET authentication sends credentials in the URL: use a private test-only account and HTTPS where available. For local HTTP on modern Android, the original APK may require a cleartext-network compatibility configuration. Retain the Apache HTTP compatibility library and obsolete billing fixes from your working APK.
-
-If that SDK has its command-line tools and Java installed, but lacks NDK/CMake, add `--install-tools`. This installs only those two SDK packages and accepts SDK licenses interactively. First native configure downloads the pinned Expat and libpng source packages. The NDK itself supplies Clang and zlib. The SDK tools need a JDK only for the SDK manager; the native compilation does not compile Java. No IDE is required.
-
-Output on successful compilation:
-
-```
+```text
 out/lib/arm64-v8a/libraftpirates.so
 ```
 
-The script checks ELF64, little-endian, ET_DYN, machine AArch64 and every required JNI export name before copying the output. Use `--minimal` for a native smoke build without optional Lua and FreeType adapters; the original startup and gameplay adapters do not depend on them. It selects API 23, static libc++, and a 16 KiB maximum ELF page size. The resulting file is the intended replacement at `lib/arm64-v8a/libraftpirates.so` in the specific archived APK. **Do not copy the desktop test library into an APK.** Keep the original archive backed up. No signing steps are included.
+The build checks the ARM64 ELF header and required JNI symbols. The library is intended for `lib/arm64-v8a/libraftpirates.so` in a compatible APK. APK packaging, Java compatibility changes and signing are outside the scope of the native build.
 
-GitHub Actions published the Pass 24 ARM64 library in commit `72e7279ed96ddc6a934de1968dcb3b864b2aa1f6`. The current source may differ from that build; Pass 25 physical device launch remains unverified. The updated [ARM64 workflow](.github/workflows/android.yml) builds against HydraLegacy, validates the native output, uploads an artifact and commits/replaces `libraftpirates.so` at the root of `main` only after a successful build. Source changes trigger the workflow; it can also be started manually after engine-only changes. Configure the repository variable `RAFT_AUTH_URL` if a public test endpoint is intended; that URL is embedded in the binary, so never put credentials or secret URLs in it. Without an endpoint, the published build cannot authenticate. Older Android target-SDK restrictions, native library packaging, original Java SDK behavior on new Android, and GLES behavior remain possible blockers. This is not guaranteed to launch on an ARM64-only phone.
+The [Android workflow](.github/workflows/android.yml) compiles both repositories, validates the result and publishes the rebuilt `libraftpirates.so` at the repository root after a successful build. [Build history](https://github.com/mlnitoon2/RaftPirates/actions).
 
-## What the experimental replacement does
+## Network configuration
 
-The native `RaftPirates` session coordinator manages login lifecycle, packet deferral, disconnect cleanup and pause/keep-alive state.
+The authentication endpoint is read at runtime from `assets/xml_resources/properties.xml` in the APK:
 
-Drag on the open ocean to pan the raft camera; a drag does not also place a component. Construction actions check the selected blueprint and object, and the StoreDB validates store library snapshots. Diving keeps authoritative state and a local display countdown. See [local play](docs/LOCAL_PLAY.md).
+```xml
+<Properties>
+    <Property key="SERVER_IP" value="https://auth.example.org/" />
+</Properties>
+```
 
-Static library packets are validated by typed catalogue classes. An explicit library-cache API, resource-manifest preloader, construction-time helpers and map selection helpers support the existing gameplay; see [class reconstruction notes](docs/CLASS_RECONSTRUCTION.md).
+A bare hostname defaults to HTTPS. A complete HTTP(S) URL or an explicit `auth.php` URL is accepted. An optional `--auth-url` build argument (or `RAFT_AUTH_URL` CMake cache setting / Actions repository variable) overrides the XML. A default build requires no compiled-in private endpoint. The original `MyLib.getAuthURL()` separately returns the website base recovered from the ARM32 binary.
 
-- Matches all 94 native declarations in the exact archived APK, including 91 exports found in its original ELF. This is JNI name/signature coverage, not complete game implementation. 25 callbacks have implementations or partial behavior; 69 are unsupported compatibility stubs, visibly logged if called. `getAuthURL()` exposes the configured private authentication URL. Original C++ object ABI is not reproduced.
-- Uses `MyLib.init(String,int,int,float,float)` to extract APK assets to app-private cache. No new APK assets need to be added. The original APK supplies its existing Java `GLSurfaceView`, keyboard activity and SmartFox Java SDK.
-- Presents the original BBB splash, title, loading curtains, login-method, email login, registration and status popup layouts and normal HUD using original XML, animation and atlas assets. The research interface remains for some in-game shop, construction panels and map controls. A CPU renderer is used, not the complete original GPU engine.
-- Set Sail opens the original loading/login screens. Email authentication uses the recovered legacy `auth.php` request and validates the returned BBB ID, session and server IP before connecting via the APK's existing SmartFox Java SDK. Registration sends a reconstructed legacy registration request; the UI requires a subsequent login. The server decides success. Facebook, password reset, remembered-login storage and exact first-launch/returning-player ordering are not restored. Port 9933 is fixed. No account credentials are persisted by this bridge.
-- Incoming libraries/player packets, raft health and battle-point totals, map movement, placement, basic blueprint purchases, dive start/collection, build completion, repair response state, and discovery response state are represented in C++ to varying degrees. Not all actions have controls. Placement and purchase use temporary controls with original item sprite thumbnails, not the complete original shop. Map rendering and safe-water testing are approximate; normalized map wire keys are verified. No actual player persistence.
-- The diagnostic Connect and OFFLINE PLAY controls have been removed from the Android flow. The in-memory sandbox is retained only in the C++ desktop preview and regression tests; no offline mode is exposed in the APK.
-- A playable diving reconstruction uses original sprite resources, with drag movement, gears, mines, timing and collection. Mechanics and scoring are provisional; online salvage is server-authoritative.
-- The original Java audio backend receives theme, ambient and diving music calls and menu/gear/finish effects. Desktop JNI mock validates calls, not actual audio playback. Construction controls support repair and clocks using recovered request fields. Battle outcome application updates hull/component BP and state. Local practice battles in pirate water support attacks, retaliation, win/loss and a one-time gold reward. The Barnacle Bill discovery displays its original animation and supports return to the ocean. Discovery quest rewards remain unimplemented. The separate online transport now sends reconstructed battle actions; it does not grant practice rewards online.
-- Pass 23 adds sonar, encounter response, opponent snapshots, raft selection, ready, attack/defend dice, retreat and plunder requests using the original SmartFox extension transport. The controls and server state machine are experimental. See [multiplayer protocol evidence](docs/MULTIPLAYER.md); live two-client combat, damage ownership and exact turn progression remain unverified.
-- Remaining original menus, full Lua API, exact diving behavior, original multiplayer/boss combat, discovery quest/reward flow, social platform functions, advertising/billing integrations, and many more native behaviors remain missing.
+Authentication uses the legacy BBB `auth.php` request and the returned `bbbId`, `sessId` and `serverIp`. The existing SmartFox Java SDK connects to that game host on port 9933 and logs in to the `RaftPirates` zone. A cold launch displays the splash and title screen; selecting Set Sail opens login, and gameplay starts only after successful login and a valid player snapshot. See [networking and startup](docs/STARTUP_AND_GAMEPLAY.md).
 
-## Verify locally (desktop)
+The historical endpoints are not guaranteed to be operational. Use authorized test servers and test-only accounts. Legacy GET authentication includes credentials in the URL; HTTPS is recommended, and no automatic downgrade to HTTP is performed. Plain HTTP requires a compatible Android network policy. Credentials and private server URLs must not be committed.
 
-On Linux with CMake, Ninja, C++17, zlib/Expat/libpng development headers, and an optional JDK:
+## Implemented functionality
+
+| Subsystem | Status |
+|---|---|
+| Startup | Original asset-based splash, title, loading, email, registration and status menus |
+| Networking | BBB authentication, SmartFox JNI handoff, typed extension requests, initial packet queue, disconnect cleanup and SDK keep-alive |
+| Player state | Static libraries, player snapshot, inventory, blueprints, raft and component state |
+| Gameplay | Partial construction, repairs, travel, diving, discovery, shop and quest interfaces |
+| Combat | Sonar and boss markers, encounters, battle placement, dice requests, damage updates and provisional asset-based battle UI |
+| Engine | Software rendering, original assets, animation, menu layout and localization through HydraLegacy |
+| Android bridge | 94 native declarations matched; some callbacks are explicit unsupported stubs |
+
+The desktop sandbox is retained for testing only. The Android flow has no offline-play or manual session-token entry screen. Facebook, account recovery, remembered login, complete original menu/Lua behavior, full multiplayer and boss progression remain incomplete. See [multiplayer](docs/MULTIPLAYER.md), [HUD](docs/HUD.md), [class reconstruction](docs/CLASS_RECONSTRUCTION.md) and [port notes](docs/PORT_NOTES.md).
+
+## Test on desktop
+
+Requires C++17, CMake, Ninja, zlib, Expat, libpng and a JDK for JNI tests. Optional Lua and FreeType are provided by the engine build configuration.
 
 ```sh
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DHYDRA_DESKTOP_JNI=ON -DRAFT_AUTH_URL=http://127.0.0.1:19090/
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DHYDRA_DESKTOP_JNI=ON
 cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 python tests/java/smoke.py build/libraftpirates.so /path/to/original.apk
 ```
 
-The smoke test uses a local HTTP fixture, generated Java test doubles with recovered signatures and synthetic SFS fixtures. Configure the auth URL shown above to run it. Optional `-DRAFT_ASSET_ROOT=/path/to/extracted/assets` enables original-asset menu tests. It is not an Android/real-server test. If you only need the portable runtime, omit `HYDRA_DESKTOP_JNI` and the Java smoke test. Windows desktop builds can use MSYS2 (see [HydraLegacy build guide](https://github.com/mlnitoon2/HydraLegacy/blob/main/docs/BUILDING.md)).
+The smoke test creates a temporary fixture APK with a loopback `SERVER_IP` property and uses generated Java SDK doubles. Build without an auth override for this test. `-DRAFT_ASSET_ROOT=/path/to/extracted/assets` enables original-asset integration tests. See [asset preparation](docs/ASSETS.md) and the [engine build guide](https://github.com/mlnitoon2/HydraLegacy/blob/main/docs/BUILDING.md).
 
-See [matching status](docs/MATCHING_STATUS.md) for the measured method-name and signature overlap (not binary equivalence) and [local gameplay](docs/LOCAL_PLAY.md) for the sandbox.
-
-The [normal HUD adapter](docs/HUD.md) describes supported actions and optional real-asset integration tests.
-
-Read the [engine README](https://github.com/mlnitoon2/HydraLegacy) and [game port notes](docs/PORT_NOTES.md). Original assets and native binaries are not distributed. See [local asset preparation](docs/ASSETS.md) for extracting the APK into a gitignored directory. The two directories contain source and research reference data only.
+These tests verify host behavior and protocol fixtures, not live multiplayer, Android device compatibility or server availability. Coverage is method-name overlap only.
 
 ## Project layout
 
-- `include/rp/`, `src/`: reconstructed game state, protocol and research view.
-- `android/`: original-APK JNI compatibility bridge.
-- `tests/`: C++ protocol and mock Java integration tests.
-- `tools/`: JNI descriptor inventory and stub generator.
-- `evidence/`: recovered JNI descriptors and test reports.
+- `include/rp/`, `src/`: portable game state, protocol handling and views.
+- `android/`: game-specific JNI callbacks, lifecycle and authentication adapter.
+- `tests/`: native regressions and desktop Java integration tests.
+- `tools/`: asset and JNI inventory utilities.
+- `evidence/`, `docs/`: reconstruction evidence and design notes.
 
-No license for the new reconstruction code has been selected. Original game and engine belong to their respective rights holders; this project is unofficial. Do not commit original APKs, proprietary scripts, credentials or private server data.
-
-## Playable scope
-
-The tested desktop sandbox supports entering the game, purchasing available store items, inspecting quest records and progress, expanding the raft along free hull edges, placing and moving components, repairs and clocks, sailing between water tiles, travelling to the second zone, diving for salvage, and advancing the daring meter. The original Java API is exercised through a host mock; the offline quest is deliberately synthetic. The user confirmed the earlier ARM64 build launches after Java compatibility fixes; Pass 23 itself is not yet tested on a physical device. Complete combat and boss progression are not implemented.
+Generic platform rendering, audio and JNI utilities live in HydraLegacy; its separate SFS library provides the Java SDK adapter. The repository publishes only rebuilt native output, not the original proprietary binaries, scripts or art. Raft Pirates and Hydra belong to their respective rights holders. This project is unofficial; no license for the new reconstruction code has been selected.

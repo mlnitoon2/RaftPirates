@@ -12,11 +12,20 @@ int main() {
     rp::RaftPirates game;
     game.DoConnect();
     game.gotMsgOnConnection(true);
+    sfs::SFSObjectWrapper early;
+    early.put("bad", int32_t(1));
+    game.gotMsgOnExtensionResponse("zonestatus", early);
+    check(!game.GotMsgBadZoneStatusRequest());
     game.gotMsgOnLogin();
+    check(game.GotMsgBadZoneStatusRequest());
+    early.put("bad", int32_t(0));
+    game.gotMsgOnExtensionResponse("zonestatus", early);
     game.gotMsgOnRoomJoin();
     check(game.connected() && game.roomJoined());
+    check(!game.checkKeepAlive(29) && game.checkKeepAlive(30));
+    check(game.login("10", "session").payload.getSFSObj("p")->getString("client_version") ==
+          "1.0.4");
     game.ready = true;
-    check(!game.checkKeepAlive(19) && game.checkKeepAlive(20));
     sfs::SFSObjectWrapper packet;
     packet.put("bad", int32_t(1));
     game.gotMsgEnableNetworkProcessing(false);
@@ -31,6 +40,26 @@ int main() {
     game.Pause(false);
     game.tick(1);
     check(game.daringRemaining == 9);
+    game.pendingMap = rp::Cell{1, 1};
+    game.pendingZone = 2;
+    game.pending = rp::PendingBuild{};
+    game.gotMsgOnExtensionResponse("gs_error", {});
+    check(!game.pendingMap && !game.pendingZone && !game.pending);
+    game.pendingMap = rp::Cell{1, 1};
+    sfs::SFSObjectWrapper ocean;
+    ocean.put("map_x", int32_t(3));
+    ocean.put("map_y", int32_t(4));
+    game.gotMsgOnExtensionResponse("gs_ocean", ocean);
+    check(game.mapX == 3 && game.mapY == 4 && !game.pendingMap);
+    sfs::SFSObjectWrapper invalid;
+    invalid.put("player_object", std::make_shared<sfs::SFSObjectWrapper>());
+    bool rejected = false;
+    try {
+        game.gotMsgOnExtensionResponse("gs_player", invalid);
+    } catch (const std::runtime_error&) {
+        rejected = true;
+    }
+    check(rejected && game.ready && game.mapX == 3 && game.mapY == 4);
     game.pendingMap = rp::Cell{1, 1};
     game.gotMsgOnConnectionLost();
     check(!game.ready && !game.connected() && !game.pendingMap);

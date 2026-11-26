@@ -9,7 +9,7 @@ namespace rp::auth {
         bool registered = false;
     };
 
-    std::string endpoint();
-    std::future<Result> request(JNIEnv*, std::string email, std::string password,
-                                bool registration = false);
+    std::string endpoint(const std::string& server);
+    std::future<Result> request(JNIEnv*, std::string address, std::string email,
+                                std::string password, bool registration = false);
 } // namespace rp::auth

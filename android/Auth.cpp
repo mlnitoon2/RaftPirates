@@ -45,10 +45,9 @@ namespace rp::auth {
             return j;
         }
 
-        Result fetch(JNIEnv* e, const std::string& email, const std::string& password,
-                     bool registration, jclass jsonClass) {
+        Result fetch(JNIEnv* e, const std::string& base, const std::string& email,
+                     const std::string& password, bool registration, jclass jsonClass) {
             LocalFrame frame(e);
-            auto base = endpoint();
             if (base.empty())
                 return {{}, {}, {}, "Authentication server is not configured."};
             auto u = encode(email), p = encode(password);
@@ -142,27 +141,37 @@ namespace rp::auth {
             };
             Result result{get("bbbId"), get("sessId"), get("serverIp"), {}};
             if (result.id.empty() || result.session.empty() || result.host.empty() ||
-                result.host.find_first_of("/\\ \t\r\n") != std::string::npos)
+                result.host.find_first_of("/\\@?# \t\r\n") != std::string::npos)
                 return {{}, {}, {}, "Authentication response is missing required fields."};
             return result;
         }
     } // namespace
 
-    std::string endpoint() {
+    std::string endpoint(const std::string& server) {
         std::string s = RAFT_AUTH_URL;
-        if (s.rfind("https://", 0) != 0 && s.rfind("http://", 0) != 0)
+        if (s.empty())
+            s = server;
+        if (s.empty() || s.find_first_of("?#@\\ \t\r\n") != std::string::npos)
             return {};
-        if (s.find_first_of("?#\r\n") != std::string::npos)
+        // Host-only properties use HTTPS; explicitly configured HTTP is supported for test servers.
+        if (s.find("://") == std::string::npos)
+            s = "https://" + s;
+        const bool https = s.rfind("https://", 0) == 0;
+        if (!https && s.rfind("http://", 0) != 0)
             return {};
-        if (s.size() >= 8 && s.substr(s.size() - 8) == "auth.php")
+        const auto start = https ? 8u : 7u;
+        const auto slash = s.find('/', start);
+        if (s.size() <= start || slash == start)
+            return {};
+        if (s.size() >= 9 && s.substr(s.size() - 9) == "/auth.php")
             return s;
         if (s.back() != '/')
             s += '/';
         return s + "auth.php";
     }
 
-    std::future<Result> request(JNIEnv* e, std::string email, std::string password,
-                                bool registration) {
+    std::future<Result> request(JNIEnv* e, std::string address, std::string email,
+                                std::string password, bool registration) {
         JavaVM* vm = nullptr;
         if (e->GetJavaVM(&vm) != JNI_OK)
             throw std::runtime_error("Java VM unavailable");
@@ -172,8 +181,9 @@ namespace rp::auth {
         check(e, "auth JSON class");
         std::promise<Result> promise;
         auto future = promise.get_future();
-        std::thread([vm, promise = std::move(promise), email = std::move(email),
-                     password = std::move(password), registration, jsonClass]() mutable {
+        std::thread([vm, promise = std::move(promise), address = std::move(address),
+                     email = std::move(email), password = std::move(password), registration,
+                     jsonClass]() mutable {
             JNIEnv* env = nullptr;
 #ifdef __ANDROID__
             auto rc = vm->AttachCurrentThread(&env, nullptr);
@@ -186,7 +196,7 @@ namespace rp::auth {
             }
             Result r;
             try {
-                r = fetch(env, email, password, registration, jsonClass);
+                r = fetch(env, address, email, password, registration, jsonClass);
             } catch (...) {
                 if (env->ExceptionCheck())
                     env->ExceptionClear();

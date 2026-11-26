@@ -52,7 +52,7 @@ add_library(raftpirates_game STATIC
 target_include_directories(raftpirates_game PUBLIC include)
 target_link_libraries(raftpirates_game PUBLIC hydra sfs_legacy)
 if(ANDROID OR HYDRA_DESKTOP_JNI)
-  set(RAFT_AUTH_URL "" CACHE STRING "Private BBB auth base URL (no credentials)")
+  set(RAFT_AUTH_URL "" CACHE STRING "Optional BBB auth URL override (defaults to APK properties.xml)")
   add_library(raftpirates SHARED android/OriginalJni.cpp android/Auth.cpp)
   target_compile_definitions(raftpirates PRIVATE RAFT_AUTH_URL="${RAFT_AUTH_URL}")
   target_link_libraries(raftpirates PRIVATE raftpirates_game hydra_java sfs_java)
