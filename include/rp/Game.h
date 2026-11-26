@@ -10,7 +10,7 @@
 namespace rp {
     struct StoreItem {
         int id = 0, currency = 0, price = 0, amount = 0;
-        std::string name, group, title;
+        std::string name, group, title, sheet, image;
     };
 
     struct StoreCurrency {

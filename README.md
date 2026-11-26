@@ -40,12 +40,13 @@ The Android build itself has not been run: no Android NDK was available in the r
 
 - Matches all 94 native declarations in the exact archived APK, including 91 exports found in its original ELF. This is JNI name/signature coverage, not complete game implementation. 25 callbacks have implementations or partial behavior; 69 are unsupported compatibility stubs, visibly logged if called. `getAuthURL()` is an explicit placeholder. Original C++ object ABI is not reproduced.
 - Uses `MyLib.init(String,int,int,float,float)` to extract APK assets to app-private cache. No new APK assets need to be added. The original APK supplies its existing Java `GLSurfaceView`, keyboard activity and SmartFox Java SDK.
-- Loads the original BBB splash and Raft Pirates title and normal HUD XML, animations and atlas resources. The original normal HUD appears when player data arrives; login, map and incomplete menu panels use a temporary native research interface. The Set Sail button uses the original atlas and font. A CPU renderer is used, not the complete original GPU engine.
-- The Connect control asks for a private server host, a BBB ID, and a session token from your local test server. The Java SDK's `Login(user,session,zone,params)` is used. The official HTTP auth flow is not restored; no account credentials are saved, and no official server endpoint is used by the bridge. Port 9933 is currently fixed. Use test-only tokens, not live credentials. Other old Java SDK code bundled in the APK is outside the scope of the bridge.
-- Incoming libraries/player packets, raft health and battle-point totals, map movement, placement, basic blueprint purchases, dive start/collection, build completion, repair response state, and discovery response state are represented in C++ to varying degrees. The game model also reads shop item, currency and group libraries, retains dive depth and state, and records daring timer and pause fields. The temporary Menu panel exposes owned blueprints, component movement/removal, store purchases, material inventory and zone travel. Component moves are applied on server acknowledgement. Not all actions have controls. Placement and purchase use temporary controls, not the original shop. Map rendering and safe-water testing are approximate; normalized map wire keys are verified. No actual player persistence.
+- Presents the original BBB splash, title, and normal HUD using original XML and atlas assets, with native adapters for supported controls. The research interface remains for login, shop, construction panels and the map. A CPU renderer is used, not the complete original GPU engine.
+- The Connect control asks for a private server host, a BBB ID, and a session token from your local test server. The original APK's official SmartFoxServer Java SDK handles the connection, login and extension requests; the bridge calls `Login(user,session,zone,params)` through ClientServices. No replacement SDK is required. The official HTTP auth flow is not restored; no account credentials are saved, and no official server endpoint is used by the bridge. Port 9933 is currently fixed. Use test-only tokens, not live credentials. Other old Java SDK code bundled in the APK is outside the scope of the bridge.
+- Incoming libraries/player packets, raft health and battle-point totals, map movement, placement, basic blueprint purchases, dive start/collection, build completion, repair response state, and discovery response state are represented in C++ to varying degrees. Not all actions have controls. Placement and purchase use temporary controls with original item sprite thumbnails, not the complete original shop. Map rendering and safe-water testing are approximate; normalized map wire keys are verified. No actual player persistence.
 - Offline play (select Set Sail, then OFFLINE PLAY) starts an in-memory sandbox. Build, move, remove, shop, travel, daring progression and salvage requests use the same response handlers as online play. Sandbox values are provisional and not saved.
 - A playable diving reconstruction uses original sprite resources, with drag movement, gears, mines, timing and collection. Mechanics and scoring are provisional; online salvage is server-authoritative.
-- The remaining original gameplay menus, full Lua API, exact diving behavior, combat, discovery scenes, music/audio playback, social platform functions, advertising/billing integrations, and many more native behaviors remain missing.
+- The original Java audio backend receives theme, ambient and diving music calls and menu/gear/finish effects. Desktop JNI mock validates calls, not actual audio playback. Construction controls support repair and clocks using recovered request fields. Battle outcome application updates hull/component BP and state; full combat gameplay and live battle protocol remain missing.
+- Remaining original menus, full Lua API, exact diving behavior, full combat, discovery scenes, social platform functions, advertising/billing integrations, and many more native behaviors remain missing.
 
 ## Verify locally (desktop)
 
@@ -60,11 +61,11 @@ python tests/java/smoke.py build/libraftpirates.so /path/to/original.apk
 
 The smoke test uses generated Java test doubles with recovered signatures and synthetic SFS fixtures. It is not an Android/real-server test. If you only need the portable runtime, omit `HYDRA_DESKTOP_JNI` and the Java smoke test. Windows desktop builds can use MSYS2 (see [HydraLegacy build guide](https://github.com/mlnitoon2/HydraLegacy/blob/main/docs/BUILDING.md)).
 
-See [matching status](docs/MATCHING_STATUS.md) for measured method-name and signature overlap (not binary equivalence) and [local gameplay](docs/LOCAL_PLAY.md) for the sandbox.
+See [matching status](docs/MATCHING_STATUS.md) for the measured method-name and signature overlap (not binary equivalence) and [local gameplay](docs/LOCAL_PLAY.md) for the sandbox.
 
-See the [normal HUD adapter](docs/HUD.md) for supported controls and optional original-asset integration tests.
+The [normal HUD adapter](docs/HUD.md) describes supported actions and optional real-asset integration tests.
 
-Read the [engine README](https://github.com/mlnitoon2/HydraLegacy) and [game port notes](docs/PORT_NOTES.md) and [startup and gameplay controls](docs/STARTUP_AND_GAMEPLAY.md). Original assets and native binaries are not distributed. An inventory verifies all 710 original asset files. See [local asset preparation](docs/ASSETS.md) for extracting the APK into a gitignored directory. The two directories contain source and research reference data only.
+Read the [engine README](https://github.com/mlnitoon2/HydraLegacy) and [game port notes](docs/PORT_NOTES.md). Original assets and native binaries are not distributed. See [local asset preparation](docs/ASSETS.md) for extracting the APK into a gitignored directory. The two directories contain source and research reference data only.
 
 ## Project layout
 
@@ -75,7 +76,3 @@ Read the [engine README](https://github.com/mlnitoon2/HydraLegacy) and [game por
 - `evidence/`: recovered JNI descriptors and test reports.
 
 No license for the new reconstruction code has been selected. Original game and engine belong to their respective rights holders; this project is unofficial. Do not commit original APKs, proprietary scripts, credentials or private server data.
-
-## Contributing
-
-Follow the shared [C++ style and formatting guide](docs/STYLE.md). Run `python tools/format.py` before submitting changes. See [class reconstruction notes](docs/CLASS_RECONSTRUCTION.md).

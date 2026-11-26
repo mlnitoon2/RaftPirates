@@ -3,6 +3,12 @@
 #include <cmath>
 
 namespace rp {
+    RaftComponent::RaftComponent(int user, int object, int px, int py, int points, int objectState,
+                                 int seconds)
+        : GridObject(user, object, px, py, points, objectState) {
+        SetRemainingTime(seconds);
+    }
+
     bool RaftComponent::PostBuild() const {
         return state == 5;
     }
@@ -23,6 +29,10 @@ namespace rp {
     void RaftComponent::SetState(int value) {
         // Native SetState promotes state 1 with zero remaining time to state 5.
         state = (value == 1 && state == 1 && GetRemainingTime() == 0) ? 5 : value;
+    }
+
+    void RaftComponent::Repair(int value, int maximum) {
+        GridObject::Repair(value, maximum);
     }
 
     int RaftComponent::GetBattlePoints() const {

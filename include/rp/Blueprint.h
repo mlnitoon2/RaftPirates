@@ -13,6 +13,7 @@ namespace rp {
         int id() const;
         const std::string& name() const;
         int object = 0, unlock = 0;
+        std::string sheet, image;
 
       private:
         int id_ = 0;

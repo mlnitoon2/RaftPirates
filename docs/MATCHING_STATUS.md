@@ -4,11 +4,11 @@ Generated from defined function symbols. Name coverage is unique qualified metho
 
 | Original build | Names matched | Coverage | Names with signature overlap | Binary match |
 |---|---:|---:|---:|---|
-| Raft Pirates (2013) | 85/1191 | 7.1369% | 57 | Not compared |
+| Raft Pirates (2013) | 112/1191 | 9.4039% | 69 | Not compared |
 
 ## Raft Pirates (2013)
 
-Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f6fdd26c13`
+Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d454a39df86`
 
 | Class or namespace | Name matches | Coverage | Signature overlap |
 |---|---:|---:|---:|
@@ -21,11 +21,11 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::BattlePlacementScreen` | 0/15 | 0.00% | 0 |
 | `rp::BattlePointsViewSprite` | 0/4 | 0.00% | 0 |
 | `rp::BattleShipPlacementSprite` | 0/23 | 0.00% | 0 |
-| `rp::Blueprint` | 4/6 | 66.67% | 2 |
+| `rp::Blueprint` | 5/6 | 83.33% | 3 |
 | `rp::BlueprintInfo` | 0/1 | 0.00% | 0 |
 | `rp::BlueprintsDB` | 0/8 | 0.00% | 0 |
 | `rp::BossBattleRaftHighlightSprite` | 0/5 | 0.00% | 0 |
-| `rp::BuildModeState` | 0/63 | 0.00% | 0 |
+| `rp::BuildModeState` | 6/63 | 9.52% | 2 |
 | `rp::DamageIndicatorSprite` | 0/3 | 0.00% | 0 |
 | `rp::Discovery` | 4/6 | 66.67% | 3 |
 | `rp::DiscoveryDB` | 0/6 | 0.00% | 0 |
@@ -46,11 +46,11 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::GfxOceanGradient` | 0/7 | 0.00% | 0 |
 | `rp::GfxOceanGrid` | 0/6 | 0.00% | 0 |
 | `rp::GfxShipPreviewScreen` | 0/3 | 0.00% | 0 |
-| `rp::GridObject` | 1/26 | 3.85% | 1 |
+| `rp::GridObject` | 14/26 | 53.85% | 7 |
 | `rp::GridObject::GridShapePiece` | 0/5 | 0.00% | 0 |
 | `rp::GridObjectDataRes` | 0/3 | 0.00% | 0 |
 | `rp::GridObjectInfo` | 0/1 | 0.00% | 0 |
-| `rp::GridObjectPiece` | 0/2 | 0.00% | 0 |
+| `rp::GridObjectPiece` | 2/2 | 100.00% | 1 |
 | `rp::GridObjectsDB` | 0/8 | 0.00% | 0 |
 | `rp::GridSprite` | 0/33 | 0.00% | 0 |
 | `rp::GridSprite::SpritePiece` | 0/1 | 0.00% | 0 |
@@ -262,9 +262,9 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::QuestTypeDB` | 0/5 | 0.00% | 0 |
 | `rp::QuestTypeInfo` | 0/1 | 0.00% | 0 |
 | `rp::RPMenuHandler` | 0/47 | 0.00% | 0 |
-| `rp::Raft` | 7/16 | 43.75% | 4 |
+| `rp::Raft` | 10/16 | 62.50% | 5 |
 | `rp::RaftAttackSprite` | 0/5 | 0.00% | 0 |
-| `rp::RaftComponent` | 9/15 | 60.00% | 6 |
+| `rp::RaftComponent` | 11/15 | 73.33% | 7 |
 | `rp::RaftComponentFactory` | 0/2 | 0.00% | 0 |
 | `rp::RaftFactory` | 0/2 | 0.00% | 0 |
 | `rp::RaftGridSprite` | 0/6 | 0.00% | 0 |
@@ -298,11 +298,33 @@ Matched names:
 - `rp::Blueprint::id`
 - `rp::Blueprint::init`
 - `rp::Blueprint::initWithSFSObject`
+- `rp::Blueprint::~Blueprint`
+- `rp::BuildModeState::BuildModeState`
+- `rp::BuildModeState::UseClockSelected`
+- `rp::BuildModeState::deselectObject`
+- `rp::BuildModeState::repairSelected`
+- `rp::BuildModeState::selectObject`
+- `rp::BuildModeState::~BuildModeState`
 - `rp::Discovery::id`
 - `rp::Discovery::initWithSFSObject`
 - `rp::Discovery::questgroupid`
 - `rp::Discovery::zoneid`
+- `rp::GridObject::Contains`
+- `rp::GridObject::Destroyed`
+- `rp::GridObject::GetBattlePoints`
+- `rp::GridObject::GetGridObjectID`
+- `rp::GridObject::GetGridPosition`
+- `rp::GridObject::GetHealth`
+- `rp::GridObject::GetTotalBattlePoints`
+- `rp::GridObject::GetUserObjectID`
+- `rp::GridObject::Repair`
+- `rp::GridObject::SetBattlePoints`
+- `rp::GridObject::SetState`
+- `rp::GridObject::getResourceData`
+- `rp::GridObject::getType`
 - `rp::GridObject::~GridObject`
+- `rp::GridObjectPiece::GridObjectPiece`
+- `rp::GridObjectPiece::~GridObjectPiece`
 - `rp::Material::id`
 - `rp::Material::init`
 - `rp::Material::initWithSFSObject`
@@ -332,17 +354,22 @@ Matched names:
 - `rp::Raft::GetTotalBattlePoints`
 - `rp::Raft::GridDimensionsX`
 - `rp::Raft::GridDimensionsY`
+- `rp::Raft::HandleBattleOutcome`
+- `rp::Raft::Raft`
 - `rp::Raft::SetState`
 - `rp::Raft::initWithSFSObject`
+- `rp::Raft::~Raft`
 - `rp::RaftComponent::Building`
 - `rp::RaftComponent::GetBattlePoints`
 - `rp::RaftComponent::GetRemainingTime`
 - `rp::RaftComponent::GetTotalBattlePoints`
 - `rp::RaftComponent::PostBuild`
+- `rp::RaftComponent::RaftComponent`
 - `rp::RaftComponent::SetRemainingTime`
 - `rp::RaftComponent::SetState`
 - `rp::RaftComponent::TempTick`
 - `rp::RaftComponent::initWithSFSObject`
+- `rp::RaftComponent::~RaftComponent`
 - `rp::Zone::buffer_bp`
 - `rp::Zone::daringLimit`
 - `rp::Zone::defaultpos_open_x`

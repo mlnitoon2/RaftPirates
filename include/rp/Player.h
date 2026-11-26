@@ -8,30 +8,32 @@
 #include <utility>
 
 namespace rp {
-    struct Cell {
-        int x = 0, y = 0;
-    };
-
-    struct GridPiece {
+    struct GridObjectPiece {
+        GridObjectPiece() = default;
+        explicit GridObjectPiece(const std::string& data);
+        ~GridObjectPiece();
         std::string asset;
         int offsetX = 0, offsetY = 0;
         std::vector<Cell> cells;
     };
 
-    struct GridObject {
+    using GridPiece = GridObjectPiece;
+
+    struct GridObjectInfo {
         int id = 0, type = 0, bp = 0;
         std::string name, asset;
         int offsetX = 0, offsetY = 0;
         std::vector<Cell> cells;
         std::vector<GridPiece> pieces;
+        static GridObjectInfo parse(const std::string& data, int battlePoints);
     };
 
-    GridObject readGridObject(const sfs::SFSObjectWrapper&);
+    GridObjectInfo readGridObject(const sfs::SFSObjectWrapper&);
 
     // Owns player inventory and raft instances. Static definitions are injected from libraries.
     class Player {
       public:
-        std::map<int, GridObject> objects;
+        std::map<int, GridObjectInfo> objects;
         std::map<int, Blueprint> blueprints;
         std::map<int, std::string> materialNames;
         std::map<int, int> materials;

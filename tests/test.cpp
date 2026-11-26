@@ -77,6 +77,33 @@ int main() {
         frame.insert(frame.end(), zip.begin(), zip.end());
         CHECK(sfs::decodePacket(frame).payload.getInt("id") == -42);
         g.demo();
+        auto& raft = g.rafts.front();
+        auto& part = raft.components.front();
+        CHECK(part.GetGridObjectID() == part.type && part.GetUserObjectID() == part.id &&
+              part.getType(g.objects) == 1);
+        CHECK(part.Contains(part.GetGridPosition(), part.getResourceData(g.objects)));
+        A outcomes;
+        auto damage = std::make_shared<O>();
+        auto target = std::make_shared<O>();
+        target->put("user_raft", int32_t(raft.id));
+        target->put("user_raft_component_id", int32_t(part.id));
+        target->put("current_bp", int32_t(200));
+        target->put("state", int32_t(0));
+        damage->put("target_component", target);
+        outcomes.add(damage);
+        auto hullDamage = std::make_shared<O>();
+        auto hull = std::make_shared<O>();
+        hull->put("user_raft_id", int32_t(raft.id));
+        hull->put("current_bp", int32_t(300));
+        hull->put("state", int32_t(0));
+        hullDamage->put("target_raft", hull);
+        outcomes.add(hullDamage);
+        raft.HandleBattleOutcome(&outcomes, g.objects);
+        CHECK(part.bp == 200 && raft.bp == 300);
+        part.Repair(1200, 1000);
+        CHECK(part.bp == 1000);
+        raft.Repair(1000, 1000);
+        CHECK(raft.bp == 1000);
         auto req = g.build(4, 1, 0, 0);
         CHECK(req.payload.getString("c") == "gs_build_add" &&
               req.payload.getSFSObj("p")->getInt("parent_id") == 1);
@@ -184,7 +211,7 @@ int main() {
         health.bonusBattlePoints = 3;
         health.components.push_back({1, 2, 0, 0, 25, 0, 0});
         health.components.push_back({2, 2, 1, 0, 25, 1, 5});
-        std::map<int, rp::GridObject> definitions;
+        std::map<int, rp::GridObjectInfo> definitions;
         definitions[1].bp = 100;
         definitions[2].bp = 50;
         CHECK(health.GetBattlePoints() == 78 && health.GetTotalBattlePoints(definitions) == 150);

@@ -27,9 +27,25 @@ namespace rp {
         g.materialNames[3] = "Metal";
         g.materials[2] = 1000;
         g.materials[3] = 1000;
-        g.storeItems[1] = {1, 4, 100, 1, "random_pack_sm", "misc", "Salvage pack"};
+        g.storeItems[1] = {1,
+                           4,
+                           100,
+                           1,
+                           "random_pack_sm",
+                           "misc",
+                           "Salvage pack",
+                           "rp_menu.xml",
+                           "rp_store_random001"};
         g.blueprints[2] = {2, 2, 1, "Boom-Boom Buddha"};
-        g.storeItems[2] = {2, 4, 100, 1, "Boom-Boom Buddha", "blueprints", "Boom-Boom Buddha"};
+        g.storeItems[2] = {2,
+                           4,
+                           100,
+                           1,
+                           "Boom-Boom Buddha",
+                           "blueprints",
+                           "Boom-Boom Buddha",
+                           "thumbs_weapons.xml",
+                           "thumb_boom_buddha_green"};
         g.zones[2] = "The Big Blue";
         g.zoneMaps[2] = "xml_resources/maps/map_big_blue.tmx";
         g.status = "LOCAL SANDBOX";
@@ -61,6 +77,27 @@ namespace rp {
             g.extension(cmd, response);
         } else if (cmd == "gs_build_remove") {
             g.extension(cmd, *p);
+        } else if (cmd == "gs_build_repair" || cmd == "gs_use_clock") {
+            int parent = number(*p, "parent_id"), id = number(*p, "object_id");
+            auto raft = g.GetRaftByID(parent ? parent : id);
+            if (!raft)
+                return;
+            GridObject* target = raft;
+            if (parent) {
+                auto it = std::find_if(raft->components.begin(), raft->components.end(),
+                                       [&](const auto& c) { return c.id == id; });
+                if (it == raft->components.end())
+                    return;
+                target = &*it;
+            }
+            auto info = target->getResourceData(g.objects);
+            if (!info)
+                return;
+            response = *p;
+            response.put("current_bp", int32_t(cmd == "gs_build_repair" ? info->bp : target->bp));
+            response.put("state", int32_t(0));
+            response.put("time_remaining_secs", int32_t(0));
+            g.extension(cmd, response);
         } else if (cmd == "purchase_item") {
             const auto name = p->getString("itemname");
             bool bought = false;

@@ -1,4 +1,5 @@
 #include "rp/PortView.h"
+#include "rp/BuildModeState.h"
 #include "sys/gfx/AssetImage.h"
 #include <algorithm>
 #include <cmath>
@@ -477,6 +478,38 @@ namespace rp {
         }
     } // namespace
 
+    bool PortView::renderItemIcon(Image& target, const std::string& sheet, const std::string& name,
+                                  int x, int y) {
+        if (sheet.empty() || name.empty())
+            return false;
+        // Restrict network-supplied names to the bundled atlas directory.
+        auto path = std::filesystem::path(sheet);
+        if (path.filename() != path || path.extension() != ".xml")
+            return false;
+        try {
+            auto it = shopAtlases_.find(sheet);
+            if (it == shopAtlases_.end()) {
+                auto atlas = std::make_shared<ResourceSpriteSheet>(
+                    ResourceSpriteSheet::Create(root_ / "xml_resources" / path));
+                auto img = std::make_shared<Image>(loadAssetImage(root_ / atlas->imagePath));
+                it = shopAtlases_.emplace(sheet, std::make_pair(atlas, img)).first;
+            }
+            const auto* cell = it->second.first->findSpriteByName(name);
+            if (!cell || cell->w <= 0 || cell->h <= 0)
+                return false;
+            GfxSprite sprite;
+            sprite.cell = *cell;
+            sprite.image = it->second.second;
+            float scale = std::min(26.f / cell->w, 26.f / cell->h);
+            sprite.SetScale(scale, scale);
+            sprite.SetPos(float(x), float(y));
+            drawSprite(target, sprite);
+            return true;
+        } catch (const std::exception&) {
+            return false;
+        }
+    }
+
     void PortView::renderPanel(Image& image, const Game& game) {
         rect(image, 14, 36, 612, 302, {15, 38, 54, 255});
         if (panel_ == Panel::Quest || panel_ == Panel::Safety || panel_ == Panel::Daring) {
@@ -512,7 +545,16 @@ namespace rp {
                                                  : blueprintRows(game);
         for (size_t i = 0; i < 6 && page_ * 6 + i < rows.size(); ++i) {
             rect(image, 20, 76 + int(i) * 34, 600, 30, {29, 57, 74, 255});
-            text(image, 28, 87 + int(i) * 34, rows[page_ * 6 + i].label, 1);
+            const auto& row = rows[page_ * 6 + i];
+            bool icon = false;
+            if (panel_ == Panel::Shop) {
+                const auto& item = game.storeItems.at(row.id);
+                icon = renderItemIcon(image, item.sheet, item.image, 26, 78 + int(i) * 34);
+            } else if (panel_ == Panel::Build) {
+                const auto& item = game.blueprints.at(row.id);
+                icon = renderItemIcon(image, item.sheet, item.image, 26, 78 + int(i) * 34);
+            }
+            text(image, icon ? 60 : 28, 87 + int(i) * 34, row.label, 1);
         }
         if (rows.empty())
             text(image, 28, 90, "NO ITEMS", 1);
@@ -524,6 +566,8 @@ namespace rp {
             if (selectedComponent_) {
                 text(image, 220, 316, "MOVE", 1);
                 text(image, 390, 316, "REMOVE", 1);
+                text(image, 470, 316, "REPAIR", 1);
+                text(image, 550, 316, "CLOCK", 1);
             }
         }
     }
@@ -558,7 +602,11 @@ namespace rp {
             selectedBlueprint_ = 0;
             if (x >= 190 && x < 360 && selectedComponent_)
                 moving_ = true;
-            else if (x >= 360 && selectedComponent_) {
+            else if (x >= 460 && selectedComponent_) {
+                BuildModeState build(game);
+                build.selectObject(selectedParent_, selectedComponent_);
+                return x >= 540 ? build.UseClockSelected() : build.repairSelected(false);
+            } else if (x >= 360 && selectedComponent_) {
                 auto request = game.remove(selectedParent_, selectedComponent_);
                 selectedComponent_ = 0;
                 selectedParent_ = 0;

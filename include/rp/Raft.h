@@ -4,21 +4,26 @@
 #include <vector>
 
 namespace rp {
-    struct GridObject;
+    struct GridObjectInfo;
 
-    struct Raft {
-        int id = 0, type = 0, x = 0, y = 0, bp = 0, state = 0;
+    struct Raft : GridObject {
+        Raft() = default;
+        Raft(int user, int object, int px, int py, int points, int objectState,
+             std::vector<Component> parts);
         std::vector<Component> components;
         int bonusBattlePoints = 0;
         void initWithSFSObject(const sfs::SFSObjectWrapper& data);
-        int GetBattlePoints() const;
-        int GetTotalBattlePoints(const std::map<int, GridObject>& objects) const;
-        float GetHealth(const std::map<int, GridObject>& objects) const;
+        int GetBattlePoints() const override;
+        int GetTotalBattlePoints(const std::map<int, GridObjectInfo>& objects) const;
+        float GetHealth(const std::map<int, GridObjectInfo>& objects) const;
 
         bool Destroyed() const;
         int GridDimensionsX() const;
         int GridDimensionsY() const;
-        void SetState(int value);
+        void SetState(int value) override;
+        void HandleBattleOutcome(const sfs::SFSArrayWrapper* outcomes,
+                                 const std::map<int, GridObjectInfo>& objects);
+        void Repair(int battlePoints, int maxBattlePoints);
     };
 
 } // namespace rp

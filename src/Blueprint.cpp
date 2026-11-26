@@ -8,6 +8,8 @@ namespace rp {
         id_ = id;
         object = unlock = 0;
         name_.clear();
+        sheet.clear();
+        image.clear();
     }
 
     void Blueprint::initWithSFSObject(const sfs::SFSObjectWrapper& data) {
@@ -15,6 +17,8 @@ namespace rp {
         object = data.getInt("object_id");
         unlock = data.getInt("unlock_level");
         name_ = data.getString("name");
+        sheet = data.getString("sheet_id");
+        image = data.getString("image_id");
     }
 
     int Blueprint::id() const {

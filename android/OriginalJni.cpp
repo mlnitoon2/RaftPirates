@@ -30,7 +30,9 @@ namespace {
         sys::gfx::Image lastImage;
         int width = 640, height = 400, entry = 0, port = 9933;
         bool initialized = false, paused = false, connected = false, connecting = false;
-        std::string host, user = "1", session, status = "OFFLINE PREVIEW";
+        std::string host, user = "1", session, status = "OFFLINE PREVIEW", music;
+        int lastGears = 0;
+        bool lastDiveFinished = false, audioFailed = false;
         float time = 0;
         Clock::time_point last = Clock::now(), lastFrame{}, lastPing{};
     };
@@ -60,6 +62,46 @@ namespace {
             rt.status = "Native operation failed";
             log(rt.status);
         }
+    }
+
+    // Reuse the original HydraGame Java sound backend.
+    template <class F> void audio(JNIEnv* e, F callback) {
+        if (rt.audioFailed)
+            return;
+        try {
+            LocalFrame frame(e);
+            callback();
+            check(e, "audio");
+        } catch (const std::exception& ex) {
+            if (e->ExceptionCheck())
+                e->ExceptionClear();
+            rt.audioFailed = true;
+            log(std::string("Audio unavailable: ") + ex.what());
+        }
+    }
+
+    void music(JNIEnv* e, jobject obj, const std::string& path) {
+        if (rt.music == path)
+            return;
+        audio(e, [&] {
+            if (path.empty())
+                e->CallVoidMethod(obj, method(e, obj, "stopMusic", "()V"));
+            else {
+                auto name = e->NewStringUTF(path.c_str());
+                check(e, "music path");
+                e->CallVoidMethod(obj, method(e, obj, "playMusic", "(Ljava/lang/String;)V"), name);
+            }
+        });
+        rt.music = path;
+    }
+
+    void effect(JNIEnv* e, jobject obj, const char* path) {
+        audio(e, [&] {
+            auto name = e->NewStringUTF(path);
+            check(e, "sound path");
+            e->CallVoidMethod(obj, method(e, obj, "playSound", "(Ljava/lang/String;F)V"), name,
+                              jfloat(1));
+        });
     }
 
     void prompt(JNIEnv* e, jobject obj, const char* title, const std::string& value) {
@@ -160,6 +202,10 @@ extern "C" JNIEXPORT void JNICALL RP(init)(JNIEnv* e, jobject obj, jstring path,
             return;
         }
         rt.archivePath = apk;
+        rt.audioFailed = false;
+        rt.music.clear();
+        rt.lastGears = 0;
+        rt.lastDiveFinished = false;
         auto root = cacheRoot(e, obj, apk);
         rt.game.demo();
         // Demo assets are available for preview, but online HUD activates only on gs_player.
@@ -192,14 +238,18 @@ extern "C" JNIEXPORT jboolean JNICALL RP(isJniInititalized)(JNIEnv*, jobject) {
     return rt.initialized ? JNI_TRUE : JNI_FALSE;
 }
 
-extern "C" JNIEXPORT void JNICALL RP(pause)(JNIEnv* e, jobject, jboolean value) {
+extern "C" JNIEXPORT void JNICALL RP(pause)(JNIEnv* e, jobject obj, jboolean value) {
     guarded(e, [&] {
         rt.paused = value;
+        if (!rt.music.empty())
+            audio(e, [&] {
+                e->CallVoidMethod(obj, method(e, obj, value ? "pauseMusic" : "resumeMusic", "()V"));
+            });
         rt.last = Clock::now();
     });
 }
 
-extern "C" JNIEXPORT void JNICALL RP(kill)(JNIEnv* e, jobject) {
+extern "C" JNIEXPORT void JNICALL RP(kill)(JNIEnv* e, jobject obj) {
     guarded(e, [&] {
         if (rt.connected || rt.connecting) {
             try {
@@ -207,6 +257,7 @@ extern "C" JNIEXPORT void JNICALL RP(kill)(JNIEnv* e, jobject) {
             } catch (...) {
             }
         }
+        music(e, obj, "");
         lost();
         rt.splash.reset();
         rt.title.reset();
@@ -217,7 +268,7 @@ extern "C" JNIEXPORT void JNICALL RP(kill)(JNIEnv* e, jobject) {
     });
 }
 
-extern "C" JNIEXPORT void JNICALL RP(tick)(JNIEnv* e, jobject) {
+extern "C" JNIEXPORT void JNICALL RP(tick)(JNIEnv* e, jobject obj) {
     guarded(e, [&] {
         if (!rt.view || rt.paused)
             return;
@@ -238,6 +289,7 @@ extern "C" JNIEXPORT void JNICALL RP(tick)(JNIEnv* e, jobject) {
             rt.lastImage = {};
         }
         if (rt.title) {
+            music(e, obj, "audio/music/theme.mp3");
             rt.presenter.present(rt.title->render(), rt.width, rt.height);
             return;
         }
@@ -249,6 +301,18 @@ extern "C" JNIEXPORT void JNICALL RP(tick)(JNIEnv* e, jobject) {
             rt.lastFrame = now;
             rt.lastImage = rt.view->render(rt.game, rt.time, rt.status);
         }
+        music(e, obj,
+              rt.view->isDiving() ? "audio/music/underwater.mp3"
+              : rt.game.ready     ? "audio/music/ambient.mp3"
+                                  : "audio/music/theme.mp3");
+        int gears = rt.view->diveGears();
+        bool finished = rt.view->diveFinished();
+        if (gears > rt.lastGears)
+            effect(e, obj, "audio/sfx/diving_game_collect.wav");
+        if (finished && !rt.lastDiveFinished)
+            effect(e, obj, "audio/sfx/diving_game_end.wav");
+        rt.lastGears = gears;
+        rt.lastDiveFinished = finished;
         rt.presenter.present(rt.lastImage, rt.width, rt.height);
     });
 }
@@ -284,6 +348,7 @@ extern "C" JNIEXPORT void JNICALL RP(touchUp)(JNIEnv* e, jobject obj, jfloat x, 
         if (rt.title) {
             rt.title->touchUp(px, py);
             if (rt.title->started()) {
+                effect(e, obj, "audio/sfx/menu_button_down.wav");
                 rt.title.reset();
                 rt.lastImage = {};
             }
@@ -311,8 +376,11 @@ extern "C" JNIEXPORT void JNICALL RP(touchUp)(JNIEnv* e, jobject obj, jfloat x, 
             prompt(e, obj, "Private server hostname or IP", rt.host);
             return;
         }
-        if (result)
+        if (result) {
+            if (!rt.view->isDiving())
+                effect(e, obj, "audio/sfx/menu_button_down.wav");
             send(e, *result);
+        }
     });
 }
 

@@ -14,6 +14,19 @@ namespace rp {
         void tick(float dt);
         void touchDown(float x, float y);
         void touchDrag(float x, float y);
+
+        bool isDiving() const {
+            return bool(diving_);
+        }
+
+        bool diveFinished() const {
+            return diving_ && diving_->finished();
+        }
+
+        int diveGears() const {
+            return diving_ ? diving_->gears() : 0;
+        }
+
         bool offlineRequested = false;
         bool connectRequested = false, grid = false, map = false;
 
@@ -28,6 +41,10 @@ namespace rp {
         std::optional<sys::res::TmxMap> tmx_;
         std::string mapPath_;
         std::map<std::string, std::shared_ptr<sys::gfx::Image>> tiles_;
+        std::map<std::string, std::pair<std::shared_ptr<sys::res::ResourceSpriteSheet>,
+                                        std::shared_ptr<sys::gfx::Image>>>
+            shopAtlases_;
+        bool renderItemIcon(sys::gfx::Image&, const std::string&, const std::string&, int, int);
         enum class Panel { None, Shop, Inventory, Travel, Build, Quest, Safety, Daring };
         Panel panel_ = Panel::None;
         size_t page_ = 0;

@@ -44,42 +44,10 @@ namespace rp {
         }
     } // namespace
 
-    GridObject readGridObject(const O& o) {
-        GridObject g;
+    GridObjectInfo readGridObject(const O& o) {
+        auto g = GridObjectInfo::parse(o.getString("data_string"), num(o, "battle_points"));
         g.id = num(o, "object_id");
-        g.bp = num(o, "battle_points");
         g.name = o.getString("name");
-        std::istringstream data(o.getString("data_string"));
-        std::string piece;
-        if (std::getline(data, piece, ';') && !piece.empty())
-            g.type = std::stoi(piece);
-        while (std::getline(data, piece, ';')) {
-            if (piece.empty())
-                continue;
-            GridPiece part;
-            std::istringstream s(piece);
-            if (!(s >> part.asset >> part.offsetX >> part.offsetY))
-                throw std::runtime_error("Invalid grid object piece");
-            std::string xy;
-            while (s >> xy) {
-                auto comma = xy.find(',');
-                if (comma == std::string::npos)
-                    throw std::runtime_error("Invalid grid cell");
-                Cell c{std::stoi(xy.substr(0, comma)), std::stoi(xy.substr(comma + 1))};
-                part.cells.push_back(c);
-                if (std::none_of(g.cells.begin(), g.cells.end(),
-                                 [&](Cell a) { return a.x == c.x && a.y == c.y; }))
-                    g.cells.push_back(c);
-            }
-            if (g.pieces.empty()) {
-                g.asset = part.asset;
-                g.offsetX = part.offsetX;
-                g.offsetY = part.offsetY;
-            }
-            g.pieces.push_back(std::move(part));
-        }
-        if (g.cells.empty())
-            g.cells.push_back({0, 0});
         return g;
     }
 
@@ -151,10 +119,10 @@ namespace rp {
         } else if (cmd == "lib_store_item_data") {
             storeItems.clear();
             each(p, "store_item_data", [&](auto& x) {
-                StoreItem i{num(x, "storeitem_id"),   num(x, "currency_id"),
-                            num(x, "price"),          num(x, "amount"),
-                            x.getString("item_name"), x.getString("group_name"),
-                            x.getString("item_title")};
+                StoreItem i{
+                    num(x, "storeitem_id"),    num(x, "currency_id"),    num(x, "price"),
+                    num(x, "amount"),          x.getString("item_name"), x.getString("group_name"),
+                    x.getString("item_title"), x.getString("sheet_id"),  x.getString("image_id")};
                 storeItems[i.id] = std::move(i);
             });
         } else if (cmd == "lib_store_cur_data") {
@@ -333,14 +301,16 @@ namespace rp {
                    cmd == "gs_build_repair") {
             for (auto& r : rafts) {
                 if (num(p, "object_type", 1) == 0 && r.id == num(p, "object_id")) {
-                    r.bp = num(p, "battle_points", r.bp);
+                    r.Repair(num(p, "current_bp", num(p, "battle_points", r.bp)),
+                             objects.count(r.type) ? objects.at(r.type).bp : r.bp);
                     r.SetState(num(p, "state", r.state));
                 }
                 if (r.id == num(p, "parent_id"))
                     for (auto& c : r.components)
                         if (c.id == num(p, "object_id")) {
                             c.SetState(num(p, "state", c.state));
-                            c.bp = num(p, "battle_points", c.bp);
+                            c.Repair(num(p, "current_bp", num(p, "battle_points", c.bp)),
+                                     objects.count(c.type) ? objects.at(c.type).bp : c.bp);
                             if (p.get("time_remaining_secs"))
                                 c.SetRemainingTime(num(p, "time_remaining_secs"));
                         }
@@ -380,14 +350,9 @@ namespace rp {
             for (const auto& c : r->components) {
                 if (parent == ignoreParent && c.id == ignoreId)
                     continue;
-                auto other = objects.find(c.type);
-                if (other == objects.end()) {
-                    if (c.x == xx && c.y == yy)
-                        return false;
-                } else
-                    for (auto v : other->second.cells)
-                        if (int64_t(c.x) + v.x == xx && int64_t(c.y) + v.y == yy)
-                            return false;
+                auto other = c.getResourceData(objects);
+                if (c.Contains({int(xx), int(yy)}, other))
+                    return false;
             }
         }
         return true;

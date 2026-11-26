@@ -1,18 +1,23 @@
 #pragma once
 #include "sfs/SFSObjectWrapper.h"
+#include "rp/GridObject.h"
 
 namespace rp {
-    struct RaftComponent {
-        int id = 0, type = 0, x = 0, y = 0, bp = 0, state = 0, remaining = 0;
+    struct RaftComponent : GridObject {
+        RaftComponent() = default;
+        RaftComponent(int user, int object, int px, int py, int points, int objectState,
+                      int seconds);
+        int remaining = 0;
         double remainingFraction = 0;
         void initWithSFSObject(const sfs::SFSObjectWrapper& data);
         bool PostBuild() const;
         bool Building() const;
         float GetRemainingTime() const;
         void SetRemainingTime(int seconds);
-        void SetState(int value);
-        int GetBattlePoints() const;
-        int GetTotalBattlePoints(int staticBattlePoints) const;
+        void SetState(int value) override;
+        int GetBattlePoints() const override;
+        void Repair(int battlePoints, int maxBattlePoints);
+        int GetTotalBattlePoints(int staticBattlePoints) const override;
         // True when no further construction countdown is needed. Server owns state changes.
         bool TempTick(float dt);
     };

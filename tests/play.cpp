@@ -1,4 +1,5 @@
 #include "rp/LocalSession.h"
+#include "rp/BuildModeState.h"
 #include "rp/PortView.h"
 #include <iostream>
 #include <stdexcept>
@@ -23,6 +24,22 @@ int main(int argc, char** argv) {
         session.dispatch(g, g.build(4, 1, 0, 0));
         CHECK(g.rafts.front().components.size() == 3);
         auto id = g.rafts.front().components.back().id;
+        auto& part = g.rafts.front().components.back();
+        part.Repair(300, 1000);
+        rp::BuildModeState build(g);
+        build.selectObject(1, id);
+        auto repair = build.repairSelected(false);
+        CHECK(repair && repair->payload.getString("c") == "gs_build_repair");
+        session.dispatch(g, *repair);
+        CHECK(part.bp == 1000);
+        part.SetRemainingTime(10);
+        part.SetState(1);
+        auto clock = build.UseClockSelected();
+        CHECK(clock && clock->payload.getString("c") == "gs_use_clock");
+        session.dispatch(g, *clock);
+        CHECK(!part.Building() && part.GetRemainingTime() == 0);
+        build.deselectObject();
+        CHECK(!build.UseClockSelected());
         session.dispatch(g, g.moveComponent(1, id, 1, 3, 3));
         CHECK(g.rafts.front().components.back().x == 3);
         session.dispatch(g, g.remove(1, id));
