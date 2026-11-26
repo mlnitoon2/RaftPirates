@@ -1,4 +1,6 @@
 #include "rp/Blueprint.h"
+#include <limits>
+#include <stdexcept>
 
 namespace rp {
     Blueprint::Blueprint(int id, int obj, int level, std::string name)
@@ -29,8 +31,11 @@ namespace rp {
         for (int i = 1; i <= 4; ++i) {
             auto key = "material_" + std::to_string(i);
             int id = data.getInt(key), amount = data.getInt(key + "_amount");
-            if (id > 0 && amount > 0)
+            if (id > 0 && amount > 0) {
+                if (recipe[id] > std::numeric_limits<int>::max() - amount)
+                    throw std::runtime_error("Blueprint recipe exceeds integer range");
                 recipe[id] += amount;
+            }
         }
     }
 

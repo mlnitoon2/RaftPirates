@@ -101,22 +101,22 @@ namespace rp {
     void Game::extension(const std::string& cmd, const O& p) {
         status = cmd;
         if (cmd == "lib_go_data") {
-            objects.clear();
-            each(p, "gridobject_data", [&](auto& x) {
-                auto g = readGridObject(x);
-                objects[g.id] = g;
-            });
+            gridObjectDB.initWithSFSObject(p);
+            objects = gridObjectDB.rows();
         } else if (cmd == "lib_bp_data") {
-            blueprints.clear();
-            each(p, "blueprint_data", [&](auto& x) {
-                Blueprint b;
-                b.initWithSFSObject(x);
-                blueprints[b.id()] = std::move(b);
-            });
+            blueprintDB.initWithSFSObject(p);
+            blueprints = blueprintDB.rows();
         } else if (cmd == "lib_mat_data") {
+            materialDB.initWithSFSObject(p);
             materialNames.clear();
-            each(p, "material_data",
-                 [&](auto& x) { materialNames[num(x, "material_id")] = x.getString("name"); });
+            materialGoldCosts.clear();
+            for (const auto& row : materialDB.rows()) {
+                materialNames[row.first] = row.second.name;
+                if (row.second.goldCost)
+                    materialGoldCosts[row.first] = *row.second.goldCost;
+            }
+        } else if (cmd == "lib_quest_type_data") {
+            questTypeDB.initWithSFSObject(p);
         } else if (cmd == "lib_store_item_data") {
             storeItems.clear();
             each(p, "store_item_data", [&](auto& x) {
@@ -139,25 +139,20 @@ namespace rp {
                 storeGroups[num(x, "storegroup_id")] = x.getString("group_name");
             });
         } else if (cmd == "lib_zone_data") {
+            zonesDB.initWithSFSObject(p);
+            zoneData = zonesDB.rows();
             zones.clear();
             zoneMaps.clear();
-            zoneData.clear();
-            each(p, "zone_data", [&](auto& x) {
-                Zone entry;
-                entry.initWithSFSObject(x);
-                zones[entry.id()] = entry.name();
-                zoneMaps[entry.id()] = entry.mapfile();
-                zoneData[entry.id()] = std::move(entry);
-            });
+            for (const auto& row : zoneData) {
+                zones[row.first] = row.second.name();
+                zoneMaps[row.first] = row.second.mapfile();
+            }
         } else if (cmd == "lib_discovery_data") {
+            discoveryDB.initWithSFSObject(p);
+            discoveryData = discoveryDB.rows();
             discoveries.clear();
-            discoveryData.clear();
-            each(p, "discovery_data", [&](auto& x) {
-                Discovery entry;
-                entry.initWithSFSObject(x);
-                discoveries[entry.id()] = entry.name();
-                discoveryData[entry.id()] = std::move(entry);
-            });
+            for (const auto& row : discoveryData)
+                discoveries[row.first] = row.second.name();
         } else if (cmd == "zone_known")
             knownZones = p.getString("zones");
         else if (cmd == "discoveries_known")

@@ -14,6 +14,7 @@ namespace rp {
         bool Building() const;
         float GetRemainingTime() const;
         void SetRemainingTime(int seconds);
+        void UseClock(float seconds);
         void SetState(int value) override;
         int GetBattlePoints() const override;
         void Repair(int battlePoints, int maxBattlePoints);

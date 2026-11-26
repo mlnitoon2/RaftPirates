@@ -1,8 +1,8 @@
 # Raft Pirates
 
-[![RaftPirates original method-name coverage: 15.7851%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
+[![RaftPirates original method-name coverage: 23.2578%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
 
-**188/1191 original method names (15.7851%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
+**277/1191 original method names (23.2578%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
 
 Unofficial native source reconstruction for game preservation. Engine dependency: [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy).
 
@@ -41,6 +41,8 @@ The script checks ELF64, little-endian, ET_DYN, machine AArch64 and every requir
 The Android build itself has not been run: no Android NDK was available in the reconstruction environment. No working Android library is bundled. Older Android target-SDK restrictions, native library packaging, original Java SDK behavior on new Android, and GLES behavior remain possible blockers. This is not guaranteed to launch on an ARM64-only phone.
 
 ## What the experimental replacement does
+
+Static library packets are validated by typed catalogue classes. An explicit library-cache API, resource-manifest preloader, construction-time helpers and map selection helpers support the existing gameplay; see [class reconstruction notes](docs/CLASS_RECONSTRUCTION.md).
 
 - Matches all 94 native declarations in the exact archived APK, including 91 exports found in its original ELF. This is JNI name/signature coverage, not complete game implementation. 25 callbacks have implementations or partial behavior; 69 are unsupported compatibility stubs, visibly logged if called. `getAuthURL()` is an explicit placeholder. Original C++ object ABI is not reproduced.
 - Uses `MyLib.init(String,int,int,float,float)` to extract APK assets to app-private cache. No new APK assets need to be added. The original APK supplies its existing Java `GLSurfaceView`, keyboard activity and SmartFox Java SDK.

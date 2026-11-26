@@ -2,6 +2,7 @@
 #include "rp/Material.h"
 #include <algorithm>
 #include <limits>
+#include <cmath>
 #include <sstream>
 #include <stdexcept>
 
@@ -79,6 +80,42 @@ namespace rp {
         materials = std::move(nextMaterials);
         owned = std::move(nextOwned);
         playerName = data.getString("display_name");
+    }
+
+    Cell Player::EastMostPoint() const {
+        const Raft* result = mainRaft();
+        for (const auto& raft : rafts)
+            if (!result || raft.x > result->x)
+                result = &raft;
+        return result ? result->GetGridPosition() : Cell{};
+    }
+
+    Cell Player::WestMostPoint() const {
+        const Raft* result = mainRaft();
+        for (const auto& raft : rafts)
+            if (!result || raft.x < result->x)
+                result = &raft;
+        return result ? result->GetGridPosition() : Cell{};
+    }
+
+    std::optional<int> Player::goldCostToBuild(int blueprintId) const {
+        auto it = blueprints.find(blueprintId);
+        if (it == blueprints.end())
+            return {};
+        double total = 0;
+        for (const auto& req : it->second.recipe) {
+            int missing = std::max(0, req.second - numOfMaterialPossessed(unsigned(req.first)));
+            if (!missing)
+                continue;
+            auto price = materialGoldCosts.find(req.first);
+            if (price == materialGoldCosts.end() || !std::isfinite(price->second) ||
+                price->second < 0)
+                return {};
+            total += std::ceil(missing * price->second);
+            if (total > std::numeric_limits<int>::max())
+                return {};
+        }
+        return int(total);
     }
 
     int Player::currentBP() const {

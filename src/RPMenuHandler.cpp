@@ -74,6 +74,32 @@ namespace rp {
         return result;
     }
 
+    const Blueprint* RPMenuHandler::gotMsgBlueprintDisplayRequest(int id) const {
+        auto it = game_.blueprints.find(id);
+        return it == game_.blueprints.end() ? nullptr : &it->second;
+    }
+
+    const StoreItem* RPMenuHandler::gotMsgStoreItemDisplayRequest(int id) const {
+        auto it = game_.storeItems.find(id);
+        return it == game_.storeItems.end() ? nullptr : &it->second;
+    }
+
+    const MaterialInfo* RPMenuHandler::gotMsgMaterialInformationRequest(int id) const {
+        return id > 0 ? game_.materialDB.getMaterialInfo(unsigned(id)) : nullptr;
+    }
+
+    const sfs::SFSObjectWrapper* RPMenuHandler::gotMsgQuestTypeInformationRequest(int id) const {
+        return id > 0 ? game_.questTypeDB.getQuestTypeInfo(unsigned(id)) : nullptr;
+    }
+
+    bool RPMenuHandler::gotMsgRequestOceanSafetyUpdate() const {
+        return game_.isSafe();
+    }
+
+    int RPMenuHandler::gotMsgShowBattlePointsRequest() const {
+        return game_.currentBP();
+    }
+
     bool RPMenuHandler::canPurchase(int id) const {
         auto available = gotMsgGetAvailStoreItemRequest();
         if (std::find(available.begin(), available.end(), id) == available.end())

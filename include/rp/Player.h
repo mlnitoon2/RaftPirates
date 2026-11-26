@@ -3,6 +3,7 @@
 #include "rp/Blueprint.h"
 #include "sfs/SFSObjectWrapper.h"
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -20,6 +21,11 @@ namespace rp {
     using GridPiece = GridObjectPiece;
 
     struct GridObjectInfo {
+        GridObjectInfo() = default;
+        GridObjectInfo(const std::string& data, int battlePoints);
+        GridObjectInfo(int id, int type, int points, std::string name, std::string asset,
+                       int offsetX, int offsetY, std::vector<Cell> cells,
+                       std::vector<GridPiece> pieces = {});
         int id = 0, type = 0, bp = 0;
         std::string name, asset;
         int offsetX = 0, offsetY = 0;
@@ -36,6 +42,7 @@ namespace rp {
         std::map<int, GridObjectInfo> objects;
         std::map<int, Blueprint> blueprints;
         std::map<int, std::string> materialNames;
+        std::map<int, double> materialGoldCosts;
         std::map<int, int> materials;
         std::set<int> owned;
         std::vector<Raft> rafts;
@@ -43,6 +50,9 @@ namespace rp {
         std::string playerName, knownZones;
         void initWithSFSObject(const sfs::SFSObjectWrapper& data);
         int currentBP() const;
+        std::optional<int> goldCostToBuild(int blueprintId) const;
+        Cell EastMostPoint() const;
+        Cell WestMostPoint() const;
         bool isSafe() const;
         void setSafe(bool value);
         Raft* GetRaftByID(int id);

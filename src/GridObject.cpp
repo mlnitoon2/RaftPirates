@@ -1,6 +1,8 @@
 #include "rp/Player.h"
 #include <algorithm>
 #include <cstdint>
+#include <stdexcept>
+#include <cstdlib>
 
 namespace rp {
     GridObject::GridObject(int user, int object, int px, int py, int points, int objectState)
@@ -10,6 +12,52 @@ namespace rp {
 
     Cell GridObject::GetGridPosition() const {
         return {x, y};
+    }
+
+    size_t GridObject::Pieces(const GridObjectInfo* def) const {
+        return def ? def->pieces.size() : 0;
+    }
+
+    std::vector<Cell> GridObject::occupiedCells(const GridObjectInfo* def) const {
+        std::vector<Cell> result;
+        if (!def || def->cells.empty())
+            return {{x, y}};
+        for (auto cell : def->cells) {
+            auto px = int64_t(x) + cell.x, py = int64_t(y) + cell.y;
+            if (px < INT32_MIN || px > INT32_MAX || py < INT32_MIN || py > INT32_MAX)
+                throw std::overflow_error("Grid footprint outside integer range");
+            result.push_back({int(px), int(py)});
+        }
+        return result;
+    }
+
+    std::pair<float, float> GridObject::Middleish(const GridObjectInfo* def) const {
+        auto cells = occupiedCells(def);
+        double sx = 0, sy = 0;
+        for (auto c : cells) {
+            sx += c.x;
+            sy += c.y;
+        }
+        return {float(sx / cells.size()), float(sy / cells.size())};
+    }
+
+    bool GridObject::Overlap(const GridObject& other, const GridObjectInfo* def,
+                             const GridObjectInfo* otherDef) const {
+        for (auto c : occupiedCells(def))
+            if (other.Contains(c, otherDef))
+                return true;
+        return false;
+    }
+
+    bool GridObject::Beside(const GridObject& other, const GridObjectInfo* def,
+                            const GridObjectInfo* otherDef) const {
+        if (Overlap(other, def, otherDef))
+            return false;
+        for (auto a : occupiedCells(def))
+            for (auto b : other.occupiedCells(otherDef))
+                if (std::abs(int64_t(a.x) - b.x) + std::abs(int64_t(a.y) - b.y) == 1)
+                    return true;
+        return false;
     }
 
     int GridObject::GetGridObjectID() const {

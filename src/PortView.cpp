@@ -135,7 +135,12 @@ namespace rp {
         }
     } // namespace
 
-    PortView::PortView(std::filesystem::path root) : root_(std::move(root)), ocean_(root_) {
+    PortView::PortView(std::filesystem::path root)
+        : root_(std::move(root)), ocean_(root_), loader_(root_) {
+        if (loader_.resourceExists("xml_bin/game_manifest.bin", "")) {
+            loader_.addManifest("xml_bin/game_manifest.bin");
+            loader_.start();
+        }
         if (std::filesystem::exists(root_ / "menus/hud.xml")) {
             try {
                 hud_ = std::make_unique<Hud>(root_);
@@ -155,6 +160,8 @@ namespace rp {
     }
 
     void PortView::tick(float dt) {
+        loader_.update(dt);
+        mapView_.tick(dt);
         if (battle_)
             battle_->tick(dt);
         if (discovery_)
@@ -232,9 +239,10 @@ namespace rp {
             return out;
         }
 
-        if (!map)
+        if (!map) {
+            mapView_.hideMap();
             out = ocean_.render(g, time, grid);
-        else {
+        } else {
             try {
                 loadMap(g);
                 if (mapView_.data()) {
@@ -289,9 +297,19 @@ namespace rp {
                                              uint8_t(p.b * a + q.b * (1 - a)), 255};
                                     }
                             }
-                    int mx = 48 + (std::clamp(g.mapX, -100, 100) + 100) * 544 / 200,
-                        my = 36 + (std::clamp(g.mapY, -100, 100) + 100) * 306 / 200;
-                    rect(out, mx - 4, my - 4, 9, 9, {255, 222, 85, 255});
+                    mapView_.showMap();
+                    mapView_.movementAllowed(!g.pendingMap.has_value());
+                    mapView_.setPlayerVisible(true);
+                    mapView_.setPlayerPosition(
+                        {(std::clamp(g.mapX, -100, 100) + 100) * m.width * m.tileWidth / 200.f,
+                         (std::clamp(g.mapY, -100, 100) + 100) * m.height * m.tileHeight / 200.f},
+                        true);
+                    if (mapView_.playerVisible()) {
+                        auto marker = mapView_.playerPosition();
+                        int mx = 48 + int(marker.x * 544 / (m.width * m.tileWidth)),
+                            my = 36 + int(marker.y * 306 / (m.height * m.tileHeight));
+                        rect(out, mx - 4, my - 4, 9, 9, {255, 222, 85, 255});
+                    }
                 }
             } catch (const std::exception&) {
                 text(out, 50, 80, "MAP UNAVAILABLE");
@@ -464,8 +482,12 @@ namespace rp {
             float u = (x - 48) / 544.f, v = (y - 36) / 306.f;
             float wx = u * mapView_.data()->width * mapView_.data()->tileWidth;
             float wy = v * mapView_.data()->height * mapView_.data()->tileHeight;
-            if (!mapView_.isValidIconLocation(wx, wy)) {
-                g.status = "Cannot sail onto land";
+            mapView_.showMap();
+            mapView_.movementAllowed(!g.pendingMap.has_value());
+            mapView_.touchDown({wx, wy});
+            mapView_.touchUp({wx, wy});
+            if (!mapView_.moveShip()) {
+                g.status = g.pendingMap ? "Waiting for movement" : "Cannot sail onto land";
                 return {};
             }
             return g.moveMap(int(u * 200 - 100), int(v * 200 - 100),
@@ -550,10 +572,16 @@ namespace rp {
             std::vector<PanelRow> result;
             RPMenuHandler menu(game);
             for (int id : menu.gotMsgGetAvailBlueprintsRequest()) {
-                auto& bp = game.blueprints.at(id);
-                result.push_back(
-                    {id,
-                     bp.name() + (menu.gotMsgHaveMaterialsRequest(id) ? "" : " - NEED MATERIALS")});
+                const auto* bp = menu.gotMsgBlueprintDisplayRequest(id);
+                if (!bp)
+                    continue;
+                std::string label = bp->name();
+                if (!menu.gotMsgHaveMaterialsRequest(id)) {
+                    auto cost = game.goldCostToBuild(id);
+                    label += cost ? " - NEED MATERIALS (" + std::to_string(*cost) + " GOLD)"
+                                  : " - NEED MATERIALS";
+                }
+                result.push_back({id, std::move(label)});
             }
             return result;
         }
@@ -581,9 +609,9 @@ namespace rp {
         try {
             auto it = shopAtlases_.find(sheet);
             if (it == shopAtlases_.end()) {
-                auto atlas = std::make_shared<ResourceSpriteSheet>(
-                    ResourceSpriteSheet::Create(root_ / "xml_resources" / path));
-                auto img = std::make_shared<Image>(loadAssetImage(root_ / atlas->imagePath));
+                auto atlas =
+                    loader_.sheet((std::filesystem::path("xml_resources") / path).generic_string());
+                auto img = loader_.sprite(atlas->imagePath);
                 it = shopAtlases_.emplace(sheet, std::make_pair(atlas, img)).first;
             }
             const auto* cell = it->second.first->findSpriteByName(name);

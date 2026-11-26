@@ -16,6 +16,12 @@ namespace rp {
         std::map<int, int> gotMsgRecipeInformationRequest(int blueprint) const;
         std::vector<int> gotMsgQuestInformationRequest() const;
         bool canPurchase(int item) const;
+        const Blueprint* gotMsgBlueprintDisplayRequest(int id) const;
+        const StoreItem* gotMsgStoreItemDisplayRequest(int id) const;
+        const MaterialInfo* gotMsgMaterialInformationRequest(int id) const;
+        const sfs::SFSObjectWrapper* gotMsgQuestTypeInformationRequest(int id) const;
+        bool gotMsgRequestOceanSafetyUpdate() const;
+        int gotMsgShowBattlePointsRequest() const;
 
       private:
         const Game& game_;

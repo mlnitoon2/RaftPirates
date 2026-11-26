@@ -4,6 +4,7 @@
 #include "rp/Zone.h"
 #include "rp/Discovery.h"
 #include "rp/Quest.h"
+#include "rp/StaticDatabases.h"
 #include "sys/gfx/AnimationRenderer.h"
 #include <optional>
 #include <set>
@@ -34,6 +35,12 @@ namespace rp {
 
     class Game : public Player {
       public:
+        BlueprintsDB blueprintDB;
+        GridObjectsDB gridObjectDB;
+        MaterialsDB materialDB;
+        ZonesDB zonesDB;
+        DiscoveryDB discoveryDB;
+        QuestTypeDB questTypeDB;
         std::map<int, std::string> zones, zoneMaps;
         std::map<int, std::string> discoveries;
         std::map<int, Zone> zoneData;

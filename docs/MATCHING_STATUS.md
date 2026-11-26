@@ -4,11 +4,11 @@ Generated from defined function symbols. Name coverage is unique qualified metho
 
 | Original build | Names matched | Coverage | Names with signature overlap | Binary match |
 |---|---:|---:|---:|---|
-| Raft Pirates (2013) | 188/1191 | 15.7851% | 106 | Not compared |
+| Raft Pirates 2013 | 277/1191 | 23.2578% | 144 | Not compared |
 
-## Raft Pirates (2013)
+## Raft Pirates 2013
 
-Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d454a39df86`
+Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f6fdd26c13`
 
 | Class or namespace | Name matches | Coverage | Signature overlap |
 |---|---:|---:|---:|
@@ -23,12 +23,12 @@ Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d
 | `rp::BattleShipPlacementSprite` | 0/23 | 0.00% | 0 |
 | `rp::Blueprint` | 5/6 | 83.33% | 3 |
 | `rp::BlueprintInfo` | 0/1 | 0.00% | 0 |
-| `rp::BlueprintsDB` | 0/8 | 0.00% | 0 |
+| `rp::BlueprintsDB` | 8/8 | 100.00% | 4 |
 | `rp::BossBattleRaftHighlightSprite` | 0/5 | 0.00% | 0 |
 | `rp::BuildModeState` | 6/63 | 9.52% | 2 |
 | `rp::DamageIndicatorSprite` | 0/3 | 0.00% | 0 |
 | `rp::Discovery` | 4/6 | 66.67% | 3 |
-| `rp::DiscoveryDB` | 0/6 | 0.00% | 0 |
+| `rp::DiscoveryDB` | 6/6 | 100.00% | 3 |
 | `rp::DiscoveryGridObject` | 0/2 | 0.00% | 0 |
 | `rp::DiscoveryModeState` | 6/9 | 66.67% | 3 |
 | `rp::DiveMeterSprite` | 0/6 | 0.00% | 0 |
@@ -46,12 +46,12 @@ Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d
 | `rp::GfxOceanGradient` | 0/7 | 0.00% | 0 |
 | `rp::GfxOceanGrid` | 0/6 | 0.00% | 0 |
 | `rp::GfxShipPreviewScreen` | 0/3 | 0.00% | 0 |
-| `rp::GridObject` | 14/26 | 53.85% | 7 |
+| `rp::GridObject` | 18/26 | 69.23% | 7 |
 | `rp::GridObject::GridShapePiece` | 0/5 | 0.00% | 0 |
 | `rp::GridObjectDataRes` | 0/3 | 0.00% | 0 |
-| `rp::GridObjectInfo` | 0/1 | 0.00% | 0 |
+| `rp::GridObjectInfo` | 1/1 | 100.00% | 0 |
 | `rp::GridObjectPiece` | 2/2 | 100.00% | 1 |
-| `rp::GridObjectsDB` | 0/8 | 0.00% | 0 |
+| `rp::GridObjectsDB` | 7/8 | 87.50% | 1 |
 | `rp::GridSprite` | 0/33 | 0.00% | 0 |
 | `rp::GridSprite::SpritePiece` | 0/1 | 0.00% | 0 |
 | `rp::ItemOnRaftPlacementSprite` | 0/3 | 0.00% | 0 |
@@ -63,13 +63,13 @@ Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d
 | `rp::LoaderMenu` | 0/4 | 0.00% | 0 |
 | `rp::LoaderSpriteSheet` | 0/5 | 0.00% | 0 |
 | `rp::LoaderXml` | 0/5 | 0.00% | 0 |
-| `rp::LoadingManager` | 0/13 | 0.00% | 0 |
-| `rp::MapView` | 7/46 | 15.22% | 2 |
+| `rp::LoadingManager` | 13/13 | 100.00% | 6 |
+| `rp::MapView` | 27/46 | 58.70% | 12 |
 | `rp::MapView::EnemyShipPoints` | 0/2 | 0.00% | 0 |
 | `rp::MapView::TreasureMapPoints` | 0/1 | 0.00% | 0 |
-| `rp::Material` | 3/6 | 50.00% | 2 |
-| `rp::MaterialInfo` | 0/2 | 0.00% | 0 |
-| `rp::MaterialsDB` | 0/6 | 0.00% | 0 |
+| `rp::Material` | 5/6 | 83.33% | 4 |
+| `rp::MaterialInfo` | 1/2 | 50.00% | 1 |
+| `rp::MaterialsDB` | 6/6 | 100.00% | 2 |
 | `rp::MovementArrowSprite` | 0/3 | 0.00% | 0 |
 | `rp::MsgAnimateGridSprite` | 0/1 | 0.00% | 0 |
 | `rp::MsgAttackRequest` | 0/1 | 0.00% | 0 |
@@ -257,14 +257,14 @@ Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d
 | `rp::PerimeterWallSprite` | 0/10 | 0.00% | 0 |
 | `rp::PerimeterWallSprite::SpriteBalloon` | 0/1 | 0.00% | 0 |
 | `rp::PlacementSprite` | 0/9 | 0.00% | 0 |
-| `rp::Player` | 23/30 | 76.67% | 15 |
+| `rp::Player` | 26/30 | 86.67% | 18 |
 | `rp::Quest` | 6/6 | 100.00% | 5 |
-| `rp::QuestTypeDB` | 0/5 | 0.00% | 0 |
+| `rp::QuestTypeDB` | 5/5 | 100.00% | 2 |
 | `rp::QuestTypeInfo` | 0/1 | 0.00% | 0 |
-| `rp::RPMenuHandler` | 8/47 | 17.02% | 0 |
+| `rp::RPMenuHandler` | 14/47 | 29.79% | 0 |
 | `rp::Raft` | 10/16 | 62.50% | 5 |
 | `rp::RaftAttackSprite` | 0/5 | 0.00% | 0 |
-| `rp::RaftComponent` | 11/15 | 73.33% | 7 |
+| `rp::RaftComponent` | 12/15 | 80.00% | 8 |
 | `rp::RaftComponentFactory` | 0/2 | 0.00% | 0 |
 | `rp::RaftFactory` | 0/2 | 0.00% | 0 |
 | `rp::RaftGridSprite` | 0/6 | 0.00% | 0 |
@@ -285,7 +285,7 @@ Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d
 | `rp::Wreckage` | 0/14 | 0.00% | 0 |
 | `rp::WreckageSprite` | 0/6 | 0.00% | 0 |
 | `rp::Zone` | 10/13 | 76.92% | 9 |
-| `rp::ZonesDB` | 0/7 | 0.00% | 0 |
+| `rp::ZonesDB` | 6/7 | 85.71% | 3 |
 | `rp::diving_game::DivingCollectable` | 1/1 | 100.00% | 0 |
 | `rp::diving_game::DivingGame` | 25/28 | 89.29% | 15 |
 | `rp::diving_game::DivingGame::ItemFloater` | 0/3 | 0.00% | 0 |
@@ -312,6 +312,14 @@ Matched names:
 - `rp::Blueprint::init`
 - `rp::Blueprint::initWithSFSObject`
 - `rp::Blueprint::~Blueprint`
+- `rp::BlueprintsDB::BlueprintsDB`
+- `rp::BlueprintsDB::getAllBlueprintsAvail`
+- `rp::BlueprintsDB::getBlueprintDataFromSFSObjectWrapper`
+- `rp::BlueprintsDB::getBlueprintInfo`
+- `rp::BlueprintsDB::getBlueprintInfoFromGridObjectID`
+- `rp::BlueprintsDB::initWithSFSObject`
+- `rp::BlueprintsDB::load`
+- `rp::BlueprintsDB::save`
 - `rp::BuildModeState::BuildModeState`
 - `rp::BuildModeState::UseClockSelected`
 - `rp::BuildModeState::deselectObject`
@@ -322,12 +330,19 @@ Matched names:
 - `rp::Discovery::initWithSFSObject`
 - `rp::Discovery::questgroupid`
 - `rp::Discovery::zoneid`
+- `rp::DiscoveryDB::DiscoveryDB`
+- `rp::DiscoveryDB::buildData`
+- `rp::DiscoveryDB::getById`
+- `rp::DiscoveryDB::initWithSFSObject`
+- `rp::DiscoveryDB::load`
+- `rp::DiscoveryDB::save`
 - `rp::DiscoveryModeState::DiscoveryModeState`
 - `rp::DiscoveryModeState::LeaveDiscovery`
 - `rp::DiscoveryModeState::LeaveDiscoveryReally`
 - `rp::DiscoveryModeState::Pause`
 - `rp::DiscoveryModeState::tick`
 - `rp::DiscoveryModeState::~DiscoveryModeState`
+- `rp::GridObject::Beside`
 - `rp::GridObject::Contains`
 - `rp::GridObject::Destroyed`
 - `rp::GridObject::GetBattlePoints`
@@ -336,24 +351,77 @@ Matched names:
 - `rp::GridObject::GetHealth`
 - `rp::GridObject::GetTotalBattlePoints`
 - `rp::GridObject::GetUserObjectID`
+- `rp::GridObject::Middleish`
+- `rp::GridObject::Overlap`
+- `rp::GridObject::Pieces`
 - `rp::GridObject::Repair`
 - `rp::GridObject::SetBattlePoints`
 - `rp::GridObject::SetState`
 - `rp::GridObject::getResourceData`
 - `rp::GridObject::getType`
 - `rp::GridObject::~GridObject`
+- `rp::GridObjectInfo::GridObjectInfo`
 - `rp::GridObjectPiece::GridObjectPiece`
 - `rp::GridObjectPiece::~GridObjectPiece`
+- `rp::GridObjectsDB::GridObjectsDB`
+- `rp::GridObjectsDB::getBattlePointsFromGridObject`
+- `rp::GridObjectsDB::getDataString`
+- `rp::GridObjectsDB::getNewGridObjectData`
+- `rp::GridObjectsDB::initWithSFSObject`
+- `rp::GridObjectsDB::load`
+- `rp::GridObjectsDB::save`
+- `rp::LoadingManager::LoadingManager`
+- `rp::LoadingManager::addAEAnim`
+- `rp::LoadingManager::addManifest`
+- `rp::LoadingManager::addMenu`
+- `rp::LoadingManager::addSheet`
+- `rp::LoadingManager::addSprite`
+- `rp::LoadingManager::addXml`
+- `rp::LoadingManager::cancel`
+- `rp::LoadingManager::resourceExists`
+- `rp::LoadingManager::setPercentage`
+- `rp::LoadingManager::start`
+- `rp::LoadingManager::update`
+- `rp::LoadingManager::~LoadingManager`
+- `rp::MapView::DeleteShipPreview`
 - `rp::MapView::MapView`
+- `rp::MapView::addTreasureMapPoint`
+- `rp::MapView::clearTreasureMapPoints`
+- `rp::MapView::getSafeSquares`
+- `rp::MapView::getUnsafeSquares`
+- `rp::MapView::hasPlayerNearArea`
+- `rp::MapView::hasXNearArea`
+- `rp::MapView::hideMap`
 - `rp::MapView::isPosInSafeWater`
 - `rp::MapView::isPosOnLand`
 - `rp::MapView::isValidIconLocation`
 - `rp::MapView::limitPlayerPos`
+- `rp::MapView::moveShip`
+- `rp::MapView::movementAllowed`
 - `rp::MapView::setMapFile`
+- `rp::MapView::setPlayerPosition`
+- `rp::MapView::setPlayerVisible`
+- `rp::MapView::setTargetVisible`
+- `rp::MapView::showMap`
+- `rp::MapView::snapPlayerToTreasureMaps`
+- `rp::MapView::tick`
+- `rp::MapView::touchCancel`
+- `rp::MapView::touchDown`
+- `rp::MapView::touchDrag`
+- `rp::MapView::touchUp`
 - `rp::MapView::~MapView`
+- `rp::Material::Material`
 - `rp::Material::id`
 - `rp::Material::init`
 - `rp::Material::initWithSFSObject`
+- `rp::Material::~Material`
+- `rp::MaterialInfo::~MaterialInfo`
+- `rp::MaterialsDB::MaterialsDB`
+- `rp::MaterialsDB::getMaterialInfo`
+- `rp::MaterialsDB::getMaterialInfoFromSFSData`
+- `rp::MaterialsDB::initWithSFSObject`
+- `rp::MaterialsDB::load`
+- `rp::MaterialsDB::save`
 - `rp::OceanView::AxisX`
 - `rp::OceanView::AxisY`
 - `rp::OceanView::CalculateHelpers`
@@ -379,6 +447,7 @@ Matched names:
 - `rp::OceanView::Zoom`
 - `rp::OceanView::~OceanView`
 - `rp::Player::AddRaft`
+- `rp::Player::EastMostPoint`
 - `rp::Player::GetAvailableEdgeGridSpace`
 - `rp::Player::GetDiveUnit`
 - `rp::Player::GetRaftAtPosition`
@@ -387,10 +456,12 @@ Matched names:
 - `rp::Player::RaftRepairRequired`
 - `rp::Player::RaftsConnectedToRaft`
 - `rp::Player::RemoveRaft`
+- `rp::Player::WestMostPoint`
 - `rp::Player::canBuildRaft`
 - `rp::Player::currentBP`
 - `rp::Player::giveBlueprint`
 - `rp::Player::giveMaterial`
+- `rp::Player::goldCostToBuild`
 - `rp::Player::hasBlueprint`
 - `rp::Player::hasMaterial`
 - `rp::Player::hasRaft`
@@ -407,14 +478,25 @@ Matched names:
 - `rp::Quest::markRead`
 - `rp::Quest::setProgressPercentage`
 - `rp::Quest::~Quest`
+- `rp::QuestTypeDB::QuestTypeDB`
+- `rp::QuestTypeDB::getQuestTypeInfo`
+- `rp::QuestTypeDB::initWithSFSObject`
+- `rp::QuestTypeDB::load`
+- `rp::QuestTypeDB::save`
+- `rp::RPMenuHandler::gotMsgBlueprintDisplayRequest`
 - `rp::RPMenuHandler::gotMsgGetAllBlueprintsRequest`
 - `rp::RPMenuHandler::gotMsgGetAvailBlueprintsRequest`
 - `rp::RPMenuHandler::gotMsgGetAvailMaterialsRequest`
 - `rp::RPMenuHandler::gotMsgGetAvailStoreItemRequest`
 - `rp::RPMenuHandler::gotMsgHaveMaterialsRequest`
+- `rp::RPMenuHandler::gotMsgMaterialInformationRequest`
 - `rp::RPMenuHandler::gotMsgQuestInformationRequest`
+- `rp::RPMenuHandler::gotMsgQuestTypeInformationRequest`
 - `rp::RPMenuHandler::gotMsgRecipeInformationRequest`
+- `rp::RPMenuHandler::gotMsgRequestOceanSafetyUpdate`
+- `rp::RPMenuHandler::gotMsgShowBattlePointsRequest`
 - `rp::RPMenuHandler::gotMsgSpecificMaterialAvailAmountRequest`
+- `rp::RPMenuHandler::gotMsgStoreItemDisplayRequest`
 - `rp::Raft::GetBattlePoints`
 - `rp::Raft::GetHealth`
 - `rp::Raft::GetTotalBattlePoints`
@@ -434,6 +516,7 @@ Matched names:
 - `rp::RaftComponent::SetRemainingTime`
 - `rp::RaftComponent::SetState`
 - `rp::RaftComponent::TempTick`
+- `rp::RaftComponent::UseClock`
 - `rp::RaftComponent::initWithSFSObject`
 - `rp::RaftComponent::~RaftComponent`
 - `rp::SparseGrid::CanAddObject`
@@ -456,6 +539,12 @@ Matched names:
 - `rp::Zone::initWithSFSObject`
 - `rp::Zone::max_bp`
 - `rp::Zone::min_bp`
+- `rp::ZonesDB::ZonesDB`
+- `rp::ZonesDB::buildData`
+- `rp::ZonesDB::getById`
+- `rp::ZonesDB::initWithSFSObject`
+- `rp::ZonesDB::load`
+- `rp::ZonesDB::save`
 - `rp::diving_game::DivingCollectable::DivingCollectable`
 - `rp::diving_game::DivingGame::CheckMenuButtonStates`
 - `rp::diving_game::DivingGame::ConfirmDiveFinish`

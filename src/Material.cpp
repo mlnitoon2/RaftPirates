@@ -2,6 +2,9 @@
 #include <algorithm>
 
 namespace rp {
+    Material::Material() = default;
+    Material::~Material() = default;
+
     void Material::init(int id, int amount) {
         id_ = id;
         amount_ = std::max(0, amount);

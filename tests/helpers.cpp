@@ -1,0 +1,164 @@
+#include "rp/Game.h"
+#include "rp/LoadingManager.h"
+#include "rp/MapView.h"
+#include "rp/RPMenuHandler.h"
+#include <chrono>
+#include <filesystem>
+#include <iostream>
+#include <stdexcept>
+#define CHECK(x)                                                                                   \
+    do {                                                                                           \
+        if (!(x))                                                                                  \
+            throw std::runtime_error(#x);                                                          \
+    } while (false)
+using O = sfs::SFSObjectWrapper;
+using A = sfs::SFSArrayWrapper;
+
+O library(const char* name, const O& row) {
+    O packet;
+    auto a = std::make_shared<A>();
+    a->add(std::make_shared<O>(row));
+    packet.put(name, a);
+    return packet;
+}
+
+int main(int argc, char** argv) {
+    auto cache = std::filesystem::temp_directory_path() /
+                 ("rp-library-" +
+                  std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+    try {
+        rp::Game game;
+        O mat;
+        mat.put("material_id", int32_t(2));
+        mat.put("name", "Wood");
+        mat.put("gold_cost", 2.25);
+        game.extension("lib_mat_data", library("material_data", mat));
+        CHECK(game.materialDB.getMaterialInfo("Wood")->goldCost.value() == 2.25);
+        O bp;
+        bp.put("blueprint_id", int32_t(7));
+        bp.put("object_id", int32_t(9));
+        bp.put("name", "Wooden Raft");
+        bp.put("material_1", int32_t(2));
+        bp.put("material_1_amount", int32_t(5));
+        auto packet = library("blueprint_data", bp);
+        game.extension("lib_bp_data", packet);
+        CHECK(game.blueprintDB.getBlueprintInfoFromGridObjectID(9)->id() == 7);
+        CHECK(game.blueprintDB.getBlueprintInfo("Wooden Raft")->recipe.at(2) == 5);
+        game.materials[2] = 2;
+        CHECK(game.goldCostToBuild(7) == 7);
+        CHECK(!game.goldCostToBuild(999));
+        game.blueprintDB.save(cache);
+        rp::BlueprintsDB restored;
+        restored.load(cache);
+        CHECK(restored.getAllBlueprintsAvail() == std::vector<int>{7});
+        auto arr = packet.getSFSArray("blueprint_data");
+        arr->add(std::make_shared<O>(bp));
+        bool rejected = false;
+        try {
+            game.extension("lib_bp_data", packet);
+        } catch (const std::runtime_error&) {
+            rejected = true;
+        }
+        CHECK(rejected && game.blueprints.size() == 1 && game.blueprintDB.getBlueprintInfo(7));
+        O go;
+        go.put("object_id", int32_t(9));
+        go.put("name", "WoodRaft");
+        go.put("battle_points", int32_t(800));
+        go.put("data_string", "0;gfx/rafts/raft_wood.png -192 0 0,0 1,0;");
+        game.extension("lib_go_data", library("gridobject_data", go));
+        int id = 0;
+        CHECK(game.gridObjectDB.getDataString(id, "WoodRaft") == go.getString("data_string") &&
+              id == 9);
+        CHECK(game.gridObjectDB.getBattlePointsFromGridObject(9) == 800);
+        rp::GridObjectInfo def;
+        CHECK(game.gridObjectDB.getNewGridObjectData(def, "WoodRaft"));
+        rp::GridObject a(1, 9, 0, 0, 800, 0), b(2, 9, 2, 0, 800, 0);
+        CHECK(a.Pieces(&def) == 1 && a.occupiedCells(&def).size() == 2 && a.Beside(b, &def, &def));
+        b.x = 1;
+        CHECK(a.Overlap(b, &def, &def));
+        CHECK(a.Middleish(&def).first == .5f);
+        O zone;
+        zone.put("zone_id", int32_t(1));
+        zone.put("name", "Sea");
+        zone.put("mapfile", "test.tmx");
+        game.extension("lib_zone_data", library("zone_data", zone));
+        game.zonesDB.buildData();
+        CHECK(game.zonesDB.getById(1)->mapfile() == "test.tmx");
+        O discovery;
+        discovery.put("id", int32_t(2));
+        discovery.put("name", "Discovery");
+        discovery.put("zoneLocation", int32_t(1));
+        game.extension("lib_discovery_data", library("discovery_data", discovery));
+        game.discoveryDB.buildData();
+        CHECK(game.discoveryDB.getById(2)->zoneid() == 1);
+        O type;
+        type.put("type_id", int32_t(1));
+        type.put("name", "Test quest");
+        game.extension("lib_quest_type_data", library("quest_type_data", type));
+        rp::RPMenuHandler menu(game);
+        CHECK(menu.gotMsgQuestTypeInformationRequest(1)->getString("name") == "Test quest");
+        CHECK(menu.gotMsgMaterialInformationRequest(2)->name == "Wood");
+        CHECK(menu.gotMsgBlueprintDisplayRequest(7)->name() == "Wooden Raft");
+        game.rafts = {
+            {1, 9, 0, 0, 800, 0, {}}, {2, 9, 2, 5, 800, 0, {}}, {3, 9, -1, -10, 800, 0, {}}};
+        CHECK(game.EastMostPoint().x == 2 && game.WestMostPoint().x == -1);
+        rp::RaftComponent part;
+        part.state = 1;
+        part.SetRemainingTime(5);
+        part.UseClock(2.25f);
+        CHECK(part.GetRemainingTime() == 2.75f);
+        part.UseClock(9);
+        CHECK(part.GetRemainingTime() == 0 && part.Building());
+        if (argc == 2) {
+            rp::LoadingManager loading(argv[1]);
+            loading.addManifest("xml_bin/game_manifest.bin");
+            loading.start();
+            CHECK(loading.resourceExists("xml_bin/game_manifest.bin", ""));
+            while (loading.running())
+                loading.update(.016f);
+            CHECK(loading.completed() == 32 && loading.total() == 32 &&
+                  loading.percentage() == 100);
+            CHECK(loading.sprite("gfx/rafts/raft_core")->width > 0);
+            CHECK(loading.sheet("xml_resources/rp_menu.xml")->findSpriteByName("btn_set_sail"));
+            std::cout << "Original manifest: " << loading.completed() - 1 << " resources, "
+                      << loading.errors().size() << " diagnostics\n";
+            for (const auto& e : loading.errors())
+                std::cout << e << '\n';
+            loading.cancel();
+            CHECK(!loading.running() && loading.total() == 0);
+            rp::MapView map;
+            map.setMapFile(argv[1], "xml_resources/maps/map_big_blue.tmx");
+            map.showMap();
+            std::vector<rp::Cell> safe, unsafe;
+            map.getSafeSquares(safe);
+            map.getUnsafeSquares(unsafe);
+            CHECK(!safe.empty() && !unsafe.empty());
+            int x = safe.front().x * map.data()->tileWidth + map.data()->tileWidth / 2,
+                y = safe.front().y * map.data()->tileHeight + map.data()->tileHeight / 2;
+            map.setPlayerPosition({float(x), float(y)}, true);
+            CHECK(map.playerVisible() && map.hasPlayerNearArea(x, y));
+            map.touchDown({float(x), float(y)});
+            map.touchUp({float(x), float(y)});
+            CHECK(map.moveShip());
+            map.movementAllowed(false);
+            map.touchDown({float(x), float(y)});
+            CHECK(!map.moveShip());
+            map.addTreasureMapPoint(1, x, y, 1, 2);
+            CHECK(map.hasXNearArea(x, y));
+            float fx = x + 1, fy = y + 1;
+            map.snapPlayerToTreasureMaps(fx, fy);
+            CHECK(fx == x && fy == y);
+            map.clearTreasureMapPoints();
+            CHECK(!map.hasXNearArea(x, y));
+            map.hideMap();
+            CHECK(!map.playerVisible());
+        }
+        std::filesystem::remove(cache);
+        std::cout << "Catalogue, geometry, construction and map helpers passed\n";
+        return 0;
+    } catch (const std::exception& e) {
+        std::filesystem::remove(cache);
+        std::cerr << e.what() << '\n';
+        return 1;
+    }
+}

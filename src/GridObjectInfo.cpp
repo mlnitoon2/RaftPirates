@@ -29,8 +29,19 @@ namespace rp {
 
     GridObjectPiece::~GridObjectPiece() = default;
 
+    GridObjectInfo::GridObjectInfo(int idValue, int typeValue, int points, std::string nameValue,
+                                   std::string assetValue, int ox, int oy,
+                                   std::vector<Cell> footprint, std::vector<GridPiece> parts)
+        : id(idValue), type(typeValue), bp(std::max(0, points)), name(std::move(nameValue)),
+          asset(std::move(assetValue)), offsetX(ox), offsetY(oy), cells(std::move(footprint)),
+          pieces(std::move(parts)) {}
+
     GridObjectInfo GridObjectInfo::parse(const std::string& data, int battlePoints) {
-        GridObjectInfo info;
+        return GridObjectInfo(data, battlePoints);
+    }
+
+    GridObjectInfo::GridObjectInfo(const std::string& data, int battlePoints) {
+        auto& info = *this;
         info.bp = std::max(0, battlePoints);
         std::istringstream stream(data);
         std::string part;
@@ -53,6 +64,5 @@ namespace rp {
         }
         if (info.cells.empty())
             info.cells.push_back({0, 0});
-        return info;
     }
 } // namespace rp

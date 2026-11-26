@@ -26,6 +26,12 @@ namespace rp {
         remainingFraction = 0;
     }
 
+    void RaftComponent::UseClock(float seconds) {
+        if (!Building() || !std::isfinite(seconds) || seconds <= 0)
+            return;
+        TempTick(seconds);
+    }
+
     void RaftComponent::SetState(int value) {
         // Native SetState promotes state 1 with zero remaining time to state 5.
         state = (value == 1 && state == 1 && GetRemainingTime() == 0) ? 5 : value;

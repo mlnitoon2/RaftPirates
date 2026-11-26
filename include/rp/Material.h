@@ -5,7 +5,8 @@
 namespace rp {
     class Material {
       public:
-        Material() = default;
+        Material();
+        ~Material();
         void init(int id, int amount);
         void initWithSFSObject(const sfs::SFSObjectWrapper& data);
         int id() const;

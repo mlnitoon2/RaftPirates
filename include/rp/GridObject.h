@@ -1,6 +1,8 @@
 #pragma once
 #include <map>
 #include <string>
+#include <vector>
+#include <utility>
 
 namespace rp {
     struct Cell {
@@ -16,6 +18,13 @@ namespace rp {
         virtual ~GridObject();
         int id = 0, type = 0, x = 0, y = 0, bp = 0, state = 0;
         Cell GetGridPosition() const;
+        size_t Pieces(const GridObjectInfo* definition) const;
+        std::vector<Cell> occupiedCells(const GridObjectInfo* definition) const;
+        std::pair<float, float> Middleish(const GridObjectInfo* definition) const;
+        bool Overlap(const GridObject& other, const GridObjectInfo* definition,
+                     const GridObjectInfo* otherDefinition) const;
+        bool Beside(const GridObject& other, const GridObjectInfo* definition,
+                    const GridObjectInfo* otherDefinition) const;
         int GetGridObjectID() const;
         virtual int GetUserObjectID() const;
         virtual int GetBattlePoints() const;
