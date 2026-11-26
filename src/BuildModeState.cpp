@@ -56,4 +56,141 @@ namespace rp {
         p.put("parent_id", int32_t(parent_));
         return Game::request("gs_use_clock", p);
     }
+
+    bool BuildModeState::isReadyForBattle() const {
+        return game_.ready && !game_.safe && !game_.badZone && !game_.RaftCleanupRequired() &&
+               game_.mainRaft() && !game_.mainRaft()->Destroyed() && waiting_.empty() &&
+               !game_.pending && !game_.pendingMove;
+    }
+
+    void BuildModeState::checkFocusRaft() {
+        if (!selected())
+            deselectObject();
+    }
+
+    void BuildModeState::StartWaiting(const std::string& reason) {
+        waiting_ = reason;
+    }
+
+    void BuildModeState::FinishWaiting(const std::string& reason) {
+        if (waiting_ == reason)
+            waiting_.clear();
+    }
+
+    void BuildModeState::gotMsgBuildCancel() {
+        deselectObject();
+        waiting_.clear();
+    }
+
+    void BuildModeState::gotMsgDeselectObject() {
+        deselectObject();
+    }
+
+    std::optional<sfs::Message> BuildModeState::gotMsgDestroyObjectRequest() const {
+        if (!game_.ready || !selected() || !waiting_.empty())
+            return {};
+        if (!parent_ && game_.mainRaft() && game_.mainRaft()->id == id_)
+            return {};
+        return game_.remove(parent_, id_);
+    }
+
+    std::optional<sfs::Message> BuildModeState::gotMsgBuildConfirm(int blueprint, int parent,
+                                                                   Cell pos) {
+        if (!game_.ready || !waiting_.empty() || game_.pending)
+            return {};
+        auto b = game_.blueprints.find(blueprint);
+        if (b == game_.blueprints.end() || !game_.owned.count(blueprint))
+            return {};
+        auto object = game_.objects.find(b->second.object);
+        if (object == game_.objects.end())
+            return {};
+        if (parent ? !game_.canPlaceComponent(object->first, parent, pos.x, pos.y)
+                   : !game_.canBuildRaft(pos))
+            return {};
+        return game_.build(object->first, parent, pos.x, pos.y);
+    }
+
+    std::optional<sfs::Message> BuildModeState::gotMsgMoveObjectRequest(int newParent, Cell pos) {
+        if (!game_.ready || !parent_ || !selected() || game_.pendingMove || !waiting_.empty())
+            return {};
+        if (!game_.canPlaceComponent(selected()->type, newParent, pos.x, pos.y, parent_, id_))
+            return {};
+        return game_.moveComponent(parent_, id_, newParent, pos.x, pos.y);
+    }
+
+    std::vector<std::pair<int, int>> BuildModeState::wrecked(bool components) const {
+        std::vector<std::pair<int, int>> out;
+        for (const auto& r : game_.rafts) {
+            if (components) {
+                for (const auto& c : r.components)
+                    if (c.Destroyed())
+                        out.emplace_back(r.id, c.id);
+            } else if (r.Destroyed())
+                out.emplace_back(0, r.id);
+        }
+        return out;
+    }
+
+    int BuildModeState::gotMsgRequestNumWreckedRafts() const {
+        return int(wrecked(false).size());
+    }
+
+    int BuildModeState::gotMsgRequestNumWreckedRaftComponents() const {
+        return int(wrecked(true).size());
+    }
+
+    void BuildModeState::initWreckedRaftCheck() {
+        wreckedRaft_ = 0;
+        selectWreckedRaft();
+    }
+
+    void BuildModeState::initWreckedRaftComponentCheck() {
+        wreckedComponent_ = 0;
+        selectWreckedRaftComponent();
+    }
+
+    void BuildModeState::selectWreckedRaft() {
+        auto entries = wrecked(false);
+        if (entries.empty()) {
+            deselectObject();
+            return;
+        }
+        wreckedRaft_ %= entries.size();
+        selectObject(0, entries[wreckedRaft_].second);
+    }
+
+    void BuildModeState::selectWreckedRaftComponent() {
+        auto entries = wrecked(true);
+        if (entries.empty()) {
+            deselectObject();
+            return;
+        }
+        wreckedComponent_ %= entries.size();
+        auto p = entries[wreckedComponent_];
+        selectObject(p.first, p.second);
+    }
+
+    void BuildModeState::gotMsgNextWreckedRaft() {
+        ++wreckedRaft_;
+        selectWreckedRaft();
+    }
+
+    void BuildModeState::gotMsgPreviousWreckedRaft() {
+        auto n = wrecked(false).size();
+        if (n)
+            wreckedRaft_ = (wreckedRaft_ % n + n - 1) % n;
+        selectWreckedRaft();
+    }
+
+    void BuildModeState::gotMsgNextWreckedRaftComponent() {
+        ++wreckedComponent_;
+        selectWreckedRaftComponent();
+    }
+
+    void BuildModeState::gotMsgPreviousWreckedRaftComponent() {
+        auto n = wrecked(true).size();
+        if (n)
+            wreckedComponent_ = (wreckedComponent_ % n + n - 1) % n;
+        selectWreckedRaftComponent();
+    }
 } // namespace rp

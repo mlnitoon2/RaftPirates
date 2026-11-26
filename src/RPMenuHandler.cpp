@@ -107,4 +107,142 @@ namespace rp {
         const auto& item = game_.storeItems.at(id);
         return item.price >= 0 && (item.price == 0 || game_.hasMaterial(item.currency, item.price));
     }
+
+    void RPMenuHandler::gotMsgSetBlueprintSelected(int id) {
+        blueprintSelected_ = gotMsgBlueprintDisplayRequest(id) ? id : 0;
+    }
+
+    void RPMenuHandler::gotMsgSetBlueprintPage(int page) {
+        blueprintPage_ = std::max(0, page);
+    }
+
+    void RPMenuHandler::gotMsgSetStoreItemPage(int page) {
+        storePage_ = std::max(0, page);
+    }
+
+    void RPMenuHandler::gotMsgSetStoreCategory(std::string category) {
+        category_ = std::move(category);
+        storePage_ = 0;
+        storeSelected_ = 0;
+    }
+
+    void RPMenuHandler::gotMsgSetStoreItemSelected(int id) {
+        storeSelected_ = gotMsgStoreItemDisplayRequest(id) ? id : 0;
+    }
+
+    int RPMenuHandler::gotMsgStoreItemPageRequest() const {
+        return storePage_;
+    }
+
+    int RPMenuHandler::gotMsgBlueprintPageRequest() const {
+        return blueprintPage_;
+    }
+
+    const std::string& RPMenuHandler::gotMsgStoreCategoryRequest() const {
+        return category_;
+    }
+
+    const StoreItem* RPMenuHandler::gotMsgStoreItemSelectedRequest() const {
+        return gotMsgStoreItemDisplayRequest(storeSelected_);
+    }
+
+    std::map<int, int> RPMenuHandler::gotMsgRecipeSelectedRequest() const {
+        return gotMsgRecipeInformationRequest(blueprintSelected_);
+    }
+
+    void RPMenuHandler::setHudMode(int mode) {
+        hudMode_ = mode;
+    }
+
+    int RPMenuHandler::gotMsgHudModeRequest() const {
+        return hudMode_;
+    }
+
+    void RPMenuHandler::gotMsgSetHudModeRequest(int mode) {
+        setHudMode(mode);
+    }
+
+    void RPMenuHandler::pushMenu(std::string menu) {
+        if (!menu.empty())
+            menus_.push_back(std::move(menu));
+    }
+
+    void RPMenuHandler::popMenu() {
+        if (!menus_.empty())
+            menus_.pop_back();
+    }
+
+    void RPMenuHandler::pushPopUp(std::string popup) {
+        if (!popup.empty())
+            popups_.push_back(std::move(popup));
+    }
+
+    void RPMenuHandler::popPopUp() {
+        if (!popups_.empty())
+            popups_.pop_back();
+    }
+
+    std::string RPMenuHandler::topPopUp() const {
+        return popups_.empty() ? std::string{} : popups_.back();
+    }
+
+    void RPMenuHandler::displayPopUpImmediately(std::string popup) {
+        pushPopUp(std::move(popup));
+    }
+
+    void RPMenuHandler::gotMsgQueueMenuPopup(std::string popup) {
+        if (!popup.empty())
+            queued_.push_back(std::move(popup));
+    }
+
+    bool RPMenuHandler::hasAnyQueuedPopups() const {
+        return !queued_.empty();
+    }
+
+    void RPMenuHandler::enableNewQuestPopupHandling(bool enabled) {
+        newQuestPopups_ = enabled;
+    }
+
+    void RPMenuHandler::showQuestDialogImmediately(int id) {
+        if (newQuestPopups_ && game_.quests.count(id))
+            displayPopUpImmediately("quest:" + std::to_string(id));
+    }
+
+    void RPMenuHandler::tick(float dt) {
+        if (dt >= 0 && popups_.empty() && !queued_.empty()) {
+            pushPopUp(std::move(queued_.front()));
+            queued_.pop_front();
+        }
+    }
+
+    void RPMenuHandler::destroyCurMenuData() {
+        menus_.clear();
+        popups_.clear();
+        queued_.clear();
+        blueprintSelected_ = storeSelected_ = blueprintPage_ = storePage_ = hudMode_ = 0;
+        category_.clear();
+    }
+
+    namespace {
+        std::vector<int> pageOf(std::vector<int> ids, int page, size_t size) {
+            if (!size || size_t(page) > ids.size() / size)
+                return {};
+            size_t start = size_t(page) * size, end = start + std::min(size, ids.size() - start);
+            return {ids.begin() + start, ids.begin() + end};
+        }
+    } // namespace
+
+    std::vector<int> RPMenuHandler::currentStorePage(size_t size) const {
+        auto ids = gotMsgGetAvailStoreItemRequest();
+        if (!category_.empty())
+            ids.erase(
+                std::remove_if(ids.begin(), ids.end(),
+                               [&](int id) { return game_.storeItems.at(id).group != category_; }),
+                ids.end());
+        return pageOf(std::move(ids), storePage_, size);
+    }
+
+    std::vector<int> RPMenuHandler::currentBlueprintPage(size_t size) const {
+        return pageOf(gotMsgGetAvailBlueprintsRequest(), blueprintPage_, size);
+    }
 } // namespace rp

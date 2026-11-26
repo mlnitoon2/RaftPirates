@@ -150,7 +150,8 @@ namespace rp {
                 GfxSprite s;
                 s.image = im;
                 s.cell = {"raft", 0, 0, im->width, im->height, 0, 0, im->width, im->height, false};
-                s.SetPos(b.x + it->second.offsetX, b.y + it->second.offsetY);
+                s.SetPos(b.x + it->second.offsetX * zoom_, b.y + it->second.offsetY * zoom_);
+                s.SetScale(zoom_, zoom_);
                 s.SetPriority((r.x + r.y) * 100.f);
                 mgr.submit(s);
             } catch (const std::exception&) {
@@ -161,16 +162,18 @@ namespace rp {
             auto b = base(r);
             if (grid)
                 for (int x = 0; x <= 6; ++x) {
-                    line(out, int(b.x + x * 32), int(b.y + x * 16), int(b.x + (x - 6) * 32),
-                         int(b.y + (x + 6) * 16), {225, 236, 216, 255});
-                    line(out, int(b.x - x * 32), int(b.y + x * 16), int(b.x + (6 - x) * 32),
-                         int(b.y + (6 + x) * 16), {225, 236, 216, 255});
+                    line(out, int(b.x + x * 32 * zoom_), int(b.y + x * 16 * zoom_),
+                         int(b.x + (x - 6) * 32 * zoom_), int(b.y + (x + 6) * 16 * zoom_),
+                         {225, 236, 216, 255});
+                    line(out, int(b.x - x * 32 * zoom_), int(b.y + x * 16 * zoom_),
+                         int(b.x + (6 - x) * 32 * zoom_), int(b.y + (6 + x) * 16 * zoom_),
+                         {225, 236, 216, 255});
                 }
             for (auto& c : r.components) {
                 auto it = game.objects.find(c.type);
                 if (it == game.objects.end())
                     continue;
-                float x = b.x + (c.x - c.y) * 32, y = b.y + (c.x + c.y + 1) * 16;
+                float x = b.x + (c.x - c.y) * 32 * zoom_, y = b.y + (c.x + c.y + 1) * 16 * zoom_;
                 try {
                     const auto& path = it->second.asset;
                     auto a = bins_.find(path);
@@ -191,10 +194,11 @@ namespace rp {
                         comp = &bin.comps.front();
                     if (comp && comp->width > 0 && comp->height > 0) {
                         float t = comp->duration() > 0 ? std::fmod(time, comp->duration()) : 0;
-                        float scale = .5f;
-                        auto m = Matrix::translation(x - comp->width * scale / 2,
-                                                     y - comp->height * scale * .5f - 12.f) *
-                                 Matrix::scale(scale, scale);
+                        float scale = .5f * zoom_;
+                        auto m =
+                            Matrix::translation(x - comp->width * scale / 2,
+                                                y - comp->height * scale * .5f - 12.f * zoom_) *
+                            Matrix::scale(scale, scale);
                         if (animations_.submit(mgr, bin, *comp, t, m, y) > 0)
                             continue;
                     }

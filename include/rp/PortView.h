@@ -6,6 +6,7 @@
 #include "rp/LoadingManager.h"
 #include "rp/BattleModeState.h"
 #include "rp/DiscoveryModeState.h"
+#include "rp/TouchControls.h"
 
 namespace rp {
     // Temporary native controls for the original APK's GLSurfaceView. Not original Menu Redux UI.
@@ -36,6 +37,8 @@ namespace rp {
       private:
         std::filesystem::path root_;
         OceanView ocean_;
+        TouchControls touchControls_;
+        bool oceanGesture_ = false;
         LoadingManager loader_;
         std::unique_ptr<Hud> hud_;
         std::unique_ptr<diving_game::DivingGame> diving_;

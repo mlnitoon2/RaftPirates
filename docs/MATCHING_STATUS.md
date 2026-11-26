@@ -4,7 +4,7 @@ Generated from defined function symbols. Name coverage is unique qualified metho
 
 | Original build | Names matched | Coverage | Names with signature overlap | Binary match |
 |---|---:|---:|---:|---|
-| Raft Pirates 2013 | 277/1191 | 23.2578% | 144 | Not compared |
+| Raft Pirates 2013 | 363/1191 | 30.4786% | 180 | Not compared |
 
 ## Raft Pirates 2013
 
@@ -25,7 +25,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::BlueprintInfo` | 0/1 | 0.00% | 0 |
 | `rp::BlueprintsDB` | 8/8 | 100.00% | 4 |
 | `rp::BossBattleRaftHighlightSprite` | 0/5 | 0.00% | 0 |
-| `rp::BuildModeState` | 6/63 | 9.52% | 2 |
+| `rp::BuildModeState` | 25/63 | 39.68% | 8 |
 | `rp::DamageIndicatorSprite` | 0/3 | 0.00% | 0 |
 | `rp::Discovery` | 4/6 | 66.67% | 3 |
 | `rp::DiscoveryDB` | 6/6 | 100.00% | 3 |
@@ -34,7 +34,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::DiveMeterSprite` | 0/6 | 0.00% | 0 |
 | `rp::DiveUnitReadoutSprite` | 0/6 | 0.00% | 0 |
 | `rp::DiveUnitReadoutSprite::ReadoutLight` | 0/2 | 0.00% | 0 |
-| `rp::DivingUnit` | 0/22 | 0.00% | 0 |
+| `rp::DivingUnit` | 15/22 | 68.18% | 12 |
 | `rp::DoStuffExtraData` | 0/1 | 0.00% | 0 |
 | `rp::ExplosionFXSprite` | 0/8 | 0.00% | 0 |
 | `rp::FireFXSprite` | 0/6 | 0.00% | 0 |
@@ -64,7 +64,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::LoaderSpriteSheet` | 0/5 | 0.00% | 0 |
 | `rp::LoaderXml` | 0/5 | 0.00% | 0 |
 | `rp::LoadingManager` | 13/13 | 100.00% | 6 |
-| `rp::MapView` | 27/46 | 58.70% | 12 |
+| `rp::MapView` | 35/46 | 76.09% | 15 |
 | `rp::MapView::EnemyShipPoints` | 0/2 | 0.00% | 0 |
 | `rp::MapView::TreasureMapPoints` | 0/1 | 0.00% | 0 |
 | `rp::Material` | 5/6 | 83.33% | 4 |
@@ -261,7 +261,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::Quest` | 6/6 | 100.00% | 5 |
 | `rp::QuestTypeDB` | 5/5 | 100.00% | 2 |
 | `rp::QuestTypeInfo` | 0/1 | 0.00% | 0 |
-| `rp::RPMenuHandler` | 14/47 | 29.79% | 0 |
+| `rp::RPMenuHandler` | 38/47 | 80.85% | 6 |
 | `rp::Raft` | 10/16 | 62.50% | 5 |
 | `rp::RaftAttackSprite` | 0/5 | 0.00% | 0 |
 | `rp::RaftComponent` | 12/15 | 80.00% | 8 |
@@ -275,9 +275,9 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::ShipPlacementSprite` | 0/11 | 0.00% | 0 |
 | `rp::SparseGrid` | 10/15 | 66.67% | 1 |
 | `rp::SplashFXSprite` | 0/6 | 0.00% | 0 |
-| `rp::StoreDB` | 0/6 | 0.00% | 0 |
+| `rp::StoreDB` | 6/6 | 100.00% | 3 |
 | `rp::ThrobingIndicatorSprite` | 0/3 | 0.00% | 0 |
-| `rp::TouchControls` | 0/15 | 0.00% | 0 |
+| `rp::TouchControls` | 14/15 | 93.33% | 6 |
 | `rp::Transition` | 0/8 | 0.00% | 0 |
 | `rp::Transition::MsgDone` | 0/1 | 0.00% | 0 |
 | `rp::UnitHealthBarSprite` | 0/7 | 0.00% | 0 |
@@ -321,10 +321,29 @@ Matched names:
 - `rp::BlueprintsDB::load`
 - `rp::BlueprintsDB::save`
 - `rp::BuildModeState::BuildModeState`
+- `rp::BuildModeState::FinishWaiting`
+- `rp::BuildModeState::StartWaiting`
 - `rp::BuildModeState::UseClockSelected`
+- `rp::BuildModeState::checkFocusRaft`
 - `rp::BuildModeState::deselectObject`
+- `rp::BuildModeState::gotMsgBuildCancel`
+- `rp::BuildModeState::gotMsgBuildConfirm`
+- `rp::BuildModeState::gotMsgDeselectObject`
+- `rp::BuildModeState::gotMsgDestroyObjectRequest`
+- `rp::BuildModeState::gotMsgMoveObjectRequest`
+- `rp::BuildModeState::gotMsgNextWreckedRaft`
+- `rp::BuildModeState::gotMsgNextWreckedRaftComponent`
+- `rp::BuildModeState::gotMsgPreviousWreckedRaft`
+- `rp::BuildModeState::gotMsgPreviousWreckedRaftComponent`
+- `rp::BuildModeState::gotMsgRequestNumWreckedRaftComponents`
+- `rp::BuildModeState::gotMsgRequestNumWreckedRafts`
+- `rp::BuildModeState::initWreckedRaftCheck`
+- `rp::BuildModeState::initWreckedRaftComponentCheck`
+- `rp::BuildModeState::isReadyForBattle`
 - `rp::BuildModeState::repairSelected`
 - `rp::BuildModeState::selectObject`
+- `rp::BuildModeState::selectWreckedRaft`
+- `rp::BuildModeState::selectWreckedRaftComponent`
 - `rp::BuildModeState::~BuildModeState`
 - `rp::Discovery::id`
 - `rp::Discovery::initWithSFSObject`
@@ -342,6 +361,21 @@ Matched names:
 - `rp::DiscoveryModeState::Pause`
 - `rp::DiscoveryModeState::tick`
 - `rp::DiscoveryModeState::~DiscoveryModeState`
+- `rp::DivingUnit::Diving`
+- `rp::DivingUnit::FinishDive`
+- `rp::DivingUnit::GetDiveTime`
+- `rp::DivingUnit::GetLoadValue`
+- `rp::DivingUnit::GetMaxLoad`
+- `rp::DivingUnit::OkayToDive`
+- `rp::DivingUnit::SetDiveLevel`
+- `rp::DivingUnit::SetLoadValue`
+- `rp::DivingUnit::SetState`
+- `rp::DivingUnit::StartDive`
+- `rp::DivingUnit::TempTick`
+- `rp::DivingUnit::initWithSFSObject`
+- `rp::DivingUnit::numAvailableBonusMaterials`
+- `rp::DivingUnit::numCollectedBonusMaterials`
+- `rp::DivingUnit::~DivingUnit`
 - `rp::GridObject::Beside`
 - `rp::GridObject::Contains`
 - `rp::GridObject::Destroyed`
@@ -386,9 +420,11 @@ Matched names:
 - `rp::MapView::DeleteShipPreview`
 - `rp::MapView::MapView`
 - `rp::MapView::addTreasureMapPoint`
+- `rp::MapView::clearEnemyShips`
 - `rp::MapView::clearTreasureMapPoints`
 - `rp::MapView::getSafeSquares`
 - `rp::MapView::getUnsafeSquares`
+- `rp::MapView::hasBossNearArea`
 - `rp::MapView::hasPlayerNearArea`
 - `rp::MapView::hasXNearArea`
 - `rp::MapView::hideMap`
@@ -398,17 +434,23 @@ Matched names:
 - `rp::MapView::limitPlayerPos`
 - `rp::MapView::moveShip`
 - `rp::MapView::movementAllowed`
+- `rp::MapView::selectEnemy`
 - `rp::MapView::setMapFile`
 - `rp::MapView::setPlayerPosition`
 - `rp::MapView::setPlayerVisible`
 - `rp::MapView::setTargetVisible`
 - `rp::MapView::showMap`
+- `rp::MapView::snapPlayerToBoss`
+- `rp::MapView::snapPlayerToEnemyShips`
 - `rp::MapView::snapPlayerToTreasureMaps`
 - `rp::MapView::tick`
 - `rp::MapView::touchCancel`
 - `rp::MapView::touchDown`
 - `rp::MapView::touchDrag`
 - `rp::MapView::touchUp`
+- `rp::MapView::updateBoss`
+- `rp::MapView::updateEnemyShips`
+- `rp::MapView::updateTreasureMapPoints`
 - `rp::MapView::~MapView`
 - `rp::Material::Material`
 - `rp::Material::id`
@@ -483,20 +525,44 @@ Matched names:
 - `rp::QuestTypeDB::initWithSFSObject`
 - `rp::QuestTypeDB::load`
 - `rp::QuestTypeDB::save`
+- `rp::RPMenuHandler::destroyCurMenuData`
+- `rp::RPMenuHandler::displayPopUpImmediately`
+- `rp::RPMenuHandler::enableNewQuestPopupHandling`
 - `rp::RPMenuHandler::gotMsgBlueprintDisplayRequest`
+- `rp::RPMenuHandler::gotMsgBlueprintPageRequest`
 - `rp::RPMenuHandler::gotMsgGetAllBlueprintsRequest`
 - `rp::RPMenuHandler::gotMsgGetAvailBlueprintsRequest`
 - `rp::RPMenuHandler::gotMsgGetAvailMaterialsRequest`
 - `rp::RPMenuHandler::gotMsgGetAvailStoreItemRequest`
 - `rp::RPMenuHandler::gotMsgHaveMaterialsRequest`
+- `rp::RPMenuHandler::gotMsgHudModeRequest`
 - `rp::RPMenuHandler::gotMsgMaterialInformationRequest`
 - `rp::RPMenuHandler::gotMsgQuestInformationRequest`
 - `rp::RPMenuHandler::gotMsgQuestTypeInformationRequest`
+- `rp::RPMenuHandler::gotMsgQueueMenuPopup`
 - `rp::RPMenuHandler::gotMsgRecipeInformationRequest`
+- `rp::RPMenuHandler::gotMsgRecipeSelectedRequest`
 - `rp::RPMenuHandler::gotMsgRequestOceanSafetyUpdate`
+- `rp::RPMenuHandler::gotMsgSetBlueprintPage`
+- `rp::RPMenuHandler::gotMsgSetBlueprintSelected`
+- `rp::RPMenuHandler::gotMsgSetHudModeRequest`
+- `rp::RPMenuHandler::gotMsgSetStoreCategory`
+- `rp::RPMenuHandler::gotMsgSetStoreItemPage`
+- `rp::RPMenuHandler::gotMsgSetStoreItemSelected`
 - `rp::RPMenuHandler::gotMsgShowBattlePointsRequest`
 - `rp::RPMenuHandler::gotMsgSpecificMaterialAvailAmountRequest`
 - `rp::RPMenuHandler::gotMsgStoreItemDisplayRequest`
+- `rp::RPMenuHandler::gotMsgStoreItemPageRequest`
+- `rp::RPMenuHandler::gotMsgStoreItemSelectedRequest`
+- `rp::RPMenuHandler::hasAnyQueuedPopups`
+- `rp::RPMenuHandler::popMenu`
+- `rp::RPMenuHandler::popPopUp`
+- `rp::RPMenuHandler::pushMenu`
+- `rp::RPMenuHandler::pushPopUp`
+- `rp::RPMenuHandler::setHudMode`
+- `rp::RPMenuHandler::showQuestDialogImmediately`
+- `rp::RPMenuHandler::tick`
+- `rp::RPMenuHandler::~RPMenuHandler`
 - `rp::Raft::GetBattlePoints`
 - `rp::Raft::GetHealth`
 - `rp::Raft::GetTotalBattlePoints`
@@ -529,6 +595,26 @@ Matched names:
 - `rp::SparseGrid::moveObject`
 - `rp::SparseGrid::removeObject`
 - `rp::SparseGrid::~SparseGrid`
+- `rp::StoreDB::StoreDB`
+- `rp::StoreDB::getStoreInfo`
+- `rp::StoreDB::initWithSFSObject`
+- `rp::StoreDB::initializeStore`
+- `rp::StoreDB::load`
+- `rp::StoreDB::save`
+- `rp::TouchControls::LockView`
+- `rp::TouchControls::LockZoom`
+- `rp::TouchControls::PanTo`
+- `rp::TouchControls::Pick`
+- `rp::TouchControls::SetLockedView`
+- `rp::TouchControls::SetZoomLimits`
+- `rp::TouchControls::TouchControls`
+- `rp::TouchControls::gotMsgOceanViewPickResult`
+- `rp::TouchControls::onZoom`
+- `rp::TouchControls::tick`
+- `rp::TouchControls::touchCancel`
+- `rp::TouchControls::touchDown`
+- `rp::TouchControls::touchDrag`
+- `rp::TouchControls::touchUp`
 - `rp::Zone::buffer_bp`
 - `rp::Zone::daringLimit`
 - `rp::Zone::defaultpos_open_x`

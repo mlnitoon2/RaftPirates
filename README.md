@@ -1,8 +1,8 @@
 # Raft Pirates
 
-[![RaftPirates original method-name coverage: 23.2578%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
+[![RaftPirates original method-name coverage: 30.4786%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
 
-**277/1191 original method names (23.2578%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
+**363/1191 original method names (30.4786%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
 
 Unofficial native source reconstruction for game preservation. Engine dependency: [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy).
 
@@ -38,9 +38,11 @@ out/lib/arm64-v8a/libraftpirates.so
 
 The script checks ELF64, little-endian, ET_DYN, machine AArch64 and every required JNI export name before copying the output. Use `--minimal` for a native smoke build without optional Lua and FreeType adapters; the original startup and gameplay adapters do not depend on them. It selects API 23, static libc++, and a 16 KiB maximum ELF page size. The resulting file is the intended replacement at `lib/arm64-v8a/libraftpirates.so` in the specific archived APK. **Do not copy the desktop test library into an APK.** Keep the original archive backed up. No signing steps are included.
 
-The Android build itself has not been run: no Android NDK was available in the reconstruction environment. No working Android library is bundled. Older Android target-SDK restrictions, native library packaging, original Java SDK behavior on new Android, and GLES behavior remain possible blockers. This is not guaranteed to launch on an ARM64-only phone.
+GitHub Actions successfully built the ARM64 library at commit `3b24e4cacf4f866764eb7fa352808938e384eabd` ([build artifact](https://github.com/mlnitoon2/RaftPirates/actions/runs/45900728166/artifacts/15155158333)). The current source may differ from that build; physical device launch remains unverified. No compiled library is bundled in this source tree. Older Android target-SDK restrictions, native library packaging, original Java SDK behavior on new Android, and GLES behavior remain possible blockers. This is not guaranteed to launch on an ARM64-only phone.
 
 ## What the experimental replacement does
+
+Drag on the open ocean to pan the raft camera; a drag does not also place a component. Construction actions check the selected blueprint and object, and the StoreDB validates store library snapshots. Diving keeps authoritative state and a local display countdown. See [local play](docs/LOCAL_PLAY.md).
 
 Static library packets are validated by typed catalogue classes. An explicit library-cache API, resource-manifest preloader, construction-time helpers and map selection helpers support the existing gameplay; see [class reconstruction notes](docs/CLASS_RECONSTRUCTION.md).
 

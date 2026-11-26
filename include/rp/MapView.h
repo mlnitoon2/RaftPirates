@@ -52,6 +52,19 @@ namespace rp {
         void getUnsafeSquares(std::vector<Cell>& result) const;
         bool hasPlayerNearArea(int x, int y) const;
         void clearTreasureMapPoints();
+
+        struct EnemyShipPoints {
+            int id = 0, x = 0, y = 0;
+        };
+
+        void clearEnemyShips();
+        void updateEnemyShips(std::vector<EnemyShipPoints> enemies);
+        void updateBoss(std::optional<EnemyShipPoints> boss);
+        bool hasBossNearArea(int x, int y) const;
+        void snapPlayerToBoss(float& x, float& y) const;
+        void snapPlayerToEnemyShips(float& x, float& y) const;
+        bool selectEnemy(const EnemyShipPoints& enemy);
+        void updateTreasureMapPoints();
         void addTreasureMapPoint(int id, int x, int y, int moves, int maxMoves);
         bool hasXNearArea(int x, int y) const;
         void snapPlayerToTreasureMaps(float& x, float& y) const;
@@ -71,6 +84,8 @@ namespace rp {
         };
 
         std::vector<TreasurePoint> treasure_;
+        std::vector<EnemyShipPoints> enemies_;
+        std::optional<EnemyShipPoints> boss_;
         sys::gfx::Vec2 player_{}, destination_{}, target_{};
         bool visible_ = false, playerVisible_ = true, targetVisible_ = false;
         bool canMove_ = true, dragging_ = false;

@@ -168,6 +168,7 @@ namespace rp {
             map_.reset();
             path_.clear();
             clearTreasureMapPoints();
+            clearEnemyShips();
             DeleteShipPreview();
             return;
         }
@@ -184,6 +185,7 @@ namespace rp {
         map_ = std::move(next);
         path_ = full;
         clearTreasureMapPoints();
+        clearEnemyShips();
         DeleteShipPreview();
     }
 
@@ -213,5 +215,75 @@ namespace rp {
             x = std::clamp(x, w * .1f, w * .9f);
             y = std::clamp(y, h * .1f, h * .9f);
         }
+    }
+
+    void MapView::clearEnemyShips() {
+        enemies_.clear();
+        boss_.reset();
+    }
+
+    void MapView::updateEnemyShips(std::vector<EnemyShipPoints> enemies) {
+        enemies_.clear();
+        for (const auto& p : enemies)
+            if (p.id > 0 && isValidIconLocation(p.x, p.y) &&
+                std::none_of(enemies_.begin(), enemies_.end(),
+                             [&](const auto& e) { return e.id == p.id; }))
+                enemies_.push_back(p);
+    }
+
+    void MapView::updateBoss(std::optional<EnemyShipPoints> boss) {
+        boss_ = boss && boss->id > 0 && isValidIconLocation(boss->x, boss->y) ? boss : std::nullopt;
+    }
+
+    bool MapView::hasBossNearArea(int x, int y) const {
+        if (!map_ || !boss_)
+            return false;
+        double dx = double(x) - boss_->x, dy = double(y) - boss_->y;
+        return dx * dx + dy * dy < double(map_->tileWidth) * map_->tileWidth;
+    }
+
+    void MapView::snapPlayerToBoss(float& x, float& y) const {
+        if (boss_ && std::isfinite(x) && std::isfinite(y) && hasBossNearArea(int(x), int(y))) {
+            x = boss_->x;
+            y = boss_->y;
+        }
+    }
+
+    void MapView::snapPlayerToEnemyShips(float& x, float& y) const {
+        if (!map_)
+            return;
+        double best = double(map_->tileWidth) * map_->tileWidth;
+        const EnemyShipPoints* result = nullptr;
+        for (const auto& p : enemies_) {
+            double dx = p.x - x, dy = p.y - y, d = dx * dx + dy * dy;
+            if (d < best) {
+                best = d;
+                result = &p;
+            }
+        }
+        if (result) {
+            x = result->x;
+            y = result->y;
+        }
+    }
+
+    bool MapView::selectEnemy(const EnemyShipPoints& enemy) {
+        if (!canMove_ || !visible_ || !isValidIconLocation(enemy.x, enemy.y))
+            return false;
+        auto it = std::find_if(enemies_.begin(), enemies_.end(), [&](const auto& p) {
+            return p.id == enemy.id && p.x == enemy.x && p.y == enemy.y;
+        });
+        if (it == enemies_.end())
+            return false;
+        target_ = {float(enemy.x), float(enemy.y)};
+        targetVisible_ = true;
+        return true;
+    }
+
+    void MapView::updateTreasureMapPoints() {
+        treasure_.erase(
+            std::remove_if(treasure_.begin(), treasure_.end(),
+                           [&](const auto& p) { return !isValidIconLocation(p.x, p.y); }),
+            treasure_.end());
     }
 } // namespace rp

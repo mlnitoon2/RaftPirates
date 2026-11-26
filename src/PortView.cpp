@@ -136,7 +136,7 @@ namespace rp {
     } // namespace
 
     PortView::PortView(std::filesystem::path root)
-        : root_(std::move(root)), ocean_(root_), loader_(root_) {
+        : root_(std::move(root)), ocean_(root_), touchControls_(&ocean_), loader_(root_) {
         if (loader_.resourceExists("xml_bin/game_manifest.bin", "")) {
             loader_.addManifest("xml_bin/game_manifest.bin");
             loader_.start();
@@ -161,6 +161,7 @@ namespace rp {
 
     void PortView::tick(float dt) {
         loader_.update(dt);
+        touchControls_.tick(dt);
         mapView_.tick(dt);
         if (battle_)
             battle_->tick(dt);
@@ -171,13 +172,19 @@ namespace rp {
     }
 
     void PortView::touchDown(float x, float y) {
+        oceanGesture_ = !diving_ && !battle_ && !discovery_ && !map && panel_ == Panel::None &&
+                        y > 75 && y < 290;
         if (diving_)
             diving_->touchDown({x, y});
+        else if (oceanGesture_)
+            touchControls_.touchDown({x, y});
     }
 
     void PortView::touchDrag(float x, float y) {
         if (diving_)
             diving_->touchDrag({x, y});
+        else if (oceanGesture_)
+            touchControls_.touchDrag({x, y});
     }
 
     Image PortView::render(const Game& g, float time, const std::string& status) {
@@ -363,6 +370,12 @@ namespace rp {
     }
 
     std::optional<sfs::Message> PortView::touch(Game& g, float x, float y) {
+        if (oceanGesture_) {
+            oceanGesture_ = false;
+            touchControls_.touchUp({x, y});
+            if (touchControls_.consumeDrag())
+                return {};
+        }
         if (x < 0 || x >= 640 || y < 0 || y >= 400)
             return {};
         if (battle_) {
@@ -502,7 +515,7 @@ namespace rp {
                     // Tile centre is half a raft down its projected diamond.
                     Cell pos{int(std::floor(world.x)), int(std::floor(world.y))};
                     if (g.canBuildRaft(pos))
-                        return g.build(object->first, 0, pos.x, pos.y);
+                        return BuildModeState(g).gotMsgBuildConfirm(chosen->first, 0, pos);
                     g.status = "Select a free edge next to your raft";
                     return {};
                 }
@@ -515,14 +528,15 @@ namespace rp {
                 if (cx < 0 || cx >= 6 || cy < 0 || cy >= 6)
                     continue;
                 if (moving_) {
-                    auto request =
-                        g.moveComponent(selectedParent_, selectedComponent_, r.id, cx, cy);
+                    BuildModeState build(g);
+                    build.selectObject(selectedParent_, selectedComponent_);
+                    auto request = build.gotMsgMoveObjectRequest(r.id, {cx, cy});
                     moving_ = false;
                     return request;
                 }
                 auto bp = g.blueprints.find(selectedBlueprint_);
                 if (bp != g.blueprints.end())
-                    return g.build(bp->second.object, r.id, cx, cy);
+                    return BuildModeState(g).gotMsgBuildConfirm(bp->first, r.id, {cx, cy});
                 for (auto& component : r.components) {
                     auto definition = g.objects.find(component.type);
                     if (definition == g.objects.end())
@@ -775,7 +789,9 @@ namespace rp {
                 build.selectObject(selectedParent_, selectedComponent_);
                 return x >= 540 ? build.UseClockSelected() : build.repairSelected(false);
             } else if (x >= 360 && selectedComponent_) {
-                auto request = game.remove(selectedParent_, selectedComponent_);
+                BuildModeState build(game);
+                build.selectObject(selectedParent_, selectedComponent_);
+                auto request = build.gotMsgDestroyObjectRequest();
                 selectedComponent_ = 0;
                 selectedParent_ = 0;
                 return request;

@@ -5,26 +5,13 @@
 #include "rp/Discovery.h"
 #include "rp/Quest.h"
 #include "rp/StaticDatabases.h"
+#include "rp/StoreDB.h"
+#include "rp/DivingUnit.h"
 #include "sys/gfx/AnimationRenderer.h"
 #include <optional>
 #include <set>
 
 namespace rp {
-    struct StoreItem {
-        int id = 0, currency = 0, price = 0, amount = 0;
-        std::string name, group, title, sheet, image;
-    };
-
-    struct StoreCurrency {
-        int id = 0, startingAmount = 0;
-        std::string name;
-    };
-
-    struct DiveState {
-        int parent = 0, object = 0, state = 0, lootLevel = 0, depth = 0, maxDepth = 0, richZone = 0,
-            totalSeconds = 0;
-    };
-
     struct PendingBuild {
         int type = 0, parent = 0, x = 0, y = 0;
     };
@@ -41,6 +28,7 @@ namespace rp {
         ZonesDB zonesDB;
         DiscoveryDB discoveryDB;
         QuestTypeDB questTypeDB;
+        StoreDB storeDB;
         std::map<int, std::string> zones, zoneMaps;
         std::map<int, std::string> discoveries;
         std::map<int, Zone> zoneData;

@@ -118,26 +118,14 @@ namespace rp {
         } else if (cmd == "lib_quest_type_data") {
             questTypeDB.initWithSFSObject(p);
         } else if (cmd == "lib_store_item_data") {
-            storeItems.clear();
-            each(p, "store_item_data", [&](auto& x) {
-                StoreItem i{
-                    num(x, "storeitem_id"),    num(x, "currency_id"),    num(x, "price"),
-                    num(x, "amount"),          x.getString("item_name"), x.getString("group_name"),
-                    x.getString("item_title"), x.getString("sheet_id"),  x.getString("image_id")};
-                storeItems[i.id] = std::move(i);
-            });
+            storeDB.initWithSFSObject(p, StoreDB::Library::Items);
+            storeItems = storeDB.items;
         } else if (cmd == "lib_store_cur_data") {
-            storeCurrencies.clear();
-            each(p, "store_currency_data", [&](auto& x) {
-                StoreCurrency c{num(x, "storecur_id"), num(x, "starting_amount"),
-                                x.getString("currency_name")};
-                storeCurrencies[c.id] = std::move(c);
-            });
+            storeDB.initWithSFSObject(p, StoreDB::Library::Currencies);
+            storeCurrencies = storeDB.currencies;
         } else if (cmd == "lib_store_group_data") {
-            storeGroups.clear();
-            each(p, "store_group_data", [&](auto& x) {
-                storeGroups[num(x, "storegroup_id")] = x.getString("group_name");
-            });
+            storeDB.initWithSFSObject(p, StoreDB::Library::Groups);
+            storeGroups = storeDB.groups;
         } else if (cmd == "lib_zone_data") {
             zonesDB.initWithSFSObject(p);
             zoneData = zonesDB.rows();
@@ -318,11 +306,8 @@ namespace rp {
                                                           [&](auto& c) { return c.id == id; }),
                                            r.components.end());
         } else if (cmd == "dive_info") {
-            diveState = {
-                num(p, "parent_id"),          num(p, "object_id"),      num(p, "state"),
-                num(p, "loot_level"),         num(p, "depth"),          num(p, "max_depth"),
-                num(p, "material_rich_zone"), num(p, "time_total_secs")};
-            diveSeconds = std::max(0, num(p, "time_remaining_secs"));
+            diveState.initWithSFSObject(p);
+            diveSeconds = int(std::ceil(diveState.remaining));
             diveFraction = 0;
         } else if (cmd == "gs_build_complete" || cmd == "gs_use_clock" ||
                    cmd == "gs_build_repair") {
@@ -557,11 +542,16 @@ namespace rp {
             }
         }
 
-        diveFraction += std::min(dt, 1.f);
-        if (diveFraction >= 1) {
-            int seconds = int(diveFraction);
-            diveFraction -= seconds;
-            diveSeconds = std::max(0, diveSeconds - seconds);
+        if (diveState.Diving()) {
+            diveState.TempTick(dt);
+            diveSeconds = int(std::ceil(diveState.remaining));
+        } else if (diveSeconds > 0) { // Compatibility for old test fixtures and callers.
+            diveFraction += std::min(dt, 1.f);
+            if (diveFraction >= 1) {
+                int seconds = int(diveFraction);
+                diveFraction -= seconds;
+                diveSeconds = std::max(0, diveSeconds - seconds);
+            }
         }
         for (auto& raft : rafts)
             for (auto& component : raft.components)

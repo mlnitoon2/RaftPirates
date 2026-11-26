@@ -13,3 +13,5 @@ Desktop verification: configure with `-DRAFT_ASSET_ROOT=/path/to/local/assets` t
 Travel to pirate water in the offline session, then select PRACTICE BATTLE. Attack with the selected living raft; active weapons contribute battle points and the enemy retaliates after attacks. Wait for the cooldown between attacks. Victory offers a one-time 150 gold reward, defeat permits exiting. Enemy stats, damage and reward are local test mechanics, not recovered original balancing. No invented combat command is sent to a live server.
 
 The travel panel lists the known Barnacle Bill discovery in the sandbox. Select it to enter a view using the original discovery animation, then return to the ocean. The location and return are supported; the original discovery quest sequence is not. The real-asset play test exercises both the practice battle and discovery.
+
+Drag the main ocean area to pan the raft camera. A completed drag is consumed so that it does not also trigger construction. Camera and marker helpers do not add live combat support.
