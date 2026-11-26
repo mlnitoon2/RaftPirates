@@ -14,7 +14,7 @@ git clone https://github.com/mlnitoon2/RaftPirates.git
 cd RaftPirates
 ```
 
-The default engine checkout is `../HydraLegacy`. To choose another location pass `--hydra` to the Python build script or `-DHYDRA_LEGACY_DIR=/path/to/HydraLegacy` to CMake. The tested engine snapshot is `219bcf15f8698c64274dc582de0f5bedf0e16732`.
+The default engine checkout is `../HydraLegacy`. To choose another location pass `--hydra` to the Python build script or `-DHYDRA_LEGACY_DIR=/path/to/HydraLegacy` to CMake. The tested engine snapshot is `7adac3752475e4c0eb90df8b3bc7691ea5780447`.
 
 The two repositories are independent CMake targets. The game links Hydra statically. The root build produces one shared library named `libraftpirates.so`. It does not build an APK, modify the original APK, create a Java frontend or sign anything.
 
@@ -42,7 +42,7 @@ The Android build itself has not been run: no Android NDK was available in the r
 - Uses `MyLib.init(String,int,int,float,float)` to extract APK assets to app-private cache. No new APK assets need to be added. The original APK supplies its existing Java `GLSurfaceView`, keyboard activity and SmartFox Java SDK.
 - Presents a temporary native research interface via GLES1 with the original raft sprites and TMX map. A CPU renderer is used, not the complete original GPU engine.
 - The Connect control asks for a private server host, a BBB ID, and a session token from your local test server. The Java SDK's `Login(user,session,zone,params)` is used. The official HTTP auth flow is not restored; no account credentials are saved, and no official server endpoint is used by the bridge. Port 9933 is currently fixed. Use test-only tokens, not live credentials. Other old Java SDK code bundled in the APK is outside the scope of the bridge.
-- Incoming libraries/player packets, map movement, placement, basic blueprint purchases, dive start/collection, build completion, repair response state, and discovery response state are represented in C++ to varying degrees. Not all actions have controls. Placement and purchase use temporary controls, not the original shop. Map rendering and safe-water testing are approximate; normalized map wire keys are verified. No actual player persistence.
+- Incoming libraries/player packets, map movement, placement, basic blueprint purchases, dive start/collection, build completion, repair response state, and discovery response state are represented in C++ to varying degrees. The game model also reads shop item, currency and group libraries, retains dive depth and state, and records daring timer and pause fields. Store purchases by item ID are exposed in C++; they are not yet connected to the temporary UI. Not all actions have controls. Placement and purchase use temporary controls, not the original shop. Map rendering and safe-water testing are approximate; normalized map wire keys are verified. No actual player persistence.
 - Original menus, full Lua API, diving minigame, combat, discovery scenes, music/audio playback, social platform functions, advertising/billing integrations, and many more native behaviors remain missing.
 
 ## Verify locally (desktop)
