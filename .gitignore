@@ -6,3 +6,6 @@ __pycache__/
 *.jks
 *.keystore
 /assets_local/
+
+# Verified ARM64 library published by CI.
+!/libraftpirates.so

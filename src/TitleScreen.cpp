@@ -2,7 +2,8 @@
 #include <algorithm>
 
 namespace rp {
-    TitleScreen::TitleScreen(const std::filesystem::path& assets, std::string bbbId) : menu_(assets), bbbId_(std::move(bbbId)) {
+    TitleScreen::TitleScreen(const std::filesystem::path& assets, std::string bbbId)
+        : menu_(assets), bbbId_(std::move(bbbId)) {
         strings_.loadFile(assets / "text/en.utf8");
         menu_.nativeEvent = [this](auto&, unsigned id, const std::string& name) {
             return event(id, name);

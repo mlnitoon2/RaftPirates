@@ -6,7 +6,7 @@ namespace {
         if (!result)
             throw std::runtime_error("Session regression");
     }
-}
+} // namespace
 
 int main() {
     rp::RaftPirates game;

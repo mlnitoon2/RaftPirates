@@ -136,7 +136,8 @@ namespace rp {
     } // namespace
 
     PortView::PortView(std::filesystem::path root)
-        : root_(std::move(root)), ocean_(root_), touchControls_(&ocean_), loader_(root_) {
+        : root_(std::move(root)), ocean_(root_), opponentOcean_(root_), touchControls_(&ocean_),
+          loader_(root_) {
         if (loader_.resourceExists("xml_bin/game_manifest.bin", "")) {
             loader_.addManifest("xml_bin/game_manifest.bin");
             loader_.start();
@@ -189,29 +190,61 @@ namespace rp {
 
     Image PortView::render(const Game& g, float time, const std::string& status) {
         Image out(640, 400, {36, 133, 168, 255});
-        using Phase = OnlineBattle::Phase;
+        using Phase = BattleModeState::Phase;
         const auto& net = g.onlineBattle;
         if (!g.localPlay && net.phase() != Phase::Idle) {
             out = ocean_.render(g, time, false);
+            if (net.hasOpponent()) {
+                auto enemy = opponentOcean_.render(net.opponent(), time, false);
+                for (int y = 100; y < 310; ++y)
+                    for (int x = 320; x < 640; ++x)
+                        out.at(x, y) = enemy.at((x - 320) * 2, (y - 100) * enemy.height / 210);
+            }
             rect(out, 12, 12, 616, 84, {15, 38, 54, 255});
-            text(out, 24, 20, "MULTIPLAYER BATTLE", 2);
-            if (net.hasOpponent()) text(out, 24, 44, net.opponent().playerName + " BP " + std::to_string(net.opponent().currentBP()), 1);
+            text(out, 24, 20, net.isBoss() ? "BOSS BATTLE" : "MULTIPLAYER BATTLE", 2);
+            if (net.hasOpponent())
+                text(out, 24, 44,
+                     net.opponent().playerName + " BP " +
+                         std::to_string(net.opponent().currentBP()),
+                     1);
             text(out, 24, 66, net.waiting() ? "WAITING FOR SERVER" : net.message(), 1);
             rect(out, 0, 342, 640, 58, {15, 38, 54, 255});
             if (net.phase() == Phase::Encounter) {
-                text(out, 30, 365, "ACCEPT", 2); text(out, 420, 365, "DECLINE", 2);
+                text(out, 30, 365, "ACCEPT", 2);
+                text(out, 420, 365, "DECLINE", 2);
             } else if (net.phase() == Phase::Positioning) {
                 int own = g.rafts.empty() ? 0 : g.rafts[ownBattleIndex_ % g.rafts.size()].id;
-                int enemy = net.opponent().rafts.empty() ? 0 : net.opponent().rafts[enemyBattleIndex_ % net.opponent().rafts.size()].id;
-                text(out, 20, 315, "OWN RAFT " + std::to_string(own) + "    ENEMY RAFT " + std::to_string(enemy), 1);
-                text(out, 10, 365, "OWN", 2); text(out, 125, 365, "ENEMY", 2); text(out, 260, 365, "SELECT", 2); text(out, 495, 365, "RETREAT", 2);
+                int enemy =
+                    net.opponent().rafts.empty()
+                        ? 0
+                        : net.opponent().rafts[enemyBattleIndex_ % net.opponent().rafts.size()].id;
+                text(out, 20, 315,
+                     "OWN RAFT " + std::to_string(own) + "    ENEMY RAFT " + std::to_string(enemy),
+                     1);
+                text(out, 10, 365, "OWN", 2);
+                text(out, 125, 365, "ENEMY", 2);
+                text(out, 260, 365, net.attacker() && !net.positioned() ? "POSITION" : "SELECT", 2);
+                if (net.attacker() && !net.positioned())
+                    text(out, 20, 295,
+                         "TAP OCEAN TO POSITION: " + std::to_string(attackPosition_.x) + "," +
+                             std::to_string(attackPosition_.y),
+                         1);
+                text(out, 495, 365, "RETREAT", 2);
             } else if (net.phase() == Phase::Fighting) {
-                text(out, 20, 315, "DICE " + std::to_string(battleDice_) + "  OPPONENT TIME " + std::to_string(net.opponentTime()), 1);
-                text(out, 15, 365, "DICE +/-", 1); text(out, 190, 365, net.attacker()?"ATTACK":"DEFEND", 2);
-                text(out, 345, 365, "READY", 2); text(out, 500, 365, "RETREAT", 1);
-            } else if (net.phase() == Phase::Over) text(out, 24, 365, "BATTLE OVER - REQUEST PLUNDER", 2);
-            else if (net.phase() == Phase::Desynced) text(out, 24, 365, "OUT OF SYNC - RETREAT", 2);
-            else text(out, 24, 365, "WAITING FOR OPPONENT", 2);
+                text(out, 20, 315,
+                     "DICE " + std::to_string(battleDice_) + "  OPPONENT TIME " +
+                         std::to_string(net.opponentTime()),
+                     1);
+                text(out, 15, 365, "DICE +/-", 1);
+                text(out, 190, 365, net.attacker() ? "ATTACK" : "DEFEND", 2);
+                text(out, 345, 365, "READY", 2);
+                text(out, 500, 365, "RETREAT", 1);
+            } else if (net.phase() == Phase::Over)
+                text(out, 24, 365, "BATTLE OVER - REQUEST PLUNDER", 2);
+            else if (net.phase() == Phase::Desynced)
+                text(out, 24, 365, "OUT OF SYNC - RETREAT", 2);
+            else
+                text(out, 24, 365, "WAITING FOR OPPONENT", 2);
             return out;
         }
         if (battle_ && !g.localPlay)
@@ -329,6 +362,11 @@ namespace rp {
                                              uint8_t(p.b * a + q.b * (1 - a)), 255};
                                     }
                             }
+                    if (g.bossData && g.bossData->getInt("zone") == g.zone)
+                        text(out, 60, 42,
+                             "BOSS: " + g.bossData->getString("display_name") + "  BP " +
+                                 std::to_string(g.bossData->getInt("battle_points")),
+                             1);
                     mapView_.showMap();
                     mapView_.movementAllowed(!g.pendingMap.has_value());
                     mapView_.setPlayerVisible(true);
@@ -355,7 +393,7 @@ namespace rp {
             text(out, 222, 370, g.diveSeconds > 0 ? "DIVING" : "DIVE", 1);
             text(out, 334, 370, "COLLECT", 1);
             if (!g.localPlay && g.ready && !map) {
-                rect(out, 450, 300, 175, 34, {29,57,74,255});
+                rect(out, 450, 300, 175, 34, {29, 57, 74, 255});
                 text(out, 460, 312, g.sonarPending ? "SONAR WAITING" : "PING SONAR", 1);
             }
             if (g.localPlay && !g.safe && g.mainRaft() && !g.mainRaft()->Destroyed()) {
@@ -407,24 +445,54 @@ namespace rp {
         }
         if (x < 0 || x >= 640 || y < 0 || y >= 400)
             return {};
-        using Phase = OnlineBattle::Phase;
+        using Phase = BattleModeState::Phase;
         auto& net = g.onlineBattle;
         if (!g.localPlay && net.phase() != Phase::Idle) {
-            if (y < 342 || net.waiting()) return {};
-            if (net.phase() == Phase::Encounter) return net.encounterResponse(x < 320);
+            if (net.waiting())
+                return {};
+            if (y < 342) {
+                if (net.phase() == Phase::Positioning && net.attacker() && !net.positioned() &&
+                    y >= 100) {
+                    auto point = ocean_.ScreenToWorld({x, y});
+                    attackPosition_ = {int(std::lround(point.x)), int(std::lround(point.y))};
+                }
+                return {};
+            }
+            if (net.phase() == Phase::Encounter)
+                return net.encounterResponse(x < 320);
             if (net.phase() == Phase::Positioning) {
-                if (x < 110) {++ownBattleIndex_;return {};}
-                if (x < 250) {++enemyBattleIndex_;return {};}
-                if (x >= 470) return net.retreat();
-                if (!g.rafts.empty() && !net.opponent().rafts.empty())
-                    return net.selectRafts(g.rafts[ownBattleIndex_%g.rafts.size()].id,net.opponent().rafts[enemyBattleIndex_%net.opponent().rafts.size()].id,g);
-            } else if(net.phase()==Phase::Fighting) {
-                if(x<160){battleDice_=std::clamp(battleDice_+(x<80?-1:1),1,8);return {};}
-                if(x>=470)return net.retreat();
-                if(x>=330)return net.clientReady();
-                return net.attacker()?net.attack(battleDice_):net.defend(battleDice_);
-            } else if(net.phase()==Phase::Over)return net.plunder();
-            else if(net.phase()==Phase::Desynced)return net.retreat();
+                if (x < 110) {
+                    ++ownBattleIndex_;
+                    return {};
+                }
+                if (x < 250) {
+                    ++enemyBattleIndex_;
+                    return {};
+                }
+                if (x >= 470)
+                    return net.retreat();
+                if (net.attacker() && !net.positioned())
+                    return net.gotMsgBattleScreenRaftsSelected(attackPosition_.x,
+                                                               attackPosition_.y);
+                if (net.hasOpponent() && !g.rafts.empty() && !net.opponent().rafts.empty())
+                    return net.SendRaftSelection(
+                        g.rafts[ownBattleIndex_ % g.rafts.size()].id,
+                        net.opponent().rafts[enemyBattleIndex_ % net.opponent().rafts.size()].id,
+                        g);
+            } else if (net.phase() == Phase::Fighting) {
+                if (x < 160) {
+                    battleDice_ = std::clamp(battleDice_ + (x < 80 ? -1 : 1), 1, 8);
+                    return {};
+                }
+                if (x >= 470)
+                    return net.retreat();
+                if (x >= 330)
+                    return net.SendClientReady();
+                return net.gotMsgAttackRequest(battleDice_);
+            } else if (net.phase() == Phase::Over)
+                return net.plunder();
+            else if (net.phase() == Phase::Desynced)
+                return net.retreat();
             return {};
         }
         if (battle_) {
@@ -458,7 +526,8 @@ namespace rp {
             return {};
         }
         if (hudEnabled(g)) {
-            if (!g.localPlay && !map && x>=450 && y>=300 && y<334) return g.pingSonar();
+            if (!g.localPlay && !map && x >= 450 && y >= 300 && y < 334)
+                return g.pingSonar();
             if (g.localPlay && x >= 450 && y >= 300 && y < 334 && g.mainRaft() &&
                 !g.mainRaft()->Destroyed() && !g.safe) {
                 battle_ = std::make_unique<BattleModeState>(g);
@@ -526,7 +595,8 @@ namespace rp {
             case 4:
                 return g.dive("dive_collect");
             case 5:
-                if (!g.ready) return {};
+                if (!g.ready)
+                    return {};
                 panel_ = panel_ == Panel::None ? Panel::Build : Panel::None;
                 page_ = 0;
                 return {};

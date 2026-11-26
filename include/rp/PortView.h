@@ -35,7 +35,8 @@ namespace rp {
 
       private:
         std::filesystem::path root_;
-        OceanView ocean_;
+        OceanView ocean_, opponentOcean_;
+        Cell attackPosition_{0, 0};
         TouchControls touchControls_;
         bool oceanGesture_ = false;
         LoadingManager loader_;

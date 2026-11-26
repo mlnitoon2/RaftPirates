@@ -4,7 +4,7 @@ Generated from defined function symbols. Name coverage is unique qualified metho
 
 | Original build | Names matched | Coverage | Names with signature overlap | Binary match |
 |---|---:|---:|---:|---|
-| Raft Pirates 2013 | 406/1191 | 34.0890% | 196 | Not compared |
+| Raft Pirates 2013 | 410/1191 | 34.4249% | 196 | Not compared |
 
 ## Raft Pirates 2013
 
@@ -16,7 +16,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::AccessorySprite` | 0/11 | 0.00% | 0 |
 | `rp::Barracks` | 0/11 | 0.00% | 0 |
 | `rp::BattleArrowSprite` | 0/3 | 0.00% | 0 |
-| `rp::BattleModeState` | 13/31 | 41.94% | 9 |
+| `rp::BattleModeState` | 17/31 | 54.84% | 9 |
 | `rp::BattleModeState::BattleDice` | 0/2 | 0.00% | 0 |
 | `rp::BattlePlacementScreen` | 0/15 | 0.00% | 0 |
 | `rp::BattlePointsViewSprite` | 0/4 | 0.00% | 0 |
@@ -295,8 +295,11 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 Matched names:
 
 - `rp::BattleModeState::BattleModeState`
+- `rp::BattleModeState::GetStateName`
+- `rp::BattleModeState::HandleExtensionResponse`
 - `rp::BattleModeState::Pause`
 - `rp::BattleModeState::RaftSelect`
+- `rp::BattleModeState::SendClientReady`
 - `rp::BattleModeState::SendRaftSelection`
 - `rp::BattleModeState::StartWaiting`
 - `rp::BattleModeState::StopWaiting`
@@ -304,6 +307,7 @@ Matched names:
 - `rp::BattleModeState::ToPositioningView`
 - `rp::BattleModeState::endBattleAndPlunder`
 - `rp::BattleModeState::gotMsgAttackRequest`
+- `rp::BattleModeState::gotMsgBattleScreenRaftsSelected`
 - `rp::BattleModeState::gotMsgExitBattleModeRequest`
 - `rp::BattleModeState::tick`
 - `rp::BattleModeState::~BattleModeState`

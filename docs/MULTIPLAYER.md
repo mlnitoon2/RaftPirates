@@ -1,6 +1,6 @@
-# Pass 23: multiplayer battle transport
+# Pass 23–24: multiplayer and boss battle transport
 
-`OnlineBattle` handles incoming extension commands independently of the desktop-only practice battle. `Game::extension` forwards recognized packets, and the JNI send path uses the existing SmartFox Java SDK. `Ocean` keeps a separate opponent snapshot. Disconnect clears the online encounter and sonar state. The temporary online battle controls are not the original battle layout. No Offline Play or manual Connect option was reintroduced.
+`BattleModeState` now owns the reconstructed online path as well as the isolated desktop practice mode. The reconstruction-only `OnlineBattle` source files were removed. `Game::extension` forwards recognized packets, and the JNI send path uses the existing SmartFox Java SDK. `Ocean` keeps a separate opponent snapshot. Disconnect clears the online encounter and sonar state. The temporary online battle controls are not the original battle layout. No Offline Play or manual Connect option was reintroduced.
 
 ## Outgoing protocol evidence
 
@@ -10,6 +10,7 @@ The following string references were read from ARM32 instructions in the origina
 |---|---|---|
 | `ping_sonar` | empty object | `0x4a7ce4` |
 | `gs_encounter_response` | `attack` boolean | `0x4bb358`, `0x4bb394` |
+| `gs_battle_position` | `attack_x`, `attack_y`, `sync_counter` integers | `0x389480`, `0x3894b0`, `0x3894e0`, `0x389510` |
 | `gs_battle_select_raft` | `attack_raft`, `defend_raft`, `ai_selection`, `sync_counter` integers | `0x389204`, `0x389248`, `0x38928c`, `0x3892bc`, `0x3892ec` |
 | `gs_battle_client_ready` | `confirm_swap_stance` boolean, `sync_counter` integer | `0x385b8c`, `0x385c4c`, `0x385c84` |
 | `gs_battle_attack` | `attack_dice`, `sync_counter` integers | `0x383584`, `0x3835b8`, `0x3835e8` |
@@ -21,8 +22,14 @@ The following string references were read from ARM32 instructions in the origina
 
 Recognized commands include `gs_encounter`, `gs_start_battle`, `gs_opponent`, `gs_battle_position`, `gs_battle_select_raft`, `gs_battle_client_ready`, `gs_battle_attack`, `gs_battle_defend`, `gs_swap_stance`, `gs_battle_opponent_time`, `gs_battle_over`, `gs_battle_retreat` and `gs_battle_plunder`. The reference `BattleModeState::HandleExtensionResponse` starts at `0x389b3c`. Opponent data is initialized from `player_object`, and the client retains authoritative battle result packets. It never simulates online damage or grants gold locally. The position and selection counter advancement are based on reference paths at `0x38a9b4` and `0x3887b4`. Older counters are ignored, newer unexpected counters mark the state desynchronized. Duplicate local sends are prevented while waiting.
 
+## Pass 24: result application and boss handling
+
+The original `gotMsgBattleScreenRaftsSelected` sends `gs_battle_position` with integer coordinates. `SendRaftSelection` selects intact rafts and accepts authoritative selected IDs. Battle attack responses carry `results`; `BattleModeState::tick` in the reference advances the counter near `0x38e800`. The host reconstruction applies results once to both selected rafts using `Raft::HandleBattleOutcome`, rejects ambiguous overlapping fleet-local IDs, advances the counter, and requires another ready acknowledgement. Stance changes use `gs_swap_stance` and `confirm_swap_stance`. The opponent is rendered separately with the existing ocean asset renderer.
+
+`gs_opponent.is_boss` marks a boss encounter. The map's `boss_data` object (`0x44a934`) contains `user_id`, `display_name`, `battle_points`, `zone`, and `raft_info`; the client retains this record and shows the boss name and BP when its zone matches. Exact boss map position and encounter initiation are not yet recovered. No fake boss coordinates, AI, damage or loot are generated.
+
 ## Current limitations
 
-The state machine and GUI are provisional: the actual server sequencing, exact ready acknowledgement, encounter timing, outgoing positioning action, turn and stance progression, damage ownership, boss behavior, and plunder eligibility are not fully reconstructed. For example, result records may contain `target_raft`, `user_raft_id`, `target_component`, `user_raft_component_id`, `current_bp` and `state`, but ownership must be determined before applying them to a fleet. The UI currently displays the local raft and opponent name/BP; it is not a complete opponent ocean renderer. Opponent slot 1 is an internal view slot, not the opponent's network ID. No real two-client server session was run. The private server must implement corresponding commands and authoritative validation/persistence for online combat to work.
+The battle HUD is still a temporary interface, not the original battle layout. Exact result ownership when raft IDs collide, synchronization ordering, selection after destruction, timing and animation, boss world-map encounter entry, boss phases and reward eligibility are not completely recovered. The server must send authoritative outcomes and implement matching commands. No actual multiplayer server session or complete boss fight was tested.
 
-`tests/multiplayer.cpp` verifies sonar, acceptance, opponent initialization, raft selection, readiness, dice fields, duplicate guard, counter rejection, retreat, decline and plunder against synthetic fixtures. Host JNI smoke testing covers the existing login and SFS bridge, not a live multiplayer match.
+`tests/multiplayer.cpp` exercises synthetic map/boss and opponent records, position requests, raft selection, ready gating, dice fields, server-authoritative damage, counter advancement, stance swaps, duplicate handling, retreat, decline and plunder. Host JNI smoke testing checks the login/SFS bridge, not live combat.

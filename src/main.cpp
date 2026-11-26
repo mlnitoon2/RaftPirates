@@ -22,12 +22,20 @@ int main(int argc, char** argv) {
             title.render().savePNG(argv[2]);
             return 0;
         }
-        if (argc == 4 && (std::string(argv[3]) == "--login" || std::string(argv[3]) == "--email" || std::string(argv[3]) == "--registration")) {
+        if (argc == 4 && (std::string(argv[3]) == "--login" || std::string(argv[3]) == "--email" ||
+                          std::string(argv[3]) == "--registration")) {
             rp::LoginScreen login(argv[1]);
-            for (int i=0;i<100;++i) login.tick(.05f);
-            auto click=[&](const char* name){auto b=login.bounds(name); login.touchDown(b.x+b.w/2,b.y+b.h/2); login.touchUp(b.x+b.w/2,b.y+b.h/2);};
-            if(std::string(argv[3]) != "--login") click("EmailButton");
-            if(std::string(argv[3]) == "--registration") click("RegisterButton");
+            for (int i = 0; i < 100; ++i)
+                login.tick(.05f);
+            auto click = [&](const char* name) {
+                auto b = login.bounds(name);
+                login.touchDown(b.x + b.w / 2, b.y + b.h / 2);
+                login.touchUp(b.x + b.w / 2, b.y + b.h / 2);
+            };
+            if (std::string(argv[3]) != "--login")
+                click("EmailButton");
+            if (std::string(argv[3]) == "--registration")
+                click("RegisterButton");
             std::cout << login.screen() << "\n";
             login.render().savePNG(argv[2]);
             return 0;

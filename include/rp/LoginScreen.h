@@ -6,25 +6,52 @@
 namespace rp {
     class LoginScreen {
       public:
-        enum class Action { None, Email, Password, ConfirmPassword, Submit, Register, Facebook, Reset };
+        enum class Action {
+            None,
+            Email,
+            Password,
+            ConfirmPassword,
+            Submit,
+            Register,
+            Facebook,
+            Reset
+        };
         explicit LoginScreen(const std::filesystem::path& root);
         void tick(float dt);
         void touchDown(float x, float y);
         void touchDrag(float x, float y);
         Action touchUp(float x, float y);
         void setInput(Action, std::string);
-        const std::string& email() const { return email_; }
-        const std::string& password() const { return password_; }
-        const std::string& confirmation() const { return confirmation_; }
+
+        const std::string& email() const {
+            return email_;
+        }
+
+        const std::string& password() const {
+            return password_;
+        }
+
+        const std::string& confirmation() const {
+            return confirmation_;
+        }
+
         void clearPassword();
         void registrationComplete();
         void busy(bool);
         void finish();
-        bool finished() const { return finished_; }
+
+        bool finished() const {
+            return finished_;
+        }
+
         void error(std::string);
         sys::gfx::Image render();
         sys::menu_redux::Rect bounds(const std::string&) const;
-        std::string screen() const { return screen_; }
+
+        std::string screen() const {
+            return screen_;
+        }
+
       private:
         using Menu = sys::menu_redux::MenuRuntime;
         std::filesystem::path root_;
@@ -40,4 +67,4 @@ namespace rp {
         void refresh();
         bool event(Menu&, unsigned, const std::string&);
     };
-}
+} // namespace rp

@@ -100,8 +100,17 @@ namespace rp {
 
     void Game::extension(const std::string& cmd, const O& p) {
         status = cmd;
-        if (cmd == "ready_for_battle") readyForBattle = p.getBool("is_ready", false);
-        if (cmd == "ping_sonar" || cmd == "gs_error" || cmd == "gs_encounter") sonarPending = false;
+        if (p.get("boss_data")) {
+            auto boss = p.getSFSObj("boss_data");
+            if (boss && boss->getInt("user_id") > 0)
+                bossData = *boss;
+            else
+                bossData.reset();
+        }
+        if (cmd == "ready_for_battle")
+            readyForBattle = p.getBool("is_ready", false);
+        if (cmd == "ping_sonar" || cmd == "gs_error" || cmd == "gs_encounter")
+            sonarPending = false;
         if (onlineBattle.HandleExtensionResponse(cmd, p, *this))
             return;
         if (cmd == "lib_go_data") {
@@ -353,9 +362,10 @@ namespace rp {
     }
 
     std::optional<sfs::Message> Game::pingSonar() {
-        if (!ready || localPlay || sonarPending || onlineBattle.phase()!=OnlineBattle::Phase::Idle)
+        if (!ready || localPlay || sonarPending ||
+            onlineBattle.phase() != BattleModeState::Phase::Idle)
             return {};
-        sonarPending=true;
+        sonarPending = true;
         return request("ping_sonar");
     }
 

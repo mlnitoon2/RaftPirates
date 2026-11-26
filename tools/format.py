@@ -16,7 +16,7 @@ def main():
         parser.error("Install clang-format 17 or newer, or specify its path with --clang-format.")
     root = Path(__file__).resolve().parents[1]
     suffixes = {".c", ".cc", ".cpp", ".h", ".hpp", ".inc"}
-    folders = ("include", "src", "android", "tests", "examples", "tools")
+    folders = ("include", "src", "android", "tests", "examples", "tools", "sfs")
     files = sorted(p for folder in folders for p in (root / folder).rglob("*")
                    if p.is_file() and p.suffix in suffixes)
     options = ["--dry-run", "--Werror"] if args.check else ["-i"]

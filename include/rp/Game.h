@@ -7,7 +7,7 @@
 #include "rp/StaticDatabases.h"
 #include "rp/StoreDB.h"
 #include "rp/DivingUnit.h"
-#include "rp/OnlineBattle.h"
+#include "rp/BattleModeState.h"
 #include "sys/gfx/AnimationRenderer.h"
 #include <optional>
 #include <set>
@@ -43,7 +43,8 @@ namespace rp {
         std::map<int, StoreCurrency> storeCurrencies;
         std::map<int, std::string> storeGroups;
         DiveState diveState;
-        OnlineBattle onlineBattle;
+        BattleModeState onlineBattle;
+        std::optional<sfs::SFSObjectWrapper> bossData;
         bool sonarPending = false, readyForBattle = false;
         std::optional<sfs::Message> pingSonar();
         int daringRemaining = 0, daringTotal = 0;
@@ -90,7 +91,7 @@ namespace rp {
         explicit OceanView(std::filesystem::path root)
             : root_(std::move(root)), animations_(root_) {}
 
-        sys::gfx::Image render(const Game&, float time, bool grid);
+        sys::gfx::Image render(const Player&, float time, bool grid);
         void SetPosition(sys::gfx::Vec2 p);
         void SetWidth(float w);
         void SetHeight(float h);

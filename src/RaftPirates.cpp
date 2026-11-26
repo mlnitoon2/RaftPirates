@@ -70,7 +70,8 @@ namespace rp {
         DoLostConnection(false);
     }
 
-    void RaftPirates::gotMsgOnExtensionResponse(const std::string& command, const sfs::SFSObjectWrapper& data) {
+    void RaftPirates::gotMsgOnExtensionResponse(const std::string& command,
+                                                const sfs::SFSObjectWrapper& data) {
         if (!connected_ && !connecting_)
             return;
         if (!processing_) {

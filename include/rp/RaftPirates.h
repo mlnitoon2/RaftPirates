@@ -17,7 +17,8 @@ namespace rp {
         void gotMsgOnRoomJoin();
         void gotMsgOnLogout();
         void gotMsgOnConnectionLost();
-        void gotMsgOnExtensionResponse(const std::string& command, const sfs::SFSObjectWrapper& data);
+        void gotMsgOnExtensionResponse(const std::string& command,
+                                       const sfs::SFSObjectWrapper& data);
         void setNetworkMsgProcessingEnabled(bool enabled);
         void gotMsgEnableNetworkProcessing(bool enabled);
         void Pause(bool value);
@@ -40,12 +41,15 @@ namespace rp {
         void performLogout(bool clearPlayer);
         void handleLogOut();
         void gotMsgMenuLogoutRequest();
+
         bool connected() const {
             return connected_;
         }
+
         float loadPercentage() const {
             return load_;
         }
+
         bool roomJoined() const {
             return roomJoined_;
         }

@@ -130,7 +130,7 @@ namespace rp {
         CalculateHelpers();
     }
 
-    Image OceanView::render(const Game& game, float time, bool grid) {
+    Image OceanView::render(const Player& game, float time, bool grid) {
         Image out(640, 400, {36, 133, 168, 255});
         GfxManager mgr;
         auto load = [&](const std::string& p) {
