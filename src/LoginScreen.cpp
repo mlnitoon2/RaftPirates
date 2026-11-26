@@ -231,6 +231,8 @@ namespace rp {
     }
 
     void LoginScreen::finish() {
+        next_.clear();
+        finished_ = false;
         busy_ = true;
         finishing_ = true;
         elapsed_ = 0;
@@ -243,6 +245,7 @@ namespace rp {
     }
 
     void LoginScreen::error(std::string m) {
+        next_.clear();
         busy_ = false;
         finishing_ = false;
         finished_ = false;

@@ -10,6 +10,8 @@ namespace {
 
 int main() {
     rp::RaftPirates game;
+    game.gotMsgOnAdminMessage("stale");
+    check(game.adminMessage().empty());
     game.DoConnect();
     game.gotMsgOnConnection(true);
     sfs::SFSObjectWrapper early;
@@ -22,6 +24,8 @@ int main() {
     game.gotMsgOnExtensionResponse("zonestatus", early);
     game.gotMsgOnRoomJoin();
     check(game.connected() && game.roomJoined());
+    game.gotMsgOnAdminMessage("Maintenance soon");
+    check(game.adminMessage() == "Maintenance soon");
     check(!game.checkKeepAlive(29) && game.checkKeepAlive(30));
     check(game.login("10", "session").payload.getSFSObj("p")->getString("client_version") ==
           "1.0.4");
@@ -63,6 +67,7 @@ int main() {
     game.pendingMap = rp::Cell{1, 1};
     game.gotMsgOnConnectionLost();
     check(!game.ready && !game.connected() && !game.pendingMap);
+    check(game.adminMessage().empty());
     game.gotMsgOnExtensionResponse("zonestatus", packet);
     game.gotMsgMenuLogoutRequest();
     check(!game.GotMsgBadZoneStatusRequest());

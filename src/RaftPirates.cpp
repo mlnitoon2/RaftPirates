@@ -3,6 +3,10 @@
 #include <cmath>
 #include <stdexcept>
 
+bool isCheatEnabled() {
+    return false;
+}
+
 namespace rp {
     RaftPirates::RaftPirates() = default;
     RaftPirates::~RaftPirates() = default;
@@ -12,6 +16,7 @@ namespace rp {
         connected_ = connecting_ = roomJoined_ = paused_ = false;
         processing_ = true;
         queued_.clear();
+        adminMessage_.clear();
         load_ = 0;
     }
 
@@ -36,6 +41,7 @@ namespace rp {
         sonarShips.clear();
         bossData.reset();
         queued_.clear();
+        adminMessage_.clear();
         status = "Disconnected";
     }
 
@@ -66,6 +72,11 @@ namespace rp {
             roomJoined_ = true;
     }
 
+    void RaftPirates::gotMsgOnAdminMessage(const std::string& message) {
+        if (connected_)
+            adminMessage_ = message.substr(0, 4096);
+    }
+
     void RaftPirates::gotMsgOnLogout() {
         DoLostConnection(true);
     }
@@ -92,7 +103,14 @@ namespace rp {
         while (connected_ && processing_ && !queued_.empty()) {
             auto packet = std::move(queued_.front());
             queued_.pop_front();
-            accept(packet);
+            try {
+                accept(packet);
+            } catch (const std::exception& ex) {
+                const auto command = packet.payload.getString("c");
+                if (command == "gs_player")
+                    throw;
+                status = "Rejected " + command + ": " + ex.what();
+            }
         }
     }
 

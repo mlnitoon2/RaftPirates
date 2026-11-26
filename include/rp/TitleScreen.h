@@ -20,7 +20,7 @@ namespace rp {
         sys::localization::LocalizationManager strings_;
         sys::menu_redux::MenuRuntime menu_;
         std::string bbbId_;
-        bool started_ = false;
+        bool started_ = false, pressed_ = false;
         bool event(unsigned id, const std::string& name);
     };
 } // namespace rp

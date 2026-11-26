@@ -1,8 +1,8 @@
 # Raft Pirates
 
-[![RaftPirates original method-name coverage: 39.0428%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
+[![RaftPirates original method-name coverage: 39.1268%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
 
-**465/1191 original method names (39.0428%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
+**466/1191 original method names (39.1268%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
 
 An unofficial C++ source reconstruction of Raft Pirates for research and game preservation, built on [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy). The project is not the recovered original source and is not a complete or binary-equivalent replacement. Original Java classes and resources are supplied by a locally available, compatible APK; they are not distributed by this repository.
 
@@ -37,7 +37,7 @@ The authentication endpoint is read at runtime from `assets/xml_resources/proper
 </Properties>
 ```
 
-A bare hostname defaults to HTTPS. A complete HTTP(S) URL or an explicit `auth.php` URL is accepted. An optional `--auth-url` build argument (or `RAFT_AUTH_URL` CMake cache setting / Actions repository variable) overrides the XML. A default build requires no compiled-in private endpoint. The original `MyLib.getAuthURL()` separately returns the website base recovered from the ARM32 binary.
+A bare hostname defaults to HTTPS. A complete HTTP(S) URL or an explicit `auth.php` URL is accepted. The XML property is the sole authentication endpoint configuration; there is no compile-time override. The original `MyLib.getAuthURL()` separately returns the website base recovered from the ARM32 binary.
 
 Authentication uses the legacy BBB `auth.php` request and the returned `bbbId`, `sessId` and `serverIp`. The existing SmartFox Java SDK connects to that game host on port 9933 and logs in to the `RaftPirates` zone. A cold launch displays the splash and title screen; selecting Set Sail opens login, and gameplay starts only after successful login and a valid player snapshot. See [networking and startup](docs/STARTUP_AND_GAMEPLAY.md).
 
@@ -55,7 +55,7 @@ The historical endpoints are not guaranteed to be operational. Use authorized te
 | Engine | Software rendering, original assets, animation, menu layout and localization through HydraLegacy |
 | Android bridge | 94 native declarations matched; some callbacks are explicit unsupported stubs |
 
-The desktop sandbox is retained for testing only. The Android flow has no offline-play or manual session-token entry screen. Facebook, account recovery, remembered login, complete original menu/Lua behavior, full multiplayer and boss progression remain incomplete. See [multiplayer](docs/MULTIPLAYER.md), [HUD](docs/HUD.md), [class reconstruction](docs/CLASS_RECONSTRUCTION.md) and [port notes](docs/PORT_NOTES.md).
+The desktop sandbox is retained for testing only. The Android flow has no offline-play or manual session-token entry screen. Facebook, account recovery, complete original menu/Lua behavior, full multiplayer and boss progression remain incomplete. See [multiplayer](docs/MULTIPLAYER.md), [HUD](docs/HUD.md), [class reconstruction](docs/CLASS_RECONSTRUCTION.md) and [port notes](docs/PORT_NOTES.md).
 
 ## Test on desktop
 
@@ -68,16 +68,20 @@ ctest --test-dir build --output-on-failure
 python tests/java/smoke.py build/libraftpirates.so /path/to/original.apk
 ```
 
-The smoke test creates a temporary fixture APK with a loopback `SERVER_IP` property and uses generated Java SDK doubles. Build without an auth override for this test. `-DRAFT_ASSET_ROOT=/path/to/extracted/assets` enables original-asset integration tests. See [asset preparation](docs/ASSETS.md) and the [engine build guide](https://github.com/mlnitoon2/HydraLegacy/blob/main/docs/BUILDING.md).
+The smoke test uses Java SDK and in-process URL connection doubles without opening any listening socket or altering the APK property. `-DRAFT_ASSET_ROOT=/path/to/extracted/assets` enables original-asset integration tests. See [asset preparation](docs/ASSETS.md) and the [engine build guide](https://github.com/mlnitoon2/HydraLegacy/blob/main/docs/BUILDING.md).
 
 These tests verify host behavior and protocol fixtures, not live multiplayer, Android device compatibility or server availability. Coverage is method-name overlap only.
 
 ## Project layout
 
 - `include/rp/`, `src/`: portable game state, protocol handling and views.
-- `android/`: game-specific JNI callbacks, lifecycle and authentication adapter.
+- `src/GameRuntime.cpp`: platform-independent application lifecycle and session orchestration.
 - `tests/`: native regressions and desktop Java integration tests.
 - `tools/`: asset and JNI inventory utilities.
 - `evidence/`, `docs/`: reconstruction evidence and design notes.
 
-Generic platform rendering, audio and JNI utilities live in HydraLegacy; its separate SFS library provides the Java SDK adapter. The repository publishes only rebuilt native output, not the original proprietary binaries, scripts or art. Raft Pirates and Hydra belong to their respective rights holders. This project is unofficial; no license for the new reconstruction code has been selected.
+Platform services and the legacy Android JNI exports live in HydraLegacy; its separate SFS library provides the Java SDK adapter. The game accesses rendering, audio, storage, authentication and transport through `sys::platform::Services`. The repository publishes only rebuilt native output, not the original proprietary binaries, scripts or art. Raft Pirates and Hydra belong to their respective rights holders. This project is unofficial; no license for the new reconstruction code has been selected.
+
+### Saved login
+
+After successful authentication and receipt of valid player data, the client stores the issued session token, BBB ID, returned game-server host and configured authentication endpoint in application-private storage. Cold launch presents the title before attempting session resume. Expired sessions fall back to login; explicit logout removes the saved session. No password is saved. The historical encrypted save format has not been reconstructed.

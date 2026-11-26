@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Desktop JNI integration test. Test doubles match descriptors, not the real Android runtime."""
-import pathlib, subprocess, tempfile, json, struct, sys, zipfile, threading, http.server, urllib.parse, os
+import pathlib, subprocess, tempfile, json, struct, sys, zipfile
 root=pathlib.Path(__file__).resolve().parents[2]
 lib,apk=map(lambda x:str(pathlib.Path(x).resolve()),sys.argv[1:3]); rows=json.loads((root/'evidence/jni_inventory.json').read_text())
 T={'V':'void','Z':'boolean','I':'int','F':'float','J':'long','D':'double','B':'byte','S':'short','C':'char','[F':'float[]','[B':'byte[]','[I':'int[]'}
@@ -10,7 +10,7 @@ with tempfile.TemporaryDirectory(prefix='hydra-jni-') as d:
  def java(name,body):
   p=src/(name.replace('.','/')+'.java');p.parent.mkdir(parents=True,exist_ok=True);p.write_text(body)
  helpers={
- 'com.bigbluebubble.hydra.HydraGame':'''public static String cache, title, music="", effect=""; public static int pauses,resumes; public void playMusic(String p){music=p;} public void stopMusic(){music="";} public void pauseMusic(){pauses++;} public void resumeMusic(){resumes++;} public void playSound(String p,float v){effect=p;} public String GetCachePath(){return cache;} public void showKeyboardEntry(String t,String v,boolean a,int lo,int hi,boolean l){title=t;} public void showPasswordEntry(String t,String v,String invalid,boolean a,int lo,int hi,boolean l){title=t;}''',
+ 'com.bigbluebubble.hydra.HydraGame':'''public static String cache, title, music="", effect="", popup=""; public static int pauses,resumes; public void playMusic(String p){music=p;} public void stopMusic(){music="";} public void pauseMusic(){pauses++;} public void resumeMusic(){resumes++;} public void playSound(String p,float v){effect=p;} public void showPopup(String message,boolean confirm){popup=message;} public String GetCachePath(){return cache;} public String GetFilePath(){return cache;} public void showKeyboardEntry(String t,String v,boolean a,int lo,int hi,boolean l){title=t;} public void showPasswordEntry(String t,String v,String invalid,boolean a,int lo,int hi,boolean l){title=t;}''',
  'com.bigbluebubble.smartfox.ClientServices':'''static final ClientServices INSTANCE=new ClientServices(); public String host,user,token,zone,command;public int port,loginCount;public byte[] bytes; public static ClientServices getInstance(){return INSTANCE;} private void init(){} public void Connect(String h,int p){host=h;port=p;} public void Login(String u,String t,String z,com.smartfoxserver.v2.entities.data.SFSObject obj){loginCount++;user=u;token=t;zone=z;bytes=obj.toBinary();} public void SendRequest(String c,com.smartfoxserver.v2.entities.data.SFSObject obj){command=c;bytes=obj.toBinary();} public void Disconnect(){} public void KeepAlive(){}'''}
  for owner in sorted({r['owner'] for r in rows}):
   name=owner.replace('/','.');pkg,cl=name.rsplit('.',1);inherit=' extends com.bigbluebubble.hydra.HydraGame' if cl=='MyLib' else '';methods=[]
@@ -30,36 +30,33 @@ with tempfile.TemporaryDirectory(prefix='hydra-jni-') as d:
   if isinstance(v,dict):return b'\22'+struct.pack('>H',len(v))+b''.join(txt(k)+val(x) for k,x in v.items())
   raise TypeError(v)
  data={'player_object':{'display_name':'Test','rafts':[{'user_raft_id':1,'raft':1,'pos_x':0,'pos_y':0,'components':[{'user_raft_component_id':2,'component':3,'pos_x':1,'pos_y':1}]}],'materials':[],'blueprints':[]},'zone_id':1,'safe':1,'daring_level':1}
- (d/'player.bin').write_bytes(val(data));(d/'grid.bin').write_bytes(val({'gridobject_data':[{'object_id':1,'name':'CoreRaft','data_string':'0;gfx/rafts/raft_core.png -192 0 0,0;','battle_points':1000},{'object_id':3,'name':'DivingUnit','data_string':'1;xml_bin/anim_core_dive_unit.bin 0 0 0,0;','battle_points':1000}]}))
- java('Smoke','''import com.sixwaves.raftpirates.MyLib; import com.bigbluebubble.hydra.HydraGame; import com.bigbluebubble.smartfox.ClientServices; import com.smartfoxserver.v2.entities.data.SFSObject; import sfs2x.client.core.BaseEvent; import java.nio.file.*; import java.util.*;
+ (d/'ocean.bin').write_bytes(val({'safe_water':True,'map_x':0,'map_y':0}));(d/'player.bin').write_bytes(val(data));(d/'grid.bin').write_bytes(val({'gridobject_data':[{'object_id':1,'name':'CoreRaft','data_string':'0;gfx/rafts/raft_core.png -192 0 0,0;','battle_points':1000},{'object_id':3,'name':'DivingUnit','data_string':'1;xml_bin/anim_core_dive_unit.bin 0 0 0,0;','battle_points':1000}]}))
+ java('Smoke','''import java.net.*; import java.io.*; import com.sixwaves.raftpirates.MyLib; import com.bigbluebubble.hydra.HydraGame; import com.bigbluebubble.smartfox.ClientServices; import com.smartfoxserver.v2.entities.data.SFSObject; import sfs2x.client.core.BaseEvent; import java.nio.file.*; import java.util.*;
 public class Smoke {
+static volatile URL authURL;
+static void mockURL() {
+ URL.setURLStreamHandlerFactory(protocol -> (protocol.equals("https") || protocol.equals("http")) ? new URLStreamHandler(){
+  protected URLConnection openConnection(URL url) {authURL=url; return new HttpURLConnection(url){
+   public void connect(){} public void disconnect(){} public boolean usingProxy(){return false;}
+   public int getResponseCode(){return 200;} public InputStream getInputStream(){return new ByteArrayInputStream("{true}".getBytes());}
+  };}
+ } : null);
+}
 static void check(boolean x,String msg){if(!x)throw new AssertionError(msg);} static BaseEvent ext(String command,Path p)throws Exception{return new BaseEvent(Map.of("cmd",command,"params",SFSObject.newFromBinaryData(Files.readAllBytes(p))));}
-public static void main(String[] a)throws Exception{System.load(a[0]);HydraGame.cache=a[2];MyLib m=new MyLib();m.initGL();m.init(a[1],640,400,1,1);check(m.isJniInititalized(),"APK init");check(m.getAuthURL().equals("https://raftpirates.6waves.com/"),"original website URL");ClientServices early=ClientServices.getInstance();early.OnLogin(new BaseEvent(Map.of()));early.OnExtensionResponse(ext("gs_player",Path.of(a[2],"player.bin")));early.OnLoginError(new BaseEvent(Map.of()));check(early.host==null&&m.getUserID().isEmpty(),"cold startup ignores stale callbacks");m.tick();m.touchUp(320,200);m.tick();check(HydraGame.music.equals("audio/music/theme.mp3"),"title music");m.init(a[1],640,400,1,1);m.tick();check(HydraGame.music.equals("audio/music/theme.mp3")&&early.host==null,"title survives surface reinit");m.touchDown(320,365);m.touchUp(320,365);m.tick();for(int i=0;i<60;i++){Thread.sleep(30);m.tick();}m.touchDown(320,246);m.touchUp(320,246);m.touchDown(320,194);m.touchUp(320,194);check(HydraGame.title.equals("Email"),"email prompt");m.sendMsgKeyboardEntryResult("test@local.invalid",false);m.touchDown(320,229);m.touchUp(320,229);check(HydraGame.title.equals("Password"),"password prompt");m.sendMsgKeyboardEntryResult("test-only&+",false);m.touchDown(320,266);m.touchUp(320,266);for(int i=0;i<100&&ClientServices.getInstance().host==null;i++){Thread.sleep(30);m.tick();}ClientServices c=ClientServices.getInstance();check("127.0.0.1".equals(c.host)&&c.port==9933,"connect args");c.OnConnection(new BaseEvent(Map.of("success",true)));check(c.user.equals("10")&&c.token.equals("test-only-session")&&c.zone.equals("RaftPirates"),"login args order");c.OnConnection(new BaseEvent(Map.of("success",true)));check(c.loginCount==1,"duplicate connection ignored");c.OnExtensionResponse(ext("lib_go_data",Path.of(a[2],"grid.bin")));c.OnExtensionResponse(ext("gs_player",Path.of(a[2],"player.bin")));m.tick();check(c.command==null,"no gameplay request before login event");c.OnLogin(new BaseEvent(Map.of()));for(int i=0;i<100;i++){Thread.sleep(30);m.tick();}m.touchUp(30,25);check(c.command.equals("gs_quest"),"HUD quest request");m.touchUp(30,310);m.touchUp(250,372);check(c.command.equals("dive_start"),"game sends diving request");check(c.bytes.length>3 && c.bytes[0]==18,"outgoing SFS object");m.touchState(1,new float[]{2},new float[]{4});m.touchMove(4,5);m.sendMsgMusicFinished();m.sendMsgSoundFinished(2);m.pause(true);m.tick();m.pause(false);check(HydraGame.pauses==1&&HydraGame.resumes==1,"audio pause/resume");c.OnConnectionLost(new BaseEvent(Map.of()));m.tick();check(m.getUserID().isEmpty(),"disconnected user cleared");m.kill();check(HydraGame.music.isEmpty(),"audio stop");check(!m.isJniInititalized(),"shutdown");System.out.println("Original JNI mock lifecycle, login, SFS response and request passed");}}
+public static void main(String[] a)throws Exception{mockURL();System.load(a[0]);HydraGame.cache=a[2];MyLib m=new MyLib();m.initGL();m.init(a[1],640,400,1,1);check(m.isJniInititalized(),"APK init");check(m.getAuthURL().equals("https://raftpirates.6waves.com/"),"original website URL");ClientServices early=ClientServices.getInstance();early.OnLogin(new BaseEvent(Map.of()));early.OnExtensionResponse(ext("gs_player",Path.of(a[2],"player.bin")));early.OnLoginError(new BaseEvent(Map.of()));check(early.host==null&&m.getUserID().isEmpty(),"cold startup ignores stale callbacks");m.tick();m.touchUp(320,200);m.tick();check(HydraGame.music.equals("audio/music/theme.mp3"),"title music");m.init(a[1],640,400,1,1);m.tick();check(HydraGame.music.equals("audio/music/theme.mp3")&&early.host==null,"title survives surface reinit");m.touchDown(320,365);m.touchUp(320,365);m.tick();for(int i=0;i<60;i++){Thread.sleep(30);m.tick();}m.touchDown(320,246);m.touchUp(320,246);m.touchDown(320,194);m.touchUp(320,194);check(HydraGame.title.equals("Email"),"email prompt");m.sendMsgKeyboardEntryResult("test@local.invalid",false);m.touchDown(320,229);m.touchUp(320,229);check(HydraGame.title.equals("Password"),"password prompt");m.sendMsgKeyboardEntryResult("test-only&+",false);m.touchDown(320,266);m.touchUp(320,266);for(int i=0;i<100&&ClientServices.getInstance().host==null;i++){Thread.sleep(30);m.tick();}ClientServices c=ClientServices.getInstance();check("127.0.0.1".equals(c.host)&&c.port==9933,"connect args");check(authURL!=null&&authURL.toString().startsWith(a[3]+"?")&&authURL.getQuery().contains("p=test-only%26%2B"),"properties endpoint and URL encoding");c.OnConnection(new BaseEvent(Map.of("success",true)));check(c.user.equals("10")&&c.token.equals("test-only-session")&&c.zone.equals("RaftPirates"),"login args order");c.OnConnection(new BaseEvent(Map.of("success",true)));check(c.loginCount==1,"duplicate connection ignored");c.OnExtensionResponse(ext("lib_go_data",Path.of(a[2],"grid.bin")));c.OnExtensionResponse(ext("gs_player",Path.of(a[2],"player.bin")));c.OnExtensionResponse(ext("gs_ocean",Path.of(a[2],"ocean.bin")));m.tick();check(c.command==null,"no gameplay request before login event");c.OnLogin(new BaseEvent(Map.of()));for(int i=0;i<100;i++){Thread.sleep(30);m.tick();}c.OnAdminMessage(new BaseEvent(Map.of("message","Maintenance soon")));m.tick();check(HydraGame.popup.equals("Maintenance soon"),"admin popup");m.touchUp(30,25);check(c.command.equals("gs_quest"),"HUD quest request");m.touchUp(30,310);m.touchUp(250,372);check(c.command.equals("dive_start"),"game sends diving request");check(c.bytes.length>3 && c.bytes[0]==18,"outgoing SFS object");m.touchState(1,new float[]{2},new float[]{4});m.touchMove(4,5);m.sendMsgMusicFinished();m.sendMsgSoundFinished(2);m.pause(true);m.tick();m.pause(false);check(HydraGame.pauses==1&&HydraGame.resumes==1,"audio pause/resume");c.OnConnectionLost(new BaseEvent(Map.of()));m.tick();check(m.getUserID().isEmpty(),"disconnected user cleared");m.kill();check(HydraGame.music.isEmpty(),"audio stop");check(!m.isJniInititalized(),"shutdown");check(Files.exists(Path.of(a[2],"raftpirates-session.dat")),"session saved");
+c.host=null;c.loginCount=0;authURL=null;m.init(a[1],640,400,1,1);m.touchUp(320,200);m.tick();check(c.host==null,"resume presents title first");for(int i=0;i<90&&c.host==null;i++){Thread.sleep(30);m.tick();}check(c.host!=null&&authURL==null,"saved session auto resumes without HTTP");c.OnConnection(new BaseEvent(Map.of("success",true)));check(c.loginCount==1,"saved session login sent");c.OnLoginError(new BaseEvent(Map.of()));check(!Files.exists(Path.of(a[2],"raftpirates-session.dat")),"rejected saved login removed");m.kill();System.out.println("Original JNI mock lifecycle, login, SFS response and request passed");}}
 ''')
  subprocess.run(['javac','-h',str(headers),'-d',str(classes),*map(str,src.rglob('*.java'))],check=True)
  # Header generation from the exact DEX descriptors and export check.
  symbols={x.split()[-1] for x in subprocess.check_output(['nm','-D','--defined-only',lib],text=True).splitlines()}
  expected={r['symbol'] for r in rows};assert expected<=symbols,expected-symbols
- requests=[]
- class AuthHandler(http.server.BaseHTTPRequestHandler):
-  def do_GET(self):
-   url=urllib.parse.urlsplit(self.path);args=urllib.parse.parse_qs(url.query);requests.append((url.path,args));ok=url.path=='/auth.php' and args.get('u')==['test@local.invalid'] and args.get('p')==['test-only&+']
-   body=json.dumps({'ok':ok,'bbbId':10,'sessId':'test-only-session','serverIp':'127.0.0.1'}).encode();self.send_response(200);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
-  def log_message(self,*args):pass
- server=http.server.ThreadingHTTPServer(('127.0.0.1',int(os.environ.get('RAFT_TEST_AUTH_PORT','19090'))),AuthHandler)
- # Patch only a temporary fixture APK; the original archive is never changed.
- fixture=d/'fixture.apk'
- with zipfile.ZipFile(apk) as original, zipfile.ZipFile(fixture,'w') as patched:
-  for info in original.infolist():
-   content=original.read(info.filename)
-   if info.filename=='assets/xml_resources/properties.xml':
-    content=f'<Properties><Property key="SERVER_IP" value="http://127.0.0.1:{server.server_port}/"/></Properties>'.encode()
-   patched.writestr(info,content)
- thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
- try:
-  subprocess.run(['java','-Xcheck:jni','-cp',str(classes),'Smoke',lib,str(fixture),str(d)],check=True)
-  assert len(requests)==1 and requests[0][1]['p']==['test-only&+'] and requests[0][1]['t']==['bbb']
- finally:
-  server.shutdown();server.server_close()
- print('Local HTTP fixture: properties.xml endpoint, email/password URL encoding and BBB auth handoff passed')
+ # Read the configured authentication endpoint from the original APK. No listener is opened.
+ import xml.etree.ElementTree as ET
+ with zipfile.ZipFile(apk) as original:
+  properties=ET.fromstring(original.read('assets/xml_resources/properties.xml'))
+ endpoint=next(x.attrib['value'] for x in properties if x.attrib.get('key')=='SERVER_IP')
+ if '://' not in endpoint: endpoint='https://'+endpoint
+ if not endpoint.endswith('/auth.php'): endpoint=endpoint.rstrip('/')+'/auth.php'
+ subprocess.run(['java','-Xcheck:jni','-cp',str(classes),'Smoke',lib,apk,str(d),endpoint],check=True)
+ print('In-process URL fixture: original properties endpoint, URL encoding, saved login and BBB handoff passed')
  print(len(expected),'JNI declarations matched exported names')

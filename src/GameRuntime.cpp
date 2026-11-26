@@ -1,0 +1,824 @@
+#include "rp/RaftPirates.h"
+#include "rp/PortView.h"
+#include "rp/LoginScreen.h"
+#include "sys/platform/Services.h"
+#include "rp/SplashScreen.h"
+#include "rp/TitleScreen.h"
+#include "sys/EngineBase.h"
+#include "sys/EngineConfig.h"
+#include "sys/res/Archive.h"
+#include <mutex>
+#include <chrono>
+#include <fstream>
+#include <algorithm>
+#include <set>
+using sys::platform::Services;
+
+namespace {
+    using Clock = std::chrono::steady_clock;
+
+    struct Runtime {
+        std::recursive_mutex mutex;
+        rp::RaftPirates game;
+        std::unique_ptr<rp::LoginScreen> login;
+        std::future<sys::platform::AuthResult> auth;
+        rp::LoginScreen::Action entry = rp::LoginScreen::Action::None;
+        Clock::time_point connectStarted{};
+        bool endingLoading = false;
+        sys::EngineBase engine;
+        std::unique_ptr<rp::PortView> view;
+        std::unique_ptr<rp::SplashScreen> splash;
+        std::unique_ptr<rp::TitleScreen> title;
+        std::filesystem::path archivePath, assets, savedPath;
+        std::string savedSession, pendingAdminNotice;
+        bool resumeAttempt = false, titlePresented = false, oceanReceived = false,
+             resumeChecked = false;
+        Clock::time_point titleSince{}, outroStarted{};
+        sys::gfx::Image lastImage;
+        int width = 640, height = 400, port = 9933;
+        bool initialized = false, paused = false, connected = false, connecting = false;
+        std::string host, user, session, status, music, authEndpoint;
+        bool loginSent = false;
+        int lastGears = 0;
+        bool lastDiveFinished = false, audioFailed = false;
+        float time = 0;
+        Clock::time_point last = Clock::now(), lastFrame{}, lastPing{};
+    };
+
+    Runtime rt;
+
+    template <class F> void guarded(Services& platform, F f) noexcept {
+        std::lock_guard<std::recursive_mutex> l(rt.mutex);
+        try {
+            f();
+        } catch (const std::exception& ex) {
+            rt.status = ex.what();
+            platform.log(rt.status);
+        } catch (...) {
+            rt.status = "Native operation failed";
+            platform.log(rt.status);
+        }
+    }
+
+    template <class F> void audio(Services& platform, F callback) {
+        if (rt.audioFailed)
+            return;
+        try {
+            callback();
+        } catch (const std::exception& ex) {
+            rt.audioFailed = true;
+            platform.log(std::string("Audio unavailable: ") + ex.what());
+        }
+    }
+
+    void music(Services& platform, const std::string& path) {
+        if (rt.music == path)
+            return;
+        audio(platform, [&] { platform.music(path); });
+        rt.music = path;
+    }
+
+    void effect(Services& platform, const char* path) {
+        audio(platform, [&] { platform.effect(path); });
+    }
+
+    void prompt(Services& platform, const char* title, const std::string& value) {
+        platform.keyboard(title, value,
+                          rt.entry == rp::LoginScreen::Action::Password ||
+                              rt.entry == rp::LoginScreen::Action::ConfirmPassword);
+    }
+
+    std::string endpoint(std::string s) {
+        if (s.empty() || s.find_first_of("?#@\\ \t\r\n") != std::string::npos)
+            return {};
+        if (s.find("://") == std::string::npos)
+            s = "https://" + s;
+        const bool https = s.rfind("https://", 0) == 0;
+        if (!https && s.rfind("http://", 0) != 0)
+            return {};
+        const auto start = https ? 8u : 7u;
+        if (s.size() <= start || s.find('/', start) == start)
+            return {};
+        if (s.size() >= 9 && s.substr(s.size() - 9) == "/auth.php")
+            return s;
+        if (s.back() != '/')
+            s += '/';
+        return s + "auth.php";
+    }
+
+    void forgetSession() {
+        std::error_code ec;
+        if (!rt.savedPath.empty())
+            std::filesystem::remove(rt.savedPath, ec);
+        rt.savedSession.clear();
+    }
+
+    void saveSession(Services& platform) {
+        if (rt.savedPath.empty() || rt.savedSession.empty() || rt.user.empty() || rt.host.empty())
+            return;
+        if (rt.user.find_first_of("\r\n") != std::string::npos ||
+            rt.host.find_first_of("\r\n") != std::string::npos ||
+            rt.savedSession.find_first_of("\r\n") != std::string::npos)
+            return;
+        try {
+            auto tmp = rt.savedPath;
+            tmp += ".tmp";
+            std::ofstream file(tmp, std::ios::trunc);
+            if (!file)
+                return;
+            std::filesystem::permissions(
+                tmp, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write,
+                std::filesystem::perm_options::replace);
+            file << "RPSESSION1\n"
+                 << rt.authEndpoint << '\n'
+                 << rt.user << '\n'
+                 << rt.host << '\n'
+                 << rt.savedSession << '\n';
+            file.close();
+            if (file)
+                std::filesystem::rename(tmp, rt.savedPath);
+        } catch (...) {
+            platform.log("Could not save login session");
+        }
+    }
+
+    bool loadSession() {
+        if (rt.savedPath.empty() || rt.authEndpoint.empty())
+            return false;
+        std::error_code ec;
+        auto size = std::filesystem::file_size(rt.savedPath, ec);
+        if (ec || size > 8192)
+            return false;
+        std::ifstream file(rt.savedPath);
+        std::string magic, address, user, host, session;
+        if (!std::getline(file, magic) || !std::getline(file, address) ||
+            !std::getline(file, user) || !std::getline(file, host) ||
+            !std::getline(file, session) || magic != "RPSESSION1" || address != rt.authEndpoint ||
+            user.empty() || host.empty() || session.empty() ||
+            host.find_first_of("/\\@?# \t\r\n") != std::string::npos)
+            return false;
+        rt.user = std::move(user);
+        rt.host = std::move(host);
+        rt.session = std::move(session);
+        rt.savedSession = rt.session;
+        return true;
+    }
+
+    void send(Services& platform, const sfs::Message& msg) {
+        try {
+            if (!rt.connected || !rt.game.ready)
+                throw std::runtime_error("Login is required");
+            platform.send(msg);
+        } catch (...) {
+            rt.game.onlineBattle.sendFailed();
+            rt.game.sonarPending = false;
+            rt.game.pending.reset();
+            rt.game.pendingMove.reset();
+            rt.game.pendingMap.reset();
+            rt.game.pendingZone.reset();
+            rt.game.pendingDiscovery.reset();
+            throw;
+        }
+        rt.status = "SENT " + msg.payload.getString("c");
+    }
+
+    void lost() {
+        rt.connected = false;
+        rt.connecting = false;
+        rt.game.DoLostConnection(true);
+        rt.loginSent = false;
+        rt.view.reset();
+        rt.lastImage = {};
+        rt.user.clear();
+        rt.host.clear();
+        rt.status = "DISCONNECTED";
+        rt.session.clear();
+        rt.endingLoading = false;
+        rt.savedSession.clear();
+        rt.pendingAdminNotice.clear();
+        rt.oceanReceived = false;
+    }
+
+    void loginError(Services& platform, const std::string& message) {
+        bool connected = rt.connected || rt.connecting;
+        if (rt.resumeAttempt)
+            forgetSession();
+        rt.resumeAttempt = false;
+        lost();
+        if (connected) {
+            try {
+                platform.disconnect();
+            } catch (...) {
+            }
+        }
+        if (!rt.initialized)
+            return;
+        // Connection events before Set Sail must never replace the title.
+        if (rt.title || rt.splash)
+            return;
+        if (!rt.login) {
+            if (rt.assets.empty())
+                return;
+            rt.login = std::make_unique<rp::LoginScreen>(rt.assets);
+        }
+        rt.login->clearPassword();
+        rt.login->error(message);
+    }
+
+    void pollAuth(Services& platform) {
+        if (!rt.auth.valid() ||
+            rt.auth.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
+            return;
+        sys::platform::AuthResult result;
+        try {
+            result = rt.auth.get();
+        } catch (...) {
+            if (rt.login && rt.initialized)
+                loginError(platform, "Authentication request failed.");
+            return;
+        }
+        if (!rt.login || !rt.initialized)
+            return;
+        if (!result.error.empty()) {
+            loginError(platform, result.error);
+            return;
+        }
+        if (result.registered) {
+            rt.login->registrationComplete();
+            return;
+        }
+        rt.host = std::move(result.host);
+        rt.user = std::move(result.id);
+        rt.session = std::move(result.session);
+        rt.savedSession = rt.session;
+        rt.resumeAttempt = false;
+        rt.connecting = true;
+        rt.loginSent = false;
+        rt.game.DoConnect();
+        rt.connectStarted = Clock::now();
+        try {
+            platform.connect(rt.host, rt.port);
+        } catch (...) {
+            loginError(platform, "Unable to connect to game server.");
+        }
+    }
+} // namespace
+
+namespace sys::platform::game {
+    void init(Services& platform, const std::filesystem::path& apk, int w, int h) {
+        guarded(platform, [&] {
+            rt.width = std::max(1, int(w));
+            rt.height = std::max(1, int(h));
+            if (apk.empty())
+                throw std::runtime_error("No APK path");
+            if (rt.initialized && rt.archivePath == apk)
+                return;
+            if (rt.connected || rt.connecting) {
+                lost();
+                try {
+                    platform.disconnect();
+                } catch (...) {
+                }
+            }
+            rt.initialized = false;
+            rt.paused = false;
+            rt.splash.reset();
+            rt.title.reset();
+            rt.login.reset();
+            rt.view.reset();
+            rt.auth = {};
+            rt.loginSent = false;
+            rt.host.clear();
+            rt.session.clear();
+            rt.authEndpoint.clear();
+            rt.savedSession.clear();
+            rt.pendingAdminNotice.clear();
+            rt.resumeAttempt = false;
+            rt.titlePresented = false;
+            rt.resumeChecked = false;
+            rt.oceanReceived = false;
+            rt.time = 0;
+            rt.archivePath = apk;
+            rt.audioFailed = false;
+            rt.music.clear();
+            rt.lastGears = 0;
+            rt.lastDiveFinished = false;
+            auto root = platform.assets(apk);
+            rt.savedPath.clear();
+            try {
+                auto dir = platform.saveDirectory();
+                if (!dir.empty())
+                    rt.savedPath = dir / "raftpirates-session.dat";
+            } catch (...) {
+                platform.log("Persistent login storage unavailable");
+            }
+            rt.assets = root;
+            sys::EngineConfig properties;
+            try {
+                properties.LoadProperties(root / "xml_resources/properties.xml");
+            } catch (const std::exception& ex) {
+                platform.log(std::string("Could not load properties.xml: ") + ex.what());
+            }
+            rt.authEndpoint = endpoint(properties.GetProperty("SERVER_IP"));
+            rt.game.initialize();
+            rt.user.clear();
+            rt.entry = rp::LoginScreen::Action::None;
+            rt.endingLoading = false;
+            // Build the title before declaring initialization successful. The game view is lazy.
+            rt.title = std::make_unique<rp::TitleScreen>(root);
+            try {
+                rt.splash = std::make_unique<rp::SplashScreen>(root);
+            } catch (const std::exception& ex) {
+                platform.log(std::string("Splash unavailable: ") + ex.what());
+            }
+            rt.lastImage = {};
+            rt.lastFrame = {};
+            rt.initialized = true;
+            rt.status.clear();
+            rt.last = Clock::now();
+            platform.log("Raft Pirates startup: title initialized; property endpoint " +
+                         std::string(rt.authEndpoint.empty() ? "missing" : "configured"));
+        });
+    }
+
+    bool initialized() {
+        std::lock_guard<std::recursive_mutex> l(rt.mutex);
+        return rt.initialized;
+    }
+
+    void pause(Services& platform, bool value) {
+        guarded(platform, [&] {
+            rt.paused = value;
+            rt.game.Pause(value);
+            if (!rt.music.empty())
+                audio(platform, [&] { platform.pauseMusic(value); });
+            rt.last = Clock::now();
+        });
+    }
+
+    void kill(Services& platform) {
+        guarded(platform, [&] {
+            if (rt.connected || rt.connecting) {
+                try {
+                    platform.disconnect();
+                } catch (...) {
+                }
+            }
+            music(platform, "");
+            lost();
+            rt.splash.reset();
+            rt.title.reset();
+            rt.login.reset();
+            rt.auth = {};
+            rt.view.reset();
+            rt.lastImage = {};
+            rt.initialized = false;
+            rt.entry = rp::LoginScreen::Action::None;
+        });
+    }
+
+    void tick(Services& platform) {
+        guarded(platform, [&] {
+            if (!rt.initialized || rt.paused)
+                return;
+            auto now = Clock::now();
+            float dt = std::clamp(std::chrono::duration<float>(now - rt.last).count(), 0.f, .25f);
+            rt.last = now;
+            rt.time += dt;
+            rt.engine.Tick(dt);
+            if (rt.view && !rt.login) {
+                rt.game.tick(dt);
+                rt.view->tick(dt);
+            }
+            if (rt.splash) {
+                try {
+                    rt.splash->tick(dt);
+                    if (!rt.splash->finished()) {
+                        platform.present(rt.splash->render(), rt.width, rt.height);
+                        return;
+                    }
+                } catch (const std::exception& ex) {
+                    platform.log(std::string("Splash animation failed: ") + ex.what());
+                }
+                rt.splash.reset();
+                rt.lastImage = {};
+            }
+            if (rt.title) {
+                music(platform, "audio/music/theme.mp3");
+                platform.present(rt.title->render(), rt.width, rt.height);
+                if (!rt.titlePresented) {
+                    rt.titlePresented = true;
+                    rt.titleSince = now;
+                    platform.log("Raft Pirates startup: title presented");
+                    return;
+                }
+                if (rt.resumeChecked || now - rt.titleSince < std::chrono::seconds(1))
+                    return;
+                rt.resumeChecked = true;
+                if (loadSession()) {
+                    rt.login = std::make_unique<rp::LoginScreen>(rt.assets);
+                    rt.login->busy(true);
+                    rt.title.reset();
+                    rt.resumeAttempt = true;
+                    rt.connecting = true;
+                    rt.game.DoConnect();
+                    rt.connectStarted = now;
+                    platform.log("Resuming saved login session");
+                    try {
+                        platform.connect(rt.host, rt.port);
+                    } catch (...) {
+                        loginError(platform, "Could not resume saved login. Please log in again.");
+                    }
+                }
+                return;
+            }
+            pollAuth(platform);
+            if (rt.connected && !rt.pendingAdminNotice.empty()) {
+                auto notice = std::move(rt.pendingAdminNotice);
+                rt.pendingAdminNotice.clear();
+                try {
+                    platform.showPopup(notice);
+                } catch (...) {
+                    platform.log("Admin popup unavailable");
+                }
+            }
+            if (rt.connected &&
+                rt.game.checkKeepAlive(std::chrono::duration<float>(now - rt.lastPing).count())) {
+                rt.lastPing = now;
+                try {
+                    platform.keepAlive();
+                } catch (...) {
+                    loginError(platform, "Game server connection failed.");
+                    return;
+                }
+            }
+            if ((rt.connecting || (rt.connected && !rt.game.ready)) &&
+                now - rt.connectStarted > std::chrono::seconds(30))
+                loginError(platform, rt.oceanReceived
+                                         ? "Ocean received, but player data is missing or invalid."
+                                         : "The game server did not respond.");
+            if (rt.login) {
+                if (rt.connected && rt.game.ready && !rt.endingLoading) {
+                    try {
+                        rt.view = std::make_unique<rp::PortView>(rt.assets);
+                        rt.lastImage = rt.view->render(rt.game, rt.time, rt.status);
+                    } catch (...) {
+                        loginError(platform, "Could not initialize the game view.");
+                        return;
+                    }
+                    rt.endingLoading = true;
+                    rt.outroStarted = now;
+                    rt.game.gotMsgLoadFinished();
+                    saveSession(platform);
+                    rt.savedSession.clear();
+                    rt.resumeAttempt = false;
+                    rt.login->finish();
+                    platform.log("Player ready: starting loading outro");
+                }
+                if (!rt.endingLoading || now - rt.outroStarted < std::chrono::seconds(5)) {
+                    try {
+                        rt.login->tick(dt);
+                        if (!rt.login->finished()) {
+                            platform.present(rt.login->render(), rt.width, rt.height);
+                            return;
+                        }
+                    } catch (const std::exception& ex) {
+                        platform.log(std::string("Loading menu rendering failed: ") + ex.what());
+                        if (!rt.endingLoading)
+                            throw;
+                        // The first gameplay frame is already rendered. A broken outro must not
+                        // keep the player behind the curtains indefinitely.
+                    }
+                }
+                if (!rt.connected || !rt.game.ready || !rt.view)
+                    return;
+                rt.login.reset();
+                rt.lastFrame = now;
+                platform.log("Loading outro complete: entering gameplay");
+            }
+            if (!rt.connected || !rt.game.ready || !rt.view)
+                return;
+            if (rt.lastImage.pixels.empty() ||
+                now - rt.lastFrame >= std::chrono::milliseconds(33)) {
+                rt.lastFrame = now;
+                try {
+                    rt.lastImage = rt.view->render(rt.game, rt.time, rt.status);
+                } catch (const std::exception& ex) {
+                    platform.log(std::string("Gameplay render failed: ") + ex.what());
+                    loginError(platform, "Could not render the game world.");
+                    return;
+                }
+            }
+            music(platform, rt.view->isDiving() ? "audio/music/underwater.mp3"
+                            : rt.game.onlineBattle.phase() != rp::BattleModeState::Phase::Idle
+                                ? "audio/music/battle.mp3"
+                            : rt.game.ready ? "audio/music/ambient.mp3"
+                                            : "audio/music/theme.mp3");
+            int gears = rt.view->diveGears();
+            bool finished = rt.view->diveFinished();
+            if (gears > rt.lastGears)
+                effect(platform, "audio/sfx/diving_game_collect.wav");
+            if (finished && !rt.lastDiveFinished)
+                effect(platform, "audio/sfx/diving_game_end.wav");
+            rt.lastGears = gears;
+            rt.lastDiveFinished = finished;
+            platform.present(rt.lastImage, rt.width, rt.height);
+        });
+    }
+
+    void touchDown(Services& platform, float x, float y) {
+        guarded(platform, [&] {
+            if (rt.splash)
+                return;
+            if (rt.title) {
+                rt.title->touchDown(x * 640 / rt.width, y * 400 / rt.height);
+                return;
+            }
+            if (rt.login) {
+                rt.login->touchDown(x * 640 / rt.width, y * 400 / rt.height);
+                return;
+            }
+            if (rt.view && rt.game.ready)
+                rt.view->touchDown(x * 640 / rt.width, y * 400 / rt.height);
+            sys::msg::MsgTouchDown m;
+            m.x = x * 640 / rt.width;
+            m.y = y * 400 / rt.height;
+            rt.engine.engineReceiver().SendGeneric(m);
+        });
+    }
+
+    void touchUp(Services& platform, float x, float y) {
+        guarded(platform, [&] {
+            if (!rt.initialized)
+                return;
+            if (rt.splash) {
+                rt.splash->skip();
+                rt.splash.reset();
+                rt.lastImage = {};
+                return;
+            }
+            float px = x * 640 / rt.width, py = y * 400 / rt.height;
+            if (rt.title) {
+                if (!rt.titlePresented)
+                    return;
+                rt.title->touchUp(px, py);
+                if (rt.title->started()) {
+                    effect(platform, "audio/sfx/menu_button_down.wav");
+                    rt.login = std::make_unique<rp::LoginScreen>(rt.assets);
+                    rt.title.reset();
+                    rt.lastImage = {};
+                }
+                return;
+            }
+            if (rt.login) {
+                using Action = rp::LoginScreen::Action;
+                auto action = rt.login->touchUp(px, py);
+                if (action == Action::Email || action == Action::Password ||
+                    action == Action::ConfirmPassword) {
+                    rt.entry = action;
+                    if (action == Action::Email)
+                        prompt(platform, "Email", rt.login->email());
+                    else
+                        prompt(platform,
+                               action == Action::Password ? "Password" : "Confirm Password",
+                               action == Action::Password ? rt.login->password()
+                                                          : rt.login->confirmation());
+                } else if (action == Action::Submit) {
+                    if (rt.login->email().empty() || rt.login->password().empty()) {
+                        rt.login->error("Enter your email and password.");
+                    } else if (rt.authEndpoint.empty()) {
+                        rt.login->error("Authentication server is not configured.");
+                    } else {
+                        rt.auth = platform.authenticate(rt.authEndpoint, rt.login->email(),
+                                                        rt.login->password(), false, 2, "1.0.4");
+                        rt.login->clearPassword();
+                        rt.login->busy(true);
+                    }
+                } else if (action == Action::Register) {
+                    if (rt.login->email().empty() || rt.login->password().empty())
+                        rt.login->error("Enter your email and password.");
+                    else if (rt.login->password() != rt.login->confirmation())
+                        rt.login->error("Passwords do not match.");
+                    else if (rt.authEndpoint.empty())
+                        rt.login->error("Authentication server is not configured.");
+                    else {
+                        rt.auth = platform.authenticate(rt.authEndpoint, rt.login->email(),
+                                                        rt.login->password(), true, 2, "1.0.4");
+                        rt.login->clearPassword();
+                        rt.login->busy(true);
+                    }
+                } else if (action == Action::Facebook)
+                    rt.login->error("Facebook login is not available.");
+                else if (action == Action::Reset)
+                    rt.login->error("Password reset is not available yet.");
+                return;
+            }
+            if (!rt.connected || !rt.game.ready || !rt.view)
+                return;
+            sys::msg::MsgTouchUp m;
+            m.x = px;
+            m.y = py;
+            rt.engine.engineReceiver().SendGeneric(m);
+            auto result = rt.view->touch(rt.game, px, py);
+            if (result) {
+                if (!rt.view->isDiving())
+                    effect(platform, "audio/sfx/menu_button_down.wav");
+                send(platform, *result);
+            }
+        });
+    }
+
+    void touchMove(Services& platform, float x, float y) {
+        guarded(platform, [&] {
+            if (rt.splash)
+                return;
+            if (rt.title) {
+                rt.title->touchDrag(x * 640 / rt.width, y * 400 / rt.height);
+                return;
+            }
+            if (rt.login) {
+                rt.login->touchDrag(x * 640 / rt.width, y * 400 / rt.height);
+                return;
+            }
+            if (rt.view && rt.game.ready)
+                rt.view->touchDrag(x * 640 / rt.width, y * 400 / rt.height);
+            sys::msg::MsgTouchDrag m;
+            m.x = x * 640 / rt.width;
+            m.y = y * 400 / rt.height;
+            rt.engine.engineReceiver().SendGeneric(m);
+        });
+    }
+
+    void touchState(Services& platform, const std::vector<float>& x, const std::vector<float>& y) {
+        guarded(platform, [&] {
+            auto n = std::min({x.size(), y.size(), size_t(16)});
+            sys::msg::MsgTouchState m;
+            for (size_t i = 0; i < n; ++i)
+                if (x[i] >= 0 && y[i] >= 0)
+                    m.AddPoint(int(x[i] * 640 / rt.width), int(y[i] * 400 / rt.height), int(i));
+            rt.engine.engineReceiver().SendGeneric(m);
+        });
+    }
+
+    std::string website() {
+        // The original Java callback returns the website base, not the BBB auth.php endpoint.
+        return "https://raftpirates.6waves.com/";
+    }
+
+    std::string userId() {
+        std::lock_guard<std::recursive_mutex> l(rt.mutex);
+        return rt.user;
+    }
+
+    void musicFinished(Services& platform) {
+        guarded(platform,
+                [&] { rt.engine.engineReceiver().SendGeneric(sys::msg::MsgMusicFinished{}); });
+    }
+
+    void soundFinished(Services& platform, int id) {
+        guarded(platform,
+                [&] { rt.engine.engineReceiver().SendGeneric(sys::msg::MsgSoundFinished(id)); });
+    }
+
+    void popupResult(Services& platform, bool accepted) {
+        guarded(platform, [&] {
+            sys::msg::MsgPopupTextResult m;
+            m.accepted = accepted;
+            rt.engine.engineReceiver().SendGeneric(m);
+        });
+    }
+
+    void keyboardResult(Services& platform, std::string value, bool cancelled) {
+        guarded(platform, [&] {
+            auto entry = rt.entry;
+            rt.entry = rp::LoginScreen::Action::None;
+            if (entry != rp::LoginScreen::Action::None) {
+                if (rt.login && !cancelled)
+                    rt.login->setInput(entry, value);
+                return;
+            }
+            sys::msg::MsgKeyboardEntryResult event;
+            event.text = value;
+            event.cancelled = cancelled;
+            rt.engine.engineReceiver().SendGeneric(event);
+        });
+    }
+
+    void onConnection(Services& platform, bool success) {
+        guarded(platform, [&] {
+            if (!rt.connecting || rt.loginSent || rt.session.empty())
+                return;
+            if (!success) {
+                loginError(platform, "Connection failed.");
+                return;
+            }
+            auto p = rt.game.login(rt.user, "").payload.getSFSObj("p");
+            if (!p)
+                throw std::runtime_error("Missing login params");
+            rt.game.gotMsgOnConnection(true);
+            rt.connectStarted = Clock::now();
+            rt.status = "LOGGING IN";
+            rt.loginSent = true;
+            try {
+                platform.login("RaftPirates", rt.user, rt.session, *p);
+            } catch (...) {
+                loginError(platform, "Unable to log into game server.");
+                return;
+            }
+            rt.session.clear();
+        });
+    }
+
+    void onLogin(Services& platform) {
+        guarded(platform, [&] {
+            if (!rt.connecting || !rt.loginSent)
+                return;
+            rt.connected = true;
+            rt.connecting = false;
+            rt.status = "LOADING PLAYER";
+            rt.lastPing = rt.connectStarted = Clock::now();
+            try {
+                rt.game.gotMsgOnLogin();
+                platform.log("SmartFox login accepted; queued extensions processed");
+                if (rt.game.ready)
+                    platform.log("Player snapshot accepted");
+            } catch (...) {
+                loginError(platform, "Invalid initial game data.");
+            }
+        });
+    }
+
+    void onLoginError(Services& platform) {
+        guarded(platform, [&] {
+            if (rt.connecting && rt.loginSent)
+                loginError(platform, "Game server rejected the login.");
+        });
+    }
+
+    void onRoomJoin(Services& platform) {
+        guarded(platform, [&] {
+            if (!rt.connected && !rt.connecting)
+                return;
+            rt.game.gotMsgOnRoomJoin();
+            rt.status = "ROOM JOINED";
+        });
+    }
+
+    void onConnectionLost(Services& platform) {
+        guarded(platform, [&] {
+            if (rt.connected || rt.connecting)
+                loginError(platform, "Disconnected from game server.");
+        });
+    }
+
+    void onSocketError(Services& platform) {
+        guarded(platform, [&] {
+            if (rt.connected || rt.connecting)
+                loginError(platform, "Game server connection failed.");
+        });
+    }
+
+    void onLogout(Services& platform) {
+        guarded(platform, [&] {
+            if (rt.connected || rt.connecting) {
+                forgetSession();
+                loginError(platform, "Disconnected from game server.");
+            }
+        });
+    }
+
+    void onExtension(Services& platform, const std::string& command,
+                     const sfs::SFSObjectWrapper& data) {
+        guarded(platform, [&] {
+            if (!rt.connected && !rt.connecting)
+                return;
+            platform.log("NET: " + command);
+            try {
+                rt.game.gotMsgOnExtensionResponse(command, data);
+            } catch (const std::exception& ex) {
+                platform.log("Rejected " + command + ": " + ex.what());
+                if (rt.login && !rt.game.ready && command == "gs_player")
+                    loginError(platform, "Invalid player data received from the game server.");
+                return;
+            }
+            rt.status = rt.game.status;
+            if (command == "gs_ocean") {
+                rt.oceanReceived = true;
+                if (!rt.game.ready)
+                    platform.log("Ocean received while awaiting player snapshot or login event");
+            }
+            if (command == "gs_player" && rt.game.ready)
+                platform.log("Player snapshot accepted");
+        });
+    }
+
+    void onAdminMessage(Services& platform, const std::string& message) {
+        guarded(platform, [&] {
+            if (!rt.connected)
+                return;
+            rt.game.gotMsgOnAdminMessage(message);
+            rt.pendingAdminNotice = rt.game.adminMessage();
+            platform.log("Received server administration message");
+        });
+    }
+} // namespace sys::platform::game

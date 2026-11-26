@@ -12,6 +12,7 @@ if(NOT TARGET hydra)
   add_subdirectory("${HYDRA_LEGACY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/HydraLegacy")
 endif()
 add_library(raftpirates_game STATIC
+    src/GameRuntime.cpp
     src/Ocean.cpp
     src/RaftPirates.cpp
     src/Game.cpp
@@ -52,9 +53,7 @@ add_library(raftpirates_game STATIC
 target_include_directories(raftpirates_game PUBLIC include)
 target_link_libraries(raftpirates_game PUBLIC hydra sfs_legacy)
 if(ANDROID OR HYDRA_DESKTOP_JNI)
-  set(RAFT_AUTH_URL "" CACHE STRING "Optional BBB auth URL override (defaults to APK properties.xml)")
-  add_library(raftpirates SHARED android/OriginalJni.cpp android/Auth.cpp)
-  target_compile_definitions(raftpirates PRIVATE RAFT_AUTH_URL="${RAFT_AUTH_URL}")
+  add_library(raftpirates SHARED $<TARGET_OBJECTS:hydra_android_game>)
   target_link_libraries(raftpirates PRIVATE raftpirates_game hydra_java sfs_java)
   if(ANDROID)
     target_link_options(raftpirates PRIVATE "-Wl,--no-undefined" "-Wl,-z,max-page-size=16384")

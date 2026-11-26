@@ -62,8 +62,13 @@ namespace rp {
                     menu_.node(up).set("visible", !down);
                 if (auto over = menu_.find(owner, "DownSprite"))
                     menu_.node(over).set("visible", down);
-                if (name == "onTouchUp")
-                    started_ = true;
+                if (down)
+                    pressed_ = true;
+                else {
+                    if (name == "onTouchUp" && pressed_)
+                        started_ = true;
+                    pressed_ = false;
+                }
                 return true;
             }
         }

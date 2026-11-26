@@ -16,6 +16,12 @@ namespace rp {
         void gotMsgOnLoginError();
         void gotMsgOnRoomJoin();
         void gotMsgOnLogout();
+        void gotMsgOnAdminMessage(const std::string&);
+
+        const std::string& adminMessage() const {
+            return adminMessage_;
+        }
+
         void gotMsgOnConnectionLost();
         void gotMsgOnExtensionResponse(const std::string& command,
                                        const sfs::SFSObjectWrapper& data);
@@ -59,5 +65,6 @@ namespace rp {
         bool processing_ = true, paused_ = false;
         float load_ = 0;
         std::deque<sfs::Message> queued_;
+        std::string adminMessage_;
     };
 } // namespace rp

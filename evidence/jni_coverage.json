@@ -155,7 +155,7 @@
     "returns": "V",
     "static": false,
     "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnAdminMessage",
-    "status": "unsupported_stub"
+    "status": "implemented_or_partial"
   },
   {
     "owner": "com/bigbluebubble/smartfox/ClientServices",

@@ -4,7 +4,7 @@ Generated from defined function symbols. Name coverage is unique qualified metho
 
 | Original build | Names matched | Coverage | Names with signature overlap | Binary match |
 |---|---:|---:|---:|---|
-| Raft Pirates 2013 | 465/1191 | 39.0428% | 223 | Not compared |
+| Raft Pirates 2013 | 466/1191 | 39.1268% | 223 | Not compared |
 
 ## Raft Pirates 2013
 
@@ -269,7 +269,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::RaftFactory` | 0/2 | 0.00% | 0 |
 | `rp::RaftGridSprite` | 0/6 | 0.00% | 0 |
 | `rp::RaftInfo` | 0/1 | 0.00% | 0 |
-| `rp::RaftPirates` | 32/86 | 37.21% | 10 |
+| `rp::RaftPirates` | 33/86 | 38.37% | 10 |
 | `rp::RaftPiratesGameState` | 0/6 | 0.00% | 0 |
 | `rp::SelectedWallSprite` | 0/7 | 0.00% | 0 |
 | `rp::ShipPlacementSprite` | 0/11 | 0.00% | 0 |
@@ -668,6 +668,7 @@ Matched names:
 - `rp::RaftPirates::gotMsgLoadPercentage`
 - `rp::RaftPirates::gotMsgLoadStart`
 - `rp::RaftPirates::gotMsgMenuLogoutRequest`
+- `rp::RaftPirates::gotMsgOnAdminMessage`
 - `rp::RaftPirates::gotMsgOnConnection`
 - `rp::RaftPirates::gotMsgOnConnectionLost`
 - `rp::RaftPirates::gotMsgOnExtensionResponse`

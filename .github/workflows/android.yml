@@ -46,8 +46,6 @@ jobs:
         run: sdkmanager "ndk;28.2.13676358" "cmake;3.22.1"
       - name: Build and verify native library
         working-directory: RaftPirates
-        env:
-          RAFT_AUTH_URL: ${{ vars.RAFT_AUTH_URL }}
         run: python3 build_arm64.py --sdk "$ANDROID_HOME"
       - uses: actions/upload-artifact@v4
         with:
