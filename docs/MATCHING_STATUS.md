@@ -4,7 +4,7 @@ Generated from defined function symbols. Name coverage is unique qualified metho
 
 | Original build | Names matched | Coverage | Names with signature overlap | Binary match |
 |---|---:|---:|---:|---|
-| Raft Pirates (2013) | 146/1191 | 12.2586% | 78 | Not compared |
+| Raft Pirates (2013) | 188/1191 | 15.7851% | 106 | Not compared |
 
 ## Raft Pirates (2013)
 
@@ -16,7 +16,7 @@ Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d
 | `rp::AccessorySprite` | 0/11 | 0.00% | 0 |
 | `rp::Barracks` | 0/11 | 0.00% | 0 |
 | `rp::BattleArrowSprite` | 0/3 | 0.00% | 0 |
-| `rp::BattleModeState` | 0/31 | 0.00% | 0 |
+| `rp::BattleModeState` | 13/31 | 41.94% | 9 |
 | `rp::BattleModeState::BattleDice` | 0/2 | 0.00% | 0 |
 | `rp::BattlePlacementScreen` | 0/15 | 0.00% | 0 |
 | `rp::BattlePointsViewSprite` | 0/4 | 0.00% | 0 |
@@ -30,7 +30,7 @@ Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d
 | `rp::Discovery` | 4/6 | 66.67% | 3 |
 | `rp::DiscoveryDB` | 0/6 | 0.00% | 0 |
 | `rp::DiscoveryGridObject` | 0/2 | 0.00% | 0 |
-| `rp::DiscoveryModeState` | 0/9 | 0.00% | 0 |
+| `rp::DiscoveryModeState` | 6/9 | 66.67% | 3 |
 | `rp::DiveMeterSprite` | 0/6 | 0.00% | 0 |
 | `rp::DiveUnitReadoutSprite` | 0/6 | 0.00% | 0 |
 | `rp::DiveUnitReadoutSprite::ReadoutLight` | 0/2 | 0.00% | 0 |
@@ -251,7 +251,7 @@ Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d
 | `rp::MsgZoneMoveTo` | 0/1 | 0.00% | 0 |
 | `rp::MsgZoneMoveToResult` | 0/1 | 0.00% | 0 |
 | `rp::Ocean` | 0/10 | 0.00% | 0 |
-| `rp::OceanView` | 1/62 | 1.61% | 1 |
+| `rp::OceanView` | 24/62 | 38.71% | 17 |
 | `rp::OverlapTree` | 0/4 | 0.00% | 0 |
 | `rp::PerimeterTree` | 0/3 | 0.00% | 0 |
 | `rp::PerimeterWallSprite` | 0/10 | 0.00% | 0 |
@@ -294,6 +294,19 @@ Baseline SHA-256 (.tsv): `1544df78707236da43862b022529d1fff01e6f2f0ac37f52d50b3d
 
 Matched names:
 
+- `rp::BattleModeState::BattleModeState`
+- `rp::BattleModeState::Pause`
+- `rp::BattleModeState::RaftSelect`
+- `rp::BattleModeState::SendRaftSelection`
+- `rp::BattleModeState::StartWaiting`
+- `rp::BattleModeState::StopWaiting`
+- `rp::BattleModeState::ToBattleView`
+- `rp::BattleModeState::ToPositioningView`
+- `rp::BattleModeState::endBattleAndPlunder`
+- `rp::BattleModeState::gotMsgAttackRequest`
+- `rp::BattleModeState::gotMsgExitBattleModeRequest`
+- `rp::BattleModeState::tick`
+- `rp::BattleModeState::~BattleModeState`
 - `rp::Blueprint::Blueprint`
 - `rp::Blueprint::id`
 - `rp::Blueprint::init`
@@ -309,6 +322,12 @@ Matched names:
 - `rp::Discovery::initWithSFSObject`
 - `rp::Discovery::questgroupid`
 - `rp::Discovery::zoneid`
+- `rp::DiscoveryModeState::DiscoveryModeState`
+- `rp::DiscoveryModeState::LeaveDiscovery`
+- `rp::DiscoveryModeState::LeaveDiscoveryReally`
+- `rp::DiscoveryModeState::Pause`
+- `rp::DiscoveryModeState::tick`
+- `rp::DiscoveryModeState::~DiscoveryModeState`
 - `rp::GridObject::Contains`
 - `rp::GridObject::Destroyed`
 - `rp::GridObject::GetBattlePoints`
@@ -335,6 +354,29 @@ Matched names:
 - `rp::Material::id`
 - `rp::Material::init`
 - `rp::Material::initWithSFSObject`
+- `rp::OceanView::AxisX`
+- `rp::OceanView::AxisY`
+- `rp::OceanView::CalculateHelpers`
+- `rp::OceanView::ConvertToView`
+- `rp::OceanView::ConvertToViewSpecial`
+- `rp::OceanView::ConvertToWorld`
+- `rp::OceanView::Height`
+- `rp::OceanView::Offset`
+- `rp::OceanView::Position`
+- `rp::OceanView::Priority`
+- `rp::OceanView::ScreenToWorld`
+- `rp::OceanView::SetHeight`
+- `rp::OceanView::SetOffset`
+- `rp::OceanView::SetPosition`
+- `rp::OceanView::SetPriority`
+- `rp::OceanView::SetUnitSize`
+- `rp::OceanView::SetWidth`
+- `rp::OceanView::SetZoom`
+- `rp::OceanView::Unit`
+- `rp::OceanView::Update`
+- `rp::OceanView::Width`
+- `rp::OceanView::WorldToScreen`
+- `rp::OceanView::Zoom`
 - `rp::OceanView::~OceanView`
 - `rp::Player::AddRaft`
 - `rp::Player::GetAvailableEdgeGridSpace`

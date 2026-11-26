@@ -1,8 +1,8 @@
 # Raft Pirates
 
-[![RaftPirates original method-name coverage: 12.2586%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
+[![RaftPirates original method-name coverage: 15.7851%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
 
-**146/1191 original method names (12.2586%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
+**188/1191 original method names (15.7851%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
 
 Unofficial native source reconstruction for game preservation. Engine dependency: [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy).
 
@@ -49,8 +49,8 @@ The Android build itself has not been run: no Android NDK was available in the r
 - Incoming libraries/player packets, raft health and battle-point totals, map movement, placement, basic blueprint purchases, dive start/collection, build completion, repair response state, and discovery response state are represented in C++ to varying degrees. Not all actions have controls. Placement and purchase use temporary controls with original item sprite thumbnails, not the complete original shop. Map rendering and safe-water testing are approximate; normalized map wire keys are verified. No actual player persistence.
 - Offline play (select Set Sail, then OFFLINE PLAY) starts an in-memory sandbox. Build, move, remove, shop, travel, daring progression and salvage requests use the same response handlers as online play. Sandbox values are provisional and not saved.
 - A playable diving reconstruction uses original sprite resources, with drag movement, gears, mines, timing and collection. Mechanics and scoring are provisional; online salvage is server-authoritative.
-- The original Java audio backend receives theme, ambient and diving music calls and menu/gear/finish effects. Desktop JNI mock validates calls, not actual audio playback. Construction controls support repair and clocks using recovered request fields. Battle outcome application updates hull/component BP and state; full combat gameplay and live battle protocol remain missing.
-- Remaining original menus, full Lua API, exact diving behavior, full combat, discovery scenes, social platform functions, advertising/billing integrations, and many more native behaviors remain missing.
+- The original Java audio backend receives theme, ambient and diving music calls and menu/gear/finish effects. Desktop JNI mock validates calls, not actual audio playback. Construction controls support repair and clocks using recovered request fields. Battle outcome application updates hull/component BP and state. Local practice battles in pirate water support attacks, retaliation, win/loss and a one-time gold reward. The Barnacle Bill discovery displays its original animation and supports return to the ocean. Neither feature restores the original live battle protocol or discovery quest rewards.
+- Remaining original menus, full Lua API, exact diving behavior, original multiplayer/boss combat, discovery quest/reward flow, social platform functions, advertising/billing integrations, and many more native behaviors remain missing.
 
 ## Verify locally (desktop)
 

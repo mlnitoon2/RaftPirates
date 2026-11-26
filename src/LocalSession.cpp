@@ -20,6 +20,9 @@ namespace rp {
     void LocalSession::start(Game& g) {
         nextId_ = 10;
         g.demo();
+        g.localPlay = true;
+        g.discoveries[1] = "Barnacle Bill's Bayside Booty";
+        g.knownDiscoveries = "1";
         g.safe = false;
         g.daringTotal = 60;
         g.daringRemaining = 60;
@@ -163,6 +166,11 @@ namespace rp {
             response.put("success", int32_t(1));
             response.put("zoneid", int32_t(number(*p, "zoneid")));
             g.extension("zone_goto_result", response);
+        } else if (cmd == "discovery_goto") {
+            int id = number(*p, "discoveryid");
+            response.put("success", int32_t(g.discoveries.count(id) != 0));
+            response.put("discoveryid", int32_t(id));
+            g.extension("discovery_goto_result", response);
         } else if (cmd == "daring_advance") {
             response.put("success", int32_t(g.canAdvanceDaring()));
             response.put("level", int32_t(g.daring + 1));

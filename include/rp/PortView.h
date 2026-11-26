@@ -3,6 +3,8 @@
 #include "rp/Hud.h"
 #include "rp/DivingGame.h"
 #include "rp/MapView.h"
+#include "rp/BattleModeState.h"
+#include "rp/DiscoveryModeState.h"
 
 namespace rp {
     // Temporary native controls for the original APK's GLSurfaceView. Not original Menu Redux UI.
@@ -35,6 +37,8 @@ namespace rp {
         OceanView ocean_;
         std::unique_ptr<Hud> hud_;
         std::unique_ptr<diving_game::DivingGame> diving_;
+        std::unique_ptr<BattleModeState> battle_;
+        std::unique_ptr<DiscoveryModeState> discovery_;
         bool diveStarted_ = false;
         bool diveSeen_ = false;
         bool hudEnabled(const Game& game) const;

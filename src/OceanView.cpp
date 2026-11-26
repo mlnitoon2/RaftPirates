@@ -29,6 +29,107 @@ namespace rp {
         }
     } // namespace
 
+    void OceanView::SetPosition(Vec2 p) {
+        position_ = p;
+    }
+
+    void OceanView::SetWidth(float w) {
+        if (w > 0 && std::isfinite(w))
+            width_ = w;
+    }
+
+    void OceanView::SetHeight(float h) {
+        if (h > 0 && std::isfinite(h))
+            height_ = h;
+    }
+
+    void OceanView::SetPriority(float p) {
+        priority_ = p;
+    }
+
+    void OceanView::SetUnitSize(float size) {
+        if (size > 0 && std::isfinite(size)) {
+            unit_ = size;
+            CalculateHelpers();
+        }
+    }
+
+    Vec2 OceanView::Position() const {
+        return position_;
+    }
+
+    float OceanView::Width() const {
+        return width_;
+    }
+
+    float OceanView::Height() const {
+        return height_;
+    }
+
+    float OceanView::Priority() const {
+        return priority_;
+    }
+
+    float OceanView::Unit() const {
+        return unit_;
+    }
+
+    Vec2 OceanView::AxisX() const {
+        return axisX_;
+    }
+
+    Vec2 OceanView::AxisY() const {
+        return axisY_;
+    }
+
+    Vec2 OceanView::ConvertToViewSpecial(Vec2 w) const {
+        return {192 * (w.x - w.y), 96 * (w.x + w.y)};
+    }
+
+    Vec2 OceanView::ConvertToView(Vec2 w) const {
+        return {w.x * axisX_.x + w.y * axisY_.x, w.x * axisX_.y + w.y * axisY_.y};
+    }
+
+    Vec2 OceanView::ConvertToWorld(Vec2 v) const {
+        return {(v.x / unit_ + 2 * v.y / unit_) / 2, (2 * v.y / unit_ - v.x / unit_) / 2};
+    }
+
+    Vec2 OceanView::WorldToScreen(Vec2 w) const {
+        auto v = ConvertToView({w.x - offset_.x, w.y - offset_.y});
+        return {position_.x + v.x * zoom_, position_.y + v.y * zoom_};
+    }
+
+    Vec2 OceanView::ScreenToWorld(Vec2 s) const {
+        auto w = ConvertToWorld({(s.x - position_.x) / zoom_, (s.y - position_.y) / zoom_});
+        return {w.x + offset_.x, w.y + offset_.y};
+    }
+
+    void OceanView::SetZoom(float z) {
+        if (z > 0 && std::isfinite(z))
+            zoom_ = z;
+    }
+
+    float OceanView::Zoom() const {
+        return zoom_;
+    }
+
+    void OceanView::SetOffset(Vec2 o, bool) {
+        offset_ = o;
+    }
+
+    Vec2 OceanView::Offset() const {
+        return offset_;
+    }
+
+    void OceanView::CalculateHelpers() {
+        axisX_ = {unit_, unit_ / 2};
+        axisY_ = {-unit_, unit_ / 2};
+    }
+
+    void OceanView::Update() {
+        CalculateHelpers();
+    }
+
     Image OceanView::render(const Game& game, float time, bool grid) {
         Image out(640, 400, {36, 133, 168, 255});
         GfxManager mgr;
@@ -38,9 +139,7 @@ namespace rp {
                 it = images_.emplace(p, std::make_shared<Image>(loadAssetImage(root_ / p))).first;
             return it->second;
         };
-        auto base = [](const Raft& r) {
-            return Vec2{320.f + (r.x - r.y) * 192.f, 86.f + (r.x + r.y) * 96.f};
-        };
+        auto base = [this](const Raft& r) { return WorldToScreen({float(r.x), float(r.y)}); };
         for (auto& r : game.rafts) {
             auto b = base(r);
             auto it = game.objects.find(r.type);

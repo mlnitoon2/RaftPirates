@@ -408,7 +408,7 @@ extern "C" JNIEXPORT void JNICALL RP(touchState)(JNIEnv* e, jobject, jint n, jfl
             rt.engine.engineReceiver().SendGeneric(sys::msg::MsgTouchState{});
             return;
         }
-        n = std::min({n, e->GetArrayLength(xs), e->GetArrayLength(ys), jint(32)});
+        n = std::min({n, e->GetArrayLength(xs), e->GetArrayLength(ys), jint(16)});
         std::vector<jfloat> x(n), y(n);
         e->GetFloatArrayRegion(xs, 0, n, x.data());
         e->GetFloatArrayRegion(ys, 0, n, y.data());
@@ -416,7 +416,7 @@ extern "C" JNIEXPORT void JNICALL RP(touchState)(JNIEnv* e, jobject, jint n, jfl
         sys::msg::MsgTouchState m;
         for (int i = 0; i < n; ++i)
             if (x[i] >= 0 && y[i] >= 0)
-                m.points.emplace_back(x[i] * 640 / rt.width, y[i] * 400 / rt.height);
+                m.AddPoint(int(x[i] * 640 / rt.width), int(y[i] * 400 / rt.height), i);
         rt.engine.engineReceiver().SendGeneric(m);
     });
 }

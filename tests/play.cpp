@@ -121,6 +121,65 @@ int main(int argc, char** argv) {
         g.daringRemaining = 0;
         session.dispatch(g, rp::Game::request("daring_advance"));
         CHECK(g.daring == 2 && g.daringRemaining == 60);
+        session.dispatch(g, g.discover(1));
+        CHECK(g.discovery == 1);
+        rp::DiscoveryModeState scene(g, argc > 1 ? argv[1] : ".");
+        scene.tick(1);
+        if (argc > 1) {
+            sys::gfx::Image location(640, 400, {36, 133, 168, 255});
+            scene.render(location);
+            size_t visible = 0;
+            for (const auto& pixel : location.pixels)
+                if (pixel.r != 36 || pixel.g != 133 || pixel.b != 168)
+                    ++visible;
+            CHECK(visible > 100);
+        }
+        scene.LeaveDiscovery(g);
+        CHECK(g.discovery == 0);
+        rp::BattleModeState battle(g);
+        battle.RaftSelect(1);
+        battle.ToBattleView();
+        CHECK(battle.active());
+        int before = g.materials[4];
+        int n = 0;
+        while (battle.active() && n++ < 30) {
+            CHECK(battle.gotMsgAttackRequest());
+            battle.tick(1);
+        }
+        CHECK(battle.won() && battle.endBattleAndPlunder() == 150 &&
+              battle.endBattleAndPlunder() == 0 && g.materials[4] == before + 150);
+        CHECK(g.GetRaftByID(1)->bp < 1000);
+        if (argc > 1) {
+            rp::Game ui;
+            rp::LocalSession offline;
+            offline.start(ui);
+            rp::PortView view(argv[1]);
+            view.render(ui, 0, "LOCAL");
+            view.touch(ui, 480, 315);
+            view.render(ui, 0, "LOCAL");
+            int beforeGold = ui.materials[4];
+            for (int i = 0; i < 8; ++i) {
+                view.touch(ui, 120, 365);
+                view.tick(1);
+                view.render(ui, 0, "LOCAL");
+            }
+            view.touch(ui, 120, 365);
+            CHECK(ui.materials[4] == beforeGold + 150);
+            offline.dispatch(ui, ui.discover(1));
+            auto image = view.render(ui, 0, "LOCAL");
+            CHECK(ui.discovery == 1 && image.at(0, 0).a == 255);
+            view.touch(ui, 200, 365);
+            CHECK(ui.discovery == 0);
+        }
+        rp::Game online;
+        online.demo();
+        bool rejected = false;
+        try {
+            rp::BattleModeState wrong(online);
+        } catch (const std::logic_error&) {
+            rejected = true;
+        }
+        CHECK(rejected);
         std::cout << "Local build, move, remove, purchase, travel, diving and progression passed\n";
         return 0;
     } catch (const std::exception& e) {

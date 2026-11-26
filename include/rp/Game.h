@@ -51,6 +51,7 @@ namespace rp {
         bool daringPaused = false;
         int zone = 1, mapX = 0, mapY = 0, daring = 0, buildLimit = 0, diveSeconds = 0;
         bool ready = false;
+        bool localPlay = false;
         std::string token, status = "Not connected";
         std::optional<PendingBuild> pending;
         std::optional<PendingMove> pendingMove;
@@ -91,8 +92,33 @@ namespace rp {
             : root_(std::move(root)), animations_(root_) {}
 
         sys::gfx::Image render(const Game&, float time, bool grid);
+        void SetPosition(sys::gfx::Vec2 p);
+        void SetWidth(float w);
+        void SetHeight(float h);
+        void SetPriority(float p);
+        void SetUnitSize(float size);
+        sys::gfx::Vec2 Position() const;
+        float Width() const;
+        float Height() const;
+        float Priority() const;
+        float Unit() const;
+        sys::gfx::Vec2 AxisX() const;
+        sys::gfx::Vec2 AxisY() const;
+        sys::gfx::Vec2 ConvertToViewSpecial(sys::gfx::Vec2 world) const;
+        sys::gfx::Vec2 ConvertToView(sys::gfx::Vec2 world) const;
+        sys::gfx::Vec2 ConvertToWorld(sys::gfx::Vec2 view) const;
+        sys::gfx::Vec2 WorldToScreen(sys::gfx::Vec2 world) const;
+        sys::gfx::Vec2 ScreenToWorld(sys::gfx::Vec2 screen) const;
+        void SetZoom(float zoom);
+        float Zoom() const;
+        void SetOffset(sys::gfx::Vec2 offset, bool immediate);
+        sys::gfx::Vec2 Offset() const;
+        void CalculateHelpers();
+        void Update();
 
       private:
+        sys::gfx::Vec2 position_{320, 86}, offset_{}, axisX_{192, 96}, axisY_{-192, 96};
+        float width_ = 640, height_ = 400, priority_ = 0, unit_ = 192, zoom_ = 1;
         std::filesystem::path root_;
         sys::gfx::AnimationRenderer animations_;
         std::map<std::string, std::shared_ptr<sys::gfx::Image>> images_;

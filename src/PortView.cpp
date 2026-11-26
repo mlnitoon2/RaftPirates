@@ -155,6 +155,10 @@ namespace rp {
     }
 
     void PortView::tick(float dt) {
+        if (battle_)
+            battle_->tick(dt);
+        if (discovery_)
+            discovery_->tick(dt);
         if (diving_)
             diving_->tick(dt);
     }
@@ -171,6 +175,41 @@ namespace rp {
 
     Image PortView::render(const Game& g, float time, const std::string& status) {
         Image out(640, 400, {36, 133, 168, 255});
+        if (battle_ && !g.localPlay)
+            battle_.reset();
+        if (battle_) {
+            out = ocean_.render(g, time, false);
+            rect(out, 12, 12, 616, 62, {15, 38, 54, 255});
+            text(out, 24, 20, "PRACTICE BATTLE", 2);
+            text(out, 24, 45,
+                 "ENEMY BP " + std::to_string(battle_->enemyBP()) + "  HULL BP " +
+                     std::to_string(battle_->playerHullBP()),
+                 1);
+            rect(out, 320, 44, 280, 12, {70, 38, 38, 255});
+            rect(out, 320, 44, 280 * battle_->enemyBP() / battle_->enemyMaxBP(), 12,
+                 {210, 90, 65, 255});
+            rect(out, 0, 342, 640, 58, {15, 38, 54, 255});
+            text(out, 24, 365,
+                 battle_->won()             ? "VICTORY - COLLECT GOLD"
+                 : battle_->lost()          ? "DEFEAT"
+                 : battle_->remaining() > 0 ? "RELOADING"
+                                            : "ATTACK",
+                 2);
+            text(out, 500, 365, "LEAVE", 2);
+            return out;
+        }
+        if (!g.discovery)
+            discovery_.reset();
+        if (g.discovery && !discovery_)
+            discovery_ = std::make_unique<DiscoveryModeState>(g, root_);
+        if (discovery_) {
+            discovery_->render(out);
+            rect(out, 0, 0, 640, 36, {15, 38, 54, 255});
+            text(out, 12, 12, discovery_->title(), 2);
+            rect(out, 0, 342, 640, 58, {15, 38, 54, 255});
+            text(out, 16, 366, "DISCOVERY - TAP TO RETURN", 2);
+            return out;
+        }
         if (g.diveState.state != 3)
             diveSeen_ = false;
         if (diveStarted_ && g.diveState.state == 3 && !diveSeen_) {
@@ -265,6 +304,10 @@ namespace rp {
             rect(out, 210, 356, 220, 42, {29, 57, 74, 255});
             text(out, 222, 370, g.diveSeconds > 0 ? "DIVING" : "DIVE", 1);
             text(out, 334, 370, "COLLECT", 1);
+            if (g.localPlay && !g.safe && g.mainRaft() && !g.mainRaft()->Destroyed()) {
+                rect(out, 450, 300, 175, 34, {29, 57, 74, 255});
+                text(out, 460, 312, "PRACTICE BATTLE", 1);
+            }
             if (grid)
                 text(out, 150, 65,
                      moving_              ? "MOVE: TAP DESTINATION"
@@ -304,6 +347,28 @@ namespace rp {
     std::optional<sfs::Message> PortView::touch(Game& g, float x, float y) {
         if (x < 0 || x >= 640 || y < 0 || y >= 400)
             return {};
+        if (battle_) {
+            if (y >= 342) {
+                if (x >= 470) {
+                    battle_->gotMsgExitBattleModeRequest();
+                    battle_.reset();
+                } else if (battle_->won()) {
+                    battle_->endBattleAndPlunder();
+                    battle_.reset();
+                } else if (battle_->lost()) {
+                    battle_.reset();
+                } else
+                    battle_->gotMsgAttackRequest();
+            }
+            return {};
+        }
+        if (discovery_) {
+            if (y >= 342) {
+                discovery_->LeaveDiscovery(g);
+                discovery_.reset();
+            }
+            return {};
+        }
         if (diving_) {
             diving_->touchUp({x, y});
             if (diving_->confirmed()) {
@@ -313,6 +378,13 @@ namespace rp {
             return {};
         }
         if (hudEnabled(g)) {
+            if (g.localPlay && x >= 450 && y >= 300 && y < 334 && g.mainRaft() &&
+                !g.mainRaft()->Destroyed() && !g.safe) {
+                battle_ = std::make_unique<BattleModeState>(g);
+                battle_->RaftSelect(g.mainRaft()->id);
+                battle_->ToBattleView();
+                return {};
+            }
             hud_->update(g);
             auto action = hud_->touch(x, y);
             switch (action) {
@@ -404,9 +476,9 @@ namespace rp {
             if (chosen != g.blueprints.end()) {
                 auto object = g.objects.find(chosen->second.object);
                 if (object != g.objects.end() && object->second.type == 0) {
-                    float dx = (x - 320) / 192.f, dy = (y - 86) / 96.f;
+                    auto world = ocean_.ScreenToWorld({x, y});
                     // Tile centre is half a raft down its projected diamond.
-                    Cell pos{int(std::floor((dx + dy) / 2)), int(std::floor((dy - dx) / 2))};
+                    Cell pos{int(std::floor(world.x)), int(std::floor(world.y))};
                     if (g.canBuildRaft(pos))
                         return g.build(object->first, 0, pos.x, pos.y);
                     g.status = "Select a free edge next to your raft";
@@ -415,9 +487,9 @@ namespace rp {
             }
             for (auto it = g.rafts.rbegin(); it != g.rafts.rend(); ++it) {
                 auto& r = *it;
-                float bx = 320 + (r.x - r.y) * 192.f, by = 86 + (r.x + r.y) * 96.f;
-                float dx = (x - bx) / 32.f, dy = (y - by) / 16.f;
-                int cx = int(std::floor((dx + dy) / 2)), cy = int(std::floor((dy - dx) / 2));
+                auto world = ocean_.ScreenToWorld({x, y});
+                int cx = int(std::floor((world.x - r.x) * 6)),
+                    cy = int(std::floor((world.y - r.y) * 6));
                 if (cx < 0 || cx >= 6 || cy < 0 || cy >= 6)
                     continue;
                 if (moving_) {
@@ -468,6 +540,9 @@ namespace rp {
             std::vector<PanelRow> result;
             for (auto& [id, name] : game.zones)
                 result.push_back({id, "ZONE: " + name});
+            for (const auto& [id, name] : game.discoveries)
+                if (id > 0 && (game.localPlay || game.knownDiscoveries == std::to_string(id)))
+                    result.push_back({-id, "DISCOVERY: " + name});
             return result;
         }
 
@@ -698,7 +773,7 @@ namespace rp {
         }
         if (panel_ == Panel::Travel) {
             panel_ = Panel::None;
-            return game.travel(id);
+            return id < 0 ? game.discover(-id) : game.travel(id);
         }
         if (panel_ == Panel::Build) {
             selectedBlueprint_ = id;

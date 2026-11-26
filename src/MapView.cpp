@@ -16,7 +16,7 @@ namespace rp {
         std::filesystem::path p(name);
         if (p.is_absolute() || p.has_root_name() || p.extension() != ".tmx")
             throw std::runtime_error("Invalid map resource path");
-        for (auto& part : p)
+        for (const auto& part : p)
             if (part == "..")
                 throw std::runtime_error("Invalid map resource path");
         auto full = (root / p).lexically_normal().string();
