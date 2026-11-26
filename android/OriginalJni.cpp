@@ -1,4 +1,6 @@
 #include "rp/PortView.h"
+#include "rp/SplashScreen.h"
+#include "rp/TitleScreen.h"
 #include "sys/EngineBase.h"
 #include "sys/res/Archive.h"
 #include "sys/android/Jni.h"
@@ -20,6 +22,8 @@ namespace {
         sys::EngineBase engine;
         Presenter presenter;
         std::unique_ptr<rp::PortView> view;
+        std::unique_ptr<rp::SplashScreen> splash;
+        std::unique_ptr<rp::TitleScreen> title;
         std::filesystem::path archivePath;
         sys::gfx::Image lastImage;
         int width = 640, height = 400, entry = 0, port = 9933;
@@ -102,12 +106,13 @@ namespace {
     }
 
     void send(JNIEnv* e, const sfs::Message& msg) {
-        if (!rt.connected || !rt.game.ready)
-            throw std::runtime_error("Connect to a private test server first");
         try {
+            if (!rt.connected || !rt.game.ready)
+                throw std::runtime_error("Connect to a private test server first");
             sfs::JavaClient::send(e, msg);
         } catch (...) {
             rt.game.pending.reset();
+            rt.game.pendingMove.reset();
             rt.game.pendingMap.reset();
             rt.game.pendingZone.reset();
             rt.game.pendingDiscovery.reset();
@@ -121,6 +126,7 @@ namespace {
         rt.connecting = false;
         rt.game.ready = false;
         rt.game.pending.reset();
+        rt.game.pendingMove.reset();
         rt.game.pendingMap.reset();
         rt.game.pendingZone.reset();
         rt.game.pendingDiscovery.reset();
@@ -149,6 +155,18 @@ extern "C" JNIEXPORT void JNICALL RP(init)(JNIEnv* e, jobject obj, jstring path,
         auto root = cacheRoot(e, obj, apk);
         rt.game.demo();
         rt.view = std::make_unique<rp::PortView>(root);
+        try {
+            rt.splash = std::make_unique<rp::SplashScreen>(root);
+        } catch (const std::exception& ex) {
+            log(std::string("Splash unavailable: ") + ex.what());
+        }
+        try {
+            rt.title = std::make_unique<rp::TitleScreen>(root);
+        } catch (const std::exception& ex) {
+            log(std::string("Title unavailable: ") + ex.what());
+        }
+        rt.lastImage = {};
+        rt.lastFrame = {};
         rt.initialized = true;
         rt.status = "OFFLINE PREVIEW - TAP CONNECT";
         rt.last = Clock::now();
@@ -180,6 +198,8 @@ extern "C" JNIEXPORT void JNICALL RP(kill)(JNIEnv* e, jobject) {
             }
         }
         lost();
+        rt.splash.reset();
+        rt.title.reset();
         rt.view.reset();
         rt.lastImage = {};
         rt.initialized = false;
@@ -197,6 +217,19 @@ extern "C" JNIEXPORT void JNICALL RP(tick)(JNIEnv* e, jobject) {
         rt.time += dt;
         rt.engine.Tick(dt);
         rt.game.tick(dt);
+        if (rt.splash) {
+            rt.splash->tick(dt);
+            if (!rt.splash->finished()) {
+                rt.presenter.present(rt.splash->render(), rt.width, rt.height);
+                return;
+            }
+            rt.splash.reset();
+            rt.lastImage = {};
+        }
+        if (rt.title) {
+            rt.presenter.present(rt.title->render(), rt.width, rt.height);
+            return;
+        }
         if (rt.connected && rt.game.ready && now - rt.lastPing > std::chrono::seconds(20)) {
             rt.lastPing = now;
             sfs::JavaClient::send(e, rp::Game::request("keep_alive"));
@@ -211,6 +244,12 @@ extern "C" JNIEXPORT void JNICALL RP(tick)(JNIEnv* e, jobject) {
 
 extern "C" JNIEXPORT void JNICALL RP(touchDown)(JNIEnv* e, jobject, jfloat x, jfloat y) {
     guarded(e, [&] {
+        if (rt.splash)
+            return;
+        if (rt.title) {
+            rt.title->touchDown(x * 640 / rt.width, y * 400 / rt.height);
+            return;
+        }
         sys::msg::MsgTouchDown m;
         m.x = x * 640 / rt.width;
         m.y = y * 400 / rt.height;
@@ -222,15 +261,25 @@ extern "C" JNIEXPORT void JNICALL RP(touchUp)(JNIEnv* e, jobject obj, jfloat x, 
     guarded(e, [&] {
         if (!rt.view)
             return;
+        if (rt.splash) {
+            rt.splash->skip();
+            rt.splash.reset();
+            rt.lastImage = {};
+            return;
+        }
         float px = x * 640 / rt.width, py = y * 400 / rt.height;
+        if (rt.title) {
+            rt.title->touchUp(px, py);
+            if (rt.title->started()) {
+                rt.title.reset();
+                rt.lastImage = {};
+            }
+            return;
+        }
         sys::msg::MsgTouchUp m;
         m.x = px;
         m.y = py;
         rt.engine.engineReceiver().SendGeneric(m);
-        if ((!rt.connected || !rt.game.ready) && !(py >= 350 && px < 318)) {
-            rt.status = "CONNECT FOR GAMEPLAY";
-            return;
-        }
         auto result = rt.view->touch(rt.game, px, py);
         if (rt.view->connectRequested) {
             rt.view->connectRequested = false;
@@ -247,6 +296,12 @@ extern "C" JNIEXPORT void JNICALL RP(touchUp)(JNIEnv* e, jobject obj, jfloat x, 
 
 extern "C" JNIEXPORT void JNICALL RP(touchMove)(JNIEnv* e, jobject, jfloat x, jfloat y) {
     guarded(e, [&] {
+        if (rt.splash)
+            return;
+        if (rt.title) {
+            rt.title->touchDrag(x * 640 / rt.width, y * 400 / rt.height);
+            return;
+        }
         sys::msg::MsgTouchDrag m;
         m.x = x * 640 / rt.width;
         m.y = y * 400 / rt.height;
@@ -344,8 +399,7 @@ extern "C" JNIEXPORT void JNICALL HY(sendMsgKeyboardEntryResult)(JNIEnv* e, jobj
             }
             rt.session = std::move(s);
             rt.game = rp::Game{};
-            rt.view->grid = false;
-            rt.view->map = false;
+            rt.view = std::make_unique<rp::PortView>(cacheRoot(e, obj, rt.archivePath));
             rt.connecting = true;
             rt.status = "CONNECTING";
             try {

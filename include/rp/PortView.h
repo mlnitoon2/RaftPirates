@@ -17,7 +17,14 @@ namespace rp {
         std::optional<sys::res::TmxMap> tmx_;
         std::string mapPath_;
         std::map<std::string, std::shared_ptr<sys::gfx::Image>> tiles_;
-        size_t selected = 0;
+        enum class Panel { None, Shop, Inventory, Travel, Build };
+        Panel panel_ = Panel::None;
+        size_t page_ = 0;
+        int selectedBlueprint_ = 0;
+        int selectedParent_ = 0, selectedComponent_ = 0;
+        bool moving_ = false;
+        std::optional<sfs::Message> panelTouch(Game&, float x, float y);
+        void renderPanel(sys::gfx::Image&, const Game&);
         void loadMap(const Game&);
     };
 } // namespace rp

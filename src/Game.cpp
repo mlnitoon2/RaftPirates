@@ -234,6 +234,7 @@ namespace rp {
             buildLimit = num(p, "build_limit_left");
             ready = true;
             pending.reset();
+            pendingMove.reset();
         } else if (cmd == "gs_ocean") {
             safe = p.getBool("safe_water", safe);
             if (pendingMap) {
@@ -292,6 +293,34 @@ namespace rp {
                         {id, b.type, b.x, b.y, num(*o, "current_bp"), num(*o, "state"), {}});
             } else
                 status = "Construction response missing object";
+        } else if (cmd == "gs_build_update") {
+            if (!pendingMove)
+                return;
+            auto m = *pendingMove;
+            pendingMove.reset();
+            if (p.get("success") && !num(p, "success")) {
+                status = "Move rejected";
+                return;
+            }
+            auto from = std::find_if(rafts.begin(), rafts.end(),
+                                     [&](const auto& r) { return r.id == m.parent; });
+            auto to = std::find_if(rafts.begin(), rafts.end(),
+                                   [&](const auto& r) { return r.id == m.newParent; });
+            if (from == rafts.end() || to == rafts.end())
+                return;
+            auto c = std::find_if(from->components.begin(), from->components.end(),
+                                  [&](const auto& c) { return c.id == m.id; });
+            if (c == from->components.end())
+                return;
+            auto moved = *c;
+            moved.x = m.x;
+            moved.y = m.y;
+            if (from == to)
+                *c = moved;
+            else {
+                from->components.erase(c);
+                to->components.push_back(moved);
+            }
         } else if (cmd == "gs_build_remove") {
             int id = num(p, "object_id");
             if (num(p, "object_type") == 0)
@@ -346,8 +375,59 @@ namespace rp {
         }
     }
 
+    bool Game::canPlaceComponent(int object, int parent, int x, int y, int ignoreParent,
+                                 int ignoreId) const {
+        auto o = objects.find(object);
+        auto r = std::find_if(rafts.begin(), rafts.end(),
+                              [&](const auto& raft) { return raft.id == parent; });
+        if (o == objects.end() || o->second.type != 1 || r == rafts.end())
+            return false;
+        for (auto cell : o->second.cells) {
+            int64_t xx = int64_t(x) + cell.x, yy = int64_t(y) + cell.y;
+            if (xx < 0 || yy < 0 || xx >= 6 || yy >= 6)
+                return false;
+            for (const auto& c : r->components) {
+                if (parent == ignoreParent && c.id == ignoreId)
+                    continue;
+                auto other = objects.find(c.type);
+                if (other == objects.end()) {
+                    if (c.x == xx && c.y == yy)
+                        return false;
+                } else
+                    for (auto v : other->second.cells)
+                        if (int64_t(c.x) + v.x == xx && int64_t(c.y) + v.y == yy)
+                            return false;
+            }
+        }
+        return true;
+    }
+
+    Message Game::moveComponent(int parent, int id, int newParent, int x, int y) {
+        if (!ready || pendingMove || pending)
+            throw std::runtime_error("Wait for construction response");
+        auto raft =
+            std::find_if(rafts.begin(), rafts.end(), [&](const auto& r) { return r.id == parent; });
+        if (raft == rafts.end())
+            throw std::runtime_error("Unknown parent raft");
+        auto part = std::find_if(raft->components.begin(), raft->components.end(),
+                                 [&](const auto& c) { return c.id == id; });
+        if (part == raft->components.end())
+            throw std::runtime_error("Unknown component");
+        if (!canPlaceComponent(part->type, newParent, x, y, parent, id))
+            throw std::runtime_error("Invalid move footprint");
+        O p;
+        p.put("object_type", int32_t(1));
+        p.put("object_id", int32_t(id));
+        p.put("parent_id", int32_t(parent));
+        p.put("new_parent_id", int32_t(newParent));
+        p.put("pos_x", int32_t(x));
+        p.put("pos_y", int32_t(y));
+        pendingMove = PendingMove{parent, id, newParent, x, y};
+        return request("gs_build_update", p);
+    }
+
     Message Game::build(int object, int parent, int x, int y) {
-        if (!ready || pending)
+        if (!ready || pending || pendingMove)
             throw std::runtime_error("Wait for previous construction");
         auto o = objects.find(object);
         if (o == objects.end())
@@ -361,25 +441,8 @@ namespace rp {
         if (!has)
             throw std::runtime_error("Blueprint not owned");
         if (o->second.type == 1) {
-            auto r =
-                std::find_if(rafts.begin(), rafts.end(), [&](auto& a) { return a.id == parent; });
-            if (r == rafts.end())
-                throw std::runtime_error("Unknown parent raft");
-            for (auto cell : o->second.cells) {
-                int xx = x + cell.x, yy = y + cell.y;
-                if (xx < 0 || yy < 0 || xx >= 6 || yy >= 6)
-                    throw std::runtime_error("Footprint outside raft");
-                for (auto& c : r->components) {
-                    auto other = objects.find(c.type);
-                    if (other == objects.end()) {
-                        if (c.x == xx && c.y == yy)
-                            throw std::runtime_error("Cell occupied");
-                    } else
-                        for (auto v : other->second.cells)
-                            if (c.x + v.x == xx && c.y + v.y == yy)
-                                throw std::runtime_error("Cell occupied");
-                }
-            }
+            if (!canPlaceComponent(object, parent, x, y))
+                throw std::runtime_error("Footprint outside raft or occupied");
         } else {
             parent = 0;
             for (auto& r : rafts)

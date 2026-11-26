@@ -1,4 +1,5 @@
 #include "rp/Game.h"
+#include "rp/PortView.h"
 #include <iostream>
 #include <stdexcept>
 #include <zlib.h>
@@ -190,6 +191,35 @@ int main() {
         CHECK(std::abs(health.GetHealth(definitions) - .5f) < .001f);
         health.state = 2;
         CHECK(health.Destroyed());
+        rp::Game moveGame;
+        moveGame.demo();
+        CHECK(moveGame.canPlaceComponent(2, 1, 0, 0, 1, 1));
+        CHECK(!moveGame.canPlaceComponent(2, 1, 1, 3, 1, 1));
+        auto moveRequest = moveGame.moveComponent(1, 1, 1, 0, 0);
+        CHECK(moveRequest.payload.getString("c") == "gs_build_update");
+        CHECK(moveRequest.payload.getSFSObj("p")->getInt("object_id") == 1);
+        CHECK(moveGame.rafts.front().components.front().x == 4);
+        moveGame.extension("gs_build_update", O{});
+        CHECK(moveGame.rafts.front().components.front().x == 0);
+        CHECK(!moveGame.pendingMove);
+        auto rejectedMove = moveGame.moveComponent(1, 1, 1, 2, 2);
+        O denied;
+        denied.put("success", int32_t(0));
+        moveGame.extension("gs_build_update", denied);
+        CHECK(moveGame.rafts.front().components.front().x == 0);
+        CHECK(!moveGame.pendingMove);
+        moveGame.rafts.push_back({2, 1, 1, 0, 1000, 0, {}});
+        auto crossRaftMove = moveGame.moveComponent(1, 1, 2, 3, 3);
+        CHECK(crossRaftMove.payload.getSFSObj("p")->getInt("new_parent_id") == 2);
+        moveGame.extension("gs_build_update", O{});
+        CHECK(moveGame.rafts[0].components.size() == 1 && moveGame.rafts[1].components.size() == 1);
+        CHECK(moveGame.rafts[1].components.front().x == 3);
+        rp::PortView port(".");
+        port.touch(moveGame, 580, 370);
+        port.touch(moveGame, 180, 50);
+        moveGame.storeItems[1] = {1, 4, 100, 1, "test_item", "misc", "Test"};
+        auto purchase = port.touch(moveGame, 30, 90);
+        CHECK(purchase && purchase->payload.getString("c") == "purchase_item");
         std::cout << "Raft model and SFS framing tests passed\n";
         return 0;
     } catch (const std::exception& e) {

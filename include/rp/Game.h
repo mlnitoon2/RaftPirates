@@ -50,6 +50,10 @@ namespace rp {
         int type = 0, parent = 0, x = 0, y = 0;
     };
 
+    struct PendingMove {
+        int parent = 0, id = 0, newParent = 0, x = 0, y = 0;
+    };
+
     class Game {
       public:
         std::map<int, GridObject> objects;
@@ -71,6 +75,7 @@ namespace rp {
         bool safe = true, ready = false;
         std::string playerName, token, status = "Not connected";
         std::optional<PendingBuild> pending;
+        std::optional<PendingMove> pendingMove;
         std::optional<int> pendingZone;
         std::optional<int> pendingDiscovery;
         std::optional<Cell> pendingMap;
@@ -84,6 +89,9 @@ namespace rp {
         static sfs::Message request(const std::string&, sfs::SFSObjectWrapper = {});
         sfs::Message build(int object, int parent, int x, int y);
         sfs::Message remove(int parent, int id) const;
+        sfs::Message moveComponent(int parent, int id, int newParent, int x, int y);
+        bool canPlaceComponent(int object, int parent, int x, int y, int ignoreParent = 0,
+                               int ignoreId = 0) const;
         sfs::Message dive(const std::string& command) const;
         sfs::Message travel(int id);
         sfs::Message buy(int id) const;

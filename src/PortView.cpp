@@ -227,12 +227,18 @@ namespace rp {
         button(out, 2, map ? "OCEAN" : "MAP", map);
         button(out, 3, "DIVE");
         button(out, 4, "COLLECT");
-        button(out, 5, "BLUEPRINT");
+        button(out, 5, "MENU", panel_ != Panel::None);
+        if (panel_ != Panel::None) {
+            renderPanel(out, g);
+            return out;
+        }
         if (grid && !map && !g.blueprints.empty()) {
-            auto b = g.blueprints.begin();
-            std::advance(b, selected % g.blueprints.size());
+            auto b = g.blueprints.find(selectedBlueprint_);
             rect(out, 0, 32, 640, 16, {15, 38, 54, 255});
-            text(out, 8, 35, "PLACE: " + b->second.name + " - TAP GRID", 1);
+            std::string message = moving_                   ? "MOVE: TAP DESTINATION"
+                                  : b != g.blueprints.end() ? "PLACE: " + b->second.name
+                                                            : "TAP COMPONENT TO SELECT";
+            text(out, 8, 35, message, 1);
         }
         return out;
     }
@@ -240,6 +246,8 @@ namespace rp {
     std::optional<sfs::Message> PortView::touch(Game& g, float x, float y) {
         if (x < 0 || x >= 640 || y < 0 || y >= 400)
             return {};
+        if (panel_ != Panel::None && y < 350)
+            return panelTouch(g, x, y);
         if (y >= 350) {
             int n = int(x) / 106;
             switch (n) {
@@ -247,10 +255,12 @@ namespace rp {
                 connectRequested = true;
                 return {};
             case 1:
+                panel_ = Panel::None;
                 grid = !grid;
                 map = false;
                 return {};
             case 2:
+                panel_ = Panel::None;
                 map = !map;
                 return {};
             case 3:
@@ -258,15 +268,8 @@ namespace rp {
             case 4:
                 return g.dive("dive_collect");
             case 5:
-                if (!g.blueprints.empty()) {
-                    selected = (selected + 1) % g.blueprints.size();
-                    auto it = g.blueprints.begin();
-                    std::advance(it, selected);
-                    if (!g.owned.count(it->first))
-                        return g.buy(it->first);
-                    grid = true;
-                    map = false;
-                }
+                panel_ = panel_ == Panel::None ? Panel::Build : Panel::None;
+                page_ = 0;
                 return {};
             default:
                 return {};
@@ -283,14 +286,168 @@ namespace rp {
                 return {};
             return g.moveMap(int(u * 200 - 100), int(v * 200 - 100), *safe != 0);
         }
-        if (grid && !g.blueprints.empty() && !g.rafts.empty()) {
-            auto b = g.blueprints.begin();
-            std::advance(b, selected % g.blueprints.size());
-            auto& r = g.rafts.front();
-            float bx = 320 + (r.x - r.y) * 192.f, by = 86 + (r.x + r.y) * 96.f;
-            float dx = (x - bx) / 32.f, dy = (y - by) / 16.f;
-            int cx = int(std::floor((dx + dy) / 2)), cy = int(std::floor((dy - dx) / 2));
-            return g.build(b->second.object, r.id, cx, cy);
+        if (grid && !g.rafts.empty()) {
+            for (auto it = g.rafts.rbegin(); it != g.rafts.rend(); ++it) {
+                auto& r = *it;
+                float bx = 320 + (r.x - r.y) * 192.f, by = 86 + (r.x + r.y) * 96.f;
+                float dx = (x - bx) / 32.f, dy = (y - by) / 16.f;
+                int cx = int(std::floor((dx + dy) / 2)), cy = int(std::floor((dy - dx) / 2));
+                if (cx < 0 || cx >= 6 || cy < 0 || cy >= 6)
+                    continue;
+                if (moving_) {
+                    auto request =
+                        g.moveComponent(selectedParent_, selectedComponent_, r.id, cx, cy);
+                    moving_ = false;
+                    return request;
+                }
+                auto bp = g.blueprints.find(selectedBlueprint_);
+                if (bp != g.blueprints.end())
+                    return g.build(bp->second.object, r.id, cx, cy);
+                for (auto& component : r.components) {
+                    auto definition = g.objects.find(component.type);
+                    if (definition == g.objects.end())
+                        continue;
+                    for (auto cell : definition->second.cells)
+                        if (component.x + cell.x == cx && component.y + cell.y == cy) {
+                            selectedParent_ = r.id;
+                            selectedComponent_ = component.id;
+                            panel_ = Panel::Build;
+                            page_ = 0;
+                            return {};
+                        }
+                }
+                return {};
+            }
+        }
+        return {};
+    }
+
+    namespace {
+        struct PanelRow {
+            int id;
+            std::string label;
+        };
+
+        std::vector<PanelRow> shopRows(const Game& game) {
+            std::vector<PanelRow> result;
+            for (auto& [id, item] : game.storeItems)
+                result.push_back({id, item.name + " - " + std::to_string(item.price)});
+            return result;
+        }
+
+        std::vector<PanelRow> travelRows(const Game& game) {
+            std::vector<PanelRow> result;
+            for (auto& [id, name] : game.zones)
+                result.push_back({id, "ZONE: " + name});
+            return result;
+        }
+
+        std::vector<PanelRow> blueprintRows(const Game& game) {
+            std::vector<PanelRow> result;
+            for (auto& [id, bp] : game.blueprints)
+                if (game.owned.count(id))
+                    result.push_back({id, bp.name});
+            return result;
+        }
+
+        std::vector<PanelRow> inventoryRows(const Game& game) {
+            std::vector<PanelRow> result;
+            for (auto& [id, amount] : game.materials) {
+                auto it = game.materialNames.find(id);
+                result.push_back(
+                    {id, (it == game.materialNames.end() ? std::to_string(id) : it->second) +
+                             " : " + std::to_string(amount)});
+            }
+            return result;
+        }
+    } // namespace
+
+    void PortView::renderPanel(Image& image, const Game& game) {
+        rect(image, 14, 36, 612, 302, {15, 38, 54, 255});
+        const char* names[] = {"BUILD", "SHOP", "INVENTORY", "TRAVEL"};
+        const Panel panels[] = {Panel::Build, Panel::Shop, Panel::Inventory, Panel::Travel};
+        for (int i = 0; i < 4; ++i) {
+            rect(image, 20 + 150 * i, 42, 145, 28,
+                 panel_ == panels[i] ? Color{51, 115, 112, 255} : Color{29, 57, 74, 255});
+            text(image, 30 + 150 * i, 52, names[i], 1);
+        }
+        auto rows = panel_ == Panel::Shop        ? shopRows(game)
+                    : panel_ == Panel::Travel    ? travelRows(game)
+                    : panel_ == Panel::Inventory ? inventoryRows(game)
+                                                 : blueprintRows(game);
+        for (size_t i = 0; i < 6 && page_ * 6 + i < rows.size(); ++i) {
+            rect(image, 20, 76 + int(i) * 34, 600, 30, {29, 57, 74, 255});
+            text(image, 28, 87 + int(i) * 34, rows[page_ * 6 + i].label, 1);
+        }
+        if (rows.empty())
+            text(image, 28, 90, "NO ITEMS", 1);
+        text(image, 25, 290, "PREV", 1);
+        text(image, 560, 290, "NEXT", 1);
+        text(image, 270, 290, "PAGE " + std::to_string(page_ + 1), 1);
+        if (panel_ == Panel::Build) {
+            text(image, 25, 316, "SELECT PART", 1);
+            if (selectedComponent_) {
+                text(image, 220, 316, "MOVE", 1);
+                text(image, 390, 316, "REMOVE", 1);
+            }
+        }
+    }
+
+    std::optional<sfs::Message> PortView::panelTouch(Game& game, float x, float y) {
+        if (y >= 42 && y < 70 && x >= 20 && x < 620) {
+            const Panel panels[] = {Panel::Build, Panel::Shop, Panel::Inventory, Panel::Travel};
+            panel_ = panels[std::min(3, int(x - 20) / 150)];
+            page_ = 0;
+            return {};
+        }
+        auto rows = panel_ == Panel::Shop        ? shopRows(game)
+                    : panel_ == Panel::Travel    ? travelRows(game)
+                    : panel_ == Panel::Inventory ? inventoryRows(game)
+                                                 : blueprintRows(game);
+        if (y >= 280 && y < 305) {
+            if (x < 150 && page_ > 0)
+                --page_;
+            if (x > 490 && (page_ + 1) * 6 < rows.size())
+                ++page_;
+            return {};
+        }
+        if (panel_ == Panel::Build && y >= 305 && y < 338) {
+            panel_ = Panel::None;
+            grid = true;
+            map = false;
+            selectedBlueprint_ = 0;
+            if (x >= 190 && x < 360 && selectedComponent_)
+                moving_ = true;
+            else if (x >= 360 && selectedComponent_) {
+                auto request = game.remove(selectedParent_, selectedComponent_);
+                selectedComponent_ = 0;
+                selectedParent_ = 0;
+                return request;
+            } else {
+                moving_ = false;
+                selectedComponent_ = 0;
+                selectedParent_ = 0;
+            }
+            return {};
+        }
+        if (x < 20 || x >= 620 || y < 76 || y >= 280)
+            return {};
+        size_t row = page_ * 6 + size_t(y - 76) / 34;
+        if (row >= rows.size())
+            return {};
+        int id = rows[row].id;
+        if (panel_ == Panel::Shop)
+            return game.buyStoreItem(id);
+        if (panel_ == Panel::Travel) {
+            panel_ = Panel::None;
+            return game.travel(id);
+        }
+        if (panel_ == Panel::Build) {
+            selectedBlueprint_ = id;
+            moving_ = false;
+            grid = true;
+            map = false;
+            panel_ = Panel::None;
         }
         return {};
     }
