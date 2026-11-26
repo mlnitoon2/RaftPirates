@@ -348,12 +348,12 @@ namespace rp {
                  std::to_string(g.diveSeconds) + "S",
              1);
         rect(out, 0, 342, 640, 58, {15, 38, 54, 255});
-        button(out, 0, "CONNECT");
+
         button(out, 1, "GRID", grid);
         button(out, 2, map ? "OCEAN" : "MAP", map);
         button(out, 3, "DIVE");
         button(out, 4, "COLLECT");
-        button(out, 5, g.ready ? "MENU" : "OFFLINE PLAY", panel_ != Panel::None);
+        button(out, 5, "MENU", panel_ != Panel::None);
         if (panel_ != Panel::None) {
             renderPanel(out, g);
             return out;
@@ -460,7 +460,6 @@ namespace rp {
             int n = int(x) / 106;
             switch (n) {
             case 0:
-                connectRequested = true;
                 return {};
             case 1:
                 panel_ = Panel::None;
@@ -477,10 +476,7 @@ namespace rp {
             case 4:
                 return g.dive("dive_collect");
             case 5:
-                if (!g.ready) {
-                    offlineRequested = true;
-                    return {};
-                }
+                if (!g.ready) return {};
                 panel_ = panel_ == Panel::None ? Panel::Build : Panel::None;
                 page_ = 0;
                 return {};

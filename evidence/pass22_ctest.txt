@@ -1,0 +1,44 @@
+Internal ctest changing into directory: /tmp/p21/build
+Test project /tmp/p21/build
+      Start  1: raftpirates_protocol
+ 1/19 Test  #1: raftpirates_protocol .............   Passed    0.01 sec
+      Start  2: raftpirates_original_hud
+ 2/19 Test  #2: raftpirates_original_hud .........   Passed    0.04 sec
+      Start  3: raftpirates_original_login
+ 3/19 Test  #3: raftpirates_original_login .......   Passed    0.13 sec
+      Start  4: raftpirates_helpers
+ 4/19 Test  #4: raftpirates_helpers ..............   Passed    0.00 sec
+      Start  5: raftpirates_original_manifest
+ 5/19 Test  #5: raftpirates_original_manifest ....   Passed    0.03 sec
+      Start  6: raftpirates_local_play
+ 6/19 Test  #6: raftpirates_local_play ...........   Passed    0.00 sec
+      Start  7: raftpirates_original_dive
+ 7/19 Test  #7: raftpirates_original_dive ........   Passed    0.14 sec
+      Start  8: raftpirates_components
+ 8/19 Test  #8: raftpirates_components ...........   Passed    0.00 sec
+      Start  9: raftpirates_session
+ 9/19 Test  #9: raftpirates_session ..............   Passed    0.00 sec
+      Start 10: hydra_core
+10/19 Test #10: hydra_core .......................   Passed    0.00 sec
+      Start 11: hydra_runtime
+11/19 Test #11: hydra_runtime ....................   Passed    0.00 sec
+      Start 12: hydra_extended
+12/19 Test #12: hydra_extended ...................   Passed    0.00 sec
+      Start 13: hydra_v06
+13/19 Test #13: hydra_v06 ........................   Passed    0.00 sec
+      Start 14: hydra_v07
+14/19 Test #14: hydra_v07 ........................   Passed    0.00 sec
+      Start 15: hydra_file
+15/19 Test #15: hydra_file .......................   Passed    0.00 sec
+      Start 16: hydra_graphics
+16/19 Test #16: hydra_graphics ...................   Passed    0.00 sec
+      Start 17: hydra_menu_components
+17/19 Test #17: hydra_menu_components ............   Passed    0.00 sec
+      Start 18: hydra_touch_config
+18/19 Test #18: hydra_touch_config ...............   Passed    0.00 sec
+      Start 19: sfs_wire
+19/19 Test #19: sfs_wire .........................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 19
+
+Total Test time (real) =   0.40 sec

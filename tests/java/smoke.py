@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Desktop JNI integration test. Test doubles match descriptors, not the real Android runtime."""
-import pathlib, subprocess, tempfile, json, struct, sys, zipfile
+import pathlib, subprocess, tempfile, json, struct, sys, zipfile, threading, http.server, urllib.parse, os
 root=pathlib.Path(__file__).resolve().parents[2]
 lib,apk=map(lambda x:str(pathlib.Path(x).resolve()),sys.argv[1:3]); rows=json.loads((root/'evidence/jni_inventory.json').read_text())
 T={'V':'void','Z':'boolean','I':'int','F':'float','J':'long','D':'double','B':'byte','S':'short','C':'char','[F':'float[]','[B':'byte[]','[I':'int[]'}
@@ -19,6 +19,7 @@ with tempfile.TemporaryDirectory(prefix='hydra-jni-') as d:
   java(name,'package '+pkg+'; public class '+cl+inherit+' {'+helpers.get(name,'')+'\n'+'\n'.join(methods)+'\n}')
  java('sfs2x.client.core.BaseEvent','''package sfs2x.client.core; import java.util.*; public class BaseEvent {private final Map<String,Object> args;public BaseEvent(Map<String,Object> a){args=a;} public Map getArguments(){return args;}}''')
  java('com.smartfoxserver.v2.entities.data.SFSObject','''package com.smartfoxserver.v2.entities.data; public class SFSObject {private final byte[] data; private SFSObject(byte[] b){data=b;} public static SFSObject newFromBinaryData(byte[] b){return new SFSObject(b);} public byte[] toBinary(){return data;}}''')
+ java('org.json.JSONObject','''package org.json; public class JSONObject { private final String text; public JSONObject(String s){text=s;} public boolean optBoolean(String k,boolean d){return k.equals("ok")?text.contains("true"):d;} public String optString(String k,String d){if(k.equals("bbbId"))return "10";if(k.equals("sessId"))return "test-only-session";if(k.equals("serverIp"))return "127.0.0.1";return d;}}''')
  # independent packet writer, enough to form a real typed SFS fixture
  def txt(s):b=s.encode();return struct.pack('>H',len(b))+b
  def val(v):
@@ -33,11 +34,24 @@ with tempfile.TemporaryDirectory(prefix='hydra-jni-') as d:
  java('Smoke','''import com.sixwaves.raftpirates.MyLib; import com.bigbluebubble.hydra.HydraGame; import com.bigbluebubble.smartfox.ClientServices; import com.smartfoxserver.v2.entities.data.SFSObject; import sfs2x.client.core.BaseEvent; import java.nio.file.*; import java.util.*;
 public class Smoke {
 static void check(boolean x,String msg){if(!x)throw new AssertionError(msg);} static BaseEvent ext(String command,Path p)throws Exception{return new BaseEvent(Map.of("cmd",command,"params",SFSObject.newFromBinaryData(Files.readAllBytes(p))));}
-public static void main(String[] a)throws Exception{System.load(a[0]);HydraGame.cache=a[2];MyLib m=new MyLib();m.initGL();m.init(a[1],640,400,1,1);check(m.isJniInititalized(),"APK init");m.tick();m.touchUp(320,200);m.tick();check(HydraGame.music.equals("audio/music/theme.mp3"),"title music");m.touchDown(320,365);m.touchUp(320,365);m.tick();m.touchUp(40,370);check(HydraGame.title.contains("hostname"),"host prompt");m.sendMsgKeyboardEntryResult("127.0.0.1",false);check(HydraGame.title.contains("BBB ID"),"ID prompt");m.sendMsgKeyboardEntryResult("10",false);check(HydraGame.title.contains("session"),"token prompt");m.sendMsgKeyboardEntryResult("test-only",false);ClientServices c=ClientServices.getInstance();check(c.host.equals("127.0.0.1")&&c.port==9933,"connect args");c.OnConnection(new BaseEvent(Map.of("success",true)));check(c.user.equals("10")&&c.token.equals("test-only")&&c.zone.equals("RaftPirates"),"login args order");c.OnLogin(new BaseEvent(Map.of()));c.OnExtensionResponse(ext("lib_go_data",Path.of(a[2],"grid.bin")));c.OnExtensionResponse(ext("gs_player",Path.of(a[2],"player.bin")));m.tick();m.touchUp(30,25);check(c.command.equals("gs_quest"),"HUD quest request");m.touchUp(30,310);m.touchUp(250,372);check(c.command.equals("dive_start"),"game sends diving request");check(c.bytes.length>3 && c.bytes[0]==18,"outgoing SFS object");m.touchState(1,new float[]{2},new float[]{4});m.touchMove(4,5);m.sendMsgMusicFinished();m.sendMsgSoundFinished(2);m.pause(true);m.tick();m.pause(false);check(HydraGame.pauses==1&&HydraGame.resumes==1,"audio pause/resume");m.kill();check(HydraGame.music.isEmpty(),"audio stop");check(!m.isJniInititalized(),"shutdown");System.out.println("Original JNI mock lifecycle, login, SFS response and request passed");}}
+public static void main(String[] a)throws Exception{System.load(a[0]);HydraGame.cache=a[2];MyLib m=new MyLib();m.initGL();m.init(a[1],640,400,1,1);check(m.isJniInititalized(),"APK init");m.tick();m.touchUp(320,200);m.tick();check(HydraGame.music.equals("audio/music/theme.mp3"),"title music");m.touchDown(320,365);m.touchUp(320,365);m.tick();for(int i=0;i<60;i++){Thread.sleep(30);m.tick();}m.touchDown(320,246);m.touchUp(320,246);m.touchDown(320,194);m.touchUp(320,194);check(HydraGame.title.equals("Email"),"email prompt");m.sendMsgKeyboardEntryResult("test@local.invalid",false);m.touchDown(320,229);m.touchUp(320,229);check(HydraGame.title.equals("Password"),"password prompt");m.sendMsgKeyboardEntryResult("test-only&+",false);m.touchDown(320,266);m.touchUp(320,266);for(int i=0;i<100&&ClientServices.getInstance().host==null;i++){Thread.sleep(30);m.tick();}ClientServices c=ClientServices.getInstance();check("127.0.0.1".equals(c.host)&&c.port==9933,"connect args");c.OnConnection(new BaseEvent(Map.of("success",true)));check(c.user.equals("10")&&c.token.equals("test-only-session")&&c.zone.equals("RaftPirates"),"login args order");c.OnLogin(new BaseEvent(Map.of()));c.OnExtensionResponse(ext("lib_go_data",Path.of(a[2],"grid.bin")));c.OnExtensionResponse(ext("gs_player",Path.of(a[2],"player.bin")));for(int i=0;i<100;i++){Thread.sleep(30);m.tick();}m.touchUp(30,25);check(c.command.equals("gs_quest"),"HUD quest request");m.touchUp(30,310);m.touchUp(250,372);check(c.command.equals("dive_start"),"game sends diving request");check(c.bytes.length>3 && c.bytes[0]==18,"outgoing SFS object");m.touchState(1,new float[]{2},new float[]{4});m.touchMove(4,5);m.sendMsgMusicFinished();m.sendMsgSoundFinished(2);m.pause(true);m.tick();m.pause(false);check(HydraGame.pauses==1&&HydraGame.resumes==1,"audio pause/resume");m.kill();check(HydraGame.music.isEmpty(),"audio stop");check(!m.isJniInititalized(),"shutdown");System.out.println("Original JNI mock lifecycle, login, SFS response and request passed");}}
 ''')
  subprocess.run(['javac','-h',str(headers),'-d',str(classes),*map(str,src.rglob('*.java'))],check=True)
  # Header generation from the exact DEX descriptors and export check.
  symbols={x.split()[-1] for x in subprocess.check_output(['nm','-D','--defined-only',lib],text=True).splitlines()}
  expected={r['symbol'] for r in rows};assert expected<=symbols,expected-symbols
- subprocess.run(['java','-Xcheck:jni','-cp',str(classes),'Smoke',lib,apk,str(d)],check=True)
+ requests=[]
+ class AuthHandler(http.server.BaseHTTPRequestHandler):
+  def do_GET(self):
+   url=urllib.parse.urlsplit(self.path);args=urllib.parse.parse_qs(url.query);requests.append((url.path,args));ok=url.path=='/auth.php' and args.get('u')==['test@local.invalid'] and args.get('p')==['test-only&+']
+   body=json.dumps({'ok':ok,'bbbId':10,'sessId':'test-only-session','serverIp':'127.0.0.1'}).encode();self.send_response(200);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
+  def log_message(self,*args):pass
+ server=http.server.ThreadingHTTPServer(('127.0.0.1',int(os.environ.get('RAFT_TEST_AUTH_PORT','19090'))),AuthHandler)
+ thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+ try:
+  subprocess.run(['java','-Xcheck:jni','-cp',str(classes),'Smoke',lib,apk,str(d)],check=True)
+  assert len(requests)==1 and requests[0][1]['p']==['test-only&+'] and requests[0][1]['t']==['bbb']
+ finally:
+  server.shutdown();server.server_close()
+ print('Local HTTP fixture: email/password URL encoding and BBB auth handoff passed')
  print(len(expected),'JNI declarations matched exported names')

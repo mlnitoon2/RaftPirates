@@ -57,6 +57,7 @@ def main():
     parser.add_argument("--jobs", type=int, default=min(os.cpu_count() or 2, 4))
     parser.add_argument("--minimal", action="store_true",
                         help="Disable optional Lua 5.1 and FreeType adapters for a native smoke build")
+    parser.add_argument("--auth-url", default=os.environ.get("RAFT_AUTH_URL", ""), help="Private BBB auth base URL (e.g. http://192.168.1.207:900/)")
     args = parser.parse_args()
 
     if not args.sdk:
@@ -100,6 +101,7 @@ def main():
         "-DCMAKE_TOOLCHAIN_FILE=" + str(toolchain),
         "-DHYDRA_LEGACY_DIR=" + str(args.hydra.resolve()),
         "-DANDROID_ABI=arm64-v8a",
+        "-DRAFT_AUTH_URL=" + args.auth_url,
         "-DANDROID_PLATFORM=android-23",
         "-DANDROID_STL=c++_static",
         "-DCMAKE_BUILD_TYPE=Release",

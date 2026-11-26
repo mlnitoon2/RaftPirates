@@ -4,7 +4,7 @@ Generated from defined function symbols. Name coverage is unique qualified metho
 
 | Original build | Names matched | Coverage | Names with signature overlap | Binary match |
 |---|---:|---:|---:|---|
-| Raft Pirates 2013 | 363/1191 | 30.4786% | 180 | Not compared |
+| Raft Pirates 2013 | 396/1191 | 33.2494% | 191 | Not compared |
 
 ## Raft Pirates 2013
 
@@ -269,7 +269,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::RaftFactory` | 0/2 | 0.00% | 0 |
 | `rp::RaftGridSprite` | 0/6 | 0.00% | 0 |
 | `rp::RaftInfo` | 0/1 | 0.00% | 0 |
-| `rp::RaftPirates` | 0/86 | 0.00% | 0 |
+| `rp::RaftPirates` | 32/86 | 37.21% | 10 |
 | `rp::RaftPiratesGameState` | 0/6 | 0.00% | 0 |
 | `rp::SelectedWallSprite` | 0/7 | 0.00% | 0 |
 | `rp::ShipPlacementSprite` | 0/11 | 0.00% | 0 |
@@ -285,7 +285,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::Wreckage` | 0/14 | 0.00% | 0 |
 | `rp::WreckageSprite` | 0/6 | 0.00% | 0 |
 | `rp::Zone` | 10/13 | 76.92% | 9 |
-| `rp::ZonesDB` | 6/7 | 85.71% | 3 |
+| `rp::ZonesDB` | 7/7 | 100.00% | 4 |
 | `rp::diving_game::DivingCollectable` | 1/1 | 100.00% | 0 |
 | `rp::diving_game::DivingGame` | 25/28 | 89.29% | 15 |
 | `rp::diving_game::DivingGame::ItemFloater` | 0/3 | 0.00% | 0 |
@@ -585,6 +585,38 @@ Matched names:
 - `rp::RaftComponent::UseClock`
 - `rp::RaftComponent::initWithSFSObject`
 - `rp::RaftComponent::~RaftComponent`
+- `rp::RaftPirates::DoConnect`
+- `rp::RaftPirates::DoLostConnection`
+- `rp::RaftPirates::GotMsgBadZoneStatusRequest`
+- `rp::RaftPirates::GotMsgGetMapActionState`
+- `rp::RaftPirates::Pause`
+- `rp::RaftPirates::RaftPirates`
+- `rp::RaftPirates::checkKeepAlive`
+- `rp::RaftPirates::gotMsgDaringMeterInfo`
+- `rp::RaftPirates::gotMsgDiscoveryMoveTo`
+- `rp::RaftPirates::gotMsgEnableNetworkProcessing`
+- `rp::RaftPirates::gotMsgLoadFinished`
+- `rp::RaftPirates::gotMsgLoadPercentage`
+- `rp::RaftPirates::gotMsgLoadStart`
+- `rp::RaftPirates::gotMsgMenuLogoutRequest`
+- `rp::RaftPirates::gotMsgOnConnection`
+- `rp::RaftPirates::gotMsgOnConnectionLost`
+- `rp::RaftPirates::gotMsgOnExtensionResponse`
+- `rp::RaftPirates::gotMsgOnLogin`
+- `rp::RaftPirates::gotMsgOnLoginError`
+- `rp::RaftPirates::gotMsgOnLogout`
+- `rp::RaftPirates::gotMsgOnRoomJoin`
+- `rp::RaftPirates::gotMsgQuestEvent`
+- `rp::RaftPirates::gotMsgQuestOpened`
+- `rp::RaftPirates::gotMsgZoneMoveTo`
+- `rp::RaftPirates::handleLogOut`
+- `rp::RaftPirates::initialize`
+- `rp::RaftPirates::isDaringZoneLimited`
+- `rp::RaftPirates::performLogout`
+- `rp::RaftPirates::setNetworkMsgProcessingEnabled`
+- `rp::RaftPirates::tick`
+- `rp::RaftPirates::tickNoSkip`
+- `rp::RaftPirates::~RaftPirates`
 - `rp::SparseGrid::CanAddObject`
 - `rp::SparseGrid::GenerateKey`
 - `rp::SparseGrid::SparseGrid`
@@ -631,6 +663,7 @@ Matched names:
 - `rp::ZonesDB::initWithSFSObject`
 - `rp::ZonesDB::load`
 - `rp::ZonesDB::save`
+- `rp::ZonesDB::~ZonesDB`
 - `rp::diving_game::DivingCollectable::DivingCollectable`
 - `rp::diving_game::DivingGame::CheckMenuButtonStates`
 - `rp::diving_game::DivingGame::ConfirmDiveFinish`

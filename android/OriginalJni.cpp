@@ -1,5 +1,7 @@
+#include "rp/RaftPirates.h"
 #include "rp/PortView.h"
-#include "rp/LocalSession.h"
+#include "rp/LoginScreen.h"
+#include "Auth.h"
 #include "rp/SplashScreen.h"
 #include "rp/TitleScreen.h"
 #include "sys/EngineBase.h"
@@ -19,18 +21,22 @@ namespace {
 
     struct Runtime {
         std::recursive_mutex mutex;
-        rp::Game game;
-        std::unique_ptr<rp::LocalSession> local;
+        rp::RaftPirates game;
+        std::unique_ptr<rp::LoginScreen> login;
+        std::future<rp::auth::Result> auth;
+        rp::LoginScreen::Action entry = rp::LoginScreen::Action::None;
+        Clock::time_point connectStarted{};
+        bool endingLoading = false;
         sys::EngineBase engine;
         Presenter presenter;
         std::unique_ptr<rp::PortView> view;
         std::unique_ptr<rp::SplashScreen> splash;
         std::unique_ptr<rp::TitleScreen> title;
-        std::filesystem::path archivePath;
+        std::filesystem::path archivePath, assets;
         sys::gfx::Image lastImage;
-        int width = 640, height = 400, entry = 0, port = 9933;
+        int width = 640, height = 400, port = 9933;
         bool initialized = false, paused = false, connected = false, connecting = false;
-        std::string host, user = "1", session, status = "OFFLINE PREVIEW", music;
+        std::string host, user, session, status, music;
         int lastGears = 0;
         bool lastDiveFinished = false, audioFailed = false;
         float time = 0;
@@ -107,19 +113,19 @@ namespace {
     void prompt(JNIEnv* e, jobject obj, const char* title, const std::string& value) {
         LocalFrame f(e);
         auto a = e->NewStringUTF(title), b = e->NewStringUTF(value.c_str());
-        if (rt.entry == 3) {
+        if (rt.entry == rp::LoginScreen::Action::Password || rt.entry == rp::LoginScreen::Action::ConfirmPassword) {
             auto invalid = e->NewStringUTF("");
             e->CallVoidMethod(
                 obj,
                 method(e, obj, "showPasswordEntry",
                        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZIIZ)V"),
-                a, b, invalid, JNI_TRUE, jint(1), jint(4096), JNI_FALSE);
+                a, b, invalid, JNI_TRUE, jint(6), jint(14), JNI_FALSE);
             check(e, "showPasswordEntry");
         } else {
             e->CallVoidMethod(
                 obj,
                 method(e, obj, "showKeyboardEntry", "(Ljava/lang/String;Ljava/lang/String;ZIIZ)V"),
-                a, b, JNI_TRUE, jint(1), jint(4096), JNI_FALSE);
+                a, b, JNI_TRUE, jint(6), jint(75), JNI_FALSE);
             check(e, "showKeyboardEntry");
         }
     }
@@ -150,14 +156,9 @@ namespace {
     }
 
     void send(JNIEnv* e, const sfs::Message& msg) {
-        if (rt.local) {
-            rt.local->dispatch(rt.game, msg);
-            rt.status = "LOCAL SANDBOX";
-            return;
-        }
         try {
             if (!rt.connected || !rt.game.ready)
-                throw std::runtime_error("Connect to a private test server first");
+                throw std::runtime_error("Login is required");
             sfs::JavaClient::send(e, msg);
         } catch (...) {
             rt.game.pending.reset();
@@ -173,15 +174,43 @@ namespace {
     void lost() {
         rt.connected = false;
         rt.connecting = false;
-        rt.game.ready = false;
-        rt.game.pending.reset();
-        rt.game.pendingMove.reset();
-        rt.game.pendingMap.reset();
-        rt.game.pendingZone.reset();
-        rt.game.pendingDiscovery.reset();
+        rt.game.DoLostConnection(false);
         rt.status = "DISCONNECTED";
         rt.session.clear();
-        rt.local.reset();
+        rt.endingLoading = false;
+    }
+
+    void loginError(JNIEnv* e, const std::string& message) {
+        bool connected = rt.connected || rt.connecting;
+        lost();
+        if (connected) {
+            try { sfs::JavaClient::disconnect(e); } catch (...) {}
+        }
+        if (!rt.initialized) return;
+        rt.title.reset();
+        if (!rt.login) {
+            if (rt.assets.empty()) return;
+            rt.login = std::make_unique<rp::LoginScreen>(rt.assets);
+        }
+        rt.login->clearPassword();
+        rt.login->error(message);
+    }
+
+    void pollAuth(JNIEnv* e) {
+        if (!rt.auth.valid() || rt.auth.wait_for(std::chrono::seconds(0)) != std::future_status::ready) return;
+        auto result = rt.auth.get();
+        if (!rt.login || !rt.initialized) return;
+        if (!result.error.empty()) { loginError(e, result.error); return; }
+        if (result.registered) { rt.login->registrationComplete(); return; }
+        rt.game.initialize();
+        rt.host = std::move(result.host);
+        rt.user = std::move(result.id);
+        rt.session = std::move(result.session);
+        rt.connecting = true;
+        rt.game.DoConnect();
+        rt.connectStarted = Clock::now();
+        try { sfs::JavaClient::connect(e, rt.host, rt.port); }
+        catch (...) { loginError(e,"Unable to connect to game server."); }
     }
 } // namespace
 
@@ -207,9 +236,11 @@ extern "C" JNIEXPORT void JNICALL RP(init)(JNIEnv* e, jobject obj, jstring path,
         rt.lastGears = 0;
         rt.lastDiveFinished = false;
         auto root = cacheRoot(e, obj, apk);
-        rt.game.demo();
-        // Demo assets are available for preview, but online HUD activates only on gs_player.
-        rt.game.ready = false;
+        rt.assets = root;
+        rt.game.initialize();
+        rt.user.clear();
+        rt.entry = rp::LoginScreen::Action::None;
+        rt.endingLoading = false;
         rt.view = std::make_unique<rp::PortView>(root);
         try {
             rt.splash = std::make_unique<rp::SplashScreen>(root);
@@ -218,13 +249,14 @@ extern "C" JNIEXPORT void JNICALL RP(init)(JNIEnv* e, jobject obj, jstring path,
         }
         try {
             rt.title = std::make_unique<rp::TitleScreen>(root);
+            rt.login = std::make_unique<rp::LoginScreen>(root);
         } catch (const std::exception& ex) {
             log(std::string("Title unavailable: ") + ex.what());
         }
         rt.lastImage = {};
         rt.lastFrame = {};
         rt.initialized = true;
-        rt.status = "OFFLINE PREVIEW - TAP CONNECT";
+        rt.status.clear();
         rt.last = Clock::now();
     });
 }
@@ -241,6 +273,7 @@ extern "C" JNIEXPORT jboolean JNICALL RP(isJniInititalized)(JNIEnv*, jobject) {
 extern "C" JNIEXPORT void JNICALL RP(pause)(JNIEnv* e, jobject obj, jboolean value) {
     guarded(e, [&] {
         rt.paused = value;
+        rt.game.Pause(value);
         if (!rt.music.empty())
             audio(e, [&] {
                 e->CallVoidMethod(obj, method(e, obj, value ? "pauseMusic" : "resumeMusic", "()V"));
@@ -261,10 +294,12 @@ extern "C" JNIEXPORT void JNICALL RP(kill)(JNIEnv* e, jobject obj) {
         lost();
         rt.splash.reset();
         rt.title.reset();
+        rt.login.reset();
+        rt.auth = {};
         rt.view.reset();
         rt.lastImage = {};
         rt.initialized = false;
-        rt.entry = 0;
+        rt.entry = rp::LoginScreen::Action::None;
     });
 }
 
@@ -293,7 +328,24 @@ extern "C" JNIEXPORT void JNICALL RP(tick)(JNIEnv* e, jobject obj) {
             rt.presenter.present(rt.title->render(), rt.width, rt.height);
             return;
         }
-        if (rt.connected && rt.game.ready && now - rt.lastPing > std::chrono::seconds(20)) {
+        pollAuth(e);
+        if ((rt.connecting || (rt.connected && !rt.game.ready)) && now - rt.connectStarted > std::chrono::seconds(30))
+            loginError(e, "The game server did not respond.");
+        if (rt.login) {
+            if (rt.connected && rt.game.ready && !rt.endingLoading) {
+                rt.endingLoading = true;
+                rt.login->finish();
+            }
+            rt.login->tick(dt);
+            if (!rt.login->finished()) {
+                rt.presenter.present(rt.login->render(),rt.width,rt.height);
+                return;
+            }
+            rt.login.reset();
+            rt.lastImage = {};
+        }
+        if (!rt.game.ready) return;
+        if (rt.game.checkKeepAlive(std::chrono::duration<float>(now - rt.lastPing).count())) {
             rt.lastPing = now;
             sfs::JavaClient::send(e, rp::Game::request("keep_alive"));
         }
@@ -325,7 +377,8 @@ extern "C" JNIEXPORT void JNICALL RP(touchDown)(JNIEnv* e, jobject, jfloat x, jf
             rt.title->touchDown(x * 640 / rt.width, y * 400 / rt.height);
             return;
         }
-        if (rt.view)
+        if (rt.login) { rt.login->touchDown(x * 640 / rt.width, y * 400 / rt.height); return; }
+        if (rt.view && rt.game.ready)
             rt.view->touchDown(x * 640 / rt.width, y * 400 / rt.height);
         sys::msg::MsgTouchDown m;
         m.x = x * 640 / rt.width;
@@ -354,28 +407,42 @@ extern "C" JNIEXPORT void JNICALL RP(touchUp)(JNIEnv* e, jobject obj, jfloat x, 
             }
             return;
         }
+        if (rt.login) {
+            using Action = rp::LoginScreen::Action;
+            auto action = rt.login->touchUp(px,py);
+            if (action == Action::Email || action == Action::Password || action == Action::ConfirmPassword) {
+                rt.entry = action;
+                if (action == Action::Email) prompt(e,obj,"Email",rt.login->email());
+                else prompt(e,obj,action==Action::Password?"Password":"Confirm Password",action==Action::Password?rt.login->password():rt.login->confirmation());
+            } else if (action == Action::Submit) {
+                if (rt.login->email().empty() || rt.login->password().empty()) {
+                    rt.login->error("Enter your email and password.");
+                } else if (rp::auth::endpoint().empty()) {
+                    rt.login->error("Authentication server is not configured.");
+                } else {
+                    rt.auth = rp::auth::request(e,rt.login->email(),rt.login->password());
+                    rt.login->clearPassword();
+                    rt.login->busy(true);
+                }
+            } else if (action == Action::Register) {
+                if (rt.login->email().empty() || rt.login->password().empty()) rt.login->error("Enter your email and password.");
+                else if (rt.login->password()!=rt.login->confirmation()) rt.login->error("Passwords do not match.");
+                else if (rp::auth::endpoint().empty()) rt.login->error("Authentication server is not configured.");
+                else {
+                    rt.auth=rp::auth::request(e,rt.login->email(),rt.login->password(),true);
+                    rt.login->clearPassword();
+                    rt.login->busy(true);
+                }
+            } else if (action == Action::Facebook) rt.login->error("Facebook login is not available.");
+            else if (action == Action::Reset) rt.login->error("Password reset is not available yet.");
+            return;
+        }
+        if (!rt.game.ready) return;
         sys::msg::MsgTouchUp m;
         m.x = px;
         m.y = py;
         rt.engine.engineReceiver().SendGeneric(m);
         auto result = rt.view->touch(rt.game, px, py);
-        if (rt.view->offlineRequested) {
-            rt.view->offlineRequested = false;
-            if (rt.connected || rt.connecting)
-                return;
-            rt.local = std::make_unique<rp::LocalSession>();
-            rt.local->start(rt.game);
-            rt.status = "LOCAL SANDBOX";
-            return;
-        }
-        if (rt.view->connectRequested) {
-            rt.view->connectRequested = false;
-            if (rt.connecting)
-                return;
-            rt.entry = 1;
-            prompt(e, obj, "Private server hostname or IP", rt.host);
-            return;
-        }
         if (result) {
             if (!rt.view->isDiving())
                 effect(e, obj, "audio/sfx/menu_button_down.wav");
@@ -392,7 +459,8 @@ extern "C" JNIEXPORT void JNICALL RP(touchMove)(JNIEnv* e, jobject, jfloat x, jf
             rt.title->touchDrag(x * 640 / rt.width, y * 400 / rt.height);
             return;
         }
-        if (rt.view)
+        if (rt.login) { rt.login->touchDrag(x * 640 / rt.width, y * 400 / rt.height); return; }
+        if (rt.view && rt.game.ready)
             rt.view->touchDrag(x * 640 / rt.width, y * 400 / rt.height);
         sys::msg::MsgTouchDrag m;
         m.x = x * 640 / rt.width;
@@ -422,8 +490,8 @@ extern "C" JNIEXPORT void JNICALL RP(touchState)(JNIEnv* e, jobject, jint n, jfl
 }
 
 extern "C" JNIEXPORT jstring JNICALL RP(getAuthURL)(JNIEnv* e, jobject) {
-    return e->NewStringUTF("");
-} // Official auth integration is not implemented.
+    return e->NewStringUTF(rp::auth::endpoint().c_str());
+}
 
 extern "C" JNIEXPORT jstring JNICALL RP(getUserID)(JNIEnv* e, jobject) {
     std::lock_guard<std::recursive_mutex> l(rt.mutex);
@@ -455,54 +523,16 @@ extern "C" JNIEXPORT void JNICALL HY(sendMsgKeyboardEntryResult)(JNIEnv* e, jobj
                                                                  jstring value,
                                                                  jboolean cancelled) {
     guarded(e, [&] {
-        if (!rt.entry) {
-            sys::msg::MsgKeyboardEntryResult event;
-            event.text = string(e, value);
-            event.cancelled = cancelled;
-            rt.engine.engineReceiver().SendGeneric(event);
+        auto entry = rt.entry;
+        rt.entry = rp::LoginScreen::Action::None;
+        if (entry != rp::LoginScreen::Action::None) {
+            if (rt.login && !cancelled) rt.login->setInput(entry, string(e,value));
             return;
         }
-        if (cancelled) {
-            rt.entry = 0;
-            rt.session.clear();
-            rt.status = "ENTRY CANCELLED";
-            return;
-        }
-        auto s = string(e, value);
-        if (rt.entry == 1) {
-            if (s.empty() || s.find_first_of("/\\ \t\n") != std::string::npos)
-                throw std::runtime_error("Enter a host or IP, not a URL");
-            rt.host = s;
-            rt.entry = 2;
-            prompt(e, obj, "BBB ID for your private server", rt.user);
-        } else if (rt.entry == 2) {
-            if (s.empty())
-                throw std::runtime_error("BBB ID required");
-            rt.user = s;
-            rt.entry = 3;
-            prompt(e, obj, "Private test session token", "");
-        } else {
-            rt.entry = 0;
-            if (s.empty())
-                throw std::runtime_error("Session token required");
-            if (rt.connected) {
-                sfs::JavaClient::disconnect(e);
-                lost();
-            }
-            rt.local.reset();
-            rt.session = std::move(s);
-            rt.game = rp::Game{};
-            rt.view = std::make_unique<rp::PortView>(cacheRoot(e, obj, rt.archivePath));
-            rt.connecting = true;
-            rt.status = "CONNECTING";
-            try {
-                sfs::JavaClient::connect(e, rt.host, rt.port);
-            } catch (...) {
-                rt.connecting = false;
-                rt.session.clear();
-                throw;
-            }
-        }
+        sys::msg::MsgKeyboardEntryResult event;
+        event.text = string(e, value);
+        event.cancelled = cancelled;
+        rt.engine.engineReceiver().SendGeneric(event);
     });
 }
 
@@ -511,19 +541,19 @@ extern "C" JNIEXPORT void JNICALL SFS(OnConnection)(JNIEnv* e, jobject, jobject 
         if (!rt.connecting)
             return;
         if (!sfs::JavaClient::connectionSucceeded(e, evt)) {
-            lost();
-            rt.status = "CONNECTION FAILED";
+            loginError(e,"Connection failed.");
             return;
         }
         auto p = rt.game.login(rt.user, "").payload.getSFSObj("p");
         if (!p)
             throw std::runtime_error("Missing login params");
+        rt.game.gotMsgOnConnection(true);
         rt.status = "LOGGING IN";
         try {
             sfs::JavaClient::login(e, "RaftPirates", rt.user, rt.session, *p);
         } catch (...) {
-            rt.session.clear();
-            throw;
+            loginError(e,"Unable to log into game server.");
+            return;
         }
         rt.session.clear();
     });
@@ -531,6 +561,8 @@ extern "C" JNIEXPORT void JNICALL SFS(OnConnection)(JNIEnv* e, jobject, jobject 
 
 extern "C" JNIEXPORT void JNICALL SFS(OnLogin)(JNIEnv* e, jobject, jobject) {
     guarded(e, [&] {
+        if (!rt.connecting) return;
+        rt.game.gotMsgOnLogin();
         rt.connected = true;
         rt.connecting = false;
         rt.status = "LOADING PLAYER";
@@ -540,34 +572,33 @@ extern "C" JNIEXPORT void JNICALL SFS(OnLogin)(JNIEnv* e, jobject, jobject) {
 
 extern "C" JNIEXPORT void JNICALL SFS(OnLoginError)(JNIEnv* e, jobject, jobject) {
     guarded(e, [&] {
-        lost();
-        rt.status = "LOGIN REJECTED";
+        loginError(e,"Game server rejected the login.");
     });
 }
 
 extern "C" JNIEXPORT void JNICALL SFS(OnRoomJoin)(JNIEnv* e, jobject, jobject) {
-    guarded(e, [&] { rt.status = "ROOM JOINED"; });
+    guarded(e, [&] { rt.game.gotMsgOnRoomJoin(); rt.status = "ROOM JOINED"; });
 }
 
 extern "C" JNIEXPORT void JNICALL SFS(OnConnectionLost)(JNIEnv* e, jobject, jobject) {
-    guarded(e, [&] { lost(); });
+    guarded(e, [&] { if (rt.connected || rt.connecting) loginError(e,"Disconnected from game server."); });
 }
 
 extern "C" JNIEXPORT void JNICALL SFS(OnSocketError)(JNIEnv* e, jobject, jobject) {
     guarded(e, [&] {
-        lost();
-        rt.status = "SOCKET ERROR";
+        if (rt.connected || rt.connecting) loginError(e,"Game server connection failed.");
     });
 }
 
 extern "C" JNIEXPORT void JNICALL SFS(OnLogout)(JNIEnv* e, jobject, jobject) {
-    guarded(e, [&] { lost(); });
+    guarded(e, [&] { if (rt.connected || rt.connecting) loginError(e,"Disconnected from game server."); });
 }
 
 extern "C" JNIEXPORT void JNICALL SFS(OnExtensionResponse)(JNIEnv* e, jobject, jobject evt) {
     guarded(e, [&] {
+        if (!rt.connected && !rt.connecting) return;
         auto decoded = sfs::JavaClient::extension(e, evt);
-        rt.game.extension(decoded.first, decoded.second);
+        rt.game.gotMsgOnExtensionResponse(decoded.first, decoded.second);
         rt.status = rt.game.status;
     });
 }

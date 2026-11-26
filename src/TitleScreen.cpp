@@ -2,7 +2,7 @@
 #include <algorithm>
 
 namespace rp {
-    TitleScreen::TitleScreen(const std::filesystem::path& assets) : menu_(assets) {
+    TitleScreen::TitleScreen(const std::filesystem::path& assets, std::string bbbId) : menu_(assets), bbbId_(std::move(bbbId)) {
         strings_.loadFile(assets / "text/en.utf8");
         menu_.nativeEvent = [this](auto&, unsigned id, const std::string& name) {
             return event(id, name);
@@ -28,7 +28,7 @@ namespace rp {
                 n.set("font", std::string("rp_font_title"));
                 n.set("size", .5);
                 n.set("alignment", 1.0);
-                n.set("text", std::string("1.0.0 | Preservation client"));
+                n.set("text", std::string("1.0.4   (BBB ID: " + bbbId_ + ")"));
                 n.set("red", .988);
                 n.set("green", .991);
                 n.set("blue", .129);

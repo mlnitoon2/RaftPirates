@@ -31,8 +31,7 @@ namespace rp {
             return diving_ ? diving_->gears() : 0;
         }
 
-        bool offlineRequested = false;
-        bool connectRequested = false, grid = false, map = false;
+        bool grid = false, map = false;
 
       private:
         std::filesystem::path root_;
