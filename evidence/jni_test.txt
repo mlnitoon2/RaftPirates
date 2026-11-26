@@ -1,0 +1,3 @@
+JNI and independent server-format packet fixture passed. gs_materials_changed | Fixture Pirate | Zone 1 | Daring 1 | Safe waters
+1 rafts | Build limit 100 | Dive 0 s
+Gold: 120  

@@ -1,0 +1,18 @@
+Internal ctest changing into directory: /tmp/raft-publish-build
+Test project /tmp/raft-publish-build
+    Start 1: raftpirates_protocol
+1/6 Test #1: raftpirates_protocol .............   Passed    0.01 sec
+    Start 2: hydra_core
+2/6 Test #2: hydra_core .......................   Passed    0.00 sec
+    Start 3: hydra_runtime
+3/6 Test #3: hydra_runtime ....................   Passed    0.00 sec
+    Start 4: hydra_extended
+4/6 Test #4: hydra_extended ...................   Passed    0.01 sec
+    Start 5: hydra_v06
+5/6 Test #5: hydra_v06 ........................   Passed    0.00 sec
+    Start 6: hydra_v07
+6/6 Test #6: hydra_v07 ........................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 6
+
+Total Test time (real) =   0.03 sec

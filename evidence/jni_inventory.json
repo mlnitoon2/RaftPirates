@@ -1,0 +1,932 @@
+[
+  {
+    "owner": "com/bigbluebubble/hydra/HydraSocial",
+    "name": "init",
+    "args": [],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraSocial_init"
+  },
+  {
+    "owner": "com/bigbluebubble/hydra/HydraSocial",
+    "name": "kill",
+    "args": [],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraSocial_kill"
+  },
+  {
+    "owner": "com/bigbluebubble/hydra/HydraSocial",
+    "name": "onFacebookDidLogin",
+    "args": [
+      "Ljava/lang/String;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraSocial_onFacebookDidLogin"
+  },
+  {
+    "owner": "com/bigbluebubble/hydra/HydraSocial",
+    "name": "onFacebookDidLogout",
+    "args": [],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraSocial_onFacebookDidLogout"
+  },
+  {
+    "owner": "com/bigbluebubble/hydra/HydraSocial",
+    "name": "onFacebookDidNotLogin",
+    "args": [],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraSocial_onFacebookDidNotLogin"
+  },
+  {
+    "owner": "com/bigbluebubble/hydra/HydraSocial",
+    "name": "onFacebookError",
+    "args": [
+      "Ljava/lang/String;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraSocial_onFacebookError"
+  },
+  {
+    "owner": "com/bigbluebubble/hydra/HydraSocial",
+    "name": "onFacebookFriendsReadyToSync",
+    "args": [
+      "Ljava/lang/String;",
+      "Ljava/lang/String;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraSocial_onFacebookFriendsReadyToSync"
+  },
+  {
+    "owner": "com/bigbluebubble/hydra/HydraSocial",
+    "name": "onFacebookPostComplete",
+    "args": [
+      "Ljava/lang/String;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraSocial_onFacebookPostComplete"
+  },
+  {
+    "owner": "com/bigbluebubble/hydra/HydraSocial",
+    "name": "onFacebookReadyToAuth",
+    "args": [
+      "Ljava/lang/String;",
+      "Ljava/lang/String;",
+      "Ljava/lang/String;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraSocial_onFacebookReadyToAuth"
+  },
+  {
+    "owner": "com/bigbluebubble/hydrastore/HydraStoreNEW",
+    "name": "onPurchaseStateChangedImpl",
+    "args": [
+      "Ljava/lang/String;",
+      "I"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydrastore_HydraStoreNEW_onPurchaseStateChangedImpl"
+  },
+  {
+    "owner": "com/bigbluebubble/hydrastore/HydraStoreNEW",
+    "name": "onRequestPurchaseResponseImpl",
+    "args": [
+      "Ljava/lang/String;",
+      "I"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydrastore_HydraStoreNEW_onRequestPurchaseResponseImpl"
+  },
+  {
+    "owner": "com/bigbluebubble/hydrastore/HydraStoreNEW",
+    "name": "onSubscriptionCheckedImpl",
+    "args": [
+      "Z"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydrastore_HydraStoreNEW_onSubscriptionCheckedImpl"
+  },
+  {
+    "owner": "com/bigbluebubble/hydrastore/HydraStoreNEW",
+    "name": "init",
+    "args": [],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydrastore_HydraStoreNEW_init"
+  },
+  {
+    "owner": "com/bigbluebubble/hydrastore/HydraStoreNEW",
+    "name": "kill",
+    "args": [],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydrastore_HydraStoreNEW_kill"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnAdminMessage",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnAdminMessage"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnBuddyAdd",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnBuddyAdd"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnBuddyBlock",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnBuddyBlock"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnBuddyError",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnBuddyError"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnBuddyListInit",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnBuddyListInit"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnBuddyMessage",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnBuddyMessage"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnBuddyOnlineStateUpdate",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnBuddyOnlineStateUpdate"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnBuddyRemove",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnBuddyRemove"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnBuddyVariablesUpdate",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnBuddyVariablesUpdate"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnConfigLoadFailure",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnConfigLoadFailure"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnConfigLoadSuccess",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnConfigLoadSuccess"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnConnection",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnConnection"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnConnectionLost",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnConnectionLost"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnConnectionResume",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnConnectionResume"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnConnectionRetry",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnConnectionRetry"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnDebugMessage",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnDebugMessage"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnExtensionResponse",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnExtensionResponse"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnInvitation",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnInvitation"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnInvitationReply",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnInvitationReply"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnInvitationReplyError",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnInvitationReplyError"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnLogin",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnLogin"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnLoginError",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnLoginError"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnLogout",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnLogout"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnModeratorMessage",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnModeratorMessage"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnObjectMessage",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnObjectMessage"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnPingPong",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnPingPong"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnPlayerToSpectator",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnPlayerToSpectator"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnPlayerToSpectatorError",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnPlayerToSpectatorError"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnPrivateMessage",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnPrivateMessage"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnPublicMessage",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnPublicMessage"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnRoomAdd",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnRoomAdd"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnRoomCapacityChange",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnRoomCapacityChange"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnRoomCapacityChangeError",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnRoomCapacityChangeError"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnRoomCreationError",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnRoomCreationError"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnRoomFindResult",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnRoomFindResult"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnRoomJoin",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnRoomJoin"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnRoomJoinError",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnRoomJoinError"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnRoomNameChange",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnRoomNameChange"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnRoomNameChangeError",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnRoomNameChangeError"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnRoomPasswordStateChange",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnRoomPasswordStateChange"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnRoomPasswordStateChangeError",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnRoomPasswordStateChangeError"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnRoomRemove",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnRoomRemove"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnRoomVariablesUpdate",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnRoomVariablesUpdate"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnSocketError",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnSocketError"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnSpectatorToPlayer",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnSpectatorToPlayer"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnSpectatorToPlayerError",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnSpectatorToPlayerError"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnSubscribeRoomGroup",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnSubscribeRoomGroup"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnSubscribeRoomGroupError",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnSubscribeRoomGroupError"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnUdpInit",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnUdpInit"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnUnsubscribeRoomGroup",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnUnsubscribeRoomGroup"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnUnsubscribeRoomGroupError",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnUnsubscribeRoomGroupError"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnUserCountChange",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnUserCountChange"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnUserEnterRoom",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnUserEnterRoom"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnUserExitRoom",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnUserExitRoom"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnUserFindResult",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnUserFindResult"
+  },
+  {
+    "owner": "com/bigbluebubble/smartfox/ClientServices",
+    "name": "OnUserVariablesUpdate",
+    "args": [
+      "Lsfs2x/client/core/BaseEvent;"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_smartfox_ClientServices_OnUserVariablesUpdate"
+  },
+  {
+    "owner": "com/bigbluebubble/hydra/HydraGame",
+    "name": "init",
+    "args": [],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraGame_init"
+  },
+  {
+    "owner": "com/bigbluebubble/hydra/HydraGame",
+    "name": "sendMsgKeyboardEntryResult",
+    "args": [
+      "Ljava/lang/String;",
+      "Z"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraGame_sendMsgKeyboardEntryResult"
+  },
+  {
+    "owner": "com/bigbluebubble/hydra/HydraGame",
+    "name": "sendMsgMusicFinished",
+    "args": [],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraGame_sendMsgMusicFinished"
+  },
+  {
+    "owner": "com/bigbluebubble/hydra/HydraGame",
+    "name": "sendMsgPopupTextResult",
+    "args": [
+      "Z"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraGame_sendMsgPopupTextResult"
+  },
+  {
+    "owner": "com/bigbluebubble/hydra/HydraGame",
+    "name": "sendMsgSoundFinished",
+    "args": [
+      "I"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_bigbluebubble_hydra_HydraGame_sendMsgSoundFinished"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "followTwitterAcct",
+    "args": [
+      "Z"
+    ],
+    "returns": "V",
+    "static": true,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_followTwitterAcct"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "getAuthURL",
+    "args": [],
+    "returns": "Ljava/lang/String;",
+    "static": false,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_getAuthURL"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "getUserID",
+    "args": [],
+    "returns": "Ljava/lang/String;",
+    "static": false,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_getUserID"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "itemAlreadyPurchased",
+    "args": [
+      "Ljava/lang/String;",
+      "I"
+    ],
+    "returns": "Z",
+    "static": true,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_itemAlreadyPurchased"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "purchaseResponse",
+    "args": [
+      "Z",
+      "Ljava/lang/String;",
+      "I"
+    ],
+    "returns": "V",
+    "static": true,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_purchaseResponse"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "setAndroidAdLoaded",
+    "args": [
+      "Z"
+    ],
+    "returns": "V",
+    "static": true,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_setAndroidAdLoaded"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "swavesCollectOfferWallPoints",
+    "args": [
+      "I"
+    ],
+    "returns": "V",
+    "static": true,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_swavesCollectOfferWallPoints"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "swavesVideoAdFinished",
+    "args": [],
+    "returns": "V",
+    "static": true,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_swavesVideoAdFinished"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "accel",
+    "args": [
+      "F",
+      "F",
+      "F"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_accel"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "init",
+    "args": [
+      "Ljava/lang/String;",
+      "I",
+      "I",
+      "F",
+      "F"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_init"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "initGL",
+    "args": [],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_initGL"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "isJniInititalized",
+    "args": [],
+    "returns": "Z",
+    "static": false,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_isJniInititalized"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "kill",
+    "args": [],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_kill"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "pause",
+    "args": [
+      "Z"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_pause"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "tick",
+    "args": [],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_tick"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "touchDown",
+    "args": [
+      "F",
+      "F"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_touchDown"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "touchMove",
+    "args": [
+      "F",
+      "F"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_touchMove"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "touchState",
+    "args": [
+      "I",
+      "[F",
+      "[F"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_touchState"
+  },
+  {
+    "owner": "com/sixwaves/raftpirates/MyLib",
+    "name": "touchUp",
+    "args": [
+      "F",
+      "F"
+    ],
+    "returns": "V",
+    "static": false,
+    "symbol": "Java_com_sixwaves_raftpirates_MyLib_touchUp"
+  }
+]

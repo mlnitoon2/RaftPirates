@@ -1,0 +1,7 @@
+{
+  "sha256": "29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f6fdd26c13",
+  "symbol_rows": 3005,
+  "candidate_addresses": 3005,
+  "disassembled_addresses": 3005,
+  "note": "Namespace/name heuristic. Contains templates and some shared messages; hidden functions may be absent."
+}
