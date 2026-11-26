@@ -12,6 +12,19 @@ using A = sfs::SFSArrayWrapper;
 
 int main() {
     try {
+        rp::RaftComponent construction;
+        construction.bp = 100;
+        construction.state = 1;
+        construction.SetRemainingTime(3);
+        CHECK(construction.Building() && !construction.PostBuild());
+        CHECK(construction.GetBattlePoints() == 0 && construction.GetTotalBattlePoints(500) == 0);
+        CHECK(!construction.TempTick(.5f) && construction.GetRemainingTime() == 2.5f);
+        CHECK(construction.TempTick(2.5f) && construction.state == 1);
+        construction.state = 5;
+        CHECK(construction.Building() && construction.PostBuild());
+        construction.state = 0;
+        CHECK(!construction.Building() && construction.GetBattlePoints() == 100);
+        CHECK(construction.GetTotalBattlePoints(500) == 500);
         rp::Game g;
         auto h = sfs::decodePacket(sfs::encodePacket(g.handshake()));
         CHECK(h.action == 0 && h.payload.getBool("bin"));

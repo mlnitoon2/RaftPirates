@@ -323,7 +323,8 @@ namespace rp {
                         if (c.id == num(p, "object_id")) {
                             c.state = num(p, "state", c.state);
                             c.bp = num(p, "battle_points", c.bp);
-                            c.remaining = num(p, "time_remaining_secs", c.remaining);
+                            if (p.get("time_remaining_secs"))
+                                c.SetRemainingTime(num(p, "time_remaining_secs"));
                         }
             }
         } else if (cmd == "build_limit_update")
@@ -493,10 +494,11 @@ namespace rp {
             int seconds = int(diveFraction);
             diveFraction -= seconds;
             diveSeconds = std::max(0, diveSeconds - seconds);
-            for (auto& r : rafts)
-                for (auto& c : r.components)
-                    c.remaining = std::max(0, c.remaining - seconds);
         }
+        for (auto& raft : rafts)
+            for (auto& component : raft.components)
+                if (component.Building())
+                    component.TempTick(dt);
     }
 
     void Game::demo() {

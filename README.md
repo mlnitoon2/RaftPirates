@@ -14,9 +14,9 @@ git clone https://github.com/mlnitoon2/RaftPirates.git
 cd RaftPirates
 ```
 
-The default engine checkout is `../HydraLegacy`. To choose another location pass `--hydra` to the Python build script or `-DHYDRA_LEGACY_DIR=/path/to/HydraLegacy` to CMake. The tested engine snapshot is `b21b680871a830992377bc3c8f2584cf3904a27a`.
+The default engine checkout is `../HydraLegacy`. To choose another location pass `--hydra` to the Python build script or `-DHYDRA_LEGACY_DIR=/path/to/HydraLegacy` to CMake. Use the current HydraLegacy main branch for compatible targets.
 
-The two repositories are independent CMake targets. The game links Hydra statically. The root build produces one shared library named `libraftpirates.so`. It does not build an APK, modify the original APK, create a Java frontend or sign anything.
+The two repositories are independent CMake targets. The game links Hydra and the separate `sfs_legacy` library statically, plus their JNI adapters on Android. The root build produces one shared library named `libraftpirates.so`. It does not build an APK, modify the original APK, create a Java frontend or sign anything.
 
 Use Android NDK r28c (or compatible NDK) and CMake, not Visual Studio or Android Studio. On Windows, if the SDK is already at `C:\godot-android`, run:
 
@@ -58,7 +58,7 @@ python tests/java/smoke.py build/libraftpirates.so /path/to/original.apk
 
 The smoke test uses generated Java test doubles with recovered signatures and synthetic SFS fixtures. It is not an Android/real-server test. If you only need the portable runtime, omit `HYDRA_DESKTOP_JNI` and the Java smoke test. Windows desktop builds can use MSYS2 (see [HydraLegacy build guide](https://github.com/mlnitoon2/HydraLegacy/blob/main/docs/BUILDING.md)).
 
-Read the [engine README](https://github.com/mlnitoon2/HydraLegacy) and [game port notes](docs/PORT_NOTES.md). Original assets and native binaries are not distributed. Use the original local APK to test or extract. The two directories contain source and research reference data only.
+Read the [engine README](https://github.com/mlnitoon2/HydraLegacy) and [game port notes](docs/PORT_NOTES.md). Original assets and native binaries are not distributed. See [local asset preparation](docs/ASSETS.md) for extracting the APK into a gitignored directory. The two directories contain source and research reference data only.
 
 ## Project layout
 
@@ -72,4 +72,4 @@ No license for the new reconstruction code has been selected. Original game and 
 
 ## Contributing
 
-Follow the shared [C++ style and formatting guide](docs/STYLE.md). Run `python tools/format.py` before submitting changes.
+Follow the shared [C++ style and formatting guide](docs/STYLE.md). Run `python tools/format.py` before submitting changes. See [class reconstruction notes](docs/CLASS_RECONSTRUCTION.md).
