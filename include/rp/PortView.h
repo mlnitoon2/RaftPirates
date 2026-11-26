@@ -1,5 +1,6 @@
 #pragma once
 #include "rp/Game.h"
+#include "rp/Hud.h"
 #include "sys/res/TmxMap.h"
 
 namespace rp {
@@ -14,10 +15,12 @@ namespace rp {
       private:
         std::filesystem::path root_;
         OceanView ocean_;
+        std::unique_ptr<Hud> hud_;
+        bool hudEnabled(const Game& game) const;
         std::optional<sys::res::TmxMap> tmx_;
         std::string mapPath_;
         std::map<std::string, std::shared_ptr<sys::gfx::Image>> tiles_;
-        enum class Panel { None, Shop, Inventory, Travel, Build };
+        enum class Panel { None, Shop, Inventory, Travel, Build, Quest, Safety, Daring };
         Panel panel_ = Panel::None;
         size_t page_ = 0;
         int selectedBlueprint_ = 0;

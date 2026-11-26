@@ -133,7 +133,19 @@ namespace rp {
         }
     } // namespace
 
-    PortView::PortView(std::filesystem::path root) : root_(std::move(root)), ocean_(root_) {}
+    PortView::PortView(std::filesystem::path root) : root_(std::move(root)), ocean_(root_) {
+        if (std::filesystem::exists(root_ / "menus/hud.xml")) {
+            try {
+                hud_ = std::make_unique<Hud>(root_);
+            } catch (
+                const std::exception&) { /* Keep debug interface if local assets are incomplete. */
+            }
+        }
+    }
+
+    bool PortView::hudEnabled(const Game& game) const {
+        return hud_ && game.ready && panel_ == Panel::None && !map;
+    }
 
     void PortView::loadMap(const Game& g) {
         auto i = g.zoneMaps.find(g.zone);
@@ -215,6 +227,21 @@ namespace rp {
                 text(out, 50, 80, "MAP UNAVAILABLE");
             }
         }
+        if (hudEnabled(g)) {
+            hud_->update(g);
+            hud_->render(out);
+            // Research-client controls until ObjectSelectPopup is restored.
+            rect(out, 210, 356, 220, 42, {29, 57, 74, 255});
+            text(out, 222, 370, g.diveSeconds > 0 ? "DIVING" : "DIVE", 1);
+            text(out, 334, 370, "COLLECT", 1);
+            if (grid)
+                text(out, 150, 65,
+                     moving_              ? "MOVE: TAP DESTINATION"
+                     : selectedBlueprint_ ? "TAP TO BUILD"
+                                          : "TAP COMPONENT",
+                     1);
+            return out;
+        }
         rect(out, 0, 0, 640, 32, {15, 38, 54, 255});
         text(out, 6, 4, "HYDRALEGACY RP PORT - " + status, 1);
         text(out, 6, 18,
@@ -246,6 +273,42 @@ namespace rp {
     std::optional<sfs::Message> PortView::touch(Game& g, float x, float y) {
         if (x < 0 || x >= 640 || y < 0 || y >= 400)
             return {};
+        if (hudEnabled(g)) {
+            hud_->update(g);
+            auto action = hud_->touch(x, y);
+            switch (action) {
+            case Hud::Action::Quest:
+                panel_ = Panel::Quest;
+                page_ = 0;
+                return Game::request("gs_quest");
+            case Hud::Action::Safety:
+                panel_ = Panel::Safety;
+                return {};
+            case Hud::Action::Daring: {
+                if (g.canAdvanceDaring())
+                    return Game::request("daring_advance");
+                panel_ = Panel::Daring;
+                return {};
+            }
+            case Hud::Action::ToggleView:
+                grid = !grid;
+                return {};
+            case Hud::Action::Shop:
+                panel_ = Panel::Shop;
+                page_ = 0;
+                return {};
+            case Hud::Action::Map:
+                map = true;
+                return {};
+            case Hud::Action::None:
+                break;
+            }
+            if (y >= 356 && x >= 210 && x < 430) {
+                return g.dive(x < 320 ? "dive_start" : "dive_collect");
+            }
+            if (y >= 350)
+                return {};
+        }
         if (panel_ != Panel::None && y < 350)
             return panelTouch(g, x, y);
         if (y >= 350) {
@@ -364,6 +427,26 @@ namespace rp {
 
     void PortView::renderPanel(Image& image, const Game& game) {
         rect(image, 14, 36, 612, 302, {15, 38, 54, 255});
+        if (panel_ == Panel::Quest || panel_ == Panel::Safety || panel_ == Panel::Daring) {
+            std::string title = panel_ == Panel::Quest    ? "QUESTS"
+                                : panel_ == Panel::Safety ? "OCEAN SAFETY"
+                                                          : "DARING";
+            text(image, 25, 52, title, 2);
+            if (panel_ == Panel::Quest)
+                text(image, 25, 90, "QUESTS RECEIVED: " + std::to_string(game.questCount), 2);
+            if (panel_ == Panel::Safety)
+                text(image, 25, 90,
+                     game.badZone ? "LOW WATER"
+                     : game.safe  ? "SAFE WATER"
+                                  : "PIRATE WATER",
+                     2);
+            if (panel_ == Panel::Daring) {
+                text(image, 25, 90, "LEVEL " + std::to_string(game.daring), 2);
+                text(image, 25, 125, "REMAINING " + std::to_string(game.daringRemaining) + "S", 2);
+            }
+            text(image, 25, 306, "TAP TO CLOSE", 1);
+            return;
+        }
         const char* names[] = {"BUILD", "SHOP", "INVENTORY", "TRAVEL"};
         const Panel panels[] = {Panel::Build, Panel::Shop, Panel::Inventory, Panel::Travel};
         for (int i = 0; i < 4; ++i) {
@@ -394,6 +477,11 @@ namespace rp {
     }
 
     std::optional<sfs::Message> PortView::panelTouch(Game& game, float x, float y) {
+        if (panel_ == Panel::Quest || panel_ == Panel::Safety || panel_ == Panel::Daring) {
+            if (y >= 280)
+                panel_ = Panel::None;
+            return {};
+        }
         if (y >= 42 && y < 70 && x >= 20 && x < 620) {
             const Panel panels[] = {Panel::Build, Panel::Shop, Panel::Inventory, Panel::Travel};
             panel_ = panels[std::min(3, int(x - 20) / 150)];

@@ -220,6 +220,50 @@ int main() {
         moveGame.storeItems[1] = {1, 4, 100, 1, "test_item", "misc", "Test"};
         auto purchase = port.touch(moveGame, 30, 90);
         CHECK(purchase && purchase->payload.getString("c") == "purchase_item");
+        O zoneRecord;
+        zoneRecord.put("zone_id", int32_t(5));
+        zoneRecord.put("name", "Nessie");
+        zoneRecord.put("mapfile", "map.tmx");
+        zoneRecord.put("min_bp", int32_t(100));
+        zoneRecord.put("max_bp", int32_t(400));
+        zoneRecord.put("buffer_bp", int32_t(25));
+        zoneRecord.put("daringLimit", int32_t(10));
+        zoneRecord.put("defaultpos_open_x", int32_t(-3));
+        zoneRecord.put("defaultpos_open_y", int32_t(4));
+        zoneRecord.put("defaultpos_safe_x", int32_t(5));
+        zoneRecord.put("defaultpos_safe_y", int32_t(-6));
+        auto zoneArray = std::make_shared<A>();
+        zoneArray->add(std::make_shared<O>(zoneRecord));
+        O zonePacket;
+        zonePacket.put("zone_data", zoneArray);
+        g.extension("lib_zone_data", zonePacket);
+        const auto& zoneInfo = g.zoneData.at(5);
+        CHECK(zoneInfo.id() == 5 && zoneInfo.name() == "Nessie" && zoneInfo.mapfile() == "map.tmx");
+        CHECK(zoneInfo.min_bp() == 100 && zoneInfo.max_bp() == 400 && zoneInfo.buffer_bp() == 25 &&
+              zoneInfo.daringLimit() == 10);
+        CHECK(zoneInfo.defaultpos_open_x() == -3 && zoneInfo.defaultpos_open_y() == 4 &&
+              zoneInfo.defaultpos_safe_x() == 5 && zoneInfo.defaultpos_safe_y() == -6);
+        O discoveryRecord;
+        discoveryRecord.put("id", int32_t(2));
+        discoveryRecord.put("name", "Discovery");
+        discoveryRecord.put("zoneLocation", int32_t(5));
+        discoveryRecord.put("questgroup", int32_t(7));
+        auto discoveryArray = std::make_shared<A>();
+        discoveryArray->add(std::make_shared<O>(discoveryRecord));
+        O discoveryPacket;
+        discoveryPacket.put("discovery_data", discoveryArray);
+        g.extension("lib_discovery_data", discoveryPacket);
+        const auto& discoveryInfo = g.discoveryData.at(2);
+        CHECK(discoveryInfo.id() == 2 && discoveryInfo.name() == "Discovery" &&
+              discoveryInfo.zoneid() == 5 && discoveryInfo.questgroupid() == 7);
+        O badZone;
+        badZone.put("bad", int32_t(1));
+        g.extension("zonestatus", badZone);
+        CHECK(g.badZone);
+        O quests;
+        quests.put("result", discoveryArray);
+        g.extension("gs_quest", quests);
+        CHECK(g.questCount == 1);
         std::cout << "Raft model and SFS framing tests passed\n";
         return 0;
     } catch (const std::exception& e) {

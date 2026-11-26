@@ -23,6 +23,10 @@ int main(int argc, char** argv) {
         }
         rp::Game g;
         g.demo();
+        g.daring = 4;
+        g.daringTotal = 120;
+        g.daringRemaining = 60;
+        g.safe = false;
         rp::PortView v(argv[1]);
         v.grid = true;
         v.map = argc == 4 && std::string(argv[3]) == "--map";

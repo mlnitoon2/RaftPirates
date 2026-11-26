@@ -1,6 +1,8 @@
 #pragma once
 #include "sfs/SFSWire.h"
 #include "rp/Raft.h"
+#include "rp/Zone.h"
+#include "rp/Discovery.h"
 #include "sys/gfx/AnimationRenderer.h"
 #include <optional>
 #include <set>
@@ -64,6 +66,10 @@ namespace rp {
         std::vector<Raft> rafts;
         std::map<int, std::string> zones, zoneMaps;
         std::map<int, std::string> discoveries;
+        std::map<int, Zone> zoneData;
+        std::map<int, Discovery> discoveryData;
+        bool badZone = false;
+        int questCount = 0;
         std::string knownZones, knownDiscoveries;
         std::map<int, StoreItem> storeItems;
         std::map<int, StoreCurrency> storeCurrencies;
@@ -98,6 +104,9 @@ namespace rp {
         sfs::Message buyStoreItem(int id) const;
         sfs::Message discover(int id);
         sfs::Message moveMap(int x, int y, bool destinationSafe);
+        bool daringLocked() const;
+        bool canAdvanceDaring() const;
+        double daringProgress() const;
         void tick(float dt);
         void demo();
         std::string summary() const;

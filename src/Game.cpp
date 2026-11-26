@@ -194,15 +194,23 @@ namespace rp {
         } else if (cmd == "lib_zone_data") {
             zones.clear();
             zoneMaps.clear();
+            zoneData.clear();
             each(p, "zone_data", [&](auto& x) {
-                int id = num(x, "zone_id");
-                zones[id] = x.getString("name");
-                zoneMaps[id] = x.getString("mapfile");
+                Zone entry;
+                entry.initWithSFSObject(x);
+                zones[entry.id()] = entry.name();
+                zoneMaps[entry.id()] = entry.mapfile();
+                zoneData[entry.id()] = std::move(entry);
             });
         } else if (cmd == "lib_discovery_data") {
             discoveries.clear();
-            each(p, "discovery_data",
-                 [&](auto& x) { discoveries[num(x, "id")] = x.getString("name"); });
+            discoveryData.clear();
+            each(p, "discovery_data", [&](auto& x) {
+                Discovery entry;
+                entry.initWithSFSObject(x);
+                discoveries[entry.id()] = entry.name();
+                discoveryData[entry.id()] = std::move(entry);
+            });
         } else if (cmd == "zone_known")
             knownZones = p.getString("zones");
         else if (cmd == "discoveries_known")
@@ -235,6 +243,11 @@ namespace rp {
             ready = true;
             pending.reset();
             pendingMove.reset();
+        } else if (cmd == "zonestatus") {
+            badZone = num(p, "bad") != 0;
+        } else if (cmd == "gs_quest") {
+            questCount = 0;
+            each(p, "result", [&](auto&) { ++questCount; });
         } else if (cmd == "gs_ocean") {
             safe = p.getBool("safe_water", safe);
             if (pendingMap) {
@@ -534,6 +547,23 @@ namespace rp {
         p.put("enemy_id", int32_t(0));
         p.put("usedSonar", int32_t(0));
         return request("gs_map_move", p);
+    }
+
+    bool Game::daringLocked() const {
+        auto info = zoneData.find(zone);
+        bool limited = info != zoneData.end() && info->second.daringLimit() > 0 &&
+                       daring >= info->second.daringLimit();
+        return safe || badZone || daringPaused || limited;
+    }
+
+    bool Game::canAdvanceDaring() const {
+        return !daringLocked() && daringTotal > 0 && daringRemaining == 0;
+    }
+
+    double Game::daringProgress() const {
+        if (daringLocked() || daringTotal <= 0)
+            return 0;
+        return std::clamp(1.0 - double(daringRemaining) / daringTotal, 0.0, 1.0);
     }
 
     void Game::tick(float dt) {

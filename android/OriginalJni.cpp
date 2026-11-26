@@ -154,6 +154,8 @@ extern "C" JNIEXPORT void JNICALL RP(init)(JNIEnv* e, jobject obj, jstring path,
         rt.archivePath = apk;
         auto root = cacheRoot(e, obj, apk);
         rt.game.demo();
+        // Demo assets are available for preview, but online HUD activates only on gs_player.
+        rt.game.ready = false;
         rt.view = std::make_unique<rp::PortView>(root);
         try {
             rt.splash = std::make_unique<rp::SplashScreen>(root);
