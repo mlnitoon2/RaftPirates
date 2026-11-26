@@ -1,7 +1,7 @@
 #include "rp/BuildModeState.h"
 #include "rp/TouchControls.h"
 #include "rp/RPMenuHandler.h"
-#include "rp/LocalSession.h"
+#include "PlayerFixture.h"
 #include "rp/MapView.h"
 #include <cmath>
 #include <iostream>
@@ -18,8 +18,11 @@ using A = sfs::SFSArrayWrapper;
 int main() {
     try {
         Game game;
-        LocalSession local;
-        local.start(game);
+        loadPlayerFixture(game);
+        game.storeItems[1] = {1, 4, 100, 1, "pack", "misc", "Pack", "rp_menu.xml", ""};
+        game.objects[5] = {5, 0, 1000, "WoodRaft", "gfx/rafts/raft_wood.png", -192, 0, {{0, 0}}};
+        game.blueprints[3] = {3, 5, 1, "Wooden Raft"};
+        game.owned.insert(3);
         RPMenuHandler menu(game);
         menu.gotMsgSetStoreCategory("misc");
         CHECK(menu.currentStorePage(1) == std::vector<int>{1});
@@ -57,7 +60,13 @@ int main() {
         }
         CHECK(rejected && game.storeItems.size() == 1 && game.storeDB.items.size() == 1);
         auto request = game.dive("dive_start");
-        local.dispatch(game, request);
+        CHECK(request.payload.getString("c") == "dive_start");
+        O dive;
+        dive.put("state", int32_t(3));
+        dive.put("time_remaining_secs", int32_t(20));
+        dive.put("time_total_secs", int32_t(20));
+        dive.put("max_load", int32_t(200));
+        game.extension("dive_info", dive);
         CHECK(game.diveState.Diving() && game.diveState.GetMaxLoad() == 200);
         game.tick(5);
         CHECK(game.diveSeconds == 15 && std::abs(game.diveState.GetDiveTime() - .25f) < .001f);
@@ -77,7 +86,12 @@ int main() {
         CHECK(!spots.empty());
         auto add = build.gotMsgBuildConfirm(3, 0, spots.front());
         CHECK(add);
-        local.dispatch(game, *add);
+        O buildResult;
+        auto raft = std::make_shared<O>();
+        raft->put("user_raft_id", int32_t(10));
+        raft->put("current_bp", int32_t(1000));
+        buildResult.put("user_raft", raft);
+        game.extension("gs_build_add", buildResult);
         CHECK(game.rafts.size() == 2);
         auto& c = game.rafts.front().components.front();
         c.bp = 0;

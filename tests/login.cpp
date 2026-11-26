@@ -36,6 +36,7 @@ int main(int argc, char** argv) {
         CHECK(a.pixels.size() == b.pixels.size());
         CHECK(std::memcmp(a.pixels.data(), b.pixels.data(),
                           a.pixels.size() * sizeof(a.pixels[0])) == 0);
+        CHECK(tap("password_forgot") == A::Reset);
         CHECK(tap("SubmitButton") == A::Submit);
         login.clearPassword();
         login.busy(true);

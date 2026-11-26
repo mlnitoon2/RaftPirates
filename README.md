@@ -1,8 +1,8 @@
 # Raft Pirates
 
-[![RaftPirates original method-name coverage: 39.1268%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
+[![RaftPirates original method-name coverage: 38.2872%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
 
-**466/1191 original method names (39.1268%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
+**456/1191 original method names (38.2872%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
 
 An unofficial C++ source reconstruction of Raft Pirates for research and game preservation, built on [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy). The project is not the recovered original source and is not a complete or binary-equivalent replacement. Original Java classes and resources are supplied by a locally available, compatible APK; they are not distributed by this repository.
 
@@ -34,12 +34,13 @@ The authentication endpoint is read at runtime from `assets/xml_resources/proper
 ```xml
 <Properties>
     <Property key="SERVER_IP" value="https://auth.example.org/" />
+    <Property key="admin" value="false" />
 </Properties>
 ```
 
 A bare hostname defaults to HTTPS. A complete HTTP(S) URL or an explicit `auth.php` URL is accepted. The XML property is the sole authentication endpoint configuration; there is no compile-time override. The original `MyLib.getAuthURL()` separately returns the website base recovered from the ARM32 binary.
 
-Authentication uses the legacy BBB `auth.php` request and the returned `bbbId`, `sessId` and `serverIp`. The existing SmartFox Java SDK connects to that game host on port 9933 and logs in to the `RaftPirates` zone. A cold launch displays the splash and title screen; selecting Set Sail opens login, and gameplay starts only after successful login and a valid player snapshot. See [networking and startup](docs/STARTUP_AND_GAMEPLAY.md).
+Authentication uses the legacy BBB `auth.php` request and the returned `bbbId`, `sessId` and `serverIp`. The existing SmartFox Java SDK connects to that game host on port 9933 and logs in to the `RaftPirates` zone. A cold launch displays the splash and title screen; selecting Set Sail resumes a saved session or opens login. Gameplay requires an authenticated SDK session and valid player and ocean snapshots. See [networking and startup](docs/STARTUP_AND_GAMEPLAY.md).
 
 The historical endpoints are not guaranteed to be operational. Use authorized test servers and test-only accounts. Legacy GET authentication includes credentials in the URL; HTTPS is recommended, and no automatic downgrade to HTTP is performed. Plain HTTP requires a compatible Android network policy. Credentials and private server URLs must not be committed.
 
@@ -55,7 +56,7 @@ The historical endpoints are not guaranteed to be operational. Use authorized te
 | Engine | Software rendering, original assets, animation, menu layout and localization through HydraLegacy |
 | Android bridge | 94 native declarations matched; some callbacks are explicit unsupported stubs |
 
-The desktop sandbox is retained for testing only. The Android flow has no offline-play or manual session-token entry screen. Facebook, account recovery, complete original menu/Lua behavior, full multiplayer and boss progression remain incomplete. See [multiplayer](docs/MULTIPLAYER.md), [HUD](docs/HUD.md), [class reconstruction](docs/CLASS_RECONSTRUCTION.md) and [port notes](docs/PORT_NOTES.md).
+The client has no offline play, demo fleet or simulated combat. Password recovery opens the service’s `lost_password.php` page; the service must implement it. The optional `admin` property defaults to false and controls `isCheatEnabled()` locally, not server permissions. Facebook, complete original menu/Lua behavior, full multiplayer and boss progression remain incomplete. See [multiplayer](docs/MULTIPLAYER.md), [HUD](docs/HUD.md), [class reconstruction](docs/CLASS_RECONSTRUCTION.md) and [port notes](docs/PORT_NOTES.md).
 
 ## Test on desktop
 
@@ -82,6 +83,8 @@ These tests verify host behavior and protocol fixtures, not live multiplayer, An
 
 Platform services and the legacy Android JNI exports live in HydraLegacy; its separate SFS library provides the Java SDK adapter. The game accesses rendering, audio, storage, authentication and transport through `sys::platform::Services`. The repository publishes only rebuilt native output, not the original proprietary binaries, scripts or art. Raft Pirates and Hydra belong to their respective rights holders. This project is unofficial; no license for the new reconstruction code has been selected.
 
-### Saved login
+### Saved login and static libraries
 
-After successful authentication and receipt of valid player data, the client stores the issued session token, BBB ID, returned game-server host and configured authentication endpoint in application-private storage. Cold launch presents the title before attempting session resume. Expired sessions fall back to login; explicit logout removes the saved session. No password is saved. The historical encrypted save format has not been reconstructed.
+After successful authentication and receipt of valid player data, the client stores the issued session token, BBB ID, returned game-server host and configured authentication endpoint in application-private storage. Cold launch stays on the title until Set Sail is pressed; saved sessions then resume automatically. Expired sessions fall back to login; explicit logout removes the saved session. No password is saved. The historical encrypted save format has not been reconstructed.
+
+Validated complete static-library snapshots are cached in application-private storage, scoped to the authentication endpoint and game host. The stored timestamp is sent as `last_updated` on the next login. Incomplete or unreadable caches are not used.

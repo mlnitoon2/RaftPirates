@@ -8,6 +8,8 @@
 #include "rp/GfxBattleScreen.h"
 #include "rp/DiscoveryModeState.h"
 #include "rp/TouchControls.h"
+#include "sys/gfx/GfxBox.h"
+#include "sys/gfx/ResourceSpriteFont.h"
 
 namespace rp {
     // Temporary native controls for the original APK's GLSurfaceView. Not original Menu Redux UI.
@@ -43,7 +45,6 @@ namespace rp {
         LoadingManager loader_;
         std::unique_ptr<Hud> hud_;
         std::unique_ptr<diving_game::DivingGame> diving_;
-        std::unique_ptr<BattleModeState> battle_;
         std::unique_ptr<GfxBattleScreen> battleScreen_;
         bool onlineBattleActive_ = false;
         std::unique_ptr<DiscoveryModeState> discovery_;
@@ -66,6 +67,8 @@ namespace rp {
         int selectedParent_ = 0, selectedComponent_ = 0;
         bool moving_ = false;
         std::optional<sfs::Message> panelTouch(Game&, float x, float y);
+        std::unique_ptr<sys::gfx::GfxBox> panelBackground_;
+        std::optional<sys::gfx::ResourceSpriteFont> panelFont_;
         void renderPanel(sys::gfx::Image&, const Game&);
         void loadMap(const Game&);
     };

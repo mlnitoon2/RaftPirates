@@ -24,7 +24,6 @@ add_library(raftpirates_game STATIC
     src/Material.cpp
     src/Blueprint.cpp
     src/DivingGame.cpp
-    src/LocalSession.cpp
     src/RaftComponent.cpp
     src/Raft.cpp
     src/OceanView.cpp
@@ -87,9 +86,9 @@ if(NOT ANDROID AND BUILD_TESTING)
   endif()
   add_executable(raftpirates_play_tests tests/play.cpp)
   target_link_libraries(raftpirates_play_tests PRIVATE raftpirates_game)
-  add_test(NAME raftpirates_local_play COMMAND raftpirates_play_tests)
+  add_test(NAME raftpirates_sparse_grid COMMAND raftpirates_play_tests)
   if(RAFT_ASSET_ROOT)
-    add_test(NAME raftpirates_original_dive COMMAND raftpirates_play_tests "${RAFT_ASSET_ROOT}")
+    add_test(NAME raftpirates_original_map COMMAND raftpirates_play_tests "${RAFT_ASSET_ROOT}")
   endif()
 endif()
 

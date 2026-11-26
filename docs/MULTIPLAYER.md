@@ -1,6 +1,6 @@
 # Pass 23–24: multiplayer and boss battle transport
 
-`BattleModeState` now owns the reconstructed online path as well as the isolated desktop practice mode. The reconstruction-only `OnlineBattle` source files were removed. `Game::extension` forwards recognized packets, and the JNI send path uses the existing SmartFox Java SDK. `Ocean` keeps a separate opponent snapshot. Disconnect clears the online encounter and sonar state. The temporary online battle controls are not the original battle layout. No Offline Play or manual Connect option was reintroduced.
+`BattleModeState` now owns the reconstructed online path. The reconstruction-only `OnlineBattle` source files were removed. `Game::extension` forwards recognized packets, and the JNI send path uses the existing SmartFox Java SDK. `Ocean` keeps a separate opponent snapshot. Disconnect clears the online encounter and sonar state. The temporary online battle controls are not the original battle layout. No Offline Play or manual Connect option was reintroduced.
 
 ## Outgoing protocol evidence
 

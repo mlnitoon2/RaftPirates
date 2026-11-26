@@ -27,6 +27,8 @@ namespace rp {
                                        const sfs::SFSObjectWrapper& data);
         void setNetworkMsgProcessingEnabled(bool enabled);
         void gotMsgEnableNetworkProcessing(bool enabled);
+        void loadStaticLibraries(const std::filesystem::path& file, const std::string& source);
+        void saveStaticLibraries() const;
         void Pause(bool value);
         void tick(float dt);
         void tickNoSkip(float dt);
@@ -66,5 +68,9 @@ namespace rp {
         float load_ = 0;
         std::deque<sfs::Message> queued_;
         std::string adminMessage_;
+        std::filesystem::path libraryFile_;
+        std::string librarySource_;
+        sfs::SFSObjectWrapper libraryPackets_;
+        void processExtension(const std::string&, const sfs::SFSObjectWrapper&);
     };
 } // namespace rp

@@ -1,5 +1,7 @@
 #include "rp/RaftPirates.h"
 #include <stdexcept>
+#include <chrono>
+#include <fstream>
 
 namespace {
     void check(bool result) {
@@ -71,4 +73,45 @@ int main() {
     game.gotMsgOnExtensionResponse("zonestatus", packet);
     game.gotMsgMenuLogoutRequest();
     check(!game.GotMsgBadZoneStatusRequest());
+    // Recreate the supplied server's initial library sequence, including its timestamp
+    // preceding the three store libraries. No synthetic local session is started.
+    auto cache = std::filesystem::temp_directory_path() /
+                 ("raft-libraries-" +
+                  std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+    game.DoConnect();
+    game.loadStaticLibraries(cache, "server A");
+    game.gotMsgOnConnection(true);
+    game.gotMsgOnLogin();
+    const std::pair<const char*, const char*> libraries[] = {
+        {"lib_quest_type_data", "quest_type_data"},
+        {"lib_mat_data", "material_data"},
+        {"lib_bp_data", "blueprint_data"},
+        {"lib_go_data", "gridobject_data"},
+        {"lib_zone_data", "zone_data"},
+        {"lib_discovery_data", "discovery_data"},
+        {"lib_store_cur_data", "store_currency_data"},
+        {"lib_store_group_data", "store_group_data"},
+        {"lib_store_item_data", "store_item_data"}};
+    sfs::SFSObjectWrapper timestamp;
+    timestamp.put("timestamp", int64_t(123456));
+    game.gotMsgOnExtensionResponse("lib_timestamp", timestamp);
+    game.saveStaticLibraries();
+    check(!std::filesystem::exists(cache));
+    for (auto [command, key] : libraries) {
+        sfs::SFSObjectWrapper library;
+        library.put(key, std::make_shared<sfs::SFSArrayWrapper>());
+        game.gotMsgOnExtensionResponse(command, library);
+    }
+    game.saveStaticLibraries();
+    check(std::filesystem::exists(cache));
+    rp::RaftPirates restored;
+    restored.DoConnect();
+    restored.loadStaticLibraries(cache, "server A");
+    check(restored.libraryTimestamp == 123456 && !restored.ready);
+    check(restored.login("10", "session").payload.getSFSObj("p")->getLong("last_updated") ==
+          123456);
+    restored.DoConnect();
+    restored.loadStaticLibraries(cache, "server B");
+    check(restored.libraryTimestamp == 0);
+    std::filesystem::remove(cache);
 }

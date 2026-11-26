@@ -31,12 +31,12 @@ namespace {
         std::unique_ptr<rp::TitleScreen> title;
         std::filesystem::path archivePath, assets, savedPath;
         std::string savedSession, pendingAdminNotice;
-        bool resumeAttempt = false, titlePresented = false, oceanReceived = false,
-             resumeChecked = false;
-        Clock::time_point titleSince{}, outroStarted{};
+        bool resumeAttempt = false, titlePresented = false, oceanReceived = false;
+        Clock::time_point outroStarted{};
         sys::gfx::Image lastImage;
         int width = 640, height = 400, port = 9933;
         bool initialized = false, paused = false, connected = false, connecting = false;
+        bool admin = false;
         std::string host, user, session, status, music, authEndpoint;
         bool loginSent = false;
         int lastGears = 0;
@@ -240,7 +240,8 @@ namespace {
         if (!rt.login || !rt.initialized)
             return;
         if (!result.error.empty()) {
-            loginError(platform, result.error);
+            platform.log("Authentication: " + result.error);
+            loginError(platform, "Login failed. Please try again.");
             return;
         }
         if (result.registered) {
@@ -263,6 +264,11 @@ namespace {
         }
     }
 } // namespace
+
+bool isCheatEnabled() {
+    std::lock_guard<std::recursive_mutex> lock(rt.mutex);
+    return rt.admin;
+}
 
 namespace sys::platform::game {
     void init(Services& platform, const std::filesystem::path& apk, int w, int h) {
@@ -295,7 +301,6 @@ namespace sys::platform::game {
             rt.pendingAdminNotice.clear();
             rt.resumeAttempt = false;
             rt.titlePresented = false;
-            rt.resumeChecked = false;
             rt.oceanReceived = false;
             rt.time = 0;
             rt.archivePath = apk;
@@ -320,6 +325,7 @@ namespace sys::platform::game {
                 platform.log(std::string("Could not load properties.xml: ") + ex.what());
             }
             rt.authEndpoint = endpoint(properties.GetProperty("SERVER_IP"));
+            rt.admin = properties.GetPropertyAsBool("admin", false);
             rt.game.initialize();
             rt.user.clear();
             rt.entry = rp::LoginScreen::Action::None;
@@ -373,6 +379,7 @@ namespace sys::platform::game {
             rt.view.reset();
             rt.lastImage = {};
             rt.initialized = false;
+            rt.admin = false;
             rt.entry = rp::LoginScreen::Action::None;
         });
     }
@@ -408,31 +415,23 @@ namespace sys::platform::game {
                 platform.present(rt.title->render(), rt.width, rt.height);
                 if (!rt.titlePresented) {
                     rt.titlePresented = true;
-                    rt.titleSince = now;
                     platform.log("Raft Pirates startup: title presented");
                     return;
-                }
-                if (rt.resumeChecked || now - rt.titleSince < std::chrono::seconds(1))
-                    return;
-                rt.resumeChecked = true;
-                if (loadSession()) {
-                    rt.login = std::make_unique<rp::LoginScreen>(rt.assets);
-                    rt.login->busy(true);
-                    rt.title.reset();
-                    rt.resumeAttempt = true;
-                    rt.connecting = true;
-                    rt.game.DoConnect();
-                    rt.connectStarted = now;
-                    platform.log("Resuming saved login session");
-                    try {
-                        platform.connect(rt.host, rt.port);
-                    } catch (...) {
-                        loginError(platform, "Could not resume saved login. Please log in again.");
-                    }
                 }
                 return;
             }
             pollAuth(platform);
+            if (rt.connecting && rt.loginSent) {
+                try {
+                    if (platform.loggedIn()) {
+                        platform.log(
+                            "SmartFox SDK confirms login; recovering missing native login event");
+                        sys::platform::game::onLogin(platform);
+                    }
+                } catch (const std::exception& ex) {
+                    platform.log(std::string("SmartFox login state unavailable: ") + ex.what());
+                }
+            }
             if (rt.connected && !rt.pendingAdminNotice.empty()) {
                 auto notice = std::move(rt.pendingAdminNotice);
                 rt.pendingAdminNotice.clear();
@@ -452,24 +451,32 @@ namespace sys::platform::game {
                     return;
                 }
             }
-            if ((rt.connecting || (rt.connected && !rt.game.ready)) &&
-                now - rt.connectStarted > std::chrono::seconds(30))
-                loginError(platform, rt.oceanReceived
-                                         ? "Ocean received, but player data is missing or invalid."
-                                         : "The game server did not respond.");
+            if ((rt.connecting || (rt.connected && (!rt.game.ready || !rt.oceanReceived))) &&
+                now - rt.connectStarted > std::chrono::seconds(30)) {
+                platform.log(
+                    rt.oceanReceived
+                        ? "World loading timed out after gs_ocean; awaiting login/player snapshot"
+                        : "World loading timed out awaiting server response");
+                loginError(platform, "Unable to connect. Please try again.");
+            }
             if (rt.login) {
-                if (rt.connected && rt.game.ready && !rt.endingLoading) {
+                if (rt.connected && rt.game.ready && rt.oceanReceived && !rt.endingLoading) {
                     try {
                         rt.view = std::make_unique<rp::PortView>(rt.assets);
                         rt.lastImage = rt.view->render(rt.game, rt.time, rt.status);
                     } catch (...) {
-                        loginError(platform, "Could not initialize the game view.");
+                        loginError(platform, "Unable to load the game. Please try again.");
                         return;
                     }
                     rt.endingLoading = true;
                     rt.outroStarted = now;
                     rt.game.gotMsgLoadFinished();
                     saveSession(platform);
+                    try {
+                        rt.game.saveStaticLibraries();
+                    } catch (const std::exception& ex) {
+                        platform.log(std::string("Static library cache not saved: ") + ex.what());
+                    }
                     rt.savedSession.clear();
                     rt.resumeAttempt = false;
                     rt.login->finish();
@@ -505,7 +512,7 @@ namespace sys::platform::game {
                     rt.lastImage = rt.view->render(rt.game, rt.time, rt.status);
                 } catch (const std::exception& ex) {
                     platform.log(std::string("Gameplay render failed: ") + ex.what());
-                    loginError(platform, "Could not render the game world.");
+                    loginError(platform, "Unable to load the game. Please try again.");
                     return;
                 }
             }
@@ -531,6 +538,8 @@ namespace sys::platform::game {
             if (rt.splash)
                 return;
             if (rt.title) {
+                if (!rt.titlePresented)
+                    return;
                 rt.title->touchDown(x * 640 / rt.width, y * 400 / rt.height);
                 return;
             }
@@ -567,6 +576,19 @@ namespace sys::platform::game {
                     rt.login = std::make_unique<rp::LoginScreen>(rt.assets);
                     rt.title.reset();
                     rt.lastImage = {};
+                    if (loadSession()) {
+                        rt.login->busy(true);
+                        rt.resumeAttempt = true;
+                        rt.connecting = true;
+                        rt.game.DoConnect();
+                        rt.connectStarted = Clock::now();
+                        platform.log("Resuming saved login session");
+                        try {
+                            platform.connect(rt.host, rt.port);
+                        } catch (...) {
+                            loginError(platform, "Please log in again.");
+                        }
+                    }
                 }
                 return;
             }
@@ -587,7 +609,7 @@ namespace sys::platform::game {
                     if (rt.login->email().empty() || rt.login->password().empty()) {
                         rt.login->error("Enter your email and password.");
                     } else if (rt.authEndpoint.empty()) {
-                        rt.login->error("Authentication server is not configured.");
+                        rt.login->error("Unable to connect. Please try again.");
                     } else {
                         rt.auth = platform.authenticate(rt.authEndpoint, rt.login->email(),
                                                         rt.login->password(), false, 2, "1.0.4");
@@ -600,7 +622,7 @@ namespace sys::platform::game {
                     else if (rt.login->password() != rt.login->confirmation())
                         rt.login->error("Passwords do not match.");
                     else if (rt.authEndpoint.empty())
-                        rt.login->error("Authentication server is not configured.");
+                        rt.login->error("Unable to connect. Please try again.");
                     else {
                         rt.auth = platform.authenticate(rt.authEndpoint, rt.login->email(),
                                                         rt.login->password(), true, 2, "1.0.4");
@@ -609,8 +631,24 @@ namespace sys::platform::game {
                     }
                 } else if (action == Action::Facebook)
                     rt.login->error("Facebook login is not available.");
-                else if (action == Action::Reset)
-                    rt.login->error("Password reset is not available yet.");
+                else if (action == Action::Reset) {
+                    if (rt.authEndpoint.empty()) {
+                        rt.login->error("Unable to connect. Please try again.");
+                    } else {
+                        auto page = rt.authEndpoint.substr(0, rt.authEndpoint.size() - 8) +
+                                    "lost_password.php";
+                        // The ARM32 release used https://raftpirates.6waves.com/lost_password.php.
+                        // Custom servers use their configured authentication base instead.
+                        if (rt.authEndpoint == "https://w1.raftpirates.6waves.com/auth.php")
+                            page = "https://raftpirates.6waves.com/lost_password.php";
+                        try {
+                            platform.openWebPage(page);
+                        } catch (const std::exception& ex) {
+                            platform.log(std::string("Password recovery: ") + ex.what());
+                            rt.login->error("Unable to open password recovery.");
+                        }
+                    }
+                }
                 return;
             }
             if (!rt.connected || !rt.game.ready || !rt.view)
@@ -712,6 +750,15 @@ namespace sys::platform::game {
                 loginError(platform, "Connection failed.");
                 return;
             }
+            if (!rt.savedPath.empty()) {
+                try {
+                    rt.game.loadStaticLibraries(rt.savedPath.parent_path() /
+                                                    "raftpirates-libraries.dat",
+                                                rt.authEndpoint + "\n" + rt.host);
+                } catch (const std::exception& ex) {
+                    platform.log(std::string("Static library cache ignored: ") + ex.what());
+                }
+            }
             auto p = rt.game.login(rt.user, "").payload.getSFSObj("p");
             if (!p)
                 throw std::runtime_error("Missing login params");
@@ -743,7 +790,7 @@ namespace sys::platform::game {
                 if (rt.game.ready)
                     platform.log("Player snapshot accepted");
             } catch (...) {
-                loginError(platform, "Invalid initial game data.");
+                loginError(platform, "Unable to load the game. Please try again.");
             }
         });
     }
@@ -798,7 +845,7 @@ namespace sys::platform::game {
             } catch (const std::exception& ex) {
                 platform.log("Rejected " + command + ": " + ex.what());
                 if (rt.login && !rt.game.ready && command == "gs_player")
-                    loginError(platform, "Invalid player data received from the game server.");
+                    loginError(platform, "Unable to load the game. Please try again.");
                 return;
             }
             rt.status = rt.game.status;

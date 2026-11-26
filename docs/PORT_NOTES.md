@@ -8,7 +8,7 @@ This module links against adjacent HydraLegacy. The target `raftpirates` is inte
 
 The original MyLib and HydraGame Java classes load the shared library and call initGL/init/tick/touch. Assets are read from the APK path passed to init, and extracted to the app cache. Original Java SmartFox `ClientServices` is used with the recovered `Login(username, session, zone, SFSObject)` ordering. Desktop generated mock Java classes verify signatures and argument handling, not Android activity/GL/network behavior.
 
-Startup uses the original title and login XML. Authentication reads the sole endpoint from properties.xml, then uses the returned game host and session with the existing Java SmartFox SDK. The desktop sandbox is for regression testing only; the Android application has no diagnostic Connect or Offline Play controls. Android-specific services and native exports are in HydraLegacy. Billing, social and advertising callbacks remain incomplete. Current physical-device compatibility and server interoperability are unverified.
+Startup uses the original title and login XML. Authentication reads the sole endpoint from properties.xml, then uses the returned game host and session with the existing Java SmartFox SDK. The application has no diagnostic Connect, demo or Offline Play controls. Android-specific services and native exports are in HydraLegacy. Billing, social and advertising callbacks remain incomplete. Current physical-device compatibility and server interoperability are unverified.
 
 ## Recovered protocol additions
 

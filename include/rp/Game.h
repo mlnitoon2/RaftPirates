@@ -52,7 +52,7 @@ namespace rp {
         bool daringPaused = false;
         int zone = 1, mapX = 0, mapY = 0, daring = 0, buildLimit = 0, diveSeconds = 0;
         bool ready = false;
-        bool localPlay = false;
+        int64_t libraryTimestamp = 0;
         std::string token, status = "Not connected";
         std::optional<PendingBuild> pending;
         std::optional<PendingMove> pendingMove;
@@ -60,6 +60,10 @@ namespace rp {
         std::optional<int> pendingDiscovery;
         std::optional<Cell> pendingMap;
         int discovery = 0, mapActions = 0;
+        int mapActionMax = 0, mapActionTime = 0, battleReprieve = 0;
+        bool hideMap = false;
+        sfs::SFSObjectWrapper gameVars;
+        std::shared_ptr<sfs::SFSArrayWrapper> treasureMaps;
         float diveFraction = 0;
         float daringFraction = 0;
         void accept(const sfs::Message&);
@@ -83,7 +87,6 @@ namespace rp {
         bool canAdvanceDaring() const;
         double daringProgress() const;
         void tick(float dt);
-        void demo();
         std::string summary() const;
         std::string catalog() const;
     };

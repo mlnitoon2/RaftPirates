@@ -1,3 +1,4 @@
+#include "PlayerFixture.h"
 #include "rp/Game.h"
 #include "rp/PortView.h"
 #include <iostream>
@@ -76,7 +77,7 @@ int main() {
         sfs::Bytes frame{0xa0, uint8_t(n >> 8), uint8_t(n)};
         frame.insert(frame.end(), zip.begin(), zip.end());
         CHECK(sfs::decodePacket(frame).payload.getInt("id") == -42);
-        g.demo();
+        loadPlayerFixture(g);
         auto& raft = g.rafts.front();
         auto& part = raft.components.front();
         CHECK(part.GetGridObjectID() == part.type && part.GetUserObjectID() == part.id &&
@@ -219,7 +220,7 @@ int main() {
         health.state = 2;
         CHECK(health.Destroyed());
         rp::Game moveGame;
-        moveGame.demo();
+        loadPlayerFixture(moveGame);
         CHECK(moveGame.canPlaceComponent(2, 1, 0, 0, 1, 1));
         CHECK(!moveGame.canPlaceComponent(2, 1, 1, 3, 1, 1));
         auto moveRequest = moveGame.moveComponent(1, 1, 1, 0, 0);

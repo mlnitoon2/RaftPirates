@@ -71,7 +71,7 @@ namespace rp {
     Message Game::login(const std::string& id, const std::string& hash) const {
         O o, p;
         p.put("client_version", "1.0.4");
-        p.put("last_updated", int64_t(0));
+        p.put("last_updated", libraryTimestamp);
         p.put("language", int32_t(0));
         o.put("zn", "RaftPirates");
         o.put("un", id);
@@ -184,6 +184,8 @@ namespace rp {
                 throw std::runtime_error("Incomplete gs_player snapshot");
             initWithSFSObject(*o);
             zone = num(p, "zone_id", 1);
+            if (auto map = p.getString("map_name"); !map.empty())
+                zoneMaps[zone] = std::move(map);
             mapX = std::clamp(num(p, "map_x"), -95, 95);
             mapY = std::clamp(num(p, "map_y"), -95, 95);
             setSafe(num(p, "safe", 1) != 0);
@@ -199,7 +201,7 @@ namespace rp {
             ready = true;
             pending.reset();
             pendingMove.reset();
-        } else if (cmd == "zonestatus") {
+        } else if (cmd == "zonestatus" || cmd == "zone_status") {
             badZone = num(p, "bad") != 0;
         } else if (cmd == "gs_quest") {
             questCount = 0;
@@ -234,7 +236,8 @@ namespace rp {
             if (q != quests.end())
                 q->second.setProgressPercentage(num(p, "progress", q->second.progress));
         } else if (cmd == "gs_ocean") {
-            setSafe(p.getBool("safe_water", safe));
+            setSafe(num(p, "safe_water", safe) != 0);
+            hideMap = p.getBool("hidemap", false);
             if (pendingMap || p.get("map_x") || p.get("map_y")) {
                 mapX = std::clamp(num(p, "map_x", pendingMap ? pendingMap->x : mapX), -95, 95);
                 mapY = std::clamp(num(p, "map_y", pendingMap ? pendingMap->y : mapY), -95, 95);
@@ -362,8 +365,16 @@ namespace rp {
             }
         } else if (cmd == "build_limit_update")
             buildLimit = num(p, "build_limit_left", buildLimit);
-        else if (cmd == "gs_mapactionstate")
+        else if (cmd == "gs_mapactionstate") {
             mapActions = num(p, "count", mapActions);
+            mapActionMax = num(p, "maxcount", mapActionMax);
+            mapActionTime = num(p, "time", mapActionTime);
+        } else if (cmd == "game_vars")
+            gameVars = p;
+        else if (cmd == "treasuremaps")
+            treasureMaps = p.getSFSArray("treasuremaps");
+        else if (cmd == "battle_reprieve")
+            battleReprieve = std::max(0, num(p, "time_left"));
         else if (cmd == "discovery_goto_result") {
             if (num(p, "success"))
                 discovery = num(p, "discoveryid", pendingDiscovery.value_or(0));
@@ -384,8 +395,7 @@ namespace rp {
     }
 
     std::optional<sfs::Message> Game::pingSonar() {
-        if (!ready || localPlay || sonarPending ||
-            onlineBattle.phase() != BattleModeState::Phase::Idle)
+        if (!ready || sonarPending || onlineBattle.phase() != BattleModeState::Phase::Idle)
             return {};
         sonarPending = true;
         return request("ping_sonar");
@@ -600,37 +610,6 @@ namespace rp {
             for (auto& component : raft.components)
                 if (component.Building())
                     component.TempTick(dt);
-    }
-
-    void Game::demo() {
-        *this = Game{};
-        objects[1] = {1, 0, 1000, "CoreRaft", "gfx/rafts/raft_core.png", -192, 0, {{0, 0}}};
-        objects[2] = {2, 1, 1000,    "boom_buddha", "xml_bin/anim_boom_buddha_robot.bin",
-                      0, 0, {{0, 0}}};
-        objects[3] = {3, 1, 1000, "DivingUnit", "xml_bin/anim_core_dive_unit.bin", 0, 0, {{0, 0}}};
-        objects[4] = {4,
-                      1,
-                      1000,
-                      "pain_sprinkler",
-                      "xml_bin/anim_pain_sprinkler_front.bin",
-                      0,
-                      0,
-                      {{0, 1}, {1, 0}, {1, 1}, {1, 2}, {2, 1}}};
-        blueprints[1] = {1, 4, 1, "Pain Sprinkler"};
-        owned.insert(1);
-        rafts.push_back(
-            {1, 1, 0, 0, 1000, 0, {{1, 2, 4, 1, 1000, 0, 0}, {2, 3, 1, 3, 1000, 0, 0}}});
-        playerName = "Offline demo";
-        materials[4] = 99999;
-        materialNames[4] = "Gold";
-        zones[1] = "Sailor's Sea";
-        zoneMaps[1] = "xml_resources/maps/map_sailers_sea.tmx";
-        mapX = 9;
-        mapY = 21;
-        daring = 1;
-        buildLimit = 100;
-        ready = true;
-        status = "Offline preview (not connected)";
     }
 
     std::string Game::summary() const {

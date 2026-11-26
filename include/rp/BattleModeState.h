@@ -11,29 +11,9 @@ namespace rp {
     class BattleModeState {
       public:
         BattleModeState() = default;
-        explicit BattleModeState(Game& game);
         ~BattleModeState();
         const char* GetStateName() const;
         std::optional<sfs::Message> gotMsgAttackRequest(int dice);
-        bool active() const;
-        bool won() const;
-        bool lost() const;
-        int enemyBP() const;
-        int enemyMaxBP() const;
-        int playerHullBP() const;
-        float remaining() const;
-        void ToPositioningView();
-        void RaftSelect(int id);
-        bool SendRaftSelection();
-        void ToBattleView();
-        void StartWaiting(float seconds);
-        void StopWaiting();
-        void Pause();
-        void tick(float dt);
-        bool gotMsgAttackRequest();
-        int endBattleAndPlunder();
-        void gotMsgExitBattleModeRequest();
-
         enum class Phase { Idle, Encounter, Starting, Positioning, Fighting, Over, Desynced };
 
         Phase phase() const {
@@ -121,10 +101,5 @@ namespace rp {
         sfs::SFSObjectWrapper lastResult_;
         std::optional<sfs::Message> action(const std::string& command,
                                            sfs::SFSObjectWrapper data = {}, bool withSync = true);
-
-        Game* game_ = nullptr;
-        int raftId_ = 0, enemy_ = 1800, maxEnemy_ = 1800;
-        float wait_ = 0;
-        bool active_ = false, won_ = false, lost_ = false, paid_ = false, paused_ = false;
     };
 } // namespace rp

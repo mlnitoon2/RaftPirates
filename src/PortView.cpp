@@ -138,6 +138,17 @@ namespace rp {
     PortView::PortView(std::filesystem::path root)
         : root_(std::move(root)), ocean_(root_), opponentOcean_(root_), touchControls_(&ocean_),
           loader_(root_) {
+        try {
+            panelFont_ = ResourceSpriteFont::Create(root_, "rp_font_title");
+            auto background =
+                std::make_shared<Image>(loadAssetImage(root_ / "gfx/menu/popup_bg.png"));
+            panelBackground_ = std::make_unique<GfxBox>(background, 16, 16, 16, 16);
+            panelBackground_->SetPos(14, 36);
+            panelBackground_->setBoxWidth(612);
+            panelBackground_->setBoxHeight(302);
+        } catch (const std::exception&) {
+            // Optional original resources may be absent in headless tests.
+        }
         if (loader_.resourceExists("xml_bin/game_manifest.bin", "")) {
             loader_.addManifest("xml_bin/game_manifest.bin");
             loader_.start();
@@ -164,8 +175,6 @@ namespace rp {
         loader_.update(dt);
         touchControls_.tick(dt);
         mapView_.tick(dt);
-        if (battle_)
-            battle_->tick(dt);
         if (discovery_)
             discovery_->tick(dt);
         if (diving_)
@@ -173,7 +182,7 @@ namespace rp {
     }
 
     void PortView::touchDown(float x, float y) {
-        oceanGesture_ = !onlineBattleActive_ && !diving_ && !battle_ && !discovery_ && !map &&
+        oceanGesture_ = !onlineBattleActive_ && !diving_ && !discovery_ && !map &&
                         panel_ == Panel::None && y > 75 && y < 290;
         if (diving_)
             diving_->touchDown({x, y});
@@ -192,7 +201,7 @@ namespace rp {
         Image out(640, 400, {36, 133, 168, 255});
         using Phase = BattleModeState::Phase;
         const auto& net = g.onlineBattle;
-        onlineBattleActive_ = !g.localPlay && net.phase() != Phase::Idle;
+        onlineBattleActive_ = net.phase() != Phase::Idle;
         if (!onlineBattleActive_)
             battleScreen_.reset();
         if (onlineBattleActive_) {
@@ -258,29 +267,6 @@ namespace rp {
                 text(out, 24, 365, "WAITING FOR OPPONENT", 2);
             return out;
         }
-        if (battle_ && !g.localPlay)
-            battle_.reset();
-        if (battle_) {
-            out = ocean_.render(g, time, false);
-            rect(out, 12, 12, 616, 62, {15, 38, 54, 255});
-            text(out, 24, 20, "PRACTICE BATTLE", 2);
-            text(out, 24, 45,
-                 "ENEMY BP " + std::to_string(battle_->enemyBP()) + "  HULL BP " +
-                     std::to_string(battle_->playerHullBP()),
-                 1);
-            rect(out, 320, 44, 280, 12, {70, 38, 38, 255});
-            rect(out, 320, 44, 280 * battle_->enemyBP() / battle_->enemyMaxBP(), 12,
-                 {210, 90, 65, 255});
-            rect(out, 0, 342, 640, 58, {15, 38, 54, 255});
-            text(out, 24, 365,
-                 battle_->won()             ? "VICTORY - COLLECT GOLD"
-                 : battle_->lost()          ? "DEFEAT"
-                 : battle_->remaining() > 0 ? "RELOADING"
-                                            : "ATTACK",
-                 2);
-            text(out, 500, 365, "LEAVE", 2);
-            return out;
-        }
         if (!g.discovery)
             discovery_.reset();
         if (g.discovery && !discovery_)
@@ -315,6 +301,8 @@ namespace rp {
             return out;
         }
 
+        if (g.hideMap)
+            map = false;
         if (!map) {
             mapView_.hideMap();
             out = ocean_.render(g, time, grid);
@@ -419,13 +407,9 @@ namespace rp {
             rect(out, 210, 356, 220, 42, {29, 57, 74, 255});
             text(out, 222, 370, g.diveSeconds > 0 ? "DIVING" : "DIVE", 1);
             text(out, 334, 370, "COLLECT", 1);
-            if (!g.localPlay && g.ready && !map) {
+            if (g.ready && !map) {
                 rect(out, 450, 300, 175, 34, {29, 57, 74, 255});
                 text(out, 460, 312, g.sonarPending ? "SONAR WAITING" : "PING SONAR", 1);
-            }
-            if (g.localPlay && !g.safe && g.mainRaft() && !g.mainRaft()->Destroyed()) {
-                rect(out, 450, 300, 175, 34, {29, 57, 74, 255});
-                text(out, 460, 312, "PRACTICE BATTLE", 1);
             }
             if (grid)
                 text(out, 150, 65,
@@ -436,7 +420,7 @@ namespace rp {
             return out;
         }
         rect(out, 0, 0, 640, 32, {15, 38, 54, 255});
-        text(out, 6, 4, "HYDRALEGACY RP PORT - " + status, 1);
+        text(out, 6, 4, g.playerName, 1);
         text(out, 6, 18,
              "ZONE " + std::to_string(g.zone) + " DARING " + std::to_string(g.daring) + " DIVE " +
                  std::to_string(g.diveSeconds) + "S",
@@ -474,7 +458,7 @@ namespace rp {
             return {};
         using Phase = BattleModeState::Phase;
         auto& net = g.onlineBattle;
-        if (!g.localPlay && net.phase() != Phase::Idle) {
+        if (net.phase() != Phase::Idle) {
             if (battleScreen_)
                 return battleScreen_->Select(g, x, y);
             if (net.waiting())
@@ -524,21 +508,6 @@ namespace rp {
                 return net.retreat();
             return {};
         }
-        if (battle_) {
-            if (y >= 342) {
-                if (x >= 470) {
-                    battle_->gotMsgExitBattleModeRequest();
-                    battle_.reset();
-                } else if (battle_->won()) {
-                    battle_->endBattleAndPlunder();
-                    battle_.reset();
-                } else if (battle_->lost()) {
-                    battle_.reset();
-                } else
-                    battle_->gotMsgAttackRequest();
-            }
-            return {};
-        }
         if (discovery_) {
             if (y >= 342) {
                 discovery_->LeaveDiscovery(g);
@@ -555,15 +524,8 @@ namespace rp {
             return {};
         }
         if (hudEnabled(g)) {
-            if (!g.localPlay && !map && x >= 450 && y >= 300 && y < 334)
+            if (!map && x >= 450 && y >= 300 && y < 334)
                 return g.pingSonar();
-            if (g.localPlay && x >= 450 && y >= 300 && y < 334 && g.mainRaft() &&
-                !g.mainRaft()->Destroyed() && !g.safe) {
-                battle_ = std::make_unique<BattleModeState>(g);
-                battle_->RaftSelect(g.mainRaft()->id);
-                battle_->ToBattleView();
-                return {};
-            }
             hud_->update(g);
             auto action = hud_->touch(x, y);
             switch (action) {
@@ -589,7 +551,7 @@ namespace rp {
                 page_ = 0;
                 return {};
             case Hud::Action::Map:
-                map = true;
+                map = !g.hideMap;
                 return {};
             case Hud::Action::None:
                 break;
@@ -616,7 +578,7 @@ namespace rp {
                 return {};
             case 2:
                 panel_ = Panel::None;
-                map = !map;
+                map = !g.hideMap && !map;
                 return {};
             case 3:
                 diveStarted_ = true;
@@ -735,7 +697,17 @@ namespace rp {
             for (auto& [id, name] : game.zones)
                 result.push_back({id, "ZONE: " + name});
             for (const auto& [id, name] : game.discoveries)
-                if (id > 0 && (game.localPlay || game.knownDiscoveries == std::to_string(id)))
+                if (id > 0 && ([&] {
+                        std::istringstream ids(game.knownDiscoveries);
+                        int known;
+                        while (ids >> known) {
+                            if (known == id)
+                                return true;
+                            if (ids.peek() == ',' || ids.peek() == ';')
+                                ids.ignore();
+                        }
+                        return false;
+                    })())
                     result.push_back({-id, "DISCOVERY: " + name});
             return result;
         }
@@ -804,47 +776,64 @@ namespace rp {
 
     void PortView::renderPanel(Image& image, const Game& game) {
         rect(image, 14, 36, 612, 302, {15, 38, 54, 255});
+        if (panelBackground_) {
+            GfxManager gfx;
+            panelBackground_->submit(gfx);
+            gfx.RenderScreen(image);
+        }
+        auto label = [&](Image& target, int x, int y, const std::string& value, int size) {
+            if (!panelFont_) {
+                text(target, x, y, value, size);
+                return;
+            }
+            GfxManager gfx;
+            const float scale = size == 2 ? .70f : .48f;
+            auto layout =
+                panelFont_->layout(value, scale, float(std::max(1, 620 - x)), false, true);
+            panelFont_->submit(gfx, layout, float(x), float(y) - 2, {255, 244, 194, 255});
+            gfx.RenderScreen(target);
+        };
         if (panel_ == Panel::Quest || panel_ == Panel::Safety || panel_ == Panel::Daring) {
             std::string title = panel_ == Panel::Quest    ? "QUESTS"
                                 : panel_ == Panel::Safety ? "OCEAN SAFETY"
                                                           : "DARING";
-            text(image, 25, 52, title, 2);
+            label(image, 25, 52, title, 2);
             if (panel_ == Panel::Quest) {
                 auto ids = RPMenuHandler(game).gotMsgQuestInformationRequest();
                 auto selected = game.quests.find(selectedQuest_);
                 if (selected != game.quests.end()) {
-                    text(image, 25, 90, selected->second.name.substr(0, 85), 1);
-                    text(image, 25, 122,
-                         "PROGRESS: " + std::to_string(selected->second.progress) + "%", 1);
+                    label(image, 25, 90, selected->second.name.substr(0, 85), 1);
+                    label(image, 25, 122,
+                          "PROGRESS: " + std::to_string(selected->second.progress) + "%", 1);
                     const auto& description = selected->second.description;
                     for (size_t i = 0; i < description.size() && i < 450; i += 85)
-                        text(image, 25, 150 + int(i / 85) * 18, description.substr(i, 85), 1);
-                    text(image, 25, 265, "TAP TO RETURN TO QUESTS", 1);
+                        label(image, 25, 150 + int(i / 85) * 18, description.substr(i, 85), 1);
+                    label(image, 25, 265, "TAP TO RETURN TO QUESTS", 1);
                 } else {
                     for (size_t i = 0; i < 6 && i + page_ * 6 < ids.size(); ++i) {
                         const auto& q = game.quests.at(ids[i + page_ * 6]);
-                        text(image, 25, 90 + int(i) * 29,
-                             (q.unread ? "NEW: " : "") + q.name.substr(0, 65) + " " +
-                                 std::to_string(q.progress) + "%",
-                             1);
+                        label(image, 25, 90 + int(i) * 29,
+                              (q.unread ? "NEW: " : "") + q.name.substr(0, 65) + " " +
+                                  std::to_string(q.progress) + "%",
+                              1);
                     }
                     if (ids.empty())
-                        text(image, 25, 90, "NO QUESTS", 1);
-                    text(image, 25, 275, "PREV", 1);
-                    text(image, 560, 275, "NEXT", 1);
+                        label(image, 25, 90, "NO QUESTS", 1);
+                    label(image, 25, 275, "PREV", 1);
+                    label(image, 560, 275, "NEXT", 1);
                 }
             }
             if (panel_ == Panel::Safety)
-                text(image, 25, 90,
-                     game.badZone ? "LOW WATER"
-                     : game.safe  ? "SAFE WATER"
-                                  : "PIRATE WATER",
-                     2);
+                label(image, 25, 90,
+                      game.badZone ? "LOW WATER"
+                      : game.safe  ? "SAFE WATER"
+                                   : "PIRATE WATER",
+                      2);
             if (panel_ == Panel::Daring) {
-                text(image, 25, 90, "LEVEL " + std::to_string(game.daring), 2);
-                text(image, 25, 125, "REMAINING " + std::to_string(game.daringRemaining) + "S", 2);
+                label(image, 25, 90, "LEVEL " + std::to_string(game.daring), 2);
+                label(image, 25, 125, "REMAINING " + std::to_string(game.daringRemaining) + "S", 2);
             }
-            text(image, 25, 306, "TAP TO CLOSE", 1);
+            label(image, 25, 306, "TAP TO CLOSE", 1);
             return;
         }
         const char* names[] = {"BUILD", "SHOP", "INVENTORY", "TRAVEL"};
@@ -852,7 +841,7 @@ namespace rp {
         for (int i = 0; i < 4; ++i) {
             rect(image, 20 + 150 * i, 42, 145, 28,
                  panel_ == panels[i] ? Color{51, 115, 112, 255} : Color{29, 57, 74, 255});
-            text(image, 30 + 150 * i, 52, names[i], 1);
+            label(image, 30 + 150 * i, 52, names[i], 1);
         }
         auto rows = panel_ == Panel::Shop        ? shopRows(game)
                     : panel_ == Panel::Travel    ? travelRows(game)
@@ -868,21 +857,25 @@ namespace rp {
             } else if (panel_ == Panel::Build) {
                 const auto& item = game.blueprints.at(row.id);
                 icon = renderItemIcon(image, item.sheet, item.image, 26, 78 + int(i) * 34);
+            } else if (panel_ == Panel::Inventory) {
+                if (const auto* material = game.materialDB.getMaterialInfo(unsigned(row.id)))
+                    icon = renderItemIcon(image, material->sheet, material->image, 26,
+                                          78 + int(i) * 34);
             }
-            text(image, icon ? 60 : 28, 87 + int(i) * 34, row.label, 1);
+            label(image, icon ? 60 : 28, 87 + int(i) * 34, row.label, 1);
         }
         if (rows.empty())
-            text(image, 28, 90, "NO ITEMS", 1);
-        text(image, 25, 290, "PREV", 1);
-        text(image, 560, 290, "NEXT", 1);
-        text(image, 270, 290, "PAGE " + std::to_string(page_ + 1), 1);
+            label(image, 28, 90, "NO ITEMS", 1);
+        label(image, 25, 290, "PREV", 1);
+        label(image, 560, 290, "NEXT", 1);
+        label(image, 270, 290, "PAGE " + std::to_string(page_ + 1), 1);
         if (panel_ == Panel::Build) {
-            text(image, 25, 316, "SELECT PART", 1);
+            label(image, 25, 316, "SELECT PART", 1);
             if (selectedComponent_) {
-                text(image, 220, 316, "MOVE", 1);
-                text(image, 390, 316, "REMOVE", 1);
-                text(image, 470, 316, "REPAIR", 1);
-                text(image, 550, 316, "CLOCK", 1);
+                label(image, 220, 316, "MOVE", 1);
+                label(image, 390, 316, "REMOVE", 1);
+                label(image, 470, 316, "REPAIR", 1);
+                label(image, 550, 316, "CLOCK", 1);
             }
         }
     }

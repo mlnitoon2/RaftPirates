@@ -1,3 +1,4 @@
+#include "PlayerFixture.h"
 #include "rp/Hud.h"
 #include "rp/PortView.h"
 #include <iostream>
@@ -15,7 +16,7 @@ int main(int argc, char** argv) {
     }
     try {
         rp::Game g;
-        g.demo();
+        loadPlayerFixture(g);
         g.daring = 4;
         g.daringTotal = 120;
         g.daringRemaining = 60;

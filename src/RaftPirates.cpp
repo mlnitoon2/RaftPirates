@@ -2,12 +2,19 @@
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
-
-bool isCheatEnabled() {
-    return false;
-}
+#include <array>
+#include <fstream>
+#include "sys/File.h"
 
 namespace rp {
+    namespace {
+        constexpr std::array<const char*, 10> libraryCommands{
+            "lib_quest_type_data", "lib_mat_data",         "lib_bp_data",
+            "lib_go_data",         "lib_zone_data",        "lib_discovery_data",
+            "lib_store_cur_data",  "lib_store_group_data", "lib_store_item_data",
+            "lib_timestamp"};
+    }
+
     RaftPirates::RaftPirates() = default;
     RaftPirates::~RaftPirates() = default;
 
@@ -18,6 +25,9 @@ namespace rp {
         queued_.clear();
         adminMessage_.clear();
         load_ = 0;
+        libraryPackets_ = {};
+        libraryFile_.clear();
+        librarySource_.clear();
     }
 
     void RaftPirates::DoConnect() {
@@ -95,7 +105,74 @@ namespace rp {
             queued_.push_back(Game::request(command, data));
             return;
         }
+        processExtension(command, data);
+    }
+
+    void RaftPirates::processExtension(const std::string& command,
+                                       const sfs::SFSObjectWrapper& data) {
         extension(command, data);
+        if (std::find(libraryCommands.begin(), libraryCommands.end(), command) !=
+            libraryCommands.end())
+            libraryPackets_.put(command, std::make_shared<sfs::SFSObjectWrapper>(data));
+    }
+
+    void RaftPirates::loadStaticLibraries(const std::filesystem::path& file,
+                                          const std::string& source) {
+        libraryFile_ = file;
+        librarySource_ = source;
+        std::error_code ec;
+        auto size = std::filesystem::file_size(file, ec);
+        if (ec || size > sfs::maxPacket)
+            return;
+        auto cache = sfs::decodeObject(sys::File::readAll(file));
+        if (cache.getString("source") != source || cache.getInt("version") != 1)
+            return;
+        auto timestamp = cache.getLong("timestamp");
+        if (timestamp <= 0)
+            return;
+        Game restored;
+        for (const auto* command : libraryCommands) {
+            auto packet = cache.getSFSObj(command);
+            if (!packet)
+                return;
+            restored.extension(command, *packet);
+        }
+        restored.libraryTimestamp = timestamp;
+        static_cast<Game&>(*this) = std::move(restored);
+        // A complete cache is advertised to the server. Only a complete new snapshot replaces it.
+    }
+
+    void RaftPirates::saveStaticLibraries() const {
+        if (libraryFile_.empty() || librarySource_.empty())
+            return;
+        auto time = libraryPackets_.getSFSObj("lib_timestamp");
+        if (!time)
+            return;
+        auto timestamp = time->getLong("timestamp");
+        if (timestamp <= 0)
+            return;
+        sfs::SFSObjectWrapper cache;
+        cache.put("source", librarySource_);
+        cache.put("version", int32_t(1));
+        cache.put("timestamp", timestamp);
+        for (const auto* command : libraryCommands) {
+            auto packet = libraryPackets_.getSFSObj(command);
+            if (!packet)
+                return;
+            cache.put(command, packet);
+        }
+        auto data = sfs::encodeObject(cache);
+        if (data.size() > sfs::maxPacket)
+            return;
+        auto tmp = libraryFile_;
+        tmp += ".tmp";
+        std::ofstream output(tmp, std::ios::binary | std::ios::trunc);
+        if (!output.write(reinterpret_cast<const char*>(data.data()), data.size()))
+            throw std::runtime_error("Could not write static library cache");
+        output.close();
+        if (!output)
+            throw std::runtime_error("Could not finish static library cache");
+        std::filesystem::rename(tmp, libraryFile_);
     }
 
     void RaftPirates::setNetworkMsgProcessingEnabled(bool enabled) {
@@ -104,7 +181,9 @@ namespace rp {
             auto packet = std::move(queued_.front());
             queued_.pop_front();
             try {
-                accept(packet);
+                auto data = packet.payload.getSFSObj("p");
+                if (data)
+                    processExtension(packet.payload.getString("c"), *data);
             } catch (const std::exception& ex) {
                 const auto command = packet.payload.getString("c");
                 if (command == "gs_player")

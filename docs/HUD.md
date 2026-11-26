@@ -29,7 +29,7 @@ ctest --test-dir build --output-on-failure
 
 The optional `raftpirates_original_hud` test loads the real menu files and verifies all supported HUD actions, including the resulting SFS commands. The JNI smoke test covers the startup-to-login transition, the HUD quest request and a diving request with mock Java callbacks. The native Android runtime and a real private server have not been tested.
 
-To render an offline preview:
+To render the title-screen preview:
 
 ```sh
 ./build/raftpirates_preview /path/to/assets preview.png

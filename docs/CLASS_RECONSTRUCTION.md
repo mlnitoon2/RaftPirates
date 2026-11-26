@@ -35,7 +35,7 @@ The original DEX contains `HydraGame.playMusic(String)`, `pauseMusic()`, `resume
 
 ## Ocean and encounter states
 
-The original OceanView instructions (0x4705d0–0x470730) establish the isometric axes with 192 and 96 units and corresponding view conversion. The renderer and selection path share the reconstructed transform. BattleModeState implements a local practice loop using the recovered Raft::HandleBattleOutcome fields. DiscoveryModeState uses the original Barnacle Bill animation with the recovered discovery navigation state. Combat timing, enemy balance, local reward and discovery presentation are not instruction-equivalent original implementations.
+The original OceanView instructions (0x4705d0–0x470730) establish the isometric axes with 192 and 96 units and corresponding view conversion. The renderer and selection path share the reconstructed transform. BattleModeState applies server-authoritative battle outcomes using the recovered Raft::HandleBattleOutcome fields. DiscoveryModeState uses the original Barnacle Bill animation with the recovered discovery navigation state. Combat timing, enemy behavior and discovery presentation are not instruction-equivalent original implementations.
 
 ## Catalogue, map and loading helpers
 

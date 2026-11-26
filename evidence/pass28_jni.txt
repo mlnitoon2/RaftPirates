@@ -1,0 +1,19 @@
+HydraLegacy: APK assets extracted: 710
+HydraLegacy: Raft Pirates startup: title initialized; property endpoint configured
+HydraLegacy: Raft Pirates startup: title presented
+HydraLegacy: NET: lib_go_data
+HydraLegacy: NET: gs_player
+HydraLegacy: NET: gs_ocean
+HydraLegacy: Ocean received while awaiting player snapshot or login event
+HydraLegacy: SmartFox SDK confirms login; recovering missing native login event
+HydraLegacy: SmartFox login accepted; queued extensions processed
+HydraLegacy: Player snapshot accepted
+HydraLegacy: Player ready: starting loading outro
+HydraLegacy: Loading outro complete: entering gameplay
+HydraLegacy: Received server administration message
+HydraLegacy: Raft Pirates startup: title initialized; property endpoint configured
+HydraLegacy: Raft Pirates startup: title presented
+HydraLegacy: Resuming saved login session
+Original JNI mock lifecycle, login, SFS response and request passed
+In-process URL fixture: original properties endpoint, URL encoding, saved login and BBB handoff passed
+94 JNI declarations matched exported names
