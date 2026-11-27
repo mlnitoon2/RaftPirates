@@ -77,6 +77,9 @@ add_library(raftpirates_game STATIC
     src/LoadingManager.cpp
     src/Loader.cpp
     src/LoaderImage.cpp
+    src/LoaderAEAnim.cpp
+    src/LoaderSpriteSheet.cpp
+    src/LoaderXml.cpp
     src/LoaderMenu.cpp
     src/LoaderManifest.cpp
 )

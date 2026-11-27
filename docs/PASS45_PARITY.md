@@ -20,3 +20,7 @@ Static original ARM32 library comparison; no emulator differential.
 | Original tabbed_menu_misc.xml | gotStoreItemInfo sets Layer=HUD, instantiates TabbedMenuItem and initializes it | Layer corrected; original Lua dispatch remains intercepted |
 
 Coverage represents source names, not fully verified original behavior. The 47-name reduction includes partial adapters and reclassified existing methods. Do not interpret as 47 exact methods or 84% game completion.
+
+## Pass 46 static checks
+
+- 0x243174/0x243190/0x2431e4 return static identifiers AE/SS/XMLDATA. 0x243288 returns true. 0x2434b8, 0x24352c, 0x2435a0 call XML, atlas and AE creation respectively. 0x24f700 reads AE dependencies; 0x250320 reads the atlas image. Host preparation uses the existing parsers instead of duplicating the original binary reader.

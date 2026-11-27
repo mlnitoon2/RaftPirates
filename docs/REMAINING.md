@@ -120,9 +120,13 @@ Names newly implemented in source are listed here and removed from the provision
 - Account/social/store: original saved login migration, account management, Facebook/social integration, currency purchases, notifications.
 - Server: validation, full multiplayer and boss extensions and persistence require a compatible backend. No live Android or multiplayer validation has been performed.
 
+## Pass 46 resource loaders
+
+- Three resource loaders now use native type strings AE, SS and XMLDATA, and delegate to the existing resource cache. AE and sheet preparation enqueue image dependencies; native dependency ordering and asset fallback remain unverified. XML preparation returns true. This is a 15-name provisional source addition, not compiled coverage.
+
 ## Remaining method names by class (provisional source review)
 
-502 names from the Pass 33 inventory now have named source implementations through Pass 45 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+517 names from the Pass 33 inventory now have named source implementations through Pass 46 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (20)
 
@@ -211,18 +215,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::GfxBattleScreen` (5)
 
 `AddAccessory`, `SetObjectMute`, `SetObjectVisible`, `SetPlayerRaft`, `SetPlayerRaftsVisible`
-
-### `rp::LoaderAEAnim` (5)
-
-`getId`, `getType`, `load`, `prepare`, `~LoaderAEAnim`
-
-### `rp::LoaderSpriteSheet` (5)
-
-`getId`, `getType`, `load`, `prepare`, `~LoaderSpriteSheet`
-
-### `rp::LoaderXml` (5)
-
-`getId`, `getType`, `load`, `prepare`, `~LoaderXml`
 
 ### `rp::RaftAttackSprite` (5)
 

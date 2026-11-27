@@ -45,6 +45,9 @@ namespace rp {
         std::shared_ptr<sys::gfx::ResourceSpriteSheet> sheet(const std::string& path);
 
       private:
+        friend class LoaderAEAnim;
+        friend class LoaderSpriteSheet;
+        friend class LoaderXml;
         friend class LoaderImage;
         friend class LoaderMenu;
         friend class LoaderManifest;

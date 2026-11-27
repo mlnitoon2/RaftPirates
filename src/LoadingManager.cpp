@@ -1,5 +1,8 @@
 #include "rp/LoadingManager.h"
 #include "rp/LoaderImage.h"
+#include "rp/LoaderAEAnim.h"
+#include "rp/LoaderSpriteSheet.h"
+#include "rp/LoaderXml.h"
 #include "rp/LoaderMenu.h"
 #include "rp/LoaderManifest.h"
 #include "sys/gfx/AssetImage.h"
@@ -172,18 +175,16 @@ namespace rp {
                 LoaderImage(job.path).load(*this);
                 break;
             case Kind::Animation:
-                cache_.acquire<sys::res::ResourceAEAnim>(
-                    job.path, [&] { return sys::res::ResourceAEAnim::Create(checked(job.path)); });
+                { LoaderAEAnim loader(job.path); if (loader.prepare(this)) loader.load(*this); }
                 break;
             case Kind::Sheet:
-                sheet(job.path);
+                { LoaderSpriteSheet loader(job.path); if (loader.prepare(this)) loader.load(*this); }
                 break;
             case Kind::Menu:
                 LoaderMenu(job.path).prepare(this);
                 break;
             case Kind::Xml:
-                cache_.acquire<sys::res::XmlNode>(
-                    job.path, [&] { return sys::res::loadXML(checked(job.path)); });
+                { LoaderXml loader(job.path); if (loader.prepare(this)) loader.load(*this); }
                 break;
             case Kind::Manifest:
                 LoaderManifest(job.path).prepare(this);
