@@ -21,7 +21,8 @@ namespace rp {
             Salvage,
             Clock,
             Build,
-            Cancel
+            Cancel,
+            Admin
         };
         void setSelectedActions(const std::vector<std::string>& actions, int clocks);
         explicit Hud(const std::filesystem::path& assets);

@@ -385,7 +385,7 @@ namespace sys::platform::game {
                 platform.log(std::string("Could not load properties.xml: ") + ex.what());
             }
             rt.authEndpoint = endpoint(properties.GetProperty("SERVER_IP"));
-            rt.admin = properties.GetPropertyAsBool("admin", false);
+            rt.admin = true; // Development reconstruction: expose local debug UI.
             rt.game.initialize();
             rt.engine.InitEngine(0);
             rt.engine.SetupOpenGl(rt.width, rt.height, 640, 400);

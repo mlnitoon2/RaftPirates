@@ -89,7 +89,8 @@ namespace rp {
             QuestDetail,
             Safety,
             Daring,
-            Confirm
+            Confirm,
+            Admin
         };
         Panel panel_ = Panel::None;
         size_t page_ = 0;

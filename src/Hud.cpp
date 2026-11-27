@@ -1,4 +1,5 @@
 #include "rp/Hud.h"
+extern bool isCheatEnabled();
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
@@ -33,7 +34,7 @@ namespace rp {
             if (auto id = menu_.find(1, name, true))
                 menu_.node(id).set("visible", false);
         }
-        for (const auto& name : {"CheatMenu", "LowWater"})
+        for (const auto& name : {"LowWater"})
             show(name, false);
         // Apply the original onPostInit offsets using the actual atlas bounds.
         auto offset = [&](const char* name, double x, double y) {
@@ -119,6 +120,8 @@ namespace rp {
             std::string sprite;
             if (ownerName == "QuestMenu")
                 sprite = n.name == "IsNew" ? "notification_new" : "btn_challenges";
+            else if (ownerName == "CheatMenu")
+                sprite = "THE_BIG_BLUE";
             else if (ownerName == "SafeFlag")
                 sprite = "notification_safe_timer";
             else if (ownerName == "BadZoneFlag" || ownerName == "LowWater")
@@ -166,6 +169,8 @@ namespace rp {
                 action_ = Action::Daring;
             else if (ownerName == "EventNotification")
                 action_ = Action::ToggleView;
+            else if (ownerName == "CheatMenu")
+                action_ = Action::Admin;
             else if (ownerName == "MainMenu")
                 action_ = Action::Shop;
             else if (ownerName == "PirateMap")
@@ -237,6 +242,7 @@ namespace rp {
     }
 
     void Hud::update(const Game& game) {
+        show("CheatMenu", isCheatEnabled());
         show("SafeFlag", game.safe && !game.badZone);
         show("BadZoneFlag", game.badZone);
         auto set = [&](const char* owner, const char* component, const char* key, Property value) {

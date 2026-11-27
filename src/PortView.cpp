@@ -596,6 +596,10 @@ namespace rp {
             updateHud(g);
             auto action = hud_->touch(x, y);
             switch (action) {
+            case Hud::Action::Admin:
+                panel_ = Panel::Admin;
+                openXml(g, "cheatmenu");
+                return {};
             case Hud::Action::Quest:
                 panel_ = Panel::Quest;
                 selectedQuest_ = 0;
@@ -1154,6 +1158,45 @@ namespace rp {
                         if (hit)
                             m.node(hit).set("enabled", true);
                     }
+            } else if (name == "safe_flag_popup" || name == "hud_badzone_popup") {
+                m.setLayerOrder("PIRATE_MAP_HUD", 2);
+                m.setLayerOrder("SafetyText", 3);
+                if (auto popup = m.find(1, "PopupDialog", true)) {
+                    const float x = 100, y = 75, w = 440, h = 215;
+                    auto place = [&](unsigned id, float px, float py, float pw, float ph) {
+                        if (!id) return;
+                        auto& n = m.node(id);
+                        n.set("absoluteX", double(px));
+                        n.set("absoluteY", double(py));
+                        n.set("width", double(pw));
+                        n.set("height", double(ph));
+                    };
+                    place(popup, x, y, w, h);
+                    if (auto bg = m.find(popup, "bg")) {
+                        place(bg, x, y, w, h);
+                        auto sprite = m.find(bg, "Sprite");
+                        place(sprite, x, y, w, h);
+                        if (sprite) {
+                            m.node(sprite).set("includeBorder", false);
+                            m.node(sprite).set("priority", 3.0);
+                        }
+                    }
+                    for (auto name : {"Title", "TutorialText"}) {
+                        auto el = m.find(popup, name);
+                        auto t = el ? m.find(el, "Text") : 0;
+                        const bool title = std::string(name) == "Title";
+                        place(t, x + 20, y + (title ? 12 : 53), w - 40, title ? 36 : h - 70);
+                        if (t) {
+                            auto& n = m.node(t);
+                            n.set("layer", std::string("SafetyText"));
+                            n.set("multiline", !title);
+                            n.set("alignment", 1.0);
+                            n.set("clipText", true);
+                            n.set("autoScale", true);
+                        }
+                    }
+                    place(m.find(popup, "BackSprite"), x - 24, y - 24, 24, 24);
+                }
             } else if (name == "auto_safe_water_menu") {
                 for (const auto& entry : {std::make_pair("SafeDescrText", g.autoSafe),
                                           std::make_pair("UnsafeDescrText", !g.autoSafe)})
@@ -1242,6 +1285,8 @@ namespace rp {
                     const float dialogHeight = std::min(m.height(), 384.f);
                     const float visibleWidth = dialogWidth;
                     m.setLayerOrder("HUD", 2);
+                    m.setLayerOrder("QuestFrame", 8);
+                    m.setLayerOrder("QuestEntries", 9);
                     // Keep the visible quest-book page and its buttons inside the viewport.
                     m.node(dialog).set("absoluteX", 0.0);
                     m.node(dialog).set("width", double(dialogWidth));
@@ -1252,6 +1297,9 @@ namespace rp {
                     if (auto sprite = m.find(dialog, "DialogSprite")) {
                         auto& n = m.node(sprite);
                         n.set("hFlip", 1.0);
+                        n.set("layer", std::string("QuestFrame"));
+                        n.set("useOffsets", false);
+                        n.set("visible", true);
                         n.set("absoluteX", 0.0);
                         n.set("absoluteY",
                               double(std::max(0.f, (m.height() - dialogHeight) * .5f)));
@@ -1262,7 +1310,7 @@ namespace rp {
                         m.node(children).set("width",
                                              double(dialogWidth));
                         m.node(children).set("absoluteX", 0.0);
-                        m.node(children).set("layer", std::string("HUD"));
+                        m.node(children).set("layer", std::string("QuestEntries"));
                         m.node(children).set(
                             "absoluteY", double(std::max(0.f, (m.height() - dialogHeight) * .5f)));
                         m.node(children).set("height", double(dialogHeight));
@@ -1335,7 +1383,10 @@ namespace rp {
                                 n.set("height", 16.0);
                                 n.set("alignment", 1.0);
                             }
-                            m.node(el).set("layer", std::string("HUD"));
+                            m.node(el).set("layer", std::string("QuestEntries"));
+                            for (auto part : {"bg", "ItemImage", "NewQuest", "Touch", "ProgressText"})
+                                if (auto child = m.find(el, part))
+                                    m.node(child).set("layer", std::string("QuestEntries"));
                             y += 68;
                         }
                         m.solve();
@@ -1813,6 +1864,26 @@ namespace rp {
                 updateShopFrame(g);
                 m.solve();
             }
+            if (name == "tabbed_menu_maps") {
+                m.setLayerOrder("ZoneChoices", 10);
+                m.setLayerOrder("ZoneTabs", 11);
+                for (const auto& [key, id] : xmlItems_) {
+                    auto el = m.find(1, key, true);
+                    if (!el) continue;
+                    m.node(el).set("layer", std::string("ZoneChoices"));
+                    for (auto part : {"itemImage", "itemName", "itemNameSecondary", "Touch"})
+                        if (auto child = m.find(el, part))
+                            m.node(child).set("layer", std::string("ZoneChoices"));
+                }
+                for (int i = 1; i <= 7; ++i)
+                    if (auto tab = m.find(1, "Tab" + std::to_string(i), true)) {
+                        m.node(tab).set("layer", std::string("ZoneTabs"));
+                        for (auto part : {"bg", "Icon", "Text", "Touch"})
+                            if (auto child = m.find(tab, part))
+                                m.node(child).set("layer", std::string("ZoneTabs"));
+                    }
+                m.solve();
+            }
             updateScroll();
         } catch (const std::exception&) {
             xmlMenu_.reset();
@@ -1916,6 +1987,9 @@ namespace rp {
     void PortView::renderPanel(Image& image, const Game& g) {
         std::string name;
         switch (panel_) {
+        case Panel::Admin:
+            name = "cheatmenu";
+            break;
         case Panel::Confirm:
             name = xmlName_;
             break;
@@ -2411,9 +2485,8 @@ namespace rp {
                 }
                 if (g.numOfMaterialPossessed(12) > 0)
                     return g.pingSonar();
-                requestedStoreItem_ = "sonar";
-                panel_ = Panel::Shop;
-                openXml(g, "tabbed_menu_misc");
+                notice_ = "No sonar charges. The server must supply material 12.";
+                return {};
                 return {};
             }
         }
