@@ -155,9 +155,11 @@ Pass 48 overlays: recovered native accessory IDs 1, 3, 16, 17; original construc
 
 Pass 48 diving: native IDs 2/8; recovered frame/button, bare PNG meter, title font and readout atlas cell names. ARM meter Select checks button identity and positive remaining time; SetTime and SetPriorities return directly. Recovered pulse period 1.5, amount 0.1, clock offset 62.5 and scale 0.65; flash/blink 2.5/2.0 and readout priority offsets 0.03/-0.01/-0.02. Host AddedToOcean updates visual state using existing Game tick, no second countdown. Readout positions, depth semantics and original menu event/audio on selection remain approximations or unconnected.
 
+Pass 48 final effect batch: original fire/smoke PSI and texture IDs, splash animation and return-only Update/RemoveFromTick, wreckage edgewhite and three scrap cells, dropdown numeric jump table at 0x3e8680 (0 auto, 1 switching, 2 unsupported, 3 attacked, 4 retaliation, 5 waiting), and half-second slide interpolation. Host particle simulation, splash distribution, wreckage offsets and dropdown art/layout are approximate; native nine-slice, countdown/audio, automatic effect triggers and exact ownership remain unconnected. Corrected salvage's absent-object success bug. All 101 requested names have source implementations/adapters; no new compiled measurement.
+
 ## Remaining method names by class (provisional source review)
 
-634 names from the Pass 33 inventory now have named source implementations through Pass 48 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+657 names from the Pass 33 inventory now have named source implementations through Pass 48 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (20)
 
@@ -166,20 +168,4 @@ Pass 48 diving: native IDs 2/8; recovered frame/button, bare PNG meter, title fo
 ### `rp::BattleModeState` (11)
 
 `PlayBattleAnimations`, `SwapPopup`, `SwapStance`, `ToBattleView`, `ToPositioningView`, `gotMsgBattleInfoDropdown`, `gotMsgBattleInfoRequest`, `gotMsgHighlightHudItem`, `gotMsgQuestRead`, `gotMsgToggleBlockHudItem`, `gotMsgTransitionDone`
-
-### `rp::FireFXSprite` (6)
-
-`FireFXSprite`, `Init`, `SetColour`, `SetVisible`, `Update`, `~FireFXSprite`
-
-### `rp::SplashFXSprite` (6)
-
-`Init`, `RemoveFromTick`, `SplashFXSprite`, `Update`, `tick`, `~SplashFXSprite`
-
-### `rp::WreckageSprite` (6)
-
-`GetPriority`, `Init`, `SetPriority`, `UpdatePiece`, `WreckageSprite`, `~WreckageSprite`
-
-### `rp::GfxBattleInfoDropDown` (5)
-
-`GfxBattleInfoDropDown`, `Hide`, `Show`, `aTickMethodThatsNotCalledTick`, `~GfxBattleInfoDropDown`
 

@@ -41,10 +41,9 @@ namespace rp {
     }
 
     bool Wreckage::Salvage(SparseGrid& grid) {
-        if (object_) object_->Salvage(grid);
+        const bool wrappedRemoved = object_ && object_->Salvage(grid);
         // Wrapped and wreckage IDs may be the same in the portable model.
-        const bool present = grid.hasObject(GetUserObjectID());
-        return GridObject::Salvage(grid) || !present;
+        return GridObject::Salvage(grid) || wrappedRemoved;
     }
 
     std::vector<std::string> Wreckage::getAvailableActions(const GridObjectInfo* definition) const {

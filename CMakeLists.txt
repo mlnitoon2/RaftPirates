@@ -38,6 +38,7 @@ add_library(raftpirates_game STATIC
     src/GridSprite.cpp
     src/Pass48Overlays.cpp
     src/Pass48Diving.cpp
+    src/Pass48Effects.cpp
     src/AccessorySprite.cpp
     src/RaftAttackSprite.cpp
     src/MovementArrowSprite.cpp

@@ -16,8 +16,8 @@ namespace rp {
 
         GridSprite(const OceanView& ocean, const GridObject& object,
                    const GridObjectInfo& definition, sys::gfx::Vec2 world, float scale);
-        ~GridSprite();
-        void Init();
+        virtual ~GridSprite();
+        virtual void Init();
         bool AttachAccessory(std::unique_ptr<AccessorySprite> accessory);
         bool AddAccessorySprite(std::unique_ptr<AccessorySprite>);
         AccessorySprite* GetAccessorySprite(int id)const;
@@ -29,7 +29,7 @@ namespace rp {
         bool muted()const{return muted_;}
         void UpdateParticles();
         void BuildPiece(const GridPiece&);
-        void UpdatePiece(unsigned index);
+        virtual void UpdatePiece(unsigned index);
         bool DetachAccessory(int id);
         void Update();
         void SetGeometry(sys::gfx::Vec2 world, float scale);
@@ -40,8 +40,8 @@ namespace rp {
         bool GetVisible() const;
         void SetColour(uint8_t, uint8_t, uint8_t, uint8_t);
         uint8_t Alpha() const;
-        void SetPriority(unsigned, float);
-        float GetPriority(unsigned) const;
+        virtual void SetPriority(unsigned, float);
+        virtual float GetPriority(unsigned) const;
         void SetPriorities();
         void SetOrder(unsigned, unsigned, unsigned);
         unsigned GetOrder(unsigned) const;
@@ -62,7 +62,7 @@ namespace rp {
         int objectState() const { return object_.state; }
         int battlePoints() const { return object_.GetBattlePoints(); }
         void Attack();
-        int submit(sys::gfx::GfxManager&, std::map<std::string, std::shared_ptr<sys::gfx::Image>>&,
+        virtual int submit(sys::gfx::GfxManager&, std::map<std::string, std::shared_ptr<sys::gfx::Image>>&,
                    std::map<std::string, sys::res::ResourceAEAnim>&, sys::gfx::AnimationRenderer&,
                    const std::filesystem::path&, bool raft);
 

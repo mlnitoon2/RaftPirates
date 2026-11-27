@@ -102,6 +102,8 @@ namespace rp {
     };
 
     struct MsgBattleInfoDropdown : OpaqueGameMessage {
+        // Native constructor jump table: 0 auto, 1 switching, 3 attacked, 4 retaliation, 5 waiting.
+        int type = -1;
         ~MsgBattleInfoDropdown() override;
     };
 
