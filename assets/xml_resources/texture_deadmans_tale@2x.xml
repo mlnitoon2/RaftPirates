@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:081d48cb092db9cfb8759e66e5c666ed$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_deadmans_tale@2x.png" width="512" height="512">
+    <sprite n="deadman_cannon" x="348" y="2" w="62" h="80" oX="0" oY="0" oW="64" oH="80"/>
+    <sprite n="deadman_casket" x="2" y="2" w="200" h="152" oX="0" oY="35" oW="200" oH="188"/>
+    <sprite n="deadman_casket_front" x="2" y="156" w="154" h="144" oX="7" oY="41" oW="200" oH="188"/>
+    <sprite n="deadman_casket_lid_01" x="204" y="2" w="142" h="122" oX="21" oY="36" oW="200" oH="188"/>
+    <sprite n="deadman_casket_lid_02" x="158" y="156" w="144" h="124" oX="21" oY="34" oW="200" oH="188"/>
+    <sprite n="deadman_casket_lid_03" x="2" y="302" w="116" h="138" oX="77" oY="2" oW="200" oH="188"/>
+    <sprite n="deadman_casket_lid_04" x="158" y="282" w="116" h="138" oX="75" oY="3" oW="200" oH="188"/>
+    <sprite n="deadman_oil" x="218" y="126" w="6" h="8" oX="1" oY="0" oW="8" oH="8"/>
+    <sprite n="deadman_smoke" x="204" y="126" w="12" h="12"/>
+    <sprite n="deadmans_robo_legs" x="304" y="126" w="80" h="46" oX="4" oY="86" oW="100" oH="132"/>
+    <sprite n="deadmanstale_robo" x="276" y="282" w="88" h="104" oX="11" oY="4" oW="100" oH="132"/>
+</TextureAtlas>

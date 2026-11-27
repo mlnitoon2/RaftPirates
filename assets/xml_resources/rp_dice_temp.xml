@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:3a13191b7eec2c4c3c21958db6f0edad$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/placeholder/rp_dice_temp.png" width="256" height="256">
+    <sprite n="dice_green_01" x="124" y="2" w="59" h="59"/>
+    <sprite n="dice_green_02" x="63" y="2" w="59" h="59"/>
+    <sprite n="dice_green_03" x="2" y="185" w="59" h="59"/>
+    <sprite n="dice_green_04" x="2" y="124" w="59" h="59"/>
+    <sprite n="dice_green_05" x="2" y="63" w="59" h="59"/>
+    <sprite n="dice_green_06" x="2" y="2" w="59" h="59"/>
+    <sprite n="dice_red_01" x="185" y="63" w="59" h="59"/>
+    <sprite n="dice_red_02" x="124" y="63" w="59" h="59"/>
+    <sprite n="dice_red_03" x="63" y="185" w="59" h="59"/>
+    <sprite n="dice_red_04" x="63" y="124" w="59" h="59"/>
+    <sprite n="dice_red_05" x="63" y="63" w="59" h="59"/>
+    <sprite n="dice_red_06" x="185" y="2" w="59" h="59"/>
+</TextureAtlas>

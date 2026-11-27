@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:4d8026e019bd53c81b963280309b03ab$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_landlubber_lobber.png" width="128" height="128">
+    <sprite n="cannon_balls_01" x="54" y="84" w="34" h="42" r="y"/>
+    <sprite n="lobber" x="0" y="0" w="104" h="82" oX="1" oY="0" oW="106" oH="82"/>
+    <sprite n="robo_shadow" x="106" y="72" w="16" h="32" r="y"/>
+    <sprite n="robot_04" x="0" y="84" w="52" h="42" oX="3" oY="1" oW="46" oH="54" r="y"/>
+    <sprite n="robot_feet_01" x="106" y="0" w="20" h="34" oX="41" oY="96" oW="104" oH="136" r="y"/>
+    <sprite n="robot_feet_02" x="106" y="36" w="20" h="34" oX="41" oY="96" oW="104" oH="136" r="y"/>
+</TextureAtlas>

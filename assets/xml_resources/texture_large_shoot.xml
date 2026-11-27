@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:8fc5258eb1518ada6bdfed7d447b26f3$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/fx/texture_large_shoot.png" width="256" height="256">
+    <sprite n="large_glow_01" x="126" y="92" w="74" h="74" oX="3" oY="19" oW="80" oH="96"/>
+    <sprite n="large_glow_02" x="90" y="92" w="34" h="82" oX="21" oY="0" oW="80" oH="96"/>
+    <sprite n="large_glow_03" x="2" y="188" w="24" h="52" oX="29" oY="4" oW="80" oH="96"/>
+    <sprite n="large_shoot_01" x="202" y="72" w="38" h="38" oX="23" oY="36" oW="86" oH="94"/>
+    <sprite n="large_shoot_02" x="202" y="2" w="42" h="68" oX="21" oY="8" oW="86" oH="94"/>
+    <sprite n="large_shoot_03" x="102" y="176" w="54" h="76" oX="14" oY="5" oW="86" oH="94"/>
+    <sprite n="large_shoot_04" x="2" y="2" w="86" h="94"/>
+    <sprite n="large_shoot_05" x="2" y="98" w="86" h="88" oX="0" oY="5" oW="86" oH="94"/>
+    <sprite n="large_shoot_06" x="102" y="2" w="80" h="88" oX="3" oY="1" oW="86" oH="94"/>
+    <sprite n="large_shoot_07" x="28" y="188" w="72" h="46" oX="11" oY="41" oW="86" oH="94"/>
+</TextureAtlas>

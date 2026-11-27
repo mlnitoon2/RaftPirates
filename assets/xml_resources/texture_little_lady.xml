@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:296e38d423cff8f29c70d99aafcdd56a$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_little_lady.png" width="128" height="256">
+    <sprite n="little_lady_01" x="104" y="42" w="24" h="30" oX="4" oY="1" oW="32" oH="32"/>
+    <sprite n="little_lady_02" x="70" y="88" w="40" h="16"/>
+    <sprite n="little_lady_03" x="58" y="0" w="56" h="40" oX="4" oY="0" oW="64" oH="40"/>
+    <sprite n="little_lady_04" x="0" y="128" w="26" h="86" oX="3" oY="0" oW="32" oH="86"/>
+    <sprite n="little_lady_robot_01" x="0" y="0" w="56" h="64" oX="0" oY="1" oW="56" oH="66"/>
+    <sprite n="little_lady_robot_02" x="28" y="128" w="40" h="48" oX="10" oY="1" oW="56" oH="66"/>
+    <sprite n="little_lady_robot_03" x="0" y="216" w="34" h="26" oX="22" oY="29" oW="56" oH="66"/>
+    <sprite n="little_lady_robot_04" x="0" y="66" w="40" h="60" oX="11" oY="0" oW="56" oH="66"/>
+    <sprite n="little_lady_robot_05" x="58" y="42" w="44" h="44" oX="12" oY="22" oW="56" oH="66"/>
+</TextureAtlas>

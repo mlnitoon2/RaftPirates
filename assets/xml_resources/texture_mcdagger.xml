@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:2c1dc4dbfac9b6e6b0efc0a3767182fd$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_mcdagger.png" width="128" height="128">
+    <sprite n="mcdagger_jerk_knife01" x="58" y="0" w="66" h="44" oX="0" oY="0" oW="52" oH="66" r="y"/>
+    <sprite n="mcdagger_jerk_knife02" x="58" y="46" w="44" h="26" oX="8" oY="28" oW="52" oH="66"/>
+    <sprite n="mcdagger_jerk_knife03" x="104" y="46" w="24" h="42" oX="0" oY="26" oW="52" oH="66" r="y"/>
+    <sprite n="mcdagger_jerk_pipe01" x="0" y="78" w="66" h="44" r="y"/>
+    <sprite n="mcdagger_jerk_pipe02" x="104" y="90" w="16" h="38" oX="2" oY="29" oW="44" oH="66" r="y"/>
+    <sprite n="mcdagger_jerk_pipe03" x="68" y="74" w="34" h="26" oX="3" oY="19" oW="44" oH="66"/>
+    <sprite n="mcdagger_robot01" x="0" y="0" w="56" h="76"/>
+</TextureAtlas>

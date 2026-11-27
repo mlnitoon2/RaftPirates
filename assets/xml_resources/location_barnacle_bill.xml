@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:3da0cfa057293968208cc3661ee7f350$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/rafts/location_barnacle_bill.png" width="512" height="256">
+    <sprite n="barnacle_barrel001" x="103" y="174" w="84" h="52" oX="93" oY="176" oW="372" oH="228"/>
+    <sprite n="barnacle_barrel002" x="269" y="153" w="50" h="34" oX="321" oY="34" oW="372" oH="228"/>
+    <sprite n="barnacle_bill001" x="1" y="174" w="50" h="74" oX="176" oY="0" oW="372" oH="228"/>
+    <sprite n="barnacle_bill002" x="52" y="174" w="50" h="72" oX="176" oY="2" oW="372" oH="228"/>
+    <sprite n="barnacle_boat" x="1" y="1" w="258" h="172" oX="1" oY="43" oW="372" oH="228"/>
+    <sprite n="barnacle_box001" x="188" y="174" w="80" h="48" oX="234" oY="28" oW="372" oH="228"/>
+    <sprite n="barnacle_box002" x="260" y="110" w="48" h="42" oX="250" oY="63" oW="372" oH="228"/>
+    <sprite n="barnacle_box003" x="103" y="227" w="36" h="22" oX="300" oY="20" oW="372" oH="228"/>
+    <sprite n="barnacle_wheel" x="260" y="1" w="76" h="108" oX="130" oY="25" oW="372" oH="228"/>
+</TextureAtlas>

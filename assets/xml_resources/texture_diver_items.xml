@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:e618177353dc0943f8c79c121b194ead$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_diver_items.png" width="128" height="256">
+    <sprite n="diver_items_01" x="66" y="180" w="44" h="46" oX="11" oY="18" oW="64" oH="64"/>
+    <sprite n="diver_items_02" x="66" y="120" w="48" h="58" oX="11" oY="6" oW="64" oH="64"/>
+    <sprite n="diver_items_03" x="66" y="60" w="50" h="58" oX="9" oY="6" oW="64" oH="64"/>
+    <sprite n="diver_items_04" x="66" y="0" w="50" h="58" oX="9" oY="6" oW="64" oH="64"/>
+    <sprite n="diver_items_05" x="0" y="122" w="64" h="58" oX="0" oY="6" oW="64" oH="64"/>
+    <sprite n="diver_items_06" x="0" y="62" w="64" h="58" oX="0" oY="6" oW="64" oH="64"/>
+    <sprite n="diver_items_07" x="0" y="0" w="64" h="60" oX="0" oY="4" oW="64" oH="64"/>
+</TextureAtlas>

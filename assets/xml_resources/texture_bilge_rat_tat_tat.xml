@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:e60934841b3fa3e82c5bf01dc6b7d99b$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_bilge_rat_tat_tat.png" width="256" height="128">
+    <sprite n="bilge_buttonblue" x="196" y="28" w="46" h="26"/>
+    <sprite n="bilge_buttongreen" x="196" y="0" w="46" h="26"/>
+    <sprite n="bilge_buttons" x="84" y="68" w="104" h="60" oX="0" oY="2" oW="104" oH="62"/>
+    <sprite n="bilge_gunbarrel" x="190" y="58" w="18" h="52"/>
+    <sprite n="bilge_gunbase" x="0" y="72" w="82" h="56" oX="0" oY="0" oW="86" oH="56"/>
+    <sprite n="bilge_robot01" x="0" y="0" w="74" h="70" oX="0" oY="0" oW="96" oH="70"/>
+    <sprite n="bilge_robot02" x="76" y="0" w="78" h="66" oX="17" oY="4" oW="96" oH="70"/>
+    <sprite n="bilge_robot03" x="210" y="56" w="38" h="20" oX="0" oY="2" oW="38" oH="22"/>
+    <sprite n="bilge_robot04" x="156" y="0" w="38" h="56"/>
+</TextureAtlas>

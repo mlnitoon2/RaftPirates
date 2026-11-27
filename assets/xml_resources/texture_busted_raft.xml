@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:dffd8c5d15d5fe4a95b34298db65f2db$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/rafts/texture_busted_raft.png" width="512" height="256">
+    <sprite n="busted_raft_01" x="224" y="222" w="32" h="28"/>
+    <sprite n="busted_raft_02" x="258" y="222" w="44" h="24"/>
+    <sprite n="busted_raft_03" x="304" y="222" w="42" h="24"/>
+    <sprite n="busted_raft_04" x="434" y="40" w="38" h="20"/>
+    <sprite n="busted_raft_05" x="172" y="228" w="50" h="26"/>
+    <sprite n="busted_raft_06" x="434" y="2" w="56" h="36"/>
+    <sprite n="busted_raft_07" x="172" y="174" w="50" h="52"/>
+    <sprite n="busted_raft_08" x="314" y="62" w="120" h="42"/>
+    <sprite n="busted_raft_09" x="116" y="174" w="54" h="72" oX="1" oY="0" oW="56" oH="72"/>
+    <sprite n="busted_raft_11" x="2" y="174" w="112" h="76"/>
+    <sprite n="busted_raft_12" x="348" y="220" w="84" h="34" oX="0" oY="2" oW="84" oH="36"/>
+    <sprite n="busted_raft_13" x="310" y="174" w="88" h="44"/>
+    <sprite n="busted_raft_base" x="2" y="2" w="310" h="170"/>
+    <sprite n="busted_raft_robot" x="224" y="174" w="84" h="46"/>
+</TextureAtlas>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:d3085ce34c72f7eca9ff974808ea052c$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_enemy_floating_junk@2x.png" width="256" height="256">
+    <sprite n="enemy_floating_junk_01" x="2" y="2" w="204" h="102" oX="0" oY="24" oW="224" oH="128"/>
+    <sprite n="enemy_floating_junk_02" x="122" y="106" w="68" h="40" oX="131" oY="28" oW="224" oH="128"/>
+    <sprite n="enemy_floating_junk_03" x="122" y="148" w="48" h="32" oX="118" oY="63" oW="224" oH="128"/>
+    <sprite n="enemy_floating_junk_04" x="2" y="106" w="118" h="78" oX="14" oY="4" oW="224" oH="128"/>
+    <sprite n="enemy_floating_junk_05" x="2" y="186" w="122" h="66" oX="21" oY="48" oW="224" oH="128"/>
+    <sprite n="enemy_floating_junk_06" x="208" y="2" w="38" h="74" oX="65" oY="20" oW="224" oH="128"/>
+</TextureAtlas>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:30933ff130d37569638656715e188b28$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/fx/texture_small_shoot@2x.png" width="128" height="256">
+    <sprite n="small_glow_01" x="2" y="2" w="58" h="66" oX="3" oY="41" oW="64" oH="112"/>
+    <sprite n="small_glow_02" x="62" y="2" w="44" h="78" oX="12" oY="20" oW="64" oH="112"/>
+    <sprite n="small_glow_03" x="2" y="70" w="40" h="80" oX="13" oY="6" oW="64" oH="112"/>
+    <sprite n="small_glow_04" x="96" y="100" w="26" h="46" oX="21" oY="0" oW="64" oH="112"/>
+    <sprite n="small_glow_05" x="108" y="68" w="12" h="30" oX="28" oY="0" oW="64" oH="112"/>
+    <sprite n="small_shoot_01" x="54" y="82" w="40" h="42" oX="13" oY="55" oW="64" oH="112"/>
+    <sprite n="small_shoot_02" x="44" y="126" w="38" h="68" oX="14" oY="28" oW="64" oH="112"/>
+    <sprite n="small_shoot_03" x="2" y="152" w="20" h="74" oX="24" oY="13" oW="64" oH="112"/>
+    <sprite n="small_shoot_04" x="108" y="2" w="16" h="64" oX="27" oY="8" oW="64" oH="112"/>
+    <sprite n="small_shoot_05" x="44" y="70" w="8" h="26" oX="30" oY="2" oW="64" oH="112"/>
+</TextureAtlas>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:d8f26a319cc1da97defcd5b7dc303dbc$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_bazooka_buccaneer@2x.png" width="256" height="256">
+    <sprite n="bazooka_exclamation" x="204" y="106" w="22" h="44" oX="1" oY="0" oW="24" oH="44"/>
+    <sprite n="bazooka_gunner" x="2" y="2" w="122" h="192" oX="1" oY="0" oW="124" oH="192"/>
+    <sprite n="bazooka_gunner_hat" x="126" y="106" w="76" h="68"/>
+    <sprite n="bazooka_lookout" x="148" y="2" w="92" h="102" oX="0" oY="0" oW="92" oH="132"/>
+    <sprite n="bazooka_lookout_arm" x="228" y="106" w="22" h="38" oX="70" oY="61" oW="92" oH="132"/>
+    <sprite n="bazooka_lookout_arm01" x="34" y="196" w="34" h="50" oX="1" oY="6" oW="36" oH="56"/>
+    <sprite n="bazooka_lookout_arm02" x="2" y="196" w="30" h="54" oX="1" oY="2" oW="36" oH="56"/>
+    <sprite n="bazooka_lookout_legs_01" x="70" y="196" w="76" h="48" oX="4" oY="84" oW="92" oH="132"/>
+    <sprite n="bazooka_lookout_legs_02" x="148" y="176" w="76" h="44" oX="4" oY="88" oW="92" oH="132"/>
+</TextureAtlas>

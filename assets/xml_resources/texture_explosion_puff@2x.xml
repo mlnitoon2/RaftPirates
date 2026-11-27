@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:7fd136c639fb1ead61ef7209cc06ed38$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/fx/texture_explosion_puff@2x.png" width="256" height="512">
+    <sprite n="explosion_puff_01" x="2" y="214" w="120" h="48" oX="36" oY="58" oW="128" oH="192" r="y"/>
+    <sprite n="explosion_puff_02" x="178" y="2" w="72" h="142" oX="28" oY="30" oW="128" oH="192"/>
+    <sprite n="explosion_puff_03" x="168" y="146" w="84" h="154" oX="21" oY="23" oW="128" oH="192"/>
+    <sprite n="explosion_puff_04" x="2" y="112" w="164" h="100" oX="14" oY="16" oW="128" oH="192" r="y"/>
+    <sprite n="explosion_puff_05" x="2" y="2" w="174" h="108" oX="12" oY="13" oW="128" oH="192" r="y"/>
+    <sprite n="explosion_puff_06" x="124" y="214" w="22" h="82" oX="57" oY="10" oW="128" oH="192"/>
+</TextureAtlas>
