@@ -583,8 +583,6 @@ namespace rp {
                     // Client admin flag controls visibility; the server authorizes mutations.
                     panel_ = Panel::None;
                     xmlMenu_.reset();
-                    if (command == "ping_sonar")
-                        return g.pingSonar();
                     sfs::SFSObjectWrapper args;
                     args.put("type", command);
                     return Game::request("cheat", args);

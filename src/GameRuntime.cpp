@@ -863,11 +863,6 @@ namespace sys::platform::game {
                 if (!args)
                     return;
                 const auto type = args->getString("type");
-                if (type == "log_out") {
-                    forgetSession();
-                    loginError(platform, "");
-                    return;
-                }
                 rt.game.enableDevelopmentCommands(rt.admin);
                 if (type == "start_battle" || type == "player_dup") {
                     rt.adminEntry = type;
