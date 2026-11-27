@@ -1,0 +1,87 @@
+<menu>
+	<element name="topElement">
+		<size dependentOnElement="element:name()"/>
+		
+		<element name="bg">
+			<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+			<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="5" />
+			<ninesliceComponent name="Sprite">
+				<event name="onInit" params="component, element" >
+					component("spriteName"):Set("gfx/menu/menu_overlay")
+					component("width"):SetFloat( screenWidth() );
+					component("height"):SetFloat( screenHeight() );
+					component("layer"):SetString("HUD");
+				</event>
+			</ninesliceComponent>
+			<touchComponent name="Touch">
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">
+					menu:popPopUp()
+				</event>
+			</touchComponent>
+		</element>
+		
+		<element name="Dialog">
+			
+			<element name="Bg">
+				<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+				<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="-screenHeight()*0.1" priority="2" />
+				<ninesliceComponent name="Sprite">
+					<event name="onInit" params="component, element">
+						
+						component("width"):SetFloat( screenWidth()*0.66 );
+						--[[component("height"):SetFloat( screenHeight() * 0.15 );]]
+						
+						component("topHeight"):SetFloat( 16 );
+						component("bottomHeight"):SetFloat( 16 );
+						component("leftWidth"):SetFloat( 16 );
+						component("rightWidth"):SetFloat( 16);
+						
+						component("spriteName"):Set("gfx/menu/popup_bg")
+						
+						component("layer"):SetString("HUD")
+					</event>
+          <event name="onPostInit" params="component, element">
+            component("height"):SetFloat( element:parent()["TutorialText"]["Text"]("height"):GetInt() - 16 );
+          </event>
+        </ninesliceComponent>
+			</element>
+			<element name="Bird">
+				<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+				<position relativeTo="element:parent()[&quot;Bg&quot;]" vAnchor="TOP" hAnchor="RIGHT" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="10" priority="-1" />
+				
+				<spriteSheetComponent name="Sprite">
+					<event name="onInit" params="component, element" >
+						component("spriteName"):Set("tutorial_bird")
+						component("sheetName"):Set("xml_resources/rp_menu.xml")
+						component("layer"):SetString("HUD");
+					</event>
+				</spriteSheetComponent>
+			</element>
+			<element name="TutorialText">
+        <size dependentOnElement="element:name()" dependentOnComponent="Text" />
+        <position relativeTo="element:parent()[&quot;Bg&quot;]" vAnchor="TOP" hAnchor="HCENTER" />
+        <orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+        <textComponent name="Text" >
+          <size w="screenWidth()*0.48" h="0" />
+  				<event name="onInit" params="component, element" >
+            component("font"):Set("blue_highway")
+            component("size"):Set(1.0)
+            component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+
+            component("red"):SetFloat(1.0)
+            component("green"):SetFloat(1.0)
+            component("blue"):SetFloat(1.0)
+
+            component("text"):SetString("NOT_ENOUGH_MATERIALS")
+
+            component("layer"):SetString("HUD");
+          </event>
+				</textComponent>			
+			</element>
+		</element>
+	</element>
+</menu>

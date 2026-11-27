@@ -1,0 +1,98 @@
+<template>
+	<size dependentOnElement="element:name()" dependentOnComponent="Text" />
+	<textComponent name="Text">
+		<position relativeTo="element:name()" component="" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />			
+		<event name="onInit" params="component, element">
+			component:GetVar("alignment"):SetInt(16)
+			component:GetVar("font"):Set(lua_game.getTextFont())
+			component:GetVar("text"):Set("")
+		</event>
+	</textComponent>
+	<interpolatorComponent name="AlphaInterpolator">
+		<event name="onInit" params="component, element">
+			component:GetVar("component_name"):Set("Text")
+			component:GetVar("var_name"):Set("alpha")
+			component:GetVar("target"):SetFloat(0.0)
+			component:GetVar("duration"):SetFloat(0.25)
+		</event>
+		<event name="onInterpolate" params="component, element">
+			local interpolatedComponent = element:GetComponent(component:GetVar("component_name"):GetString())
+			local interpolatedVar = interpolatedComponent:GetVar(component:GetVar("var_name"):GetString())
+			local interpolatedValue = lua_sys.GameUtils_CubicInterpolate(component:GetVar("initValue"):GetFloat(), component:GetVar("initValue"):GetFloat(), component:GetVar("target"):GetFloat(), component:GetVar("target"):GetFloat(), t)
+			interpolatedVar:SetFloat(interpolatedValue)
+		</event>
+		<event name="onFire" params="component, element">
+			local interpolatedComponent = element:GetComponent(component:GetVar("component_name"):GetString())
+			component:GetVar("initValue"):SetFloat(interpolatedComponent:GetVar("alpha"):GetFloat())
+		</event>
+	</interpolatorComponent>		
+	
+	<interpolatorComponent name="SizeInterpolator">
+		<event name="onInit" params="component, element">
+			component:GetVar("component_name"):Set("Text")
+			component:GetVar("var_name"):Set("size")
+			component:GetVar("target"):SetFloat(0.0)
+			component:GetVar("duration"):SetFloat(0.25)
+		</event>
+		<event name="onInterpolate" params="component, element">
+			local interpolatedComponent = element:GetComponent(component:GetVar("component_name"):GetString())
+			local interpolatedVar = interpolatedComponent:GetVar(component:GetVar("var_name"):GetString())
+			local interpolatedValue = lua_sys.GameUtils_CubicInterpolate(component:GetVar("initValue"):GetFloat(), component:GetVar("initValue"):GetFloat(), component:GetVar("target"):GetFloat(), component:GetVar("target"):GetFloat(), t)
+			interpolatedVar:SetFloat(interpolatedValue)
+		</event>
+		<event name="onFire" params="component, element">
+			local interpolatedComponent = element:GetComponent(component:GetVar("component_name"):GetString())
+			component:GetVar("initValue"):SetFloat(interpolatedComponent:GetVar(component:GetVar("var_name"):GetString()):GetFloat())
+		</event>
+	</interpolatorComponent>			
+	
+	<event name="onInit" params="component, element">
+		element("active"):SetInt(0)
+		element:GetVar("triggerTime"):SetFloat(-1)
+		element:GetVar("stage"):Set("intro")
+		
+	</event>
+	
+	<event name="onTick" params="component, element">
+		local triggerTimer = element:GetVar("triggerTime")
+		if element:GetVar("stage"):GetString() == "loop" then
+			if triggerTimer:GetFloat() >= 0 then
+				triggerTimer:SetFloat(triggerTimer:GetFloat() - dt)
+				local diff = (1.0 - triggerTimer:GetFloat())
+				local t = diff
+				element:GetComponent("Text"):GetVar("size"):SetFloat(1.0 + 10*math.sin(diff*3.14*6)/((t*t*3000+1)))
+				if 0 > triggerTimer:GetFloat() then
+					element:GetVar("stage"):Set("outtro")
+					element:DoStoredScript("fnFireInterpolate")
+					element("active"):SetInt(0)
+				end
+			end
+		end
+	</event>
+	
+	<function name="fnFireInterpolate">
+		element("active"):SetInt(1)
+		if element:GetVar("stage"):GetString() == "intro" then
+			element:GetComponent("Text"):GetVar("alpha"):SetFloat(0)
+			element:GetComponent("AlphaInterpolator"):GetVar("target"):SetFloat(1)
+			
+			element:GetComponent("Text"):GetVar("size"):SetFloat(1.25)
+			element:GetComponent("SizeInterpolator"):GetVar("target"):SetFloat(1)
+			
+			element:GetVar("stage"):Set("loop")
+			element:GetVar("triggerTime"):SetFloat(1.0)
+		elseif element:GetVar("stage"):GetString() == "outtro" then
+			element:GetComponent("Text"):GetVar("alpha"):SetFloat(1.0)
+			element:GetComponent("Text"):GetVar("size"):SetFloat(2.0)
+			
+			element:GetComponent("AlphaInterpolator"):GetVar("target"):SetFloat(0.25)
+			element:GetComponent("SizeInterpolator"):GetVar("target"):SetFloat(0)
+			
+			element:GetVar("stage"):Set("intro")
+		end
+		
+		element:GetComponent("AlphaInterpolator"):DoFunction("FireInterpolator")
+		element:GetComponent("SizeInterpolator"):DoFunction("FireInterpolator")
+	</function>
+</template>

@@ -1,0 +1,119 @@
+<template>
+	<size dependentOnElement="element:name()" dependentOnComponent="bg"/>
+	
+	<event name="onInit" params="element">
+		element("blueprintId"):SetInt(-1)
+		element("blueprintDesc"):SetString("")
+		element("blueprintType"):SetInt(-1)
+		element("imageId"):SetString("")
+		element("spriteSheetID"):SetString("")
+		
+	</event>
+	
+	<event name="disable" params="element">
+		element["bg"]("visible"):SetInt(0)
+		if element["BlueprintTitle"] then
+			element["BlueprintTitle"]["Text"]("visible"):SetInt(0)
+		end
+		element["Description"]["Text"]("visible"):SetInt(0)
+		element["Description2"]["Text"]("visible"):SetInt(0)
+		element["Touch"]("enabled"):SetInt(0)
+	</event>
+	
+	<event name="enable" params="element">
+		element["bg"]("visible"):SetInt(1)
+		if element["BlueprintTitle"] then
+			element["BlueprintTitle"]["Text"]("visible"):SetInt(1)
+		end
+		
+		if element("blueprintType"):GetInt() == 0 then
+			element["Description"]["Text"]("visible"):SetInt(1)
+			element["Description2"]["Text"]("visible"):SetInt(0)
+		else
+			element["Description"]["Text"]("visible"):SetInt(0)
+			element["Description2"]["Text"]("visible"):SetInt(1)
+		end
+		
+		element["Touch"]("enabled"):SetInt(1)
+	</event>
+	
+	<event name="setBlueprintId" params="element">
+	
+		if element("blueprintType"):GetInt() == 0 then
+			element["Description"]["Text"]("visible"):SetInt(1)
+			element["Description2"]["Text"]("visible"):SetInt(0)
+		else
+			element["Description"]["Text"]("visible"):SetInt(0)
+			element["Description2"]["Text"]("visible"):SetInt(1)
+		end
+		
+		if element("blueprintType"):GetInt() == 0 then
+			element["Description"]["Text"]("text"):SetString( element("blueprintDesc"):GetString() )
+		else
+			element["Description2"]["Text"]("text"):SetString( element("blueprintDesc"):GetString() )
+		end
+		
+	</event>
+
+	<spriteSheetComponent name="bg">
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="RIGHT" />
+		<orientation vAnchor="VCENTER" hAnchor="RIGHT" xOffset="0" yOffset="0" priority="0" />
+		<event name="onInit" params="component, element" >
+			component("spriteName"):Set("menu_overlay_tab_thin")
+			component("sheetName"):Set("xml_resources/rp_menu.xml")
+			component("layer"):SetString("PIRATE_MAP_HUD");
+		</event>
+	</spriteSheetComponent>
+
+	<element name="Description" >
+		<size w="screenWidth()/8*3" h="screenHeight()/8" />
+		<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="VCENTER" hAnchor="RIGHT" />
+		<orientation vAnchor="VCENTER" hAnchor="RIGHT" xOffset="0" yOffset="0" priority="-1" />
+		
+		<event name="onInit" params="element">
+			element("origYOffset"):SetInt(element("yOffset"):GetInt())
+		</event>
+		<textComponent name="Text" >
+			<size w="screenWidth()/8*3" h="screenHeight()/20" />
+			
+			<event name="onInit" params="component, element" >
+				component("font"):Set("rp_font_title")
+				component("size"):Set(1.0)
+				component("alignment"):SetInt(MenuTextComponent_TEXT_HCENTER_ALIGNED)
+				
+				component("red"):SetFloat(1.0)
+				component("green"):SetFloat(1.0)
+				component("blue"):SetFloat(1.0)
+				
+				component("layer"):SetString("PIRATE_MAP_HUD");
+			</event>
+		</textComponent>
+	</element>
+	
+	<element name="Description2" >
+		<size w="screenWidth()/8*3" h="screenHeight()/8" />
+		<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="VCENTER" hAnchor="RIGHT" />
+		<orientation vAnchor="VCENTER" hAnchor="RIGHT" xOffset="0" yOffset="0" priority="-1" />
+		
+		<event name="onInit" params="element">
+			element("origYOffset"):SetInt(element("yOffset"):GetInt())
+		</event>
+		<textComponent name="Text" >
+			<size w="screenWidth()/8*3" h="screenHeight()/20" />
+			
+			<event name="onInit" params="component, element" >
+				component("font"):Set("blue_highway")
+				component("size"):Set(1.0)
+				component("alignment"):SetInt(MenuTextComponent_TEXT_HCENTER_ALIGNED)
+				
+				component("red"):SetFloat(1.0)
+				component("green"):SetFloat(1.0)
+				component("blue"):SetFloat(1.0)
+				
+				component("layer"):SetString("PIRATE_MAP_HUD");
+			</event>
+		</textComponent>
+	</element>
+
+	
+</template>

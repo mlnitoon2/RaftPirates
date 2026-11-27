@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:fe6851d769e93faea32461bea89a5f9d$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_firestorm_festival.png" width="128" height="256">
+    <sprite n="firestorm_festival_arm01" x="96" y="214" w="18" h="16" oX="40" oY="60" oW="96" oH="112"/>
+    <sprite n="firestorm_festival_arm02" x="82" y="44" w="18" h="16" oX="40" oY="58" oW="96" oH="112"/>
+    <sprite n="firestorm_festival_dragon01" x="2" y="62" w="52" h="64" oX="42" oY="29" oW="96" oH="112"/>
+    <sprite n="firestorm_festival_dragon02" x="82" y="2" w="42" h="40" oX="22" oY="32" oW="96" oH="112"/>
+    <sprite n="firestorm_festival_dragon03" x="2" y="2" w="78" h="58" oX="15" oY="4" oW="96" oH="112"/>
+    <sprite n="firestorm_festival_firework01" x="86" y="228" w="6" h="26" oX="13" oY="12" oW="32" oH="48"/>
+    <sprite n="firestorm_festival_firework02" x="116" y="214" w="8" h="24" oX="11" oY="12" oW="32" oH="48"/>
+    <sprite n="firestorm_festival_firework03" x="82" y="214" w="12" h="12" oX="10" oY="10" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_firework04" x="94" y="232" w="18" h="18" oX="7" oY="7" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_firework05" x="82" y="192" w="20" h="20" oX="6" oY="6" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_firework06" x="78" y="146" w="22" h="22" oX="5" oY="5" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_glow01" x="66" y="192" w="14" h="30" oX="9" oY="9" oW="32" oH="48"/>
+    <sprite n="firestorm_festival_glow02" x="84" y="62" w="16" h="30" oX="7" oY="8" oW="32" oH="48"/>
+    <sprite n="firestorm_festival_glow03" x="104" y="192" w="20" h="20" oX="6" oY="6" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_glow04" x="102" y="146" w="22" h="22" oX="5" oY="5" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_glow05" x="102" y="96" w="24" h="24" oX="4" oY="4" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_glow06" x="58" y="228" w="26" h="26" oX="2" oY="3" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_glow_a01" x="62" y="152" w="14" h="30" oX="9" oY="9" oW="32" oH="48"/>
+    <sprite n="firestorm_festival_glow_a02" x="60" y="120" w="16" h="30" oX="7" oY="8" oW="32" oH="48"/>
+    <sprite n="firestorm_festival_glow_a03" x="100" y="170" w="20" h="20" oX="6" oY="6" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_glow_a04" x="102" y="122" w="22" h="22" oX="5" oY="5" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_glow_a05" x="102" y="70" w="24" h="24" oX="4" oY="4" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_glow_a06" x="30" y="228" w="26" h="26" oX="2" oY="3" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_glow_b01" x="44" y="128" w="14" h="30" oX="9" oY="9" oW="32" oH="48"/>
+    <sprite n="firestorm_festival_glow_b02" x="44" y="160" w="16" h="30" oX="7" oY="8" oW="32" oH="48"/>
+    <sprite n="firestorm_festival_glow_b03" x="78" y="170" w="20" h="20" oX="6" oY="6" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_glow_b04" x="78" y="122" w="22" h="22" oX="5" oY="5" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_glow_b05" x="102" y="44" w="24" h="24" oX="4" oY="4" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_glow_b06" x="2" y="228" w="26" h="26" oX="2" oY="3" oW="32" oH="32"/>
+    <sprite n="firestorm_festival_robot" x="2" y="128" w="40" h="62" oX="29" oY="33" oW="96" oH="112"/>
+    <sprite n="firestorm_festival_rocket01" x="82" y="94" w="18" h="26" oX="77" oY="73" oW="96" oH="112"/>
+    <sprite n="firestorm_festival_rocket02" x="56" y="62" w="26" h="28" oX="2" oY="58" oW="96" oH="112"/>
+    <sprite n="firestorm_festival_rocket03" x="56" y="92" w="24" h="26" oX="0" oY="28" oW="96" oH="112"/>
+    <sprite n="firestorm_festival_sh" x="2" y="192" w="62" h="34" oX="19" oY="69" oW="96" oH="112"/>
+</TextureAtlas>
