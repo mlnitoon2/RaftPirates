@@ -1,6 +1,6 @@
 # Raft Pirates
 
-An unofficial C++ reconstruction of Raft Pirates for game preservation, built on [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy). Original game assets and Java code are not distributed here.
+An unofficial C++ reconstruction of Raft Pirates for game preservation, built on [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy). Java code is not distributed here. Authorized original assets may be placed in the root `assets/` directory for packaging.
 
 ## Build
 
@@ -30,6 +30,6 @@ See [desktop instructions](docs/DESKTOP.md) for dependencies and launching. Down
 
 Android startup, authentication, world loading, construction, map, diving, shop and combat are implemented to varying degrees; device/gameplay parity is incomplete. The original endpoint is configurable via local assets' `xml_resources/properties.xml`.
 
-[Coverage](docs/COVERAGE.md) · [Remaining work](docs/REMAINING.md) · [Networking](docs/STARTUP_AND_GAMEPLAY.md) · [Assets](docs/ASSETS.md) · [Native evidence](docs/NATIVE_BEHAVIOR.md) · [CI](https://github.com/mlnitoon2/RaftPirates/actions)
+[Coverage](docs/COVERAGE.md) · [Remaining work](docs/REMAINING.md) · [Networking](docs/STARTUP_AND_GAMEPLAY.md) · [Assets](docs/ASSETS.md) · [Tutorial](docs/TUTORIAL.md) · [Native evidence](docs/NATIVE_BEHAVIOR.md) · [CI](https://github.com/mlnitoon2/RaftPirates/actions)
 
 Not the original source or a binary-equivalent replacement. No reconstruction license has been selected.

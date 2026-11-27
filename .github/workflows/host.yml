@@ -22,7 +22,12 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y g++ cmake ninja-build zlib1g-dev libexpat1-dev libpng-dev liblua5.1-0-dev libfreetype-dev libsdl2-dev libsdl2-mixer-dev libasio-dev libssl-dev libcurl4-openssl-dev nlohmann-json3-dev
       - name: Configure
-        run: cmake -S RaftPirates -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DRAFT_DESKTOP=ON
+        run: |
+          extra=()
+          if [ -d RaftPirates/assets/menus ] && [ -f RaftPirates/assets/xml_resources/properties.xml ]; then
+            extra+=("-DRAFT_ASSET_ROOT=$GITHUB_WORKSPACE/RaftPirates/assets")
+          fi
+          cmake -S RaftPirates -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DRAFT_DESKTOP=ON "${extra[@]}"
       - name: Build
         run: cmake --build build --parallel 2
       - name: Test
