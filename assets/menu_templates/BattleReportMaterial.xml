@@ -1,0 +1,107 @@
+<template>
+	
+	<event name="onInit" params="element">
+		element("materialId"):SetInt(-1)
+		element("numCollected"):SetInt(0)
+		element:SetupGenericListener(element:GetReceiver(), "rp::MsgMaterialInformationResponse", "gotMaterialInfo")
+		element:DoStoredScript("disableMe")
+	</event>
+	
+	<event name="onPostSolve" params="element">
+		
+		local imgHeight = element:GetElement("ItemImage"):size().y
+		local imgWidth = element:GetElement("ItemImage"):size().x
+		local textHeight = element:GetElement("MaterialAmount"):size().y
+		element:setSize(Vector2(imgWidth, imgHeight + textHeight))
+	
+	</event>
+	
+	
+	<event name="setMaterialId" params="element">
+		if element("materialId"):GetInt()~=0 then	
+			game.engineReceiver():Send( game.MsgMaterialInformationRequest(element:GetReceiver(), element("materialId"):GetInt()) )
+			element:DoStoredScript("enableMe")
+		else
+			element:DoStoredScript("disableMe")
+		end
+	</event>
+	
+	<event name = "setMaterialAmtCollected" params="element">
+		
+		local s = ""
+		
+		if element("numCollected"):GetInt() >= 0 then
+			s = "+"
+		else
+			--[[
+			element["MaterialAmount"]["Text"]("red"):SetFloat(1.0)
+			element["MaterialAmount"]["Text"]("green"):SetFloat(0)
+			element["MaterialAmount"]["Text"]("blue"):SetFloat(0)
+			]]
+		
+		end
+		
+		s = s .. element("numCollected"):GetInt()
+				
+		element["MaterialAmount"]["Text"]("text"):SetString(s)		
+				
+	</event>
+	
+	<event name="gotMaterialInfo" params="element, msg">
+	
+		local materialId = msg.materialId;
+		if materialId == element("materialId"):GetInt() then
+			element["ItemImage"]["Sprite"]("spriteName"):SetString(msg.imageID .. "")
+			element["ItemImage"]["Sprite"]("sheetName"):SetString("xml_resources/" .. msg.spriteSheetID)
+			element["ItemImage"]["Sprite"]("layer"):SetString("PIRATE_MAP_HUD");
+		else
+			--[[ignore this message]]
+		end
+
+	</event>
+	
+	<event name="enableMe" params="element">
+		element["ItemImage"]["Sprite"]("visible"):SetInt(1)
+		element["MaterialAmount"]["Text"]("visible"):SetInt(1)
+	</event>
+	
+	<event name="disableMe" params="element">
+		element["ItemImage"]["Sprite"]("visible"):SetInt(0)
+		element["MaterialAmount"]["Text"]("visible"):SetInt(0)
+	</event>
+
+	<element name="ItemImage">
+		<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+		<position relativeTo="element:parent()" vAnchor="BOTTOM" hAnchor="HCENTER" />
+		<orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+		<spriteSheetComponent name = "Sprite">
+			<event name="onInit" params="component, element" >
+
+				component("spriteName"):SetString("btn_mat_bone")
+				component("sheetName"):SetString("xml_resources/rp_menu.xml")
+				component("layer"):SetString("PIRATE_MAP_HUD");
+			</event>
+		</spriteSheetComponent>
+	</element>
+	
+	<element name= "MaterialAmount">
+		<size dependentOnElement="element:name()" dependentOnComponent="Text" />
+		<position relativeTo="element:parent()" vAnchor="TOP" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+
+		<textComponent name="Text">
+			<event name="onInit" params="component, element" >
+				component("font"):Set("blue_highway")
+				component("size"):Set(1.0)
+				component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+				
+				component("red"):SetFloat(1.0)
+				component("green"):SetFloat(1.0)
+				component("blue"):SetFloat(1.0)
+				
+				component("text"):SetString("+")
+				component("layer"):SetString("PIRATE_MAP_HUD");
+			</event>
+		</textComponent>
+	</element>
+</template>

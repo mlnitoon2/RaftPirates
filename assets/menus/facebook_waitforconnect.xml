@@ -1,0 +1,126 @@
+<menu>
+	<element name="topElement">
+		<size dependentOnElement="element:name()"/>
+		<position relativeTo="SCREEN" vAnchor="TOP" hAnchor="LEFT" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="0" priority="50" />
+		
+		<event name="onInit" params="element">
+		
+			element:SetupGenericListener(game.engineReceiver(),  "social::msg::MsgFacebookDidNotLogin", "gotMsgFacebookDidNotLogin")
+					
+		
+		
+		</event>
+		
+		<event name="gotMsgFacebookDidNotLogin" params="element, msg">
+			<![CDATA[
+					menu:popPopUp();
+					menu:pushPopUp("login_menu")
+				
+				]]>
+		</event>		
+						
+		<element name="bg">
+			<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+			<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="5" />
+			<ninesliceComponent name="Sprite">
+				<event name="onInit" params="component, element">
+					--[[component("yOffset"):SetFloat( -screenHeight()*0.1 );]]
+					
+					component("width"):SetFloat( screenWidth()*0.66 );
+					component("height"):SetFloat( screenHeight() /5 );
+					
+					component("topHeight"):SetFloat( 16 );
+					component("bottomHeight"):SetFloat( 16 );
+					component("leftWidth"):SetFloat( 16 );
+					component("rightWidth"):SetFloat( 16);
+					
+					component("spriteName"):Set("gfx/menu/popup_bg")
+					
+					component("layer"):SetString("LOADING")
+				</event>
+			</ninesliceComponent>
+		</element>
+		
+		<element name="desc">
+			<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+			
+			<textComponent name="Text" >
+				<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+				<event name="onInit" params="component, element" >
+					component("font"):Set("rp_font_title")
+					component("size"):Set(1.0)
+					component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+					
+					component("red"):SetFloat(1.0)
+					component("green"):SetFloat(1.0)
+					component("blue"):SetFloat(1.0)
+					
+					component("multiline"):SetInt(0)
+					component("autoScale"):SetInt(1)
+					
+					component("text"):SetString("FACEBOOK_LOGGING_IN")
+					
+					component("layer"):SetString("LOADING");
+				</event>
+			</textComponent>
+		</element>		
+		
+
+		<template type="HudButton" name="Cancel">
+			<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="30" priority="-1" />
+			
+			<templateVar name="$image" equals="btn_long_green" />
+			<templateVar name="$sheet" equals="rp_menu" />
+			
+			<event name="onPostInit" params="element">
+					element["UpSprite"]("layer"):SetString("LOADING");
+					element["DownSprite"]("layer"):SetString("LOADING");
+				
+			</event>
+
+			<textComponent name="Text" >
+				<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+				<event name="onInit" params="component, element" >
+					component("font"):Set("rp_font_title")
+					component("size"):Set(1.0)
+					component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+					
+					component("red"):SetFloat(1.0)
+					component("green"):SetFloat(1.0)
+					component("blue"):SetFloat(1.0)
+					
+					component("multiline"):SetInt(0)
+					component("autoScale"):SetInt(1)
+					
+					component("text"):SetString("CANCEL")
+					
+					component("layer"):SetString("LOADING");
+				</event>
+			</textComponent>
+			
+			<touchComponent name="Touch">
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">
+					onTouchUp(component, element)
+					
+					game.authWithFacebookCancel()
+					
+					menu:popPopUp();
+					menu:pushPopUp("login_menu")
+					
+				</event>
+			</touchComponent>
+			
+			
+		</template>	
+		
+	</element>
+	
+	
+</menu>
