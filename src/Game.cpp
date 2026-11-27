@@ -1,5 +1,6 @@
 #include "rp/Game.h"
 #include "rp/SparseGrid.h"
+#include "rp/GridObjectHelpers.h"
 #include <algorithm>
 #include <cmath>
 #include <sstream>
@@ -609,7 +610,7 @@ namespace rp {
         }
         for (auto& raft : rafts)
             for (auto& component : raft.components)
-                if (component.Building())
+                if (component.Building() || (component.state == 4 && IsBarracks(&component, objects)))
                     component.TempTick(dt);
     }
 

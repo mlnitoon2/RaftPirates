@@ -81,6 +81,15 @@ Names newly implemented in source are listed here and removed from the provision
 - Added category normalization for diamond/diamonds and gold/offerwall, viewport-relative item spacing, scroll-origin correction, original itemCost/currencyIcon visibility for cash/free/offer groups, and live refresh when item availability changes. Added category regression fixture. Category group aliases are a portable assumption; real server group mapping and free/social templates remain unverified.
 - This batch does not add original method names; no coverage count increase. No runtime screenshot comparison performed.
 
+## Pass 43 state and sprite review
+
+- BuildModeState and BattleModeState: recovered exact state names and original return-only callbacks, added placement/repair routing, wreckage selection, connectivity checks, battle waiting timer and confirmation adapters. SendMsgSelectedObjectAvailableActions was already present and is reclassified. The portable countdown never authorizes server actions; original HUD/dispatcher wiring remains incomplete.
+- Wreckage: original ARM32 methods at 0x50f588, 0x50f5e8 and 0x50f614 delegate ID, battle points and state to the wrapped object; 0x50fd9c reads offsetX/offsetY. Portable class owns an independent clone, not the original live grid transfer. Repair, salvage, registration, shape delegation and available actions remain unresolved.
+- Barracks: Constructing checks state 4 (0x5398c0); native UseClock and SetState are return-only; snapshot and action queries delegate to RaftComponent. Portable countdown supports state 4 but does not create completed objects or deliver the original event. The component factory still stores values and cannot preserve subclasses.
+- AccessorySprite: original base Init/Update/tick/SetScale return immediately, ListenForAnimation returns false. Portable attachment uses owned GridSprite entries and its tick loop rather than native global dispatcher. No concrete accessory visuals are added; GetTimeString and native registration behavior remain unverified.
+- BattleShipPlacementSprite: portable selection, object/position adapters and adjacency highlighting, now refreshed when moving a fleet. Original weak UpdateParticles returns immediately; boss-core queries, graphics ownership, priority and scale remain open.
+- 55 additional names addressed provisionally, including partial adapters and already-present methods. No new compiled comparison or runtime claim. Hydra static parity findings: [PASS43_PARITY.md](https://github.com/mlnitoon2/HydraLegacy/blob/main/docs/PASS43_PARITY.md).
+
 ## Priority gaps
 
 - Original menu scripts: complete game/SWIG bindings, message dispatch, dynamic templates, tutorial and quest flows, all popups and transitions.
@@ -92,31 +101,31 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-354 names from the Pass 33 inventory now have named source implementations through Pass 41 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+409 names from the Pass 33 inventory now have named source implementations through Pass 43 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
-### `rp::BuildModeState` (29)
+### `rp::BuildModeState` (20)
 
-`ApplyFootprintToRaft`, `ChangeView`, `CleanupFootprints`, `CreateGridObject`, `HandleExtensionResponse`, `Pause`, `SendBonusMaterials`, `SendMsgSelectedObjectAvailableActions`, `SetCheckForHoles`, `cancelNotificationForRaftComponent`, `doPlaceObject`, `gotMsgBuildModeToggleView`, `gotMsgCheckForHoles`, `gotMsgDivingGameDone`, `gotMsgDivingGameDoneMoving`, `gotMsgDivingGameShow`, `gotMsgGridObjectEvent`, `gotMsgHighlightHudItem`, `gotMsgLoadingAnimFinished`, `gotMsgOfferWallReward`, `gotMsgSparseGridObjectAdded`, `gotMsgToggleBlockHudItem`, `gotMsgTransitionDone`, `gotMsgWreckageSelected`, `name`, `repairObject`, `sendSelectedObjectRepairDataWithGold`, `setupNotificationForRaftComponent`, `tick`
+`ApplyFootprintToRaft`, `ChangeView`, `CleanupFootprints`, `CreateGridObject`, `HandleExtensionResponse`, `SendBonusMaterials`, `cancelNotificationForRaftComponent`, `gotMsgBuildModeToggleView`, `gotMsgDivingGameDone`, `gotMsgDivingGameDoneMoving`, `gotMsgDivingGameShow`, `gotMsgGridObjectEvent`, `gotMsgHighlightHudItem`, `gotMsgLoadingAnimFinished`, `gotMsgOfferWallReward`, `gotMsgToggleBlockHudItem`, `gotMsgTransitionDone`, `sendSelectedObjectRepairDataWithGold`, `setupNotificationForRaftComponent`, `tick`
 
-### `rp::BattleModeState` (24)
+### `rp::BattleModeState` (11)
 
-`BattleModeState`, `HideDropdown`, `Pause`, `PlayBattleAnimations`, `RaftSelect`, `StartWaiting`, `StopWaiting`, `SwapPopup`, `SwapStance`, `ToBattleView`, `ToPositioningView`, `endBattleAndPlunder`, `gotMsgBattleConfirmSwapStance`, `gotMsgBattleInfoDropdown`, `gotMsgBattleInfoRequest`, `gotMsgBattleOverConfirm`, `gotMsgExitBattleModeRequest`, `gotMsgHighlightHudItem`, `gotMsgQuestRead`, `gotMsgToPositioningView`, `gotMsgToggleBlockHudItem`, `gotMsgTransitionDone`, `name`, `tick`
+`PlayBattleAnimations`, `SwapPopup`, `SwapStance`, `ToBattleView`, `ToPositioningView`, `gotMsgBattleInfoDropdown`, `gotMsgBattleInfoRequest`, `gotMsgHighlightHudItem`, `gotMsgQuestRead`, `gotMsgToggleBlockHudItem`, `gotMsgTransitionDone`
 
-### `rp::Wreckage` (14)
+### `rp::Wreckage` (5)
 
-`Duplicate`, `GetTotalBattlePoints`, `GetUserObjectID`, `GetWreckageObject`, `Pieces`, `RegisterAllClasses`, `Repair`, `Salvage`, `SetState`, `SetWreckageObject`, `Wreckage`, `getAvailableActions`, `initWithSFSObject`, `~Wreckage`
+`Pieces`, `RegisterAllClasses`, `Repair`, `Salvage`, `getAvailableActions`
 
-### `rp::AccessorySprite` (11)
+### `rp::AccessorySprite` (1)
 
-`AccessorySprite`, `AddToTick`, `GetID`, `GetTimeString`, `Init`, `ListenForAnimation`, `RemoveFromTick`, `SetScale`, `Update`, `tick`, `~AccessorySprite`
+`GetTimeString`
 
-### `rp::Barracks` (11)
+### `rp::Barracks` (2)
 
-`AddedToOcean`, `Barracks`, `Constructing`, `Duplicate`, `SetConstructionInfo`, `SetState`, `TempTick`, `UseClock`, `getAvailableActions`, `initWithSFSObject`, `~Barracks`
+`AddedToOcean`, `SetConstructionInfo`
 
-### `rp::BattleShipPlacementSprite` (11)
+### `rp::BattleShipPlacementSprite` (6)
 
-`BossCoreRaftsByMe`, `BossCoreRaftsInMe`, `ContainsGfx`, `HasAccessorySprite`, `HighlightAttackRafts`, `Select`, `SetPosition`, `SetPriority`, `SetScale`, `SetToObject`, `UpdateParticles`
+`BossCoreRaftsByMe`, `BossCoreRaftsInMe`, `ContainsGfx`, `HasAccessorySprite`, `SetPriority`, `SetScale`
 
 ### `rp::ShipPlacementSprite` (11)
 
