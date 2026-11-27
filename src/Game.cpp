@@ -413,6 +413,9 @@ namespace rp {
         } else if (cmd == "zone_goto_result") {
             if (num(p, "success")) {
                 zone = num(p, "zoneid", pendingZone.value_or(zone));
+                mapX = std::clamp(num(p, "map_x", mapX), -95, 95);
+                mapY = std::clamp(num(p, "map_y", mapY), -95, 95);
+                setSafe(num(p, "safe_water", safe) != 0);
                 sonarShips.clear();
                 sonarPending = false;
             } else

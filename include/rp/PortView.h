@@ -118,6 +118,8 @@ namespace rp {
         std::map<unsigned, double> scrollOrigins_;
         bool xmlCaptured_ = false;
         bool shopButtonArmed_ = false;
+        std::optional<sys::gfx::Vec2> mapTap_;
+        unsigned mapControlAt(float x, float y) const;
         std::optional<int> pendingStoreItem_;
         unsigned shopButtonAt(float x, float y) const;
         void updateHud(const Game& game);

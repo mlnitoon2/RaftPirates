@@ -141,6 +141,7 @@ namespace rp {
     }
 
     void PortView::cancelInput() {
+        mapTap_.reset();
         shopButtonArmed_ = false;
         if (xmlCaptured_ && xmlMenu_)
             xmlMenu_->touchCancel();
@@ -154,6 +155,13 @@ namespace rp {
 
     void PortView::touchDown(float x, float y) {
         xmlCaptured_ = false;
+        mapTap_.reset();
+        if (xmlMenu_ && ((map && panel_ == Panel::None && xmlName_ == "piratemap_menu" &&
+                         !mapInfoEnemy_) || (panel_ == Panel::Travel && xmlName_ == "tabbed_menu_maps"))) {
+            mapTap_ = Vec2{x, y};
+            oceanGesture_ = false;
+            return;
+        }
         blueprintGesture_.reset();
         shopButtonArmed_ = shopButtonAt(x, y) != 0;
         if (shopButtonArmed_) {
@@ -443,7 +451,51 @@ namespace rp {
         return out;
     }
 
+    unsigned PortView::mapControlAt(float x, float y) const {
+        if (!xmlMenu_)
+            return 0;
+        auto& m = *xmlMenu_;
+        for (auto name : {"QuickTravel", "PingSonar", "Back", "AutoSafeWater", "MapActionsIcon"}) {
+            auto id = m.find(1, name, true);
+            if (!id || !m.isVisible(id))
+                continue;
+            auto hit = m.find(id, "Touch");
+            auto sprite = m.find(id, "Sprite");
+            if (hit && m.isVisible(hit) && m.node(hit).bounds.contains(x, y))
+                return hit;
+            if (hit && sprite && m.isVisible(sprite) && m.node(sprite).bounds.contains(x, y))
+                return hit;
+        }
+        return 0;
+    }
+
     std::optional<sfs::Message> PortView::touch(Game& g, float x, float y) {
+        if (mapTap_) {
+            auto start = *mapTap_;
+            mapTap_.reset();
+            if (std::abs(x - start.x) > 24 || std::abs(y - start.y) > 24)
+                return {};
+        }
+        if (xmlMenu_ && panel_ == Panel::Travel && xmlName_ == "tabbed_menu_maps") {
+            auto& m = *xmlMenu_;
+            for (const auto& [key, id] : xmlItems_) {
+                auto el = m.find(1, key, true);
+                if (el && m.isVisible(el) && m.node(el).bounds.contains(x, y)) {
+                    if (id == g.zone)
+                        return {};
+                    if (g.pendingZone) {
+                        notice_ = "Wait for the previous voyage.";
+                        return {};
+                    }
+                    panel_ = Panel::None;
+                    xmlMenu_.reset();
+                    return g.travel(id);
+                }
+            }
+            panel_ = Panel::None;
+            xmlMenu_.reset();
+            return {};
+        }
         if (shopButtonArmed_) {
             shopButtonArmed_ = false;
             if (auto hit = shopButtonAt(x, y))
@@ -520,8 +572,11 @@ namespace rp {
         if (map) {
             if (!xmlMenu_ || xmlName_ != "piratemap_menu")
                 openXml(g, "piratemap_menu");
-            if (xmlMenu_ && xmlMenu_->hitTest(x, y))
+            if (mapInfoEnemy_ && xmlMenu_ && xmlMenu_->hitTest(x, y))
                 return xmlTouch(g, x, y);
+            if (auto hit = mapControlAt(x, y))
+                return xmlTouch(g, x, y, hit);
+            // Unhandled map touches reach the actual map movement handler.
         }
         if (hudEnabled(g)) {
             updateHud(g);
@@ -1063,10 +1118,26 @@ namespace rp {
 
                 for (auto n : {"PingSonar", "QuickTravel"})
                     if (auto id = m.find(1, n, true)) {
-                        auto b = m.node(id).bounds;
-                        m.node(id).set("xOffset",
-                                       std::string(n) == "PingSonar" ? b.w / 2 + 3 : -b.w / 2 - 3);
-                        m.node(id).set("yOffset", -b.h / 2 - 3);
+                        const bool travel = std::string(n) == "QuickTravel";
+                        const float w = 64.f, h = 49.f;
+                        const float x = travel ? m.width() - w - 3.f : 3.f;
+                        const float y = m.height() - h - 3.f;
+                        auto place = [&](unsigned child) {
+                            if (!child)
+                                return;
+                            auto& node = m.node(child);
+                            node.set("absoluteX", double(x));
+                            node.set("absoluteY", double(y));
+                            node.set("width", double(w));
+                            node.set("height", double(h));
+                            node.set("visible", true);
+                        };
+                        place(id);
+                        place(m.find(id, "Sprite"));
+                        auto hit = m.find(id, "Touch");
+                        place(hit);
+                        if (hit)
+                            m.node(hit).set("enabled", true);
                     }
             } else if (name == "auto_safe_water_menu") {
                 for (const auto& entry : {std::make_pair("SafeDescrText", g.autoSafe),
@@ -1151,13 +1222,13 @@ namespace rp {
                         }
             } else if (name == "quest_log") {
                 if (auto dialog = m.find(1, "DialogPopup", true)) {
-                    // SlideInDialog's LEFT end position reveals one quarter of the viewport.
+                    // Show the complete recovered half-frame at the left edge.
                     const float dialogWidth = 288.f;
                     const float dialogHeight = std::min(m.height(), 384.f);
-                    const float visibleWidth = m.width() * .25f;
+                    const float visibleWidth = dialogWidth;
                     m.setLayerOrder("HUD", 2);
                     // Keep the visible quest-book page and its buttons inside the viewport.
-                    m.node(dialog).set("absoluteX", double(m.width() * .25f - dialogWidth));
+                    m.node(dialog).set("absoluteX", 0.0);
                     m.node(dialog).set("width", double(dialogWidth));
                     m.node(dialog).set("height", double(dialogHeight));
                     m.node(dialog).set("absoluteY",
@@ -1166,7 +1237,7 @@ namespace rp {
                     if (auto sprite = m.find(dialog, "DialogSprite")) {
                         auto& n = m.node(sprite);
                         n.set("hFlip", 1.0);
-                        n.set("absoluteX", double(m.width() * .25f - dialogWidth));
+                        n.set("absoluteX", 0.0);
                         n.set("absoluteY",
                               double(std::max(0.f, (m.height() - dialogHeight) * .5f)));
                         n.set("width", double(dialogWidth));
@@ -1174,7 +1245,7 @@ namespace rp {
                     }
                     if (auto children = m.find(dialog, "children")) {
                         m.node(children).set("width",
-                                             double(std::min(dialogWidth, m.width() * .25f)));
+                                             double(dialogWidth));
                         m.node(children).set("absoluteX", 0.0);
                         m.node(children).set("layer", std::string("HUD"));
                         m.node(children).set(
@@ -1255,7 +1326,7 @@ namespace rp {
                         m.solve();
                         if (auto touch = m.find(dialog, "Touch")) {
                             m.node(touch).set("width",
-                                              double(std::min(dialogWidth, m.width() * .25f)));
+                                              double(dialogWidth));
                             m.node(touch).set("height", double(dialogHeight));
                             m.node(touch).set("absoluteX", 0.0);
                             m.node(touch).set("absoluteY", m.node(children).number("absoluteY"));
@@ -1355,7 +1426,7 @@ namespace rp {
                             if (auto el = m.find(list, key, true)) {
                                 auto index = std::stoi(key.substr(10));
                                 m.node(el).set("layer", std::string("HUD"));
-                                scrollOrigins_[el] = (name == "tabbed_menu_blueprints" ? 0 : 12) +
+                                scrollOrigins_[el] = ((name == "tabbed_menu_blueprints" || name == "tabbed_menu_maps") ? 0 : 12) +
                                                      index * m.width() * .2;
                                 auto& n = m.node(el);
                                 n.set("width", double(m.width() * .2f));
@@ -1437,8 +1508,25 @@ namespace rp {
                         }
                         set(element, "NewQuest", "visible", q.unread);
                     } else if (name == "tabbed_menu_maps") {
-                        set(element, "itemName", "text", g.zones.at(id));
-                        set(element, "itemName", "visible", true);
+                        const auto& zone = g.zones.at(id);
+                        std::string key = zone;
+                        if (zone == "sailers_sea") key = "SAILORS_SEA";
+                        else if (zone == "big_blue") key = "THE_BIG_BLUE";
+                        else if (zone == "davey_jones_doorstep") key = "DAVEY_JONES_DOORSTEP";
+                        else if (zone == "mermaids_ball") key = "MERMAIDS_BALL";
+                        else if (zone == "nessies_palace") key = "NESSIES_PALACE";
+                        set(element, "itemImage", "sheetName", std::string("xml_resources/rp_menu.xml"));
+                        set(element, "itemImage", "spriteName", key);
+                        set(element, "itemImage", "visible", true);
+                        set(element, "itemNameSecondary", "text", strings_.getText(key));
+                        set(element, "itemNameSecondary", "visible", true);
+                        set(element, "itemName", "visible", false);
+                        set(element, "itemCost", "visible", false);
+                        set(element, "currencyIcon", "visible", false);
+                        set(element, "itemImageSecondaryCentered", "visible", false);
+                        set(element, "Touch", "enabled", true);
+                        for (auto c : {"red", "green", "blue"})
+                            set(element, "itemImage", c, id == g.zone ? .5 : 1.0);
                     } else {
                         if (name == "tabbed_menu_free" && id < 0) {
                             set(element, "Icon", "spriteName",
@@ -2211,6 +2299,13 @@ namespace rp {
                     map = false;
                     panel_ = Panel::None;
                     xmlMenu_.reset();
+                    return {};
+                }
+                if (!g.owned.count(item) && g.blueprints.at(item).purchaseZone > g.zone) {
+                    auto needed = g.blueprints.at(item).purchaseZone;
+                    auto zone = g.zones.find(needed);
+                    notice_ = "Travel to " + (zone == g.zones.end() ? std::string("zone ") + std::to_string(needed) :
+                        strings_.getText(zone->second)) + " to unlock this blueprint.";
                     return {};
                 }
                 if (g.owned.count(item)) {
