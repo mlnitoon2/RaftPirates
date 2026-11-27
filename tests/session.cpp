@@ -75,7 +75,18 @@ int main() {
     check(!game.gotMsgCheat(cheat));
     game.serverName("127.0.0.1");
     game.enableDevelopmentCommands(true);
+    check(!game.gotMsgCheat(cheat)); // local opt-in alone is not authorization
+    sfs::SFSObjectWrapper capability;
+    capability.put("dev_admin", true);
+    game.gotMsgOnExtensionResponse("gs_player", capability);
+    game.ready = true;
     check(game.gotMsgCheat(cheat).has_value());
+    auto command = game.gotMsgCheat(cheat);
+    check(command->payload.getString("c") == "cheat");
+    check(command->payload.getSFSObj("p")->getString("type") == "test");
+    capability.put("dev_admin", false);
+    game.gotMsgOnExtensionResponse("gs_player", capability);
+    check(!game.gotMsgCheat(cheat));
     game.enableDevelopmentCommands(false);
     check(!game.gotMsgCheat(cheat));
     check(game.fastClockMaterialId() == 10);

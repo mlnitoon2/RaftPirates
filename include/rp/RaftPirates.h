@@ -63,7 +63,7 @@ namespace rp {
         };
 
         std::optional<QuestRewardNotice> takeQuestRewardNotice();
-        // Developer requests are disabled unless explicitly enabled for a loopback test server.
+        // Developer requests require local opt-in and the reconstructed server's explicit capability. Server-side authorization is still required.
         void enableDevelopmentCommands(bool enabled);
         std::optional<sfs::Message> gotMsgCheat(const MsgCheat&) const;
         std::optional<sfs::Message>

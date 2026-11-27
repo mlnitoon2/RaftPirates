@@ -581,7 +581,7 @@ namespace sys::platform::game {
                 auto notice = std::move(rt.pendingAdminNotice);
                 rt.pendingAdminNotice.clear();
                 try {
-                    rt.engine.PopupText(platform, notice);
+                    rt.engine.PopupText(platform, notice, false, true);
                 } catch (...) {
                     platform.log("Admin popup unavailable");
                 }

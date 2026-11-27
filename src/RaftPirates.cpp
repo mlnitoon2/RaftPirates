@@ -31,6 +31,7 @@ namespace rp {
         popupResult_.reset();
         rewardNotices_.clear();
         developmentCommands_ = false;
+        serverDevelopmentCommands_ = false;
         startedTutorials_.clear();
         completedTutorials_.clear();
         queued_.clear();
@@ -389,7 +390,7 @@ namespace rp {
     }
 
     bool RaftPirates::developmentAllowed() const {
-        return developmentCommands_ && ready && connected_;
+        return developmentCommands_ && serverDevelopmentCommands_ && ready && connected_;
     }
 
     std::optional<sfs::Message> RaftPirates::gotMsgCheat(const MsgCheat& m) const {

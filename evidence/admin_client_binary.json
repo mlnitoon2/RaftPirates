@@ -1,0 +1,49 @@
+{
+  "reference_sha256": "29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f6fdd26c13",
+  "retail_gate": {
+    "symbol": "isCheatEnabled()",
+    "address": "0x36bc88",
+    "instructions": [
+      "mov r0, #0",
+      "bx lr"
+    ],
+    "result": false
+  },
+  "client_handlers": [
+    {
+      "symbol": "gotMsgCheat",
+      "address": "0x4bbb14",
+      "request": "cheat",
+      "fields": [
+        "type"
+      ]
+    },
+    {
+      "symbol": "gotMsgCheatDuplicatePlayer",
+      "address": "0x4b07ec",
+      "request": "cheat",
+      "fields": [
+        "type",
+        "dup_name"
+      ]
+    },
+    {
+      "symbol": "gotMsgCheatStartBattle",
+      "address": "0x4bc6e4",
+      "request": "gs_debug_battle",
+      "fields": [
+        "opponent"
+      ]
+    },
+    {
+      "symbol": "gotMsgOnAdminMessage",
+      "address": "0x49ff70",
+      "observed": "message string at +8, virtual call slot 0x4c with flags 0 and 1"
+    }
+  ],
+  "limitations": [
+    "Client handlers verified from ARM disassembly and PC-relative literals; server command implementations are not present in this repository.",
+    "Original menus request a server user list for two actions; current reconstructed UI uses text entry.",
+    "dev_admin is a reconstructed server capability and not a recovered retail protocol requirement."
+  ]
+}
