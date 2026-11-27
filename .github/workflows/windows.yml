@@ -5,6 +5,12 @@ on:
     paths-ignore:
       - libraftpirates.so
   workflow_dispatch:
+    inputs:
+      artifact_id:
+        description: "Optional existing WindowsRaftPirates artifact ID (republish without compiling)"
+        required: false
+        default: ""
+        type: string
 permissions:
   contents: read
 concurrency:
@@ -12,7 +18,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   windows:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && inputs.artifact_id == ''
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,10 +57,11 @@ jobs:
         shell: msys2 {0}
         run: |
           echo "toolchain=$(pacman -Q | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "hydra=$(git -C HydraLegacy rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.ccache
-          key: windows-ucrt-ccache-v1-${{ steps.compiler.outputs.toolchain }}-${{ github.sha }}
+          key: windows-ucrt-ccache-v1-${{ steps.compiler.outputs.toolchain }}-${{ steps.compiler.outputs.hydra }}-${{ github.sha }}
           restore-keys: |
             windows-ucrt-ccache-v1-${{ steps.compiler.outputs.toolchain }}-
       - name: Configure and build
@@ -118,19 +125,44 @@ jobs:
 
   publish:
     needs: windows
-    if: github.ref == 'refs/heads/main' && success()
+    if: always() && !cancelled() && github.ref == 'refs/heads/main' && (needs.windows.result == 'success' || (github.event_name == 'workflow_dispatch' && inputs.artifact_id != ''))
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: read
     steps:
       - uses: actions/download-artifact@v4
+        if: inputs.artifact_id == ''
         with:
           name: WindowsRaftPirates
           path: dist
+      - name: Recover a successful Windows artifact
+        id: recover
+        if: github.event_name == 'workflow_dispatch' && inputs.artifact_id != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          ARTIFACT_ID: ${{ inputs.artifact_id }}
+        run: |
+          set -euo pipefail
+          [[ "$ARTIFACT_ID" =~ ^[0-9]+$ ]]
+          metadata="$(gh api "repos/$GH_REPO/actions/artifacts/$ARTIFACT_ID")"
+          jq -e '.name == "WindowsRaftPirates" and .expired == false and .workflow_run.head_branch == "main"' <<< "$metadata" >/dev/null
+          run_id="$(jq -r '.workflow_run.id' <<< "$metadata")"
+          source_run="$(gh api "repos/$GH_REPO/actions/runs/$run_id")"
+          jq -e '.path == ".github/workflows/windows.yml" and .head_branch == "main" and .conclusion == "success"' <<< "$source_run" >/dev/null
+          mkdir -p dist
+          gh api "repos/$GH_REPO/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/windows-artifact.zip"
+          unzip -tq "$RUNNER_TEMP/windows-artifact.zip"
+          unzip -p "$RUNNER_TEMP/windows-artifact.zip" WindowsRaftPirates.zip > dist/WindowsRaftPirates.zip
+          echo "revision=$(jq -r '.head_sha' <<< "$source_run")" >> "$GITHUB_OUTPUT"
+          echo "run_number=$(jq -r '.run_number' <<< "$source_run")" >> "$GITHUB_OUTPUT"
       - name: Publish latest Windows autobuild
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          SOURCE_REVISION: ${{ steps.recover.outputs.revision || github.sha }}
+          SOURCE_RUN_NUMBER: ${{ steps.recover.outputs.run_number || github.run_number }}
         run: |
           set -euo pipefail
           # Android's generated-library commit changes main without changing
@@ -139,17 +171,17 @@ jobs:
           # Workflow concurrency prevents overlapping publication.
           if gh release view windows-autobuild >/dev/null 2>&1; then
             previous="$(gh release view windows-autobuild --json body --jq .body | sed -n 's/^Windows workflow run: \([0-9][0-9]*\)$/\1/p' | head -n 1)"
-            if [[ -n "$previous" && "$previous" -gt "$GITHUB_RUN_NUMBER" ]]; then
+            if [[ -n "$previous" && "$previous" -gt "$SOURCE_RUN_NUMBER" ]]; then
               echo "::notice::A newer successful Windows build is already published."
               exit 0
             fi
           fi
           test -s dist/WindowsRaftPirates.zip
           unzip -tq dist/WindowsRaftPirates.zip
-          notes="Automated Windows x64 build from $GITHUB_SHA. Extract the ZIP before running raftpirates_desktop.exe. See BUILD.txt for exact source revisions, signing status and asset completeness. A compatible server and any missing original assets are required."
-          notes="$(printf '%s\n\nWindows workflow run: %s\n' "$notes" "$GITHUB_RUN_NUMBER")"
+          notes="Automated Windows x64 build from $SOURCE_REVISION. Extract the ZIP before running raftpirates_desktop.exe. See BUILD.txt for exact source revisions, signing status and asset completeness. A compatible server and any missing original assets are required."
+          notes="$(printf '%s\n\nWindows workflow run: %s\n' "$notes" "$SOURCE_RUN_NUMBER")"
           if ! gh release view windows-autobuild >/dev/null 2>&1; then
-            gh release create windows-autobuild --target "$GITHUB_SHA" --title "Windows autobuild" --notes "$notes" --prerelease --latest=false
+            gh release create windows-autobuild --target "$SOURCE_REVISION" --title "Windows autobuild" --notes "$notes" --prerelease --latest=false
           fi
           gh release upload windows-autobuild dist/WindowsRaftPirates.zip --clobber
           gh release edit windows-autobuild --title "Windows autobuild" --notes "$notes" --prerelease --latest=false

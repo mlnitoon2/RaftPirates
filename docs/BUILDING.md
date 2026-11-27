@@ -102,3 +102,7 @@ The importer verifies every included file against the archived inventory before 
 ### Desktop audio diagnostics
 
 Run `raftpirates_desktop.exe --audio-test` to play the original theme and button sound independently of login or server state. The diagnostic checks nonzero mixed PCM and logs the SDL audio driver and output format to desktop.log. It cannot detect a muted Windows output or disconnected physical speaker. Failed music playback is retried rather than permanently disabling all sound.
+
+### Windows autobuild publication
+
+Successful Windows builds publish to the stable `windows-autobuild` release regardless of Android binary-only commits. Compiler objects are cached by MSYS2 package versions and source revisions. To republish an existing successful build without compiling, open the Windows desktop build workflow, select Run workflow on main, and enter the ID of its `WindowsRaftPirates` artifact in `artifact_id`. Leave it empty for a normal build. Recovery verifies the artifact name, workflow, branch and successful source run before publishing.
