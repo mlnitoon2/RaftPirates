@@ -1,5 +1,6 @@
 #include "rp/Game.h"
 #include "rp/GridSprite.h"
+#include "rp/PerimeterWallSprite.h"
 #include "rp/RaftAttackSprite.h"
 #include "rp/WaterBucketSprite.h"
 #include "rp/ThrobingIndicatorSprite.h"
@@ -90,6 +91,8 @@ namespace rp {
         e->definition = definition;
         e->world = world;
         e->sprite = std::make_unique<GridSprite>(*this, e->object, e->definition, world, zoom_);
+        if (const auto* c=dynamic_cast<const RaftComponent*>(&object)) e->sprite->setConstructionTime(c->GetRemainingTime());
+        if(e->sprite->constructionTime()>0) e->sprite->AddAccessorySprite(std::make_unique<PerimeterWallSprite>(this,e->sprite.get()));
         appearance(*e, parent ? parent : object.id);
         e->sprite->SetMute(RaftMuted(parent?parent:object.id));
         sprites_[key] = std::move(e);
@@ -108,6 +111,10 @@ namespace rp {
         e.object = object;
         e.definition = definition;
         e.world = world;
+        if (const auto* c=dynamic_cast<const RaftComponent*>(&object)) e.sprite->setConstructionTime(c->GetRemainingTime());
+        else e.sprite->setConstructionTime(0);
+        if(e.sprite->constructionTime()>0&&!e.sprite->HasAccessorySprite(1)) e.sprite->AddAccessorySprite(std::make_unique<PerimeterWallSprite>(this,e.sprite.get()));
+        if(e.sprite->constructionTime()>0) if(auto* a=e.sprite->GetAccessorySprite(1)) a->AddToTick();
         e.sprite->SetGeometry(world, zoom_);
         appearance(e, parent ? parent : object.id);
     }

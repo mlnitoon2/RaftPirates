@@ -151,9 +151,11 @@ Names newly implemented in source are listed here and removed from the provision
 
 Pass 48 further evidence: ARM base state defaults (0x38232c–0x382710), checkerboard tile parity and truncating modulus (0x3f9f14, 0x3fac00); CPU tint is approximate. Fixed native accessory identifiers 5 (movement arrow) and 6 (battle points), and generalized accessory draw/visibility/lifetime dispatch. State listener ownership and original GL rendering remain unverified.
 
+Pass 48 overlays: recovered native accessory IDs 1, 3, 16, 17; original construction atlas, raft grid textures, balloon colors and intro/idle animation names. ARM constants: balloon rise begins at 0.5 s, duration bounds 1–1.5 s, speed -100; alpha modulation 63.75. Shared portable overlays submit actual sprites; construction time is retained from component snapshots. Original exact footprint edges, per-piece alignment, randomized balloon timing and native scene attachment are not yet matched. Grid and highlight adapters are available to callers but not fully connected to gameplay messages.
+
 ## Remaining method names by class (provisional source review)
 
-593 names from the Pass 33 inventory now have named source implementations through Pass 48 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+621 names from the Pass 33 inventory now have named source implementations through Pass 48 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (20)
 
@@ -163,17 +165,9 @@ Pass 48 further evidence: ARM base state defaults (0x38232c–0x382710), checker
 
 `PlayBattleAnimations`, `SwapPopup`, `SwapStance`, `ToBattleView`, `ToPositioningView`, `gotMsgBattleInfoDropdown`, `gotMsgBattleInfoRequest`, `gotMsgHighlightHudItem`, `gotMsgQuestRead`, `gotMsgToggleBlockHudItem`, `gotMsgTransitionDone`
 
-### `rp::PerimeterWallSprite` (10)
-
-`AddBalloons`, `Init`, `PerimeterWallSprite`, `RemoveFromTick`, `SetPriorities`, `SetPriority`, `SetVisible`, `Update`, `tick`, `~PerimeterWallSprite`
-
 ### `rp::DivingUnit` (1)
 
 `AddedToOcean`
-
-### `rp::SelectedWallSprite` (7)
-
-`Init`, `SelectedWallSprite`, `SetPriorities`, `SetPriority`, `Update`, `tick`, `~SelectedWallSprite`
 
 ### `rp::DiveMeterSprite` (6)
 
@@ -187,10 +181,6 @@ Pass 48 further evidence: ARM base state defaults (0x38232c–0x382710), checker
 
 `FireFXSprite`, `Init`, `SetColour`, `SetVisible`, `Update`, `~FireFXSprite`
 
-### `rp::RaftGridSprite` (6)
-
-`Init`, `RaftGridSprite`, `SetPriorities`, `SetPriority`, `Update`, `~RaftGridSprite`
-
 ### `rp::SplashFXSprite` (6)
 
 `Init`, `RemoveFromTick`, `SplashFXSprite`, `Update`, `tick`, `~SplashFXSprite`
@@ -198,10 +188,6 @@ Pass 48 further evidence: ARM base state defaults (0x38232c–0x382710), checker
 ### `rp::WreckageSprite` (6)
 
 `GetPriority`, `Init`, `SetPriority`, `UpdatePiece`, `WreckageSprite`, `~WreckageSprite`
-
-### `rp::BossBattleRaftHighlightSprite` (5)
-
-`BossBattleRaftHighlightSprite`, `Init`, `Update`, `tick`, `~BossBattleRaftHighlightSprite`
 
 ### `rp::GfxBattleInfoDropDown` (5)
 

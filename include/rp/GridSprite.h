@@ -57,6 +57,8 @@ namespace rp {
         bool HasAttack() const;
         const std::string& definitionName() const { return definition_.name; }
         const GridObjectInfo& definition() const { return definition_; }
+        void setConstructionTime(float time) { constructionTime_=time; }
+        float constructionTime() const { return constructionTime_; }
         int objectState() const { return object_.state; }
         int battlePoints() const { return object_.GetBattlePoints(); }
         void Attack();
@@ -69,7 +71,7 @@ namespace rp {
         const GridObject& object_;
         const GridObjectInfo& definition_;
         sys::gfx::Vec2 world_;
-        float scale_ = 1, time_ = 0, slack_ = 0;
+        float scale_ = 1, time_ = 0, slack_ = 0, constructionTime_=0;
         bool visible_ = true, selected_ = false, hasAttack_ = false, muted_=false;
         sys::gfx::Color colour_{};
         std::vector<SpritePiece> pieces_;
