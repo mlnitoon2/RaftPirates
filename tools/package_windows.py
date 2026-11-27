@@ -30,16 +30,18 @@ def package(exe, prefix, output, status, revision, hydra_revision):
     required_assets = (
         "menus/loading_intro.xml", "menus/hud.xml", "menus/title.xml",
         "xml_resources/properties.xml", "xml_resources/rp_menu.xml",
-        "xml_bin/game_manifest.bin", "gfx/menu/menu_overlay.png",
-        "font/rp_font_title.font", "text/en.utf8",
+        "xml_bin/game_manifest.bin", "gfx/menu/menu_overlay.pvr",
+        "font/rp_font_title.font", "font/rp_font_title.alphabet",
+        "gfx/font/rp_font_title.png", "text/en.utf8",
     )
     missing = [path for path in required_assets if not (asset_source / path).is_file()]
-    bundled_assets = not missing
+    bundled_assets = not missing and len(asset_files) >= 710
     asset_status = (
         f"Included {len(asset_files)} asset files. "
         + ("Startup asset checks passed; additional original resources may still be needed.\n"
            if bundled_assets else "Incomplete asset bundle. Merge the remaining original APK assets before launching.\n"
-           + "Missing startup assets: " + ", ".join(missing) + "\n")
+           + ("Missing startup assets: " + ", ".join(missing) + "\n" if missing else "")
+           + "Original APK contains 710 asset files.\n")
     )
     shutil.copy2(exe, staging / exe.name)
 

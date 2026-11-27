@@ -25,7 +25,8 @@ jobs:
         run: |
           extra=()
           # Do not enable full original-asset tests during incremental imports.
-          if [ -f RaftPirates/assets/menus/hud.xml ] && [ -f RaftPirates/assets/menus/loading_intro.xml ] && [ -f RaftPirates/assets/xml_resources/properties.xml ] && [ -f RaftPirates/assets/xml_bin/game_manifest.bin ] && [ -f RaftPirates/assets/gfx/menu/menu_overlay.png ] && [ -f RaftPirates/assets/font/blue_highway.ttf ]; then
+          asset_count=$(find RaftPirates/assets -type f 2>/dev/null | wc -l || true)
+          if [ "$asset_count" -ge 710 ] && [ -f RaftPirates/assets/menus/hud.xml ] && [ -f RaftPirates/assets/menus/loading_intro.xml ] && [ -f RaftPirates/assets/xml_resources/properties.xml ] && [ -f RaftPirates/assets/xml_bin/game_manifest.bin ] && [ -f RaftPirates/assets/gfx/menu/menu_overlay.pvr ] && [ -f RaftPirates/assets/font/blue_highway.ttf ]; then
             extra+=("-DRAFT_ASSET_ROOT=$GITHUB_WORKSPACE/RaftPirates/assets")
           fi
           cmake -S RaftPirates -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DRAFT_DESKTOP=ON "${extra[@]}"

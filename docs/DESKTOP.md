@@ -39,3 +39,5 @@ The reconstructed native TCP client uses SDK 1.7.5 protocol details but is not t
 ## Asset bundle and graphics
 
 When an authorized assets/ directory is committed at the repository root, Windows CI copies it into the portable ZIP automatically. The desktop host enables atlas-aware bilinear sprite sampling and linear framebuffer presentation without changing the game's 640x400 logical coordinate system. This smooths pixel edges but is not yet native high-resolution rendering. The original @2x assets are not automatically selected.
+
+Incremental asset imports are included in portable Windows builds even before the set is complete. BUILD.txt reports the included asset count and missing startup resources. Until the 710-file original asset set is present, merge the remaining assets from your authorized APK before launching. Host CI only enables original-asset tests when the expected file count and required startup markers are present; this is a completeness heuristic, not a hash audit.
