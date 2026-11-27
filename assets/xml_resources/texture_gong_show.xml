@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:9de591ff025af537fb17553d479381e7$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_gong_show.png" width="256" height="256">
+    <sprite n="gong_show_bamboo" x="54" y="92" w="48" h="66" oX="8" oY="0" oW="64" oH="72"/>
+    <sprite n="gong_show_bamboo_sh" x="2" y="54" w="52" h="28" oX="6" oY="41" oW="64" oH="72"/>
+    <sprite n="gong_show_bucket" x="228" y="62" w="26" h="26" oX="3" oY="30" oW="32" oH="56"/>
+    <sprite n="gong_show_bucket_sh" x="226" y="90" w="24" h="12" oX="4" oY="44" oW="32" oH="56"/>
+    <sprite n="gong_show_gong" x="2" y="196" w="38" h="42" oX="21" oY="9" oW="80" oH="56"/>
+    <sprite n="gong_show_gong_frame" x="2" y="2" w="68" h="50" oX="6" oY="2" oW="80" oH="56"/>
+    <sprite n="gong_show_gong_sh" x="72" y="2" w="62" h="10" oX="10" oY="44" oW="80" oH="56"/>
+    <sprite n="gong_show_robot_01" x="180" y="102" w="42" h="48" oX="37" oY="3" oW="88" oH="64"/>
+    <sprite n="gong_show_robot_02" x="120" y="148" w="40" h="46" oX="34" oY="2" oW="88" oH="64"/>
+    <sprite n="gong_show_robot_arms_01" x="122" y="114" w="42" h="32" oX="36" oY="18" oW="88" oH="64"/>
+    <sprite n="gong_show_robot_arms_02" x="180" y="82" w="44" h="18" oX="0" oY="16" oW="88" oH="64"/>
+    <sprite n="gong_show_robot_arms_03" x="2" y="124" w="46" h="38" oX="35" oY="4" oW="88" oH="64"/>
+    <sprite n="gong_show_robot_legs_01" x="2" y="84" w="50" h="18" oX="26" oY="42" oW="88" oH="64"/>
+    <sprite n="gong_show_robot_legs_02" x="56" y="72" w="50" h="18" oX="26" oY="42" oW="88" oH="64"/>
+    <sprite n="gong_show_robot_legs_03" x="2" y="104" w="48" h="18" oX="28" oY="42" oW="88" oH="64"/>
+    <sprite n="gong_show_robot_legs_04" x="180" y="62" w="46" h="18" oX="29" oY="42" oW="88" oH="64"/>
+    <sprite n="gong_show_robot_sh" x="2" y="164" w="34" h="18" oX="35" oY="46" oW="88" oH="64"/>
+    <sprite n="gong_show_water_01" x="240" y="104" w="14" h="4" oX="9" oY="37" oW="32" oH="56"/>
+    <sprite n="gong_show_water_02" x="224" y="104" w="14" h="6" oX="9" oY="8" oW="32" oH="56"/>
+    <sprite n="gong_show_water_03" x="104" y="110" w="16" h="12" oX="8" oY="9" oW="32" oH="56"/>
+    <sprite n="gong_show_water_04" x="108" y="72" w="16" h="18" oX="8" oY="12" oW="32" oH="56"/>
+    <sprite n="gong_show_water_05" x="104" y="142" w="14" h="14" oX="9" oY="20" oW="32" oH="56"/>
+    <sprite n="gong_show_water_06" x="104" y="124" w="14" h="16" oX="9" oY="16" oW="32" oH="56"/>
+    <sprite n="gong_show_water_07" x="56" y="54" w="14" h="16" oX="9" oY="17" oW="32" oH="56"/>
+    <sprite n="gong_show_wave_01" x="104" y="92" w="16" h="16" oX="24" oY="24" oW="64" oH="64"/>
+    <sprite n="gong_show_wave_02" x="128" y="62" w="50" h="50" oX="7" oY="7" oW="64" oH="64"/>
+    <sprite n="gong_show_wave_03" x="72" y="14" w="54" h="56" oX="5" oY="4" oW="64" oH="64"/>
+    <sprite n="gong_show_wave_04" x="136" y="2" w="58" h="58" oX="3" oY="3" oW="64" oH="64"/>
+    <sprite n="gong_show_wave_05" x="196" y="2" w="58" h="58" oX="3" oY="3" oW="64" oH="64"/>
+</TextureAtlas>
