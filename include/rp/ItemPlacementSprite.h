@@ -8,10 +8,10 @@ namespace rp {
         ItemPlacementSprite(const Game& game,const OceanView& view,
                             std::shared_ptr<const sys::gfx::Image> image,
                             const sys::res::SpriteCell& valid,const sys::res::SpriteCell& invalid);
-        ~ItemPlacementSprite();
+        virtual ~ItemPlacementSprite();
         void SetToObject(int object,int parent,int ignoreParent=0,int ignoreId=0);
         void SetPosition(Cell position);
-        void SetPriority(unsigned piece,float value);
+        virtual void SetPriority(unsigned piece,float value);
         bool OkayToPlace()const;
         void Update();
         void Render(sys::gfx::Image& target)const;

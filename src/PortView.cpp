@@ -1,5 +1,6 @@
 #include "rp/PortView.h"
 #include "rp/ItemPlacementSprite.h"
+#include "rp/ItemOnRaftPlacementSprite.h"
 #include "rp/RaftPirates.h"
 #include "rp/RPMenuHandler.h"
 #include "rp/BuildModeState.h"
@@ -306,11 +307,13 @@ namespace rp {
                         for(const auto& c:source->components)
                             if(c.id==selectedComponent_)object=c.type;
                     const auto* red=atlas->findSpriteByName("footprint_1x1_red");
-                    ItemPlacementSprite overlay(g,ocean_,image,*cell,red?*red:*cell);
-                    overlay.SetToObject(object,placementParent_,moving_?selectedParent_:0,
-                                        moving_?selectedComponent_:0);
-                    overlay.SetPosition(*placement_);
-                    overlay.Render(out);
+                    std::unique_ptr<ItemPlacementSprite> overlay;
+                    if(placementParent_)overlay=std::make_unique<ItemOnRaftPlacementSprite>(g,ocean_,image,*cell,red?*red:*cell);
+                    else overlay=std::make_unique<ItemPlacementSprite>(g,ocean_,image,*cell,red?*red:*cell);
+                    overlay->SetToObject(object,placementParent_,moving_?selectedParent_:0,
+                                         moving_?selectedComponent_:0);
+                    overlay->SetPosition(*placement_);
+                    overlay->Render(out);
                 }
             } catch (const std::exception&) { /* No substitute for missing original assets. */
             }

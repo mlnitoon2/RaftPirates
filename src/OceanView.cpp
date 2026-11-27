@@ -1,5 +1,7 @@
 #include "rp/Game.h"
 #include "rp/GridSprite.h"
+#include "rp/WaterBucketSprite.h"
+#include "rp/ThrobingIndicatorSprite.h"
 #include "rp/UnitHealthBarSprite.h"
 #include "rp/GfxOceanGradient.h"
 #include "rp/GfxOceanGrid.h"
@@ -21,6 +23,8 @@ namespace rp {
         std::vector<std::string> animation;
         float animationStart = 0, animationDelay = 0, slack = 0;
         bool customAnimation = false;
+        WaterBucketSprite bucket;
+        ThrobingIndicatorSprite indicator;
     };
 
     OceanView::OceanView(std::filesystem::path root)
@@ -342,6 +346,8 @@ namespace rp {
         for (const auto& key : ticking_) {
             auto& e = *sprites_.at(key);
             e.slack = std::max(0.f, e.slack - dt);
+            e.bucket.tick(dt);
+            e.indicator.tick(dt);
         }
     }
 
@@ -591,6 +597,29 @@ namespace rp {
                     bar.Render(out);
                 }
             } catch(const std::exception&) { /* Original health-meter assets unavailable. */ }
+        }
+        if(waterBuckets_||picked_){
+            try{
+                const std::string key="xml_resources/rp_menu.xml";
+                if(!overlaySheet_)overlaySheet_=std::make_shared<ResourceSpriteSheet>(ResourceSpriteSheet::Create(root_/key));
+                auto image=images_.find(overlaySheet_->imagePath);
+                if(image==images_.end())image=images_.emplace(overlaySheet_->imagePath,std::make_shared<Image>(loadAssetImage(root_/overlaySheet_->imagePath))).first;
+                GfxManager overlays;
+                auto draw=[&](const VisualEntry& entry,const char* name,float scale,float offset){
+                    if(!entry.sprite->GetVisible())return;
+                    auto cell=overlaySheet_->findSpriteByName(name);if(!cell)return;
+                    const auto point=WorldToScreen(entry.world);
+                    GfxSprite s;s.image=image->second;s.cell=*cell;
+                    s.SetPos(point.x-cell->ow*scale*.5f,point.y+offset-cell->oh*scale*.5f);
+                    s.SetScale(scale,scale);overlays.submit(s);
+                };
+                for(const auto& entry:sprites_){
+                    const auto& k=entry.first;const auto& visual=*entry.second;
+                    if(CheckForBucket(k.first,k.second))draw(visual,"btn_water",visual.bucket.scale(),-34);
+                    if(picked_&&*picked_==k)draw(visual,"battle_slider_arrow",1,visual.indicator.offset());
+                }
+                overlays.RenderScreen(out);
+            }catch(const std::exception&){}
         }
         if (diveLoadKey_ && diveCapacity_ > 0) {
             const auto& entry = *sprites_.at(*diveLoadKey_);

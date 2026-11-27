@@ -197,5 +197,6 @@ namespace rp {
         std::unique_ptr<GfxOceanGradient> gradient_;
         std::map<std::string, std::shared_ptr<sys::gfx::Image>> images_;
         std::map<std::string, sys::res::ResourceAEAnim> bins_;
+        std::shared_ptr<sys::res::ResourceSpriteSheet> overlaySheet_;
     };
 } // namespace rp
