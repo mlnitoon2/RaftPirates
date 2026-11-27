@@ -153,9 +153,11 @@ Pass 48 further evidence: ARM base state defaults (0x38232c–0x382710), checker
 
 Pass 48 overlays: recovered native accessory IDs 1, 3, 16, 17; original construction atlas, raft grid textures, balloon colors and intro/idle animation names. ARM constants: balloon rise begins at 0.5 s, duration bounds 1–1.5 s, speed -100; alpha modulation 63.75. Shared portable overlays submit actual sprites; construction time is retained from component snapshots. Original exact footprint edges, per-piece alignment, randomized balloon timing and native scene attachment are not yet matched. Grid and highlight adapters are available to callers but not fully connected to gameplay messages.
 
+Pass 48 diving: native IDs 2/8; recovered frame/button, bare PNG meter, title font and readout atlas cell names. ARM meter Select checks button identity and positive remaining time; SetTime and SetPriorities return directly. Recovered pulse period 1.5, amount 0.1, clock offset 62.5 and scale 0.65; flash/blink 2.5/2.0 and readout priority offsets 0.03/-0.01/-0.02. Host AddedToOcean updates visual state using existing Game tick, no second countdown. Readout positions, depth semantics and original menu event/audio on selection remain approximations or unconnected.
+
 ## Remaining method names by class (provisional source review)
 
-621 names from the Pass 33 inventory now have named source implementations through Pass 48 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+634 names from the Pass 33 inventory now have named source implementations through Pass 48 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (20)
 
@@ -164,18 +166,6 @@ Pass 48 overlays: recovered native accessory IDs 1, 3, 16, 17; original construc
 ### `rp::BattleModeState` (11)
 
 `PlayBattleAnimations`, `SwapPopup`, `SwapStance`, `ToBattleView`, `ToPositioningView`, `gotMsgBattleInfoDropdown`, `gotMsgBattleInfoRequest`, `gotMsgHighlightHudItem`, `gotMsgQuestRead`, `gotMsgToggleBlockHudItem`, `gotMsgTransitionDone`
-
-### `rp::DivingUnit` (1)
-
-`AddedToOcean`
-
-### `rp::DiveMeterSprite` (6)
-
-`DiveMeterSprite`, `Select`, `SetPriorities`, `SetTime`, `tick`, `~DiveMeterSprite`
-
-### `rp::DiveUnitReadoutSprite` (6)
-
-`DiveUnitReadoutSprite`, `SetPriorities`, `SetVisible`, `gotMsgDiveDepthChange`, `tick`, `~DiveUnitReadoutSprite`
 
 ### `rp::FireFXSprite` (6)
 

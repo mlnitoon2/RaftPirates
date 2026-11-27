@@ -1,4 +1,7 @@
 #include "rp/DivingUnit.h"
+#include "rp/Game.h"
+#include "rp/DiveMeterSprite.h"
+#include "rp/DiveUnitReadoutSprite.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -23,6 +26,18 @@ namespace rp {
     } // namespace
 
     DivingUnit::DivingUnit() = default;
+    void DivingUnit::AddedToOcean(OceanView& ocean) const {
+        // Game::tick owns countdown advancement; this adapter broadcasts current visual state.
+        auto* sprite=ocean.getGridSprite(parent,object);
+        if(!sprite)return;
+        ocean.gotMsgDiveUnitLoadChange(parent,object,GetLoadValue(),GetMaxLoad());
+        if(!sprite->HasAccessorySprite(2))sprite->AddAccessorySprite(std::make_unique<DiveMeterSprite>(&ocean,sprite));
+        if(auto* meter=dynamic_cast<DiveMeterSprite*>(sprite->GetAccessorySprite(2)))meter->SetDive(*this);
+        if(!sprite->HasAccessorySprite(8))sprite->AddAccessorySprite(std::make_unique<DiveUnitReadoutSprite>(&ocean,sprite));
+        if(auto* readout=dynamic_cast<DiveUnitReadoutSprite*>(sprite->GetAccessorySprite(8))){
+            MsgDiveDepthChange msg;msg.depth=depth;msg.maximum=maxDepth;readout->gotMsgDiveDepthChange(msg);
+        }
+    }
     DivingUnit DivingUnit::Duplicate() const { return *this; }
     bool DivingUnit::RequestDive() const { return OkayToDive(); }
     void DivingUnit::UseClock(float seconds) {

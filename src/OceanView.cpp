@@ -553,10 +553,13 @@ namespace rp {
         }
         lastDiving_ = diving;
         if (diving)
-            gotMsgDiveUnitLoadChange(dive->parent, dive->object, dive->GetLoadValue(),
-                                     dive->GetMaxLoad());
-        else
+            dive->AddedToOcean(*this);
+        else {
             diveLoadKey_.reset();
+            if(auto* sprite=getGridSprite(lastDiveParent_,lastDiveObject_)) {
+                sprite->RemoveAccessorySprite(2);sprite->RemoveAccessorySprite(8);
+            }
+        }
         Image out(640,400);
         gradient_->SetZone(bossOcean_ ? GfxOceanGradient::GradientZone::Boss :
                            game.safe ? GfxOceanGradient::GradientZone::Safe : GfxOceanGradient::GradientZone::Open);

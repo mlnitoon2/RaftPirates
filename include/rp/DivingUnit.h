@@ -5,10 +5,12 @@
 #include <vector>
 
 namespace rp {
+    class OceanView;
     // Current diving-unit view, without claiming the original C++ inheritance/ABI.
     struct DivingUnit {
         DivingUnit();
         DivingUnit Duplicate() const;
+        void AddedToOcean(OceanView&) const;
         bool RequestDive() const;
         void UseClock(float seconds);
         std::pair<std::vector<std::string>,float> PlayAnimations() const;
