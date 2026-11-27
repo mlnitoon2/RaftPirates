@@ -305,6 +305,12 @@ namespace rp {
                 diveSeconds = 0;
                 diveFraction = 0;
             }
+        } else if (cmd == "set_display_name") {
+            if (p.getBool("success", true)) {
+                auto name = p.getString("displayName", p.getString("display_name"));
+                if (!name.empty() && name.size() <= 128)
+                    playerName = std::move(name);
+            }
         } else if (cmd == "gs_blueprints_changed")
             each(p, "blueprints_added", [&](auto& x) { giveBlueprint(num(x, "blueprint_id")); });
         else if (cmd == "purchase_response") {

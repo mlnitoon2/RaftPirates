@@ -6,6 +6,7 @@
 #include "rp/BuildModeState.h"
 #include "rp/GridSprite.h"
 #include "sys/gfx/AssetImage.h"
+#include "sys/gfx/GfxBox.h"
 #include "sys/EngineConfig.h"
 #include <algorithm>
 #include <cmath>
@@ -127,6 +128,16 @@ namespace rp {
         lastScrollOffset_ = offset;
         for (auto [id, origin] : scrollOrigins_)
             xmlMenu_->node(id).set(scrollVertical_ ? "yOffset" : "xOffset", origin + offset);
+        if (!scrollVertical_) {
+            page_ = size_t(std::max(0.f, -offset) / 640.f);
+            for (auto name : {"ScrollArrow-Left", "ScrollArrow-Right"})
+                if (auto arrow = xmlMenu_->find(1, name, true))
+                    if (auto sprite = xmlMenu_->find(arrow, "Sprite")) {
+                        const bool left = std::string(name) == "ScrollArrow-Left";
+                        xmlMenu_->node(sprite).set("alpha", (left ? offset >= -1.f :
+                            -offset >= xmlMenu_->scrollSize(swipe_) - 1.f) ? .1 : 1.);
+                    }
+        }
         xmlMenu_->solve();
     }
 
@@ -216,12 +227,6 @@ namespace rp {
             oceanGesture_ = false;
             return;
         }
-        if (xmlMenu_ && xmlName_ == "tabbed_menu_blueprints" && panel_ == Panel::Shop &&
-            y >= blueprintListTop_ && y < 400 && x >= 0 && x < 640) {
-            blueprintGesture_ = Vec2{x, y};
-            oceanGesture_ = false;
-            return;
-        }
         if (xmlMenu_ && (panel_ != Panel::None || map) && xmlMenu_->hitTest(x, y)) {
             xmlMenu_->touchDown(x, y);
             xmlCaptured_ = true;
@@ -237,8 +242,6 @@ namespace rp {
     }
 
     void PortView::touchDrag(float x, float y) {
-        if (blueprintGesture_)
-            return;
         if (xmlCaptured_ && xmlMenu_) {
             xmlMenu_->touchDrag(x, y);
             updateScroll();
@@ -284,6 +287,7 @@ namespace rp {
 
     Image PortView::render(const Game& g, float time, const std::string& status) {
         worldTime_ = time;
+        mapNameBounds_.reset();
         Image out(640, 400, {36, 133, 168, 255});
         using Phase = BattleModeState::Phase;
         const auto& net = g.onlineBattle;
@@ -425,7 +429,39 @@ namespace rp {
                         auto marker = mapView_.playerPosition();
                         int mx = box.x + int(marker.x * box.w / (m.width * m.tileWidth)),
                             my = box.y + int(marker.y * box.h / (m.height * m.tileHeight));
-                        renderItemIcon(out, "rp_menu.xml", "rp_map_marker", mx - 13, my - 13);
+                        // anim_map_raft.bin: map_raft / map_raft_safe use four flag frames.
+                        const int frame = (int(std::max(0.f, time) * 8.f) % 4) + (g.safe ? 5 : 1);
+                        const auto flag = frame == 1 ? std::string("rp_map_marker") :
+                            "rp_map_marker00" + std::to_string(frame);
+                        renderItemIcon(out, "rp_menu.xml", flag, mx - 13, my - 30, 48.f);
+                        if (panel_ == Panel::None && !mapInfoEnemy_) {
+                            const float w = 144.f, h = 58.f;
+                            const float x = std::clamp(float(mx + (mx > 455 ? -w - 22 : 22)),
+                                                       4.f, 640.f - w - 4.f);
+                            const float y = std::clamp(float(my - 44), 4.f, 400.f - h - 4.f);
+                            GfxManager labels;
+                            GfxBox backing((root_ / "xml_resources/map_9slice.xml").string());
+                            backing.setBoxWidth(w);
+                            backing.setBoxHeight(h);
+                            backing.SetPos(x, y);
+                            backing.submit(labels);
+                            if (!mapNameFont_)
+                                mapNameFont_ = std::make_unique<ResourceSpriteFont>(
+                                    ResourceSpriteFont::Create(root_, "blue_highway"));
+                            const std::string lines[] = {
+                                g.playerName.empty() ? "Unnamed Raft" : g.playerName,
+                                std::to_string(g.currentBP()) + " BP",
+                                g.safe ? "Safe Waters" : "Pirate Waters"
+                            };
+                            for (int row = 0; row < 3; ++row) {
+                                auto layout = mapNameFont_->layout(lines[row], .65f, w - 16,
+                                                                  false, true, 0, 16);
+                                mapNameFont_->submit(labels, layout, x + 8, y + 5 + row * 16,
+                                                     {255, 255, 255, 255}, 2.f);
+                            }
+                            labels.RenderScreen(out);
+                            mapNameBounds_ = std::array<float, 4>{x, y, w, h};
+                        }
                     }
                 }
             } catch (const std::exception&) {
@@ -487,6 +523,11 @@ namespace rp {
         if (hud_ && g.ready && !map) {
             updateHud(g);
             hud_->render(out);
+        }
+        if (panel_ == Panel::QuestDetail && questLogUnderlay_) {
+            GfxManager renderer;
+            questLogUnderlay_->submit(renderer);
+            renderer.RenderScreen(out);
         }
         if (panel_ != Panel::None)
             renderPanel(out, g);
@@ -573,18 +614,6 @@ namespace rp {
             shopButtonArmed_ = false;
             if (auto hit = shopButtonAt(x, y))
                 return xmlTouch(g, x, y, hit);
-            return {};
-        }
-        if (blueprintGesture_) {
-            auto start = *blueprintGesture_;
-            blueprintGesture_.reset();
-            if (xmlName_ != "tabbed_menu_blueprints" || !xmlMenu_)
-                return {};
-            const float dx = x - start.x;
-            if (std::abs(dx) > 30)
-                blueprintPageMove(g, dx < 0 ? 1 : -1);
-            else if (std::abs(y - start.y) < 20 && y >= blueprintListTop_ && y < 400)
-                selectBlueprintSlot(g, x);
             return {};
         }
         if (xmlMenu_ && panel_ == Panel::Safety && xmlName_ == "auto_safe_water_menu") {
@@ -759,6 +788,11 @@ namespace rp {
             }
         }
         if (map) {
+            if (mapNameBounds_) {
+                const auto& b = *mapNameBounds_;
+                if (x >= b[0] && x < b[0] + b[2] && y >= b[1] && y < b[1] + b[3])
+                    return Game::request("name_ship");
+            }
             loadMap(g);
             if (!mapView_.data())
                 return {};
@@ -888,7 +922,7 @@ namespace rp {
     }
 
     bool PortView::renderItemIcon(Image& target, const std::string& sheet, const std::string& name,
-                                  int x, int y) {
+                                  int x, int y, float maxSize) {
         if (sheet.empty() || name.empty())
             return false;
         // Restrict network-supplied names to the bundled atlas directory.
@@ -909,7 +943,7 @@ namespace rp {
             GfxSprite sprite;
             sprite.cell = *cell;
             sprite.image = it->second.second;
-            float scale = std::min(26.f / cell->w, 26.f / cell->h);
+            float scale = std::min(maxSize / cell->w, maxSize / cell->h);
             sprite.SetScale(scale, scale);
             sprite.SetPos(float(x + 13) - scale * (cell->ox + cell->w / 2.f),
                           float(y + 13) - scale * (cell->oy + cell->h / 2.f));
@@ -931,12 +965,8 @@ namespace rp {
             std::sort(ids.begin(), ids.end());
             return ids;
         }
-        if (name == "tabbed_menu_blueprints") {
-            auto ids = handler.gotMsgGetAllBlueprintsRequest();
-            auto first = std::min(page_ * BlueprintPageSize, ids.size());
-            auto last = std::min(first + BlueprintPageSize, ids.size());
-            return std::vector<int>(ids.begin() + first, ids.begin() + last);
-        }
+        if (name == "tabbed_menu_blueprints")
+            return handler.gotMsgGetAllBlueprintsRequest();
         if (name == "tabbed_menu_maps") {
             std::vector<int> ids;
             for (const auto& z : g.zones)
@@ -991,7 +1021,8 @@ namespace rp {
     void PortView::selectBlueprintSlot(const Game& g, float x) {
         if (x < 0 || x >= 640)
             return;
-        const auto key = "tabbedItem" + std::to_string(std::min(4, int(x / 128)));
+        const float offset = xmlMenu_ && swipe_ ? xmlMenu_->scrollOffset(swipe_) : 0.f;
+        const auto key = "tabbedItem" + std::to_string(std::max(0, int((x - offset) / 128)));
         auto it = xmlItems_.find(key);
         if (it == xmlItems_.end() || it->second == shopSelection_)
             return;
@@ -1595,10 +1626,13 @@ namespace rp {
                         m.solve();
                         m.node(swipe_).set("direction", 0.0);
                         m.node(swipe_).set("mode", 1.0);
+                        m.node(swipe_).set("momentum", 1.0);
                         m.listenToTouches(swipe_, list);
                         m.setScrollSize(
                             swipe_,
                             std::max(0.f, float(xmlItems_.size()) * m.width() * .2f - m.width()));
+                        if (name == "tabbed_menu_blueprints" && page_ > 0)
+                            m.setScrollOffset(swipe_, -float(page_) * m.width());
                         for (auto& [key, id] : xmlItems_)
                             if (auto el = m.find(list, key, true)) {
                                 auto index = std::stoi(key.substr(10));
@@ -1805,6 +1839,11 @@ namespace rp {
             }
             if (name == "quest_dialog" && g.quests.count(selectedQuest_)) {
                 const auto& q = g.quests.at(selectedQuest_);
+                if (questLogUnderlay_)
+                    if (auto root = m.find(1, "QuestDialogRoot", true))
+                        if (auto bg = m.find(root, "bg"))
+                            if (auto sprite = m.find(bg, "Sprite"))
+                                m.node(sprite).set("visible", false);
                 // Original quest_dialog.xml binds three optional illustration slots independently.
                 auto bindImage = [&](const char* name, const std::string& sheet,
                                      const std::string& image) {
@@ -1828,8 +1867,10 @@ namespace rp {
                 m.setLayerOrder("PIRATE_MAP_HUD_CLIPPED", 3);
                 m.setLayerOrder("LOADING", 4);
                 if (auto popup = m.find(1, "PopupDialog", true)) {
-                    const float w = m.width() * .70f, h = m.height() * .62f;
-                    const float x = (m.width() - w) / 2, y = (m.height() - h) / 2;
+                    const float w = questLogUnderlay_ ? m.width() - 300.f : m.width() * .70f;
+                    const float h = m.height() * .62f;
+                    const float x = questLogUnderlay_ ? 294.f : (m.width() - w) / 2;
+                    const float y = (m.height() - h) / 2;
                     auto place = [&](unsigned id, float px, float py, float pw, float ph) {
                         if (!id)
                             return;
@@ -2644,8 +2685,14 @@ namespace rp {
         }
         if (name.rfind("backing", 0) == 0 || name == "bg" || name == "OK" || name == "Back" ||
             name == "Close") {
-            panel_ = Panel::None;
-            xmlMenu_.reset();
+            if (panel_ == Panel::QuestDetail && questLogUnderlay_) {
+                questLogUnderlay_.reset();
+                panel_ = Panel::Quest;
+                openXml(g, "quest_log");
+            } else {
+                panel_ = Panel::None;
+                xmlMenu_.reset();
+            }
             return {};
         }
         for (unsigned id = owner; id; id = m.node(id).parent) {
@@ -2656,6 +2703,7 @@ namespace rp {
             if (xmlName_ == "quest_log") {
                 selectedQuest_ = item;
                 panel_ = Panel::QuestDetail;
+                questLogUnderlay_ = std::move(xmlMenu_);
                 openXml(g, "quest_dialog");
                 MsgQuestRead request;
                 request.id = item;

@@ -333,6 +333,10 @@ namespace rp {
                     drawn += renderer.submit(manager, bin, *comp, time, matrix, p.priority,
                                              &p.appearance);
                 } else {
+                    const bool core = raft && (path == "gfx/rafts/raft_core.png" ||
+                                               path == "gfx/rafts/raft_core_water.png");
+                    if (core)
+                        path = "gfx/rafts/raft_core_water.png";
                     auto a = images.find(path);
                     if (a == images.end())
                         a = images
@@ -347,8 +351,22 @@ namespace rp {
                     sprite.SetScale(scale_, scale_);
                     sprite.SetColor(colour_.r, colour_.g, colour_.b, colour_.a);
                     sprite.SetPriority(p.priority);
-                    manager.submit(std::move(sprite));
+                    manager.submit(sprite);
                     ++drawn;
+                    if (core) {
+                        const std::string top = "gfx/rafts/raft_core.png";
+                        auto hatch = images.find(top);
+                        if (hatch == images.end())
+                            hatch = images.emplace(top, std::make_shared<Image>(
+                                loadAssetImage(root / top))).first;
+                        auto hi = hatch->second;
+                        sprite.image = hi;
+                        sprite.cell = {top, 0, 0, hi->width, hi->height,
+                                       0, 0, hi->width, hi->height, false};
+                        sprite.SetPriority(p.priority + .01f);
+                        manager.submit(std::move(sprite));
+                        ++drawn;
+                    }
                 }
             } catch (const std::exception&) {
             }

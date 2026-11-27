@@ -242,7 +242,7 @@ int main(int argc, char** argv) {
         }
         rp::PortView browser(argv[1]);
         rp::PortViewTestAccess::openShop(browser, catalogue, "tabbed_menu_blueprints");
-        CHECK(rp::PortViewTestAccess::itemCount(browser) == 5);
+        CHECK(rp::PortViewTestAccess::itemCount(browser) == 8);
         const float listY = rp::PortViewTestAccess::listTop(browser) + 12;
         int first = rp::PortViewTestAccess::selection(browser);
         browser.touchDown(190, listY);
@@ -251,8 +251,10 @@ int main(int argc, char** argv) {
         browser.touchDown(450, listY);
         browser.touchDrag(100, listY);
         browser.touch(catalogue, 100, listY);
-        CHECK(rp::PortViewTestAccess::page(browser) == 1);
-        CHECK(rp::PortViewTestAccess::itemCount(browser) == 3);
+        CHECK(rp::PortViewTestAccess::itemCount(browser) == 8);
+        auto& scrolled = rp::PortViewTestAccess::menu(browser);
+        auto firstItem = scrolled.find(1, "tabbedItem0", true);
+        CHECK(firstItem && scrolled.node(firstItem).bounds.x < -200);
         std::cout << "Original HUD asset, action, and protocol checks passed\n";
         return 0;
     } catch (const std::exception& e) {

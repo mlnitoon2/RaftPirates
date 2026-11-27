@@ -60,6 +60,11 @@ int main() {
     check(nameRequest && nameRequest->payload.getString("c") == "set_display_name");
     check(nameRequest->payload.getSFSObj("p")->getString("newName") == "The Example");
     check(!game.gotMsgKeyboardEntryResult("Unsolicited", false));
+    sfs::SFSObjectWrapper renamed;
+    renamed.put("displayName", std::string("Green Monkey"));
+    renamed.put("success", true);
+    game.gotMsgOnExtensionResponse("set_display_name", renamed);
+    check(game.playerName == "Green Monkey");
     game.gotMsgOnExtensionResponse("gs_quest_reward", rewards);
     check(game.numOfMaterialPossessed(2u) == 7);
     auto reward = game.takeQuestRewardNotice();

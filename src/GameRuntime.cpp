@@ -850,6 +850,12 @@ namespace sys::platform::game {
             auto notice = rt.view->takeNotice();
             if (!notice.empty())
                 platform.showPopup(notice);
+            if (result && result->payload.getString("c") == "name_ship") {
+                if (rt.game.gotMsgNameShip())
+                    rt.engine.ShowKeyboardEntryEx(platform, "Name your raft",
+                        rt.game.playerName, false, 1, 32, false);
+                return;
+            }
             if (result && result->payload.getString("c") == "cheat") {
                 if (!rt.admin)
                     return;

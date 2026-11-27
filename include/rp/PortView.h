@@ -1,5 +1,6 @@
 #pragma once
 #include <set>
+#include <array>
 #include "rp/Game.h"
 #include "rp/Hud.h"
 #include "rp/DivingGame.h"
@@ -70,7 +71,10 @@ namespace rp {
         std::pair<int, int> divingUnit_{};
         bool hudEnabled(const Game& game) const;
         MapView mapView_;
+        std::optional<std::array<float, 4>> mapNameBounds_;
+        std::unique_ptr<sys::gfx::ResourceSpriteFont> mapNameFont_;
         int selectedQuest_ = 0;
+        std::unique_ptr<sys::menu_redux::MenuRuntime> questLogUnderlay_;
         std::set<int> tutorialPopupsShown_;
         std::string requestedStoreItem_, notice_;
         std::optional<int> mapInfoEnemy_;
@@ -81,7 +85,8 @@ namespace rp {
         std::map<std::string, std::pair<std::shared_ptr<sys::res::ResourceSpriteSheet>,
                                         std::shared_ptr<sys::gfx::Image>>>
             shopAtlases_;
-        bool renderItemIcon(sys::gfx::Image&, const std::string&, const std::string&, int, int);
+        bool renderItemIcon(sys::gfx::Image&, const std::string&, const std::string&, int, int,
+                            float maxSize = 26.f);
         enum class Panel {
             None,
             Shop,
