@@ -2,9 +2,6 @@ name: Host regression tests
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - libraftpirates.so
-      - '**/*.md'
   pull_request:
   workflow_dispatch:
 permissions:
@@ -27,4 +24,41 @@ jobs:
       - name: Build
         run: cmake --build build --parallel 2
       - name: Test
+        id: host_tests
         run: ctest --test-dir build --output-on-failure
+
+      - name: Generate revision verification dashboard
+        if: always()
+        run: |
+          if [ -f build/libraftpirates_game.a ]; then
+            python3 RaftPirates/tools/progress_page.py --archive build/libraftpirates_game.a --historical RaftPirates/docs/MATCHING_STATUS.md --namespace rp --output progress-site --tests "${{ steps.host_tests.outcome }}"
+          fi
+      - name: Upload verification dashboard
+        if: always() && hashFiles('progress-site/index.html') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-dashboard
+          path: progress-site
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && success()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: progress-site
+  pages:
+    needs: host
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: verification-pages
+      cancel-in-progress: true
+    steps:
+      - name: Deploy verification dashboard
+        id: deployment
+        uses: actions/deploy-pages@v4

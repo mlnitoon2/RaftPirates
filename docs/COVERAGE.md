@@ -17,3 +17,7 @@ The [host regression workflow](../.github/workflows/host.yml) builds the C++ tes
 The previously published Android build is [65f1afa](https://github.com/mlnitoon2/RaftPirates/commit/65f1afa8a62c10c5adc6424fe79e1a3cdc2a53cc). Device testing of that build identified remaining visual and interaction defects. Original-assets HUD tests are opt-in with `-DRAFT_ASSET_ROOT=/path/to/extracted/assets`; the default green host CI does not establish that those tests or actual Android menu interactions pass.
 
 Device feedback after the subsequent build confirmed splash centering, map layout, blueprint selection and basic diving motion. Full gameplay parity remains unverified.
+
+## Live verification dashboard
+
+The host workflow generates `verification-dashboard` (HTML and JSON) on every main push. Enable **Settings → Pages → Source: GitHub Actions** to deploy it at the project Pages URL. The live report measures the retained historical symbol subset, a conservative lower bound, and compiled name count. To calculate full symbol-name overlap, run `tools/progress_page.py` with the locally held original ELF via `--reference`. Instruction and byte matching are explicitly unmeasured.
