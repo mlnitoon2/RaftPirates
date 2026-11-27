@@ -1,3 +1,6 @@
+#include "rp/OverlapTree.h"
+#include "rp/PerimeterTree.h"
+#include "rp/GridObjectDataRes.h"
 #include "rp/LoaderImage.h"
 #include "rp/LoaderMenu.h"
 #include "rp/LoaderManifest.h"
@@ -81,6 +84,15 @@ int main(int argc, char** argv) {
         b.x = 1;
         CHECK(a.Overlap(b, &def, &def));
         CHECK(a.Middleish(&def).first == .5f);
+        {
+            rp::OverlapTree tree;
+            rp::OverlapTree::GenerateOverlapTree(tree,&a,&def);
+            CHECK(tree.Within({0,0},{2,1}));
+            CHECK(!tree.Within({0,0},{1,1}));
+            rp::PerimeterTree perimeter;
+            rp::PerimeterTree::GeneratePerimeterTree(perimeter,&a,&def);
+            CHECK(perimeter.edges().size()==6);
+        }
         rp::OceanView ocean(cache);
         auto multi = rp::GridObjectInfo::parse("0;one.png 0 0 0,0;two.png 30 0 1,0;", 800);
         rp::GridSprite visual(ocean, a, multi, {0, 0}, 1);

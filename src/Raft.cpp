@@ -1,5 +1,6 @@
 #include "rp/Game.h"
 #include "rp/SparseGrid.h"
+#include "rp/OverlapTree.h"
 #include <algorithm>
 #include <limits>
 
@@ -119,11 +120,11 @@ namespace rp {
                             const std::map<int, GridObjectInfo>& catalogue, int ignoreId) const {
         if (Destroyed() || def.type != 1 || def.cells.empty())
             return false;
-        for (const auto cell : def.cells) {
-            const auto xx = int64_t(pos.x) + cell.x, yy = int64_t(pos.y) + cell.y;
-            if (xx < 0 || yy < 0 || xx >= raftSizeX() || yy >= raftSizeY())
-                return false;
-        }
+        GridObject candidate(0,def.id,pos.x,pos.y,0,0);
+        OverlapTree footprint;
+        try {OverlapTree::GenerateOverlapTree(footprint,&candidate,&def);}
+        catch(const std::overflow_error&){return false;}
+        if(!footprint.Within({0,0},{raftSizeX(),raftSizeY()}))return false;
         SparseGrid occupancy;
         int occupancyId = 1;
         for (const auto& component : components) {

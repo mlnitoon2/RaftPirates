@@ -1,4 +1,5 @@
 #include "rp/DiscoveryModeState.h"
+#include "rp/DiscoveryGridObject.h"
 #include <algorithm>
 #include <cmath>
 
@@ -9,9 +10,11 @@ namespace rp {
         title_ = i == game.discoveries.end() ? "Discovery" : i->second;
         if (title_.find("Barnacle Bill") != std::string::npos) {
             try {
-                resource_ =
-                    std::make_shared<sys::res::ResourceAEAnim>(sys::res::ResourceAEAnim::Create(
-                        root / "xml_bin/anim_location_barnacle_bill.bin"));
+                DiscoveryGridObject object(game.objects);
+                auto path=std::filesystem::path("xml_bin/anim_location_barnacle_bill.bin");
+                if(auto def=object.definition();def&&std::filesystem::path(def->asset).extension()==".bin")
+                    path=def->asset;
+                resource_=std::make_shared<sys::res::ResourceAEAnim>(sys::res::ResourceAEAnim::Create(root/path));
             } catch (const std::exception&) {
             }
         }

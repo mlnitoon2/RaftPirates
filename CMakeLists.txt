@@ -19,6 +19,10 @@ add_library(raftpirates_game STATIC
     src/Game.cpp
     src/BuildModeState.cpp
     src/GridObject.cpp
+    src/OverlapTree.cpp
+    src/PerimeterTree.cpp
+    src/GridObjectDataRes.cpp
+    src/DiscoveryGridObject.cpp
     src/GridObjectHelpers.cpp
     src/FootprintSprite.cpp
     src/ItemPlacementSprite.cpp
