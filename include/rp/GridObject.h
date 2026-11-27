@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <memory>
 
 namespace rp {
     struct Cell {
@@ -38,5 +39,9 @@ namespace rp {
         std::string getName(const std::map<int, GridObjectInfo>& catalogue) const;
         int getType(const std::map<int, GridObjectInfo>& catalogue) const;
         bool Contains(Cell pos, const GridObjectInfo* definition) const;
+        virtual std::vector<std::string>
+        getAvailableActions(const GridObjectInfo* definition) const;
+        virtual std::unique_ptr<GridObject> Duplicate() const;
+        std::pair<float, float> GetWorldPosition(Cell raftPosition, bool component) const;
     };
 } // namespace rp

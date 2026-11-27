@@ -7,7 +7,23 @@ namespace rp {
     // Original XML layout, with a native adapter for recovered normal-HUD scripts.
     class Hud {
       public:
-        enum class Action { None, Quest, Safety, Daring, ToggleView, Shop, Map };
+        enum class Action {
+            None,
+            Quest,
+            Safety,
+            Daring,
+            ToggleView,
+            Shop,
+            Map,
+            Move,
+            Destroy,
+            Repair,
+            Salvage,
+            Clock,
+            Build,
+            Cancel
+        };
+        void setSelectedActions(const std::vector<std::string>& actions, int clocks);
         explicit Hud(const std::filesystem::path& assets);
         void update(const Game& game);
         void render(sys::gfx::Image& image);

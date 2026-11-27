@@ -4,7 +4,7 @@ Generated from defined function symbols. Name coverage is unique qualified metho
 
 | Original build | Names matched | Coverage | Names with signature overlap | Binary match |
 |---|---:|---:|---:|---|
-| Raft Pirates 2013 | 456/1191 | 38.2872% | 215 | Not compared |
+| Raft Pirates 2013 | 473/1191 | 39.7145% | 218 | Not compared |
 
 ## Raft Pirates 2013
 
@@ -25,7 +25,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::BlueprintInfo` | 0/1 | 0.00% | 0 |
 | `rp::BlueprintsDB` | 8/8 | 100.00% | 4 |
 | `rp::BossBattleRaftHighlightSprite` | 0/5 | 0.00% | 0 |
-| `rp::BuildModeState` | 25/63 | 39.68% | 8 |
+| `rp::BuildModeState` | 34/63 | 53.97% | 8 |
 | `rp::DamageIndicatorSprite` | 0/3 | 0.00% | 0 |
 | `rp::Discovery` | 4/6 | 66.67% | 3 |
 | `rp::DiscoveryDB` | 6/6 | 100.00% | 3 |
@@ -46,7 +46,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::GfxOceanGradient` | 0/7 | 0.00% | 0 |
 | `rp::GfxOceanGrid` | 0/6 | 0.00% | 0 |
 | `rp::GfxShipPreviewScreen` | 0/3 | 0.00% | 0 |
-| `rp::GridObject` | 18/26 | 69.23% | 7 |
+| `rp::GridObject` | 20/26 | 76.92% | 7 |
 | `rp::GridObject::GridShapePiece` | 0/5 | 0.00% | 0 |
 | `rp::GridObjectDataRes` | 0/3 | 0.00% | 0 |
 | `rp::GridObjectInfo` | 1/1 | 100.00% | 0 |
@@ -257,14 +257,14 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::PerimeterWallSprite` | 0/10 | 0.00% | 0 |
 | `rp::PerimeterWallSprite::SpriteBalloon` | 0/1 | 0.00% | 0 |
 | `rp::PlacementSprite` | 0/9 | 0.00% | 0 |
-| `rp::Player` | 26/30 | 86.67% | 18 |
+| `rp::Player` | 27/30 | 90.00% | 19 |
 | `rp::Quest` | 6/6 | 100.00% | 5 |
 | `rp::QuestTypeDB` | 5/5 | 100.00% | 2 |
 | `rp::QuestTypeInfo` | 0/1 | 0.00% | 0 |
 | `rp::RPMenuHandler` | 39/47 | 82.98% | 6 |
-| `rp::Raft` | 10/16 | 62.50% | 5 |
+| `rp::Raft` | 14/16 | 87.50% | 7 |
 | `rp::RaftAttackSprite` | 0/5 | 0.00% | 0 |
-| `rp::RaftComponent` | 12/15 | 80.00% | 8 |
+| `rp::RaftComponent` | 13/15 | 86.67% | 8 |
 | `rp::RaftComponentFactory` | 0/2 | 0.00% | 0 |
 | `rp::RaftFactory` | 0/2 | 0.00% | 0 |
 | `rp::RaftGridSprite` | 0/6 | 0.00% | 0 |
@@ -339,7 +339,9 @@ Matched names:
 - `rp::BlueprintsDB::load`
 - `rp::BlueprintsDB::save`
 - `rp::BuildModeState::BuildModeState`
+- `rp::BuildModeState::CheckForHoles`
 - `rp::BuildModeState::FinishWaiting`
+- `rp::BuildModeState::GetStateName`
 - `rp::BuildModeState::StartWaiting`
 - `rp::BuildModeState::UseClockSelected`
 - `rp::BuildModeState::checkFocusRaft`
@@ -348,17 +350,24 @@ Matched names:
 - `rp::BuildModeState::gotMsgBuildConfirm`
 - `rp::BuildModeState::gotMsgDeselectObject`
 - `rp::BuildModeState::gotMsgDestroyObjectRequest`
+- `rp::BuildModeState::gotMsgGridObjectSelected`
 - `rp::BuildModeState::gotMsgMoveObjectRequest`
 - `rp::BuildModeState::gotMsgNextWreckedRaft`
 - `rp::BuildModeState::gotMsgNextWreckedRaftComponent`
 - `rp::BuildModeState::gotMsgPreviousWreckedRaft`
 - `rp::BuildModeState::gotMsgPreviousWreckedRaftComponent`
+- `rp::BuildModeState::gotMsgRepairSelectedObject`
+- `rp::BuildModeState::gotMsgRepairSelectedObjectAll`
 - `rp::BuildModeState::gotMsgRequestNumWreckedRaftComponents`
 - `rp::BuildModeState::gotMsgRequestNumWreckedRafts`
+- `rp::BuildModeState::gotMsgSalvageSelectedObject`
+- `rp::BuildModeState::gotMsgStartBuildRequest`
+- `rp::BuildModeState::gotMsgUseClockOnSelectedObject`
 - `rp::BuildModeState::initWreckedRaftCheck`
 - `rp::BuildModeState::initWreckedRaftComponentCheck`
 - `rp::BuildModeState::isReadyForBattle`
 - `rp::BuildModeState::repairSelected`
+- `rp::BuildModeState::salvageSelected`
 - `rp::BuildModeState::selectObject`
 - `rp::BuildModeState::selectWreckedRaft`
 - `rp::BuildModeState::selectWreckedRaftComponent`
@@ -403,12 +412,14 @@ Matched names:
 - `rp::GridObject::Beside`
 - `rp::GridObject::Contains`
 - `rp::GridObject::Destroyed`
+- `rp::GridObject::Duplicate`
 - `rp::GridObject::GetBattlePoints`
 - `rp::GridObject::GetGridObjectID`
 - `rp::GridObject::GetGridPosition`
 - `rp::GridObject::GetHealth`
 - `rp::GridObject::GetTotalBattlePoints`
 - `rp::GridObject::GetUserObjectID`
+- `rp::GridObject::GetWorldPosition`
 - `rp::GridObject::Middleish`
 - `rp::GridObject::Overlap`
 - `rp::GridObject::Pieces`
@@ -559,6 +570,7 @@ Matched names:
 - `rp::Player::WestMostPoint`
 - `rp::Player::canBuildRaft`
 - `rp::Player::currentBP`
+- `rp::Player::getBoundingBox`
 - `rp::Player::giveBlueprint`
 - `rp::Player::giveMaterial`
 - `rp::Player::goldCostToBuild`
@@ -622,6 +634,8 @@ Matched names:
 - `rp::RPMenuHandler::showQuestDialogImmediately`
 - `rp::RPMenuHandler::tick`
 - `rp::RPMenuHandler::~RPMenuHandler`
+- `rp::Raft::CanAddObject`
+- `rp::Raft::Duplicate`
 - `rp::Raft::GetBattlePoints`
 - `rp::Raft::GetHealth`
 - `rp::Raft::GetTotalBattlePoints`
@@ -631,8 +645,11 @@ Matched names:
 - `rp::Raft::Raft`
 - `rp::Raft::SetState`
 - `rp::Raft::initWithSFSObject`
+- `rp::Raft::raftSizeX`
+- `rp::Raft::raftSizeY`
 - `rp::Raft::~Raft`
 - `rp::RaftComponent::Building`
+- `rp::RaftComponent::Duplicate`
 - `rp::RaftComponent::GetBattlePoints`
 - `rp::RaftComponent::GetRemainingTime`
 - `rp::RaftComponent::GetTotalBattlePoints`

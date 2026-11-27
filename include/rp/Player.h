@@ -50,6 +50,7 @@ namespace rp {
         std::string playerName, knownZones;
         void initWithSFSObject(const sfs::SFSObjectWrapper& data);
         int currentBP() const;
+        std::pair<Cell, Cell> getBoundingBox() const;
         std::optional<int> goldCostToBuild(int blueprintId) const;
         Cell EastMostPoint() const;
         Cell WestMostPoint() const;

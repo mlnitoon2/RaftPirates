@@ -332,4 +332,18 @@ namespace rp {
             }
         return {};
     }
+
+    std::pair<Cell, Cell> Player::getBoundingBox() const {
+        if (rafts.empty())
+            return {{0, 0}, {0, 0}};
+        Cell low{rafts.front().x, rafts.front().y}, high = low;
+        for (const auto& raft : rafts) {
+            low.x = std::min(low.x, raft.x);
+            low.y = std::min(low.y, raft.y);
+            high.x = std::max(high.x, raft.x);
+            high.y = std::max(high.y, raft.y);
+        }
+        return {low, high};
+    }
+
 } // namespace rp

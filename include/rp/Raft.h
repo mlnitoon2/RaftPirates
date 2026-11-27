@@ -24,6 +24,13 @@ namespace rp {
         void HandleBattleOutcome(const sfs::SFSArrayWrapper* outcomes,
                                  const std::map<int, GridObjectInfo>& objects);
         void Repair(int battlePoints, int maxBattlePoints);
+        std::vector<std::string>
+        getAvailableActions(const GridObjectInfo* definition) const override;
+        std::unique_ptr<GridObject> Duplicate() const override;
+        int raftSizeX() const;
+        int raftSizeY() const;
+        bool CanAddObject(const GridObjectInfo& definition, Cell pos,
+                          const std::map<int, GridObjectInfo>& catalogue, int ignoreId = 0) const;
     };
 
 } // namespace rp

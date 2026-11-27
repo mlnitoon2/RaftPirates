@@ -48,7 +48,8 @@ namespace rp {
 
     std::optional<sfs::Message> BuildModeState::UseClockSelected() const {
         auto object = dynamic_cast<const RaftComponent*>(selected());
-        if (!game_.ready || !object || !object->Building() || object->GetRemainingTime() <= 0)
+        if (!game_.ready || !object || !object->Building() || object->GetRemainingTime() <= 0 ||
+            !game_.hasMaterial(10, 1))
             return {};
         sfs::SFSObjectWrapper p;
         p.put("object_id", int32_t(id_));
@@ -89,14 +90,14 @@ namespace rp {
     std::optional<sfs::Message> BuildModeState::gotMsgDestroyObjectRequest() const {
         if (!game_.ready || !selected() || !waiting_.empty())
             return {};
-        if (!parent_ && game_.mainRaft() && game_.mainRaft()->id == id_)
+        if (!parent_ && CheckForHoles(id_))
             return {};
         return game_.remove(parent_, id_);
     }
 
     std::optional<sfs::Message> BuildModeState::gotMsgBuildConfirm(int blueprint, int parent,
                                                                    Cell pos) {
-        if (!game_.ready || !waiting_.empty() || game_.pending)
+        if (!waiting_.empty() || !gotMsgStartBuildRequest(blueprint))
             return {};
         auto b = game_.blueprints.find(blueprint);
         if (b == game_.blueprints.end() || !game_.owned.count(blueprint))
@@ -193,4 +194,83 @@ namespace rp {
             wreckedComponent_ = (wreckedComponent_ % n + n - 1) % n;
         selectWreckedRaftComponent();
     }
+
+    std::vector<std::string> BuildModeState::SendMsgSelectedObjectAvailableActions() const {
+        const auto* object = selected();
+        if (!game_.ready || !object || !waiting_.empty() || game_.pending || game_.pendingMove)
+            return {};
+        auto actions = object->getAvailableActions(object->getResourceData(game_.objects));
+        if (!parent_ && (game_.mainRaft() == object || CheckForHoles(id_))) {
+            actions.erase(std::remove(actions.begin(), actions.end(), "destroy"), actions.end());
+            actions.erase(std::remove(actions.begin(), actions.end(), "salvage"), actions.end());
+        }
+        return actions;
+    }
+
+    std::optional<sfs::Message> BuildModeState::gotMsgRepairSelectedObject() const {
+        return repairSelected(false);
+    }
+
+    std::optional<sfs::Message> BuildModeState::gotMsgRepairSelectedObjectAll() const {
+        return repairSelected(true);
+    }
+
+    std::optional<sfs::Message> BuildModeState::gotMsgUseClockOnSelectedObject() const {
+        return UseClockSelected();
+    }
+
+    std::optional<sfs::Message> BuildModeState::gotMsgSalvageSelectedObject() const {
+        return salvageSelected();
+    }
+
+    std::optional<sfs::Message> BuildModeState::salvageSelected() const {
+        if (!selected() || !selected()->Destroyed())
+            return {};
+        return gotMsgDestroyObjectRequest();
+    }
+
+    void BuildModeState::gotMsgGridObjectSelected(int parent, int id) {
+        selectObject(parent, id);
+        checkFocusRaft();
+    }
+
+    bool BuildModeState::gotMsgStartBuildRequest(int blueprint) const {
+        auto b = game_.blueprints.find(blueprint);
+        if (!game_.ready || game_.pending || game_.pendingMove || b == game_.blueprints.end() ||
+            !game_.owned.count(blueprint))
+            return false;
+        if (!game_.objects.count(b->second.object) || b->second.deprecated)
+            return false;
+        for (auto [id, count] : b->second.recipe)
+            if (!game_.hasMaterial(id, count))
+                return false;
+        return true;
+    }
+
+    bool BuildModeState::CheckForHoles(int removedRaft) const {
+        const auto* core = game_.mainRaft();
+        if (!core || core->id == removedRaft)
+            return true;
+        std::set<int> seen{core->id};
+        std::vector<int> queue{core->id};
+        for (size_t i = 0; i < queue.size(); ++i) {
+            const auto* current = game_.GetRaftByID(queue[i]);
+            for (const auto& raft : game_.rafts)
+                if (raft.id != removedRaft &&
+                    std::abs(int64_t(current->x) - raft.x) +
+                            std::abs(int64_t(current->y) - raft.y) ==
+                        1 &&
+                    seen.insert(raft.id).second)
+                    queue.push_back(raft.id);
+        }
+        for (const auto& raft : game_.rafts)
+            if (raft.id != removedRaft && !seen.count(raft.id))
+                return true;
+        return false;
+    }
+
+    const char* BuildModeState::GetStateName() const {
+        return "BuildModeState";
+    }
+
 } // namespace rp

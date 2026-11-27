@@ -93,7 +93,15 @@ int main() {
         buildResult.put("user_raft", raft);
         game.extension("gs_build_add", buildResult);
         CHECK(game.rafts.size() == 2);
+        CHECK(build.CheckForHoles(game.mainRaft()->id));
+        CHECK(!build.CheckForHoles(10));
         auto& c = game.rafts.front().components.front();
+        c.bp = 500;
+        build.gotMsgGridObjectSelected(game.rafts.front().id, c.id);
+        auto repair = build.gotMsgRepairSelectedObject();
+        CHECK(repair && repair->payload.getString("c") == "gs_build_repair");
+        auto actions = build.SendMsgSelectedObjectAvailableActions();
+        CHECK(std::find(actions.begin(), actions.end(), "repair") != actions.end());
         c.bp = 0;
         c.state = 2;
         build.initWreckedRaftComponentCheck();

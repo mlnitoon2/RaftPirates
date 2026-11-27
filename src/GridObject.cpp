@@ -120,4 +120,29 @@ namespace rp {
                 return true;
         return false;
     }
+
+    std::vector<std::string>
+    GridObject::getAvailableActions(const GridObjectInfo* definition) const {
+        if (!definition)
+            return {};
+        if (Destroyed())
+            return {"repair", "salvage"};
+        std::vector<std::string> result;
+        if (bp < definition->bp)
+            result.push_back("repair");
+        result.push_back("move");
+        result.push_back("destroy");
+        return result;
+    }
+
+    std::unique_ptr<GridObject> GridObject::Duplicate() const {
+        return std::make_unique<GridObject>(*this);
+    }
+
+    std::pair<float, float> GridObject::GetWorldPosition(Cell raftPosition, bool component) const {
+        return component ? std::make_pair(float(raftPosition.x) + x / 6.f,
+                                          float(raftPosition.y) + y / 6.f)
+                         : std::make_pair(float(x), float(y));
+    }
+
 } // namespace rp

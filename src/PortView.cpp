@@ -47,6 +47,46 @@ namespace rp {
         mapView_.setMapFile(root_, i == g.zoneMaps.end() ? std::string{} : i->second);
     }
 
+    void PortView::updateHud(const Game& game) {
+        if (!hud_)
+            return;
+        hud_->update(game);
+        std::vector<std::string> actions;
+        if (placement_)
+            actions = {"build", "build_cancel"};
+        else if (moving_ || selectedBlueprint_)
+            actions = {"build_cancel"};
+        else if (selectedComponent_) {
+            const GridObject* object = nullptr;
+            if (!selectedParent_)
+                object = game.GetRaftByID(selectedComponent_);
+            else if (auto raft = game.GetRaftByID(selectedParent_)) {
+                for (const auto& c : raft->components)
+                    if (c.id == selectedComponent_)
+                        object = &c;
+            }
+            if (object && !game.pending && !game.pendingMove) {
+                actions = object->getAvailableActions(object->getResourceData(game.objects));
+                if (!selectedParent_ && game.mainRaft() == object) {
+                    actions.erase(std::remove(actions.begin(), actions.end(), "destroy"),
+                                  actions.end());
+                    actions.erase(std::remove(actions.begin(), actions.end(), "salvage"),
+                                  actions.end());
+                }
+            }
+        }
+        hud_->setSelectedActions(actions, game.numOfMaterialPossessed(10));
+    }
+
+    void PortView::updateScroll() {
+        if (!xmlMenu_ || !swipe_)
+            return;
+        auto offset = xmlMenu_->scrollOffset(swipe_);
+        for (auto [id, origin] : scrollOrigins_)
+            xmlMenu_->node(id).set("xOffset", origin + offset);
+        xmlMenu_->solve();
+    }
+
     void PortView::tick(float dt) {
         loader_.update(dt);
         touchControls_.tick(dt);
@@ -55,11 +95,20 @@ namespace rp {
             discovery_->tick(dt);
         if (diving_)
             diving_->tick(dt);
-        if (xmlMenu_)
+        if (xmlMenu_) {
             xmlMenu_->tick(dt);
+            updateScroll();
+        }
     }
 
     void PortView::touchDown(float x, float y) {
+        xmlCaptured_ = false;
+        if (xmlMenu_ && (panel_ != Panel::None || map) && xmlMenu_->hitTest(x, y)) {
+            xmlMenu_->touchDown(x, y);
+            xmlCaptured_ = true;
+            oceanGesture_ = false;
+            return;
+        }
         oceanGesture_ = !onlineBattleActive_ && !diving_ && !discovery_ && !map &&
                         panel_ == Panel::None && y > 75 && y < 290;
         if (diving_)
@@ -69,6 +118,11 @@ namespace rp {
     }
 
     void PortView::touchDrag(float x, float y) {
+        if (xmlCaptured_ && xmlMenu_) {
+            xmlMenu_->touchDrag(x, y);
+            updateScroll();
+            return;
+        }
         if (diving_)
             diving_->touchDrag({x, y});
         else if (oceanGesture_)
@@ -205,15 +259,53 @@ namespace rp {
                         auto marker = mapView_.playerPosition();
                         int mx = 48 + int(marker.x * 544 / (m.width * m.tileWidth)),
                             my = 36 + int(marker.y * 306 / (m.height * m.tileHeight));
-                        rect(out, mx - 4, my - 4, 9, 9, {255, 222, 85, 255});
+                        renderItemIcon(out, "rp_menu.xml", "rp_map_marker", mx - 13, my - 13);
                     }
                 }
             } catch (const std::exception&) {
                 // Keep original map overlay available.
             }
         }
+        // Render placement using the original footprint texture atlas, not a substitute UI.
+        if (!map && grid && placement_) {
+            try {
+                auto atlas = loader_.sheet("xml_resources/construction_footprints_junk.xml");
+                const auto* cell = atlas->findSpriteByName("footprint_1x1");
+                if (cell) {
+                    auto image = loader_.sprite(atlas->imagePath);
+                    const auto* parent = g.GetRaftByID(placementParent_);
+                    std::vector<Cell> footprint{{0, 0}};
+                    if (parent) {
+                        int object = 0;
+                        if (auto bp = g.blueprints.find(selectedBlueprint_);
+                            bp != g.blueprints.end())
+                            object = bp->second.object;
+                        else if (auto source = g.GetRaftByID(selectedParent_))
+                            for (const auto& c : source->components)
+                                if (c.id == selectedComponent_)
+                                    object = c.type;
+                        if (auto def = g.objects.find(object); def != g.objects.end())
+                            footprint = def->second.cells;
+                    }
+                    float step = parent ? 1.f / 6 : 1.f;
+                    for (auto c : footprint) {
+                        auto center = ocean_.WorldToScreen(
+                            {(parent ? parent->x : 0) + (placement_->x + c.x + .5f) * step,
+                             (parent ? parent->y : 0) + (placement_->y + c.y + .5f) * step});
+                        GfxSprite sprite;
+                        sprite.image = image;
+                        sprite.cell = *cell;
+                        float width = ocean_.Unit() * 2 * ocean_.Zoom() * step;
+                        sprite.SetScale(width / cell->ow, width * .5f / cell->oh);
+                        sprite.SetPos(center.x - width * .5f, center.y - width * .25f);
+                        drawSprite(out, sprite);
+                    }
+                }
+            } catch (const std::exception&) { /* No substitute for missing original assets. */
+            }
+        }
         if (hud_ && g.ready && !map) {
-            hud_->update(g);
+            updateHud(g);
             hud_->render(out);
         }
         if (panel_ != Panel::None)
@@ -228,6 +320,16 @@ namespace rp {
     }
 
     std::optional<sfs::Message> PortView::touch(Game& g, float x, float y) {
+        if (xmlCaptured_ && xmlMenu_) {
+            xmlCaptured_ = false;
+            auto old = xmlMenu_->captured(0);
+            auto hit = xmlMenu_->hitTest(x, y);
+            xmlMenu_->touchUp(x, y);
+            updateScroll();
+            if (!old || old != hit || xmlMenu_->node(old).number("suppressClick", 0))
+                return {};
+            return xmlTouch(g, x, y);
+        }
         if (oceanGesture_) {
             oceanGesture_ = false;
             touchControls_.touchUp({x, y});
@@ -270,7 +372,7 @@ namespace rp {
                 return xmlTouch(g, x, y);
         }
         if (hudEnabled(g)) {
-            hud_->update(g);
+            updateHud(g);
             auto action = hud_->touch(x, y);
             switch (action) {
             case Hud::Action::Quest:
@@ -297,6 +399,49 @@ namespace rp {
             case Hud::Action::Map:
                 map = !g.hideMap;
                 return {};
+            case Hud::Action::Cancel:
+                moving_ = false;
+                selectedBlueprint_ = selectedComponent_ = selectedParent_ = 0;
+                placement_.reset();
+                return {};
+            case Hud::Action::Build: {
+                if (!placement_)
+                    return {};
+                BuildModeState build(g);
+                build.gotMsgGridObjectSelected(selectedParent_, selectedComponent_);
+                auto req = moving_ ? build.gotMsgMoveObjectRequest(placementParent_, *placement_)
+                                   : build.gotMsgBuildConfirm(selectedBlueprint_, placementParent_,
+                                                              *placement_);
+                if (req) {
+                    moving_ = false;
+                    selectedBlueprint_ = selectedComponent_ = selectedParent_ = 0;
+                    placement_.reset();
+                }
+                return req;
+            }
+            case Hud::Action::Move:
+                moving_ = true;
+                selectedBlueprint_ = 0;
+                placement_.reset();
+                grid = true;
+                return {};
+            case Hud::Action::Destroy:
+            case Hud::Action::Salvage:
+            case Hud::Action::Repair: {
+                confirmAction_ = action == Hud::Action::Repair    ? "repair"
+                                 : action == Hud::Action::Salvage ? "salvage"
+                                                                  : "destroy";
+                panel_ = Panel::Confirm;
+                openXml(g, action == Hud::Action::Repair    ? "dialog_repair"
+                           : action == Hud::Action::Salvage ? "dialog_salvage"
+                                                            : "remove_confirm_dialog");
+                return {};
+            }
+            case Hud::Action::Clock: {
+                BuildModeState build(g);
+                build.gotMsgGridObjectSelected(selectedParent_, selectedComponent_);
+                return build.gotMsgUseClockOnSelectedObject();
+            }
             case Hud::Action::None:
                 break;
             }
@@ -362,8 +507,11 @@ namespace rp {
                     auto world = ocean_.ScreenToWorld({x, y});
                     // Tile centre is half a raft down its projected diamond.
                     Cell pos{int(std::floor(world.x)), int(std::floor(world.y))};
-                    if (g.canBuildRaft(pos))
-                        return BuildModeState(g).gotMsgBuildConfirm(chosen->first, 0, pos);
+                    if (g.canBuildRaft(pos)) {
+                        placement_ = pos;
+                        placementParent_ = 0;
+                        return {};
+                    }
                     g.status = "Select a free edge next to your raft";
                     return {};
                 }
@@ -378,13 +526,25 @@ namespace rp {
                 if (moving_) {
                     BuildModeState build(g);
                     build.selectObject(selectedParent_, selectedComponent_);
-                    auto request = build.gotMsgMoveObjectRequest(r.id, {cx, cy});
-                    moving_ = false;
-                    return request;
+                    const auto* source = g.GetRaftByID(selectedParent_);
+                    if (source)
+                        for (const auto& part : source->components)
+                            if (part.id == selectedComponent_ &&
+                                g.canPlaceComponent(part.type, r.id, cx, cy, selectedParent_,
+                                                    selectedComponent_)) {
+                                placement_ = Cell{cx, cy};
+                                placementParent_ = r.id;
+                            }
+                    return {};
                 }
                 auto bp = g.blueprints.find(selectedBlueprint_);
-                if (bp != g.blueprints.end())
-                    return BuildModeState(g).gotMsgBuildConfirm(bp->first, r.id, {cx, cy});
+                if (bp != g.blueprints.end()) {
+                    if (g.canPlaceComponent(bp->second.object, r.id, cx, cy)) {
+                        placement_ = Cell{cx, cy};
+                        placementParent_ = r.id;
+                    }
+                    return {};
+                }
                 for (auto& component : r.components) {
                     auto definition = g.objects.find(component.type);
                     if (definition == g.objects.end())
@@ -393,14 +553,15 @@ namespace rp {
                         if (component.x + cell.x == cx && component.y + cell.y == cy) {
                             selectedParent_ = r.id;
                             selectedComponent_ = component.id;
-                            panel_ = Panel::Build;
-                            page_ = 0;
                             return {};
                         }
                 }
+                selectedParent_ = 0;
+                selectedComponent_ = r.id;
                 return {};
             }
         }
+        selectedParent_ = selectedComponent_ = 0;
         return {};
     }
 
@@ -441,6 +602,9 @@ namespace rp {
         xmlMenu_ = std::make_unique<MenuRuntime>(root_);
         xmlName_ = name;
         xmlItems_.clear();
+        swipe_ = 0;
+        scrollOrigins_.clear();
+        xmlCaptured_ = false;
         try {
             xmlMenu_->nativeEvent = [this](auto& m, unsigned id, const std::string& event) {
                 if (event == "onInit")
@@ -492,7 +656,7 @@ namespace rp {
                 if (auto* list = find(find, xml, "itemList")) {
                     std::vector<int> ids;
                     if (name == "tabbed_menu_blueprints")
-                        ids = RPMenuHandler(g).gotMsgGetAvailBlueprintsRequest();
+                        ids = RPMenuHandler(g).gotMsgGetAllBlueprintsRequest();
                     else if (name == "tabbed_menu_maps")
                         for (auto& [id, v] : g.zones)
                             ids.push_back(id);
@@ -539,11 +703,43 @@ namespace rp {
                     }
             } else if (name.rfind("tabbed_menu_", 0) == 0) {
                 show("Frame", false);
+                // Match MenuTab and MenuTabCurrency's original onInit/onPostSolve placement.
                 double x = 8;
-                for (int i = 1; i <= 7; ++i)
+                for (int i = 1; i <= 4; ++i)
                     if (auto id = m.find(1, "Tab" + std::to_string(i), true)) {
                         m.node(id).set("xOffset", x);
-                        x += m.node(id).bounds.w + 16;
+                        if (auto bg = m.find(id, "bg"))
+                            x += m.node(bg).number("width") + m.node(bg).number("leftWidth") +
+                                 m.node(bg).number("rightWidth") * .5;
+                    }
+                x = 12;
+                for (int i = 5; i <= 7; ++i)
+                    if (auto id = m.find(1, "Tab" + std::to_string(i), true)) {
+                        m.node(id).set("xOffset", x);
+                        x -= m.node(id).bounds.w + 2;
+                        if (auto label = m.find(id, "Text"))
+                            m.node(label).set(
+                                "text", std::to_string(g.numOfMaterialPossessed(i == 5 ? 4 : 11)));
+                    }
+                // Original game.setClipping("TABS",0,0,displaySizeX(),displaySizeY()*.75).
+                for (const auto& n : m.nodes())
+                    if (n.text("layer") == "TABS")
+                        m.node(n.id).set("clipScreenHeight", m.height() * .75);
+                if (auto list = m.find(1, "itemList", true))
+                    if ((swipe_ = m.find(list, "Swiper"))) {
+                        m.node(list).set("clipChildren", true);
+                        m.node(swipe_).set("direction", 0.0);
+                        m.node(swipe_).set("mode", 1.0);
+                        m.listenToTouches(swipe_, list);
+                        m.setScrollSize(
+                            swipe_,
+                            std::max(0.f, float(xmlItems_.size()) * m.width() * .2f - m.width()));
+                        for (auto& [key, id] : xmlItems_)
+                            if (auto el = m.find(list, key, true)) {
+                                auto index = std::stoi(key.substr(10));
+                                scrollOrigins_[el] = (m.node(list).bounds.w - m.width()) / 2 +
+                                                     index * m.width() * .2;
+                            }
                     }
             }
             auto set = [&](unsigned id, const char* component, const char* key, Property value) {
@@ -564,9 +760,16 @@ namespace rp {
                         set(element, "itemImage", "spriteName", b.image);
                         set(element, "itemImage", "sheetName", b.sheet);
                         set(element, "itemImage", "visible", true);
-                        set(element, "itemName", "text", b.name());
+                        set(element, "itemName", "text", strings_.getText(b.name()));
+                        set(element, "itemName", "visible", !g.owned.count(id));
                         set(element, "itemCost", "visible", false);
                         set(element, "currencyIcon", "visible", false);
+                        set(element, "selectionOverlay", "visible", false);
+                        if (!g.owned.count(id))
+                            for (auto c : {"red", "green", "blue"})
+                                set(element, "itemImage", c, 0.0);
+                        else if (!RPMenuHandler(g).gotMsgHaveMaterialsRequest(id))
+                            set(element, "itemImage", "alpha", .4);
                     } else if (name == "quest_log") {
                         const auto& q = g.quests.at(id);
                         set(element, "ProgressText", "text", std::to_string(q.progress) + "%");
@@ -578,9 +781,35 @@ namespace rp {
                         set(element, "itemImage", "spriteName", item.image);
                         set(element, "itemImage", "sheetName", item.sheet);
                         set(element, "itemCost", "text", std::to_string(item.price));
+                        set(element, "itemName", "text",
+                            strings_.getText(item.title.empty() ? item.name : item.title));
+                        set(element, "itemImage", "visible", true);
+                        set(element, "selectionOverlay", "visible", false);
+                        set(element, "itemCost", "visible", true);
+                        set(element, "currencyIcon", "spriteName",
+                            std::string(item.currency == 11 ? "shop_diamond_mini"
+                                                            : "shop_gold_mini"));
+                        set(element, "currencyIcon", "sheetName",
+                            std::string("xml_resources/rp_menu.xml"));
                     }
                 }
+            if (name == "purchase_confirm_dialog_tabbed" && g.storeItems.count(selectedStore_)) {
+                const auto& item = g.storeItems.at(selectedStore_);
+                auto text = strings_.getText("PURCHASE_CONFIRM");
+                auto substitute = [&](const std::string& key, const std::string& value) {
+                    auto at = text.find(key);
+                    if (at != std::string::npos)
+                        text.replace(at, key.size(), value);
+                };
+                substitute("%item%", strings_.getText(item.title.empty() ? item.name : item.title));
+                substitute("%price%", std::to_string(item.price));
+                substitute("%currency%", strings_.getText(item.currency == 11 ? "MATERIAL_DIAMOND"
+                                                                              : "MATERIAL_GOLD"));
+                if (auto label = m.find(1, "ConfirmText", true))
+                    set(label, "Text", "text", text);
+            }
             m.solve();
+            updateScroll();
         } catch (const std::exception&) {
             xmlMenu_.reset();
         }
@@ -604,6 +833,9 @@ namespace rp {
     void PortView::renderPanel(Image& image, const Game& g) {
         std::string name;
         switch (panel_) {
+        case Panel::Confirm:
+            name = xmlName_;
+            break;
         case Panel::Quest:
             name = "quest_log";
             break;
@@ -645,6 +877,33 @@ namespace rp {
         auto name = m.node(owner).name;
         auto body = m.node(hit).events.find("onTouchUp");
         std::string script = body == m.node(hit).events.end() ? "" : body->second.source;
+        if (panel_ == Panel::Confirm) {
+            if (name == "No" || name == "Back" || name == "Close") {
+                panel_ = Panel::None;
+                xmlMenu_.reset();
+                return {};
+            }
+            if (name != "Yes")
+                return {};
+            std::optional<sfs::Message> req;
+            if (confirmAction_ == "purchase") {
+                if (RPMenuHandler(g).canPurchase(selectedStore_))
+                    req = g.buyStoreItem(selectedStore_);
+            } else {
+                BuildModeState build(g);
+                build.gotMsgGridObjectSelected(selectedParent_, selectedComponent_);
+                if (confirmAction_ == "repair")
+                    req = build.gotMsgRepairSelectedObject();
+                else if (confirmAction_ == "salvage")
+                    req = build.gotMsgSalvageSelectedObject();
+                else if (confirmAction_ == "destroy")
+                    req = build.gotMsgDestroyObjectRequest();
+            }
+            panel_ = Panel::None;
+            xmlMenu_.reset();
+            selectedComponent_ = selectedParent_ = 0;
+            return req;
+        }
         if (xmlName_ == "piratemap_menu") {
             if (name == "Back") {
                 map = false;
@@ -687,7 +946,22 @@ namespace rp {
                 continue;
             int item = i->second;
             if (xmlName_ == "tabbed_menu_blueprints") {
+                if (!BuildModeState(g).gotMsgStartBuildRequest(item)) {
+                    if (!g.owned.count(item))
+                        for (auto& [id, store] : g.storeItems)
+                            if (store.name == g.blueprints.at(item).name() &&
+                                RPMenuHandler(g).canPurchase(id)) {
+                                selectedStore_ = id;
+                                confirmAction_ = "purchase";
+                                panel_ = Panel::Confirm;
+                                openXml(g, "purchase_confirm_dialog_tabbed");
+                                return {};
+                            }
+                    return {};
+                }
                 selectedBlueprint_ = item;
+                selectedComponent_ = selectedParent_ = 0;
+                placement_.reset();
                 grid = true;
                 map = false;
                 panel_ = Panel::None;
@@ -701,7 +975,13 @@ namespace rp {
                 xmlMenu_.reset();
                 return g.travel(item);
             }
-            return {}; // The original purchase confirmation is not yet bound.
+            if (RPMenuHandler(g).canPurchase(item)) {
+                selectedStore_ = item;
+                confirmAction_ = "purchase";
+                panel_ = Panel::Confirm;
+                openXml(g, "purchase_confirm_dialog_tabbed");
+            }
+            return {};
         }
         return {};
     }

@@ -11,6 +11,17 @@ namespace rp {
         void deselectObject();
         std::optional<sfs::Message> repairSelected(bool all) const;
         std::optional<sfs::Message> UseClockSelected() const;
+        std::vector<std::string> SendMsgSelectedObjectAvailableActions() const;
+        std::optional<sfs::Message> gotMsgRepairSelectedObject() const;
+        std::optional<sfs::Message> gotMsgRepairSelectedObjectAll() const;
+        std::optional<sfs::Message> gotMsgUseClockOnSelectedObject() const;
+        std::optional<sfs::Message> gotMsgSalvageSelectedObject() const;
+        std::optional<sfs::Message> salvageSelected() const;
+        void gotMsgGridObjectSelected(int parent, int id);
+        bool gotMsgStartBuildRequest(int blueprint) const;
+        bool CheckForHoles(int removedRaft) const;
+        const char* GetStateName() const;
+
         bool isReadyForBattle() const;
         void checkFocusRaft();
         void StartWaiting(const std::string& reason);

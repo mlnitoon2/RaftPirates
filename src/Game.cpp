@@ -406,26 +406,8 @@ namespace rp {
         auto o = objects.find(object);
         auto r = std::find_if(rafts.begin(), rafts.end(),
                               [&](const auto& raft) { return raft.id == parent; });
-        if (o == objects.end() || o->second.type != 1 || r == rafts.end())
-            return false;
-        for (auto cell : o->second.cells) {
-            int64_t xx = int64_t(x) + cell.x, yy = int64_t(y) + cell.y;
-            if (xx < 0 || yy < 0 || xx >= r->GridDimensionsX() || yy >= r->GridDimensionsY())
-                return false;
-        }
-        SparseGrid grid;
-        int occupancyId = 1;
-        for (const auto& c : r->components) {
-            if (parent == ignoreParent && c.id == ignoreId)
-                continue;
-            auto other = c.getResourceData(objects);
-            // Existing server state can contain overlapping definitions. Refuse new placement
-            // rather than treating malformed/unknown occupancy as free space.
-            if (!grid.addObject(occupancyId++, other ? other->cells : std::vector<Cell>{{0, 0}},
-                                {c.x, c.y}))
-                return false;
-        }
-        return grid.CanAddObject(o->second.cells, {x, y});
+        return o != objects.end() && r != rafts.end() &&
+               r->CanAddObject(o->second, {x, y}, objects, parent == ignoreParent ? ignoreId : 0);
     }
 
     Message Game::moveComponent(int parent, int id, int newParent, int x, int y) {

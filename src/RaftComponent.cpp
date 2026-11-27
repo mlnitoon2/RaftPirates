@@ -64,4 +64,17 @@ namespace rp {
         }
         return state != 1 || remaining <= 0;
     }
+
+    std::vector<std::string>
+    RaftComponent::getAvailableActions(const GridObjectInfo* definition) const {
+        if (Building())
+            return GetRemainingTime() > 0 ? std::vector<std::string>{"fast_clock"}
+                                          : std::vector<std::string>{"wait"};
+        return GridObject::getAvailableActions(definition);
+    }
+
+    std::unique_ptr<GridObject> RaftComponent::Duplicate() const {
+        return std::make_unique<RaftComponent>(*this);
+    }
+
 } // namespace rp

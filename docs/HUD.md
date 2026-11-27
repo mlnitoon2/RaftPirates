@@ -2,7 +2,7 @@
 
 `rp::Hud` loads `menus/hud.xml` and expands its templates from the caller's local APK assets. It uses original atlas entries from `xml_resources/rp_menu.xml`, bitmap font `rp_font_title`, and the English localization table. No assets are distributed here.
 
-The original HUD scripts call game-specific Lua/SWIG functions that have not been reconstructed. The adapter binds selected lifecycle events and touch callbacks directly to C++ instead of silently executing incomplete scripts. The 640×400 research viewport uses explicit button offsets so hit areas remain on screen. Unimplemented tutorial, object-selection, diving, cheat and instruction branches are hidden. The full original script state machine and animations are not yet supported.
+The original HUD scripts call game-specific Lua/SWIG functions that have not been reconstructed. The adapter binds selected lifecycle events and touch callbacks directly to C++ instead of silently executing incomplete scripts. The 640×400 research viewport uses explicit button offsets so hit areas remain on screen. Unimplemented tutorial, diving, cheat and instruction branches are hidden. Object-selection controls use the original ObjectSelectPopup and ObjectActionButton templates with native state-driven bindings. The full original script state machine and animations are not yet supported.
 
 | Original element | Native adapter behavior |
 |---|---|
@@ -37,4 +37,4 @@ To render the title-screen preview:
 
 ## XML panels
 
-The normal HUD, map, shop, inventory, quest and battle views use original menu XML and template controls. PortView no longer renders debug text buttons or their coordinate hitboxes. Selected literal initialization assignments are evaluated by Hydra; native callbacks bind a subset of actions to server requests. Dynamic templates are populated from server data. Full Lua/SWIG callbacks, purchase confirmation, object action popups, scrolling and some transitions remain incomplete. Unbound controls are not evidence of working features.
+The normal HUD, map, shop, inventory, quest and battle views use original menu XML and template controls. PortView no longer renders debug text buttons or their coordinate hitboxes. Selected literal initialization assignments are evaluated by Hydra; native callbacks bind a subset of actions to server requests. Dynamic templates are populated from server data. Pass 31 adds selected native purchase confirmation and object action bindings, scroll capture and clipping, viewport arithmetic, and original placement footprint rendering. Full Lua/SWIG callbacks, repair/salvage cost presentation, selection animations, scroll behavior and transitions remain incomplete. Unbound controls are not evidence of working features.

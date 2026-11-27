@@ -1,8 +1,8 @@
 # Raft Pirates
 
-[![RaftPirates original method-name coverage: 38.2872%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
+[![RaftPirates original method-name coverage: 39.7145%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
 
-**456/1191 original method names (38.2872%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md).
+**473/1191 original method names (39.7145%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md). [Remaining methods and priorities](docs/REMAINING.md).
 
 An unofficial C++ source reconstruction of Raft Pirates for research and game preservation, built on [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy). The project is not the recovered original source and is not a complete or binary-equivalent replacement. Original Java classes and resources are supplied by a locally available, compatible APK; they are not distributed by this repository.
 

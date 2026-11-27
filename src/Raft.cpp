@@ -1,4 +1,5 @@
 #include "rp/Game.h"
+#include "rp/SparseGrid.h"
 #include <algorithm>
 #include <limits>
 
@@ -93,4 +94,45 @@ namespace rp {
     void Raft::SetState(int value) {
         state = value;
     }
+
+    std::vector<std::string> Raft::getAvailableActions(const GridObjectInfo* definition) const {
+        auto actions = GridObject::getAvailableActions(definition);
+        actions.erase(std::remove(actions.begin(), actions.end(), "move"), actions.end());
+        return actions;
+    }
+
+    std::unique_ptr<GridObject> Raft::Duplicate() const {
+        return std::make_unique<Raft>(*this);
+    }
+
+    int Raft::raftSizeX() const {
+        return GridDimensionsX();
+    }
+
+    int Raft::raftSizeY() const {
+        return GridDimensionsY();
+    }
+
+    bool Raft::CanAddObject(const GridObjectInfo& def, Cell pos,
+                            const std::map<int, GridObjectInfo>& catalogue, int ignoreId) const {
+        if (Destroyed() || def.type != 1 || def.cells.empty())
+            return false;
+        for (const auto cell : def.cells) {
+            const auto xx = int64_t(pos.x) + cell.x, yy = int64_t(pos.y) + cell.y;
+            if (xx < 0 || yy < 0 || xx >= raftSizeX() || yy >= raftSizeY())
+                return false;
+        }
+        SparseGrid occupancy;
+        int occupancyId = 1;
+        for (const auto& component : components) {
+            if (component.id == ignoreId)
+                continue;
+            auto info = component.getResourceData(catalogue);
+            if (!occupancy.addObject(occupancyId++, info ? info->cells : std::vector<Cell>{{0, 0}},
+                                     {component.x, component.y}))
+                return false;
+        }
+        return occupancy.CanAddObject(def.cells, pos);
+    }
+
 } // namespace rp

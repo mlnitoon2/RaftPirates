@@ -21,6 +21,9 @@ namespace rp {
         int GetTotalBattlePoints(int staticBattlePoints) const override;
         // True when no further construction countdown is needed. Server owns state changes.
         bool TempTick(float dt);
+        std::vector<std::string>
+        getAvailableActions(const GridObjectInfo* definition) const override;
+        std::unique_ptr<GridObject> Duplicate() const override;
     };
 
     using Component = RaftComponent;

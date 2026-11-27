@@ -34,18 +34,23 @@ namespace rp {
         }
         for (const auto& name : {"CheatMenu", "LowWater"})
             show(name, false);
-        // Recovered script offsets, adapted to keep controls within the 640x400 research viewport.
+        // Apply the original onPostInit offsets using the actual atlas bounds.
         auto offset = [&](const char* name, double x, double y) {
             auto& n = menu_.node(menu_.find(normal_, name, true));
             n.set("xOffset", x);
             n.set("yOffset", y);
         };
-        offset("QuestMenu", 34, 25);
-        offset("MainMenu", 34, -25);
+        auto quest = bounds("QuestMenu"), main = bounds("MainMenu"),
+             event = bounds("EventNotification");
+        offset("QuestMenu", quest.w / 2, quest.h / 2);
+        offset("MainMenu", main.w / 2 - 3, -main.h / 2 - 3);
         offset("PirateMap", -3, -3);
-        offset("SafeFlag", -130, 2);
-        offset("BadZoneFlag", -130, 2);
-        offset("EventNotification", 130, 27);
+        auto daring = bounds("DaringMeter");
+        double half = daring.w / 2;
+        double safeX = (640.0 / 2 - half - quest.w) / 2 + half;
+        offset("SafeFlag", -safeX, 2);
+        offset("BadZoneFlag", -safeX - 40, 2);
+        offset("EventNotification", (640.0 / 2 - half - main.w) / 2 + half, event.h / 2);
         menu_.solve();
     }
 
@@ -62,6 +67,32 @@ namespace rp {
     bool Hud::event(unsigned id, const std::string& name) {
         auto& n = menu_.node(id);
         auto ownerName = menu_.node(menu_.owner(id)).name;
+        if (name == "onInit")
+            menu_.applyLiteralProperties(id, [this](const auto& s) { return strings_.getText(s); });
+        auto options = menu_.find(1, "ObjectSelectionOptions", true);
+        for (auto parent = id; parent; parent = menu_.node(parent).parent) {
+            if (parent != options)
+                continue;
+            if (name == "onTouchUp" && n.type == "touchComponent") {
+                auto button = menu_.node(menu_.owner(id)).parent;
+                auto action = button ? menu_.node(button).text("action") : "";
+                if (action == "move")
+                    action_ = Action::Move;
+                else if (action == "destroy")
+                    action_ = Action::Destroy;
+                else if (action == "repair")
+                    action_ = Action::Repair;
+                else if (action == "salvage")
+                    action_ = Action::Salvage;
+                else if (action == "fast_clock")
+                    action_ = Action::Clock;
+                else if (action == "build")
+                    action_ = Action::Build;
+                else if (action == "build_cancel")
+                    action_ = Action::Cancel;
+            }
+            return true;
+        }
         if (name == "onInit" && n.type == "spriteSheetComponent") {
             std::string sprite;
             if (ownerName == "QuestMenu")
@@ -120,6 +151,57 @@ namespace rp {
         }
         // Original Lua bodies depend on unrecovered game bindings. Do not run partially.
         return true;
+    }
+
+    void Hud::setSelectedActions(const std::vector<std::string>& actions, int clocks) {
+        auto options = menu_.find(1, "ObjectSelectionOptions", true);
+        if (!options)
+            return;
+        menu_.node(normal_).set("visible", actions.empty());
+        menu_.node(options).set("visible", !actions.empty());
+        if (actions.empty())
+            return;
+        const std::map<std::string, std::string> images{
+            {"move", "btn_move"},        {"destroy", "btn_dismantle"},
+            {"repair", "btn_repair"},    {"salvage", "rp_challenge_salvage"},
+            {"fast_clock", "btn_clock"}, {"build", "btn_yes"},
+            {"build_cancel", "btn_no"}};
+        for (size_t i = 0; i < 6; ++i) {
+            auto id = menu_.find(options, "Button" + std::to_string(i + 1), true);
+            if (!id)
+                continue;
+            bool showButton = i < actions.size() && images.count(actions[i]);
+            menu_.node(id).set("visible", showButton);
+            if (!showButton)
+                continue;
+            menu_.node(id).set("action", actions[i]);
+            auto button = menu_.find(id, "Button", true);
+            if (!button)
+                continue;
+            auto set = [&](const char* child, const char* key, Property value) {
+                if (auto c = menu_.find(button, child))
+                    menu_.node(c).set(key, std::move(value));
+            };
+            std::string color = actions[i] == "build_cancel" ? "btn_red" : "btn_green";
+            set("UpSprite", "spriteName", color);
+            set("UpSprite", "visible", true);
+            set("DownSprite", "spriteName", color + "_over");
+            set("DownSprite", "visible", false);
+            set("Sprite", "spriteName", images.at(actions[i]));
+            set("Sprite", "sheetName", std::string("xml_resources/rp_menu.xml"));
+            set("Sprite", "visible", true);
+            set("Text", "text",
+                actions[i] == "fast_clock" ? std::to_string(clocks) : std::string{});
+            set("Touch", "enabled", actions[i] != "fast_clock" || clocks > 0);
+        }
+        if (auto bg = menu_.find(options, "Bg", true))
+            if (auto sprite = menu_.find(bg, "Sprite"))
+                menu_.node(sprite).set("visible", true);
+        if (auto gears = menu_.find(options, "Gears", true))
+            menu_.node(gears).set("visible", actions.size() == 1 && actions.front() == "wait");
+        if (auto instruction = menu_.find(options, "InstructionText", true))
+            menu_.node(instruction).set("visible", false);
+        menu_.solve();
     }
 
     void Hud::update(const Game& game) {

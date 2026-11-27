@@ -13,7 +13,7 @@
 #include "sys/gfx/ResourceSpriteFont.h"
 
 namespace rp {
-    // Temporary native controls for the original APK's GLSurfaceView. Not original Menu Redux UI.
+    // World interaction and native bindings for the original Menu Redux resources.
     class PortView {
       public:
         explicit PortView(std::filesystem::path root);
@@ -61,12 +61,21 @@ namespace rp {
                                         std::shared_ptr<sys::gfx::Image>>>
             shopAtlases_;
         bool renderItemIcon(sys::gfx::Image&, const std::string&, const std::string&, int, int);
-        enum class Panel { None, Shop, Inventory, Travel, Build, Quest, Safety, Daring };
+        enum class Panel { None, Shop, Inventory, Travel, Build, Quest, Safety, Daring, Confirm };
         Panel panel_ = Panel::None;
         size_t page_ = 0;
         int selectedBlueprint_ = 0;
         int selectedParent_ = 0, selectedComponent_ = 0;
         bool moving_ = false;
+        std::optional<Cell> placement_;
+        int placementParent_ = 0;
+        int selectedStore_ = 0;
+        std::string confirmAction_;
+        unsigned swipe_ = 0;
+        std::map<unsigned, double> scrollOrigins_;
+        bool xmlCaptured_ = false;
+        void updateHud(const Game& game);
+        void updateScroll();
         std::optional<sfs::Message> panelTouch(Game&, float x, float y);
         std::unique_ptr<sys::menu_redux::MenuRuntime> xmlMenu_;
         std::string xmlName_;
