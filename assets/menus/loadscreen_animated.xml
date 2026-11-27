@@ -1,0 +1,163 @@
+<menu>
+	<element name="topElement">
+		
+		<element name="bg">
+			<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+			<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="15" />
+			<ninesliceComponent name="Sprite">
+				<event name="onInit" params="component, element" >
+					component("spriteName"):Set("gfx/menu/menu_overlay")
+					component("width"):SetFloat( screenWidth() );
+					component("height"):SetFloat( screenHeight() );
+					component("layer"):SetString("PIRATE_MAP_HUD");
+					component("alpha"):SetFloat(0.3);
+				</event>
+			</ninesliceComponent>
+			<touchComponent>
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">
+				</event>
+			</touchComponent>
+		</element>
+		<element name="gears">
+			<size dependentOnElement="element:name()" dependentOnComponent="Sprite1" />
+			<position relativeTo="SCREEN" vAnchor="BOTTOM" hAnchor="RIGHT" />
+			<orientation vAnchor="BOTTOM" hAnchor="RIGHT" xOffset="0" yOffset="0" priority="2" />
+			<event name="onPostInit" params="element">
+				element("curGear"):SetInt(1)
+				element("cumulativeTime"):SetFloat(0.0)
+				element["Sprite1"]("visible"):SetInt(1)
+				element["Sprite2"]("visible"):SetInt(0)
+				element["Sprite3"]("visible"):SetInt(0)
+			</event>
+			<event name="onTick" params="element, time">
+				element("cumulativeTime"):SetFloat(element("cumulativeTime"):GetFloat()+time)
+				if element("cumulativeTime"):GetFloat() > 0.1 then
+					element("cumulativeTime"):SetFloat(0.0)
+					local nextGear = element("curGear"):GetInt()+1
+					if nextGear > 3 then
+						nextGear = 1
+					end
+					element("curGear"):SetInt(nextGear)
+					
+					for i=1, 3, 1 do
+						if i == nextGear then
+							element["Sprite"..i]("visible"):SetInt(1)
+						else
+							element["Sprite"..i]("visible"):SetInt(0)
+						end
+					end
+				end
+				
+			</event>
+			<spriteSheetComponent name="Sprite1">
+				<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+				<event name="onInit" params="component, element" >
+					component("spriteName"):Set("loading_gears_01")
+					component("sheetName"):Set("xml_resources/rp_menu.xml")
+					component("layer"):SetString("PIRATE_MAP_HUD");
+					component("useOffsets"):SetInt(1)
+				</event>
+			</spriteSheetComponent>
+			<spriteSheetComponent name="Sprite2">
+				<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+				<event name="onInit" params="component, element" >
+					component("spriteName"):Set("loading_gears_02")
+					component("sheetName"):Set("xml_resources/rp_menu.xml")
+					component("layer"):SetString("PIRATE_MAP_HUD");
+					component("useOffsets"):SetInt(1)
+				</event>
+			</spriteSheetComponent>
+			<spriteSheetComponent name="Sprite3">
+				<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+				<event name="onInit" params="component, element" >
+					component("spriteName"):Set("loading_gears_03")
+					component("sheetName"):Set("xml_resources/rp_menu.xml")
+					component("layer"):SetString("PIRATE_MAP_HUD");
+					component("useOffsets"):SetInt(1)
+				</event>
+			</spriteSheetComponent>
+			<touchComponent>
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">
+					element:parent()["RightFlag"]:DoStoredScript("trigger")
+					element:parent()["LeftFlag"]:DoStoredScript("trigger")
+				</event>
+			</touchComponent>
+		</element>	
+		
+		<template type="SlideInDialog" name="RightFlag">
+			<size dependentOnElement="element:name()" dependentOnComponent="DialogSprite"/>
+			<spriteSheetComponent name="DialogSprite">
+				<event name="onInit" params="component, element" >
+					component("spriteName"):Set("menu_popup_half")
+					component("sheetName"):Set("xml_resources/rp_menu.xml")
+					component("layer"):SetString("PIRATE_MAP_HUD");
+				</event>
+			</spriteSheetComponent>
+
+			<event name="onInit" params="element">
+				onInit(element)
+				element("fromDirection"):SetString("RIGHT")
+				element:DoStoredScript("trigger");
+			</event>
+			<event name="stopSlide" params="element">
+				--[[need to check curDir before calling parent stopSlide ]]
+				local exitThis = element("curDir"):GetInt()
+				stopSlide(element)
+				
+				--[[don't pop for both flags]]
+				--[[if exitThis == -1 then
+					menu:popPopUp()
+				end]]
+			</event>
+		</template>	
+		<template type="SlideInDialog" name="LeftFlag">
+			<spriteSheetComponent name="DialogSprite">
+				<event name="onInit" params="component, element" >
+					component("spriteName"):Set("menu_popup_half")
+					component("sheetName"):Set("xml_resources/rp_menu.xml")
+					component("layer"):SetString("PIRATE_MAP_HUD");
+				</event>
+				<event name="onPostInit" params="component, element" >
+					component("hFlip"):SetInt(1)
+				</event>
+			</spriteSheetComponent>
+
+			<event name="onInit" params="element">
+				onInit(element)
+				element("fromDirection"):SetString("LEFT")
+				element:DoStoredScript("trigger");
+			</event>
+			<event name="stopSlide" params="element">
+				--[[need to check curDir before calling parent stopSlide ]]
+				local exitThis = element("curDir"):GetInt()
+				stopSlide(element)
+				
+				if exitThis == -1 then
+					menu:popPopUp()
+				end
+			</event>
+		</template>		
+		<!-- textComponent name="Loading" >
+			<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+			
+			<event name="onInit" params="component, element" >
+				component("font"):Set("rp_font_title")
+				component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+				
+				component("red"):SetFloat(0.31)
+				component("green"):SetFloat(0.80)
+				component("blue"):SetFloat(0.93)
+				
+				component("text"):SetString("LOADING_SCREEN")
+				component("layer"):SetString("PIRATE_MAP_HUD");
+			</event>
+		</textComponent -->
+	</element>
+</menu>

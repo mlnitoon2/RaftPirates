@@ -1,0 +1,167 @@
+<template>
+	<defaultTemplateVar name="$THELAYER" equals="HUD" />
+	<size dependentOnElement="ItemImage" />
+
+	<event name="onInit" params="element">
+		element("materialId"):SetInt(-1)
+		element("numNeeded"):SetInt(-1)
+		element("numPossessed"):SetInt(-1)
+		element("storeItem"):SetInt(0)
+		element("repairMode"):SetInt(0)
+		element:SetupGenericListener(element:GetReceiver(), "rp::MsgMaterialInformationResponse", "gotMaterialInfo")
+	</event>
+	
+	<event name="setMaterialId" params="element">
+		if element("materialId"):GetInt() &gt; 0 then
+			game.engineReceiver():Send( game.MsgMaterialInformationRequest(element:GetReceiver(), element("materialId"):GetInt()) )
+			element:DoStoredScript("enableMe")
+		else
+			element:DoStoredScript("disableMe")
+		end
+	</event>
+	
+	<event name = "setMaterialAmtPossessed" params="element">
+		--[[print ("setMaterialAmtPossessed: Possessed "..element("numPossessed"):GetInt())
+		print ("setMaterialAmtPossessed: Needed "..element("numNeeded"):GetInt())]]
+		if element("numPossessed"):GetInt() ~= -1 and element("numNeeded"):GetInt()~=-1 then
+			element:DoStoredScript("populate")
+		end
+		
+	</event>
+	<event name = "setMaterialAmtNeeded" params="element">
+		--[[if both values needed have been set]]
+		if element("numPossessed"):GetInt() ~= -1 and element("numNeeded"):GetInt()~=-1 then
+			element:DoStoredScript("populate")
+		--[[if store, only one value is needed]]
+		elseif element("storeItem"):GetInt() == 1 and element("numNeeded"):GetInt()~=-1 then
+			element:DoStoredScript("populate")
+		end
+	</event>
+	
+	<event name="populate" params="element">
+		<![CDATA[
+		
+		local s = ""
+		if element("repairMode"):GetInt()==1 and element("storeItem"):GetInt()==1 and element("numNeeded"):GetInt() >= 0 then
+			s = "+"
+		elseif element("repairMode"):GetInt()==1 and element("storeItem"):GetInt()==0 and element("numNeeded"):GetInt() >= 0 then
+			s = "-"
+		end
+		
+		s = s..element("numNeeded"):GetInt()
+		element["MaterialReqs"]["Text"]("text"):SetString(s)
+		
+		--[[if not store, text is red if you don't have enough, else it's white]]
+
+		if element("storeItem"):GetInt() == 0 and element("numPossessed"):GetInt() < element("numNeeded"):GetInt() then
+			element["MaterialReqs"]["Text"]("red"):SetFloat(1.0)
+			element["MaterialReqs"]["Text"]("green"):SetFloat(0.0)
+			element["MaterialReqs"]["Text"]("blue"):SetFloat(0.0)
+		else
+			element["MaterialReqs"]["Text"]("red"):SetFloat(1.0)
+			element["MaterialReqs"]["Text"]("green"):SetFloat(1.0)
+			element["MaterialReqs"]["Text"]("blue"):SetFloat(1.0)			
+		end
+		
+		local height = element["ItemImage"]["Sprite"]("height"):GetInt()
+		local width 
+		
+		if element["ItemImage"]["Sprite"]("width"):GetInt() > element["MaterialReqs"]["Text"]("width"):GetInt() then
+			width = element["ItemImage"]["Sprite"]("width"):GetInt()
+		else
+			width = element["MaterialReqs"]["Text"]("width"):GetInt()
+		end
+		element:setSize(Vector2(width, height))
+		
+		--[[element["Touch"]("width"):SetInt(element["ItemImage"]["Sprite"]("width"):GetInt())
+		element["Touch"]("height"):SetInt(element["ItemImage"]["Sprite"]("height"):GetInt()+element["MaterialReqs"]["Text"]("height"):GetInt()+(element["ItemImage"]["Sprite"]("height"):GetInt()/2))]]
+		]]>
+	</event>
+	
+	<event name="gotMaterialInfo" params="element, msg">
+	
+		local materialId = msg.materialId;
+		if materialId == element("materialId"):GetInt() then
+		
+			element["ItemImage"]["Sprite"]("spriteName"):SetString(msg.imageID .. "")
+			element["ItemImage"]["Sprite"]("sheetName"):SetString("xml_resources/" .. msg.spriteSheetID)
+		else
+			--[[ignore this message]]
+		end
+
+	</event>
+	
+	<event name="enableMe" params="element">
+		if 	element("materialId"):GetInt() &gt; 0 then
+			element["ItemImage"]["Sprite"]("visible"):SetInt(1)
+			element["MaterialReqs"]["Text"]("visible"):SetInt(1)
+			--[[element["Touch"]("enabled"):SetInt(1)]]
+		end
+	</event>
+	
+	<event name="disableMe" params="element">
+		element["ItemImage"]["Sprite"]("visible"):SetInt(0)
+		element["MaterialReqs"]["Text"]("visible"):SetInt(0)
+		--[[element["Touch"]("enabled"):SetInt(0)]]
+	</event>
+
+	<element name="ItemImage">
+		<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+		<position relativeTo="element:parent()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+		
+		<spriteSheetComponent name = "Sprite">
+			<event name="onInit" params="component, element" >
+				component("spriteName"):SetString("btn_mat_bone")
+				component("sheetName"):SetString("xml_resources/rp_menu.xml")
+				component("layer"):SetString("$THELAYER");
+			</event>
+		</spriteSheetComponent>
+	</element>
+	
+	<element name="MaterialReqs">
+		<size dependentOnElement="element:name()" dependentOnComponent="Text" />
+		<position relativeTo="element:parent()[&quot;ItemImage&quot;]" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+		<event name="onPostInit" params="element">
+			element("yOffset"):SetInt(screenHeight()/20)
+		</event>
+		<textComponent name="Text">
+			<size w="0" h="h" />
+			<event name="onInit" params="component, element" >
+				component("font"):Set("blue_highway")
+				component("size"):Set(1.0)
+				component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+				
+				component("red"):SetFloat(1.0)
+				component("green"):SetFloat(1.0)
+				component("blue"):SetFloat(1.0)
+				
+				component("text"):SetString("/")
+				component("layer"):SetString("$THELAYER");
+			</event>
+		</textComponent>
+	</element>
+	
+	<!-- touchComponent name="Touch">
+		<position relativeTo="element[&quot;MaterialReqs&quot;]" vAnchor="TOP" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+		<event name="onTouchUp" params="component, element">
+			if element("materialId"):GetInt() &gt; 0 then
+				if element("storeItem"):GetInt() == 0 then
+					--[[if this isn't a store item, and you don't have enough materials]]
+					if element("repairMode"):GetInt()==0 and element("numPossessed"):GetInt() &lt; element("numNeeded"):GetInt() then
+					
+						local amountNeeded = element("numNeeded"):GetInt() - element("numPossessed"):GetInt()
+						game.engineReceiver():Send(game.MsgQueueMenuPopup("purchase_material_confirm", true, game.MsgConfirmMaterialPurchaseInfo(element("materialId"):GetInt(), amountNeeded, 0) ))
+						
+					elseif element("repairMode"):GetInt()==1 and element("numPossessed"):GetInt() &lt; element("numNeeded"):GetInt() then
+
+						local amountNeeded = element("numNeeded"):GetInt() - element("numPossessed"):GetInt()
+						game.engineReceiver():Send(game.MsgQueueMenuPopup("purchase_material_confirm", true, game.MsgConfirmMaterialPurchaseInfo(element("materialId"):GetInt(), amountNeeded, 1) ))
+					end
+				end
+			end
+		</event>
+	</touchComponent-->	
+</template>

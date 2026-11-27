@@ -1,0 +1,158 @@
+<template>
+  <size dependentOnElement="Button"/>
+  <event name="onInit" params="element">
+    element("action"):SetString("")
+    element("fastclockId"):SetInt(10)
+    element("fastclockamount"):SetInt(0)
+    element:SetupGenericListener(element:GetReceiver(), "rp::MsgSpecificMaterialAvailAmountResponse", "gotNumFastclocks")
+  </event>
+  <event name="show" params="element">
+    element:DoStoredScript("setAction")
+    element["Button"]:DoStoredScript("show")
+  </event>
+  <event name="hide" params="element">
+    element["Button"]:DoStoredScript("hide")
+  </event>
+  <event name="setAction" params="element">
+
+    element["Button"]["Text"]("text"):SetString("")
+    local action = element("action"):GetString()
+    if action =="move" then
+    element["Button"]["Sprite"]("spriteName"):Set("btn_move")
+    elseif action =="destroy" then
+    element["Button"]["Sprite"]("spriteName"):Set("btn_dismantle")
+    elseif action =="build" then
+    element:parent()["InstructionText"]:DoStoredScript("enableMe")
+    element["Button"]["Sprite"]("spriteName"):Set("btn_yes")
+    elseif action =="build_cancel" then
+    element["Button"]["Sprite"]("spriteName"):Set("btn_no")
+    elseif action == "fast_clock" then
+    element["Button"]["Sprite"]("spriteName"):Set("btn_clock")
+    game.engineReceiver():Send( game.MsgSpecificMaterialAvailAmountRequest(element:GetReceiver(), element("fastclockId"):GetInt()) )
+    elseif action=="salvage" then
+    element["Button"]["Sprite"]("spriteName"):Set("rp_challenge_salvage")
+    elseif action=="repair" then
+    element["Button"]["Sprite"]("spriteName"):Set("btn_repair")
+    else
+    element["Button"]:DoStoredScript("hide")
+    end
+
+    element["Button"]["Sprite"]("sheetName"):Set("xml_resources/rp_menu.xml")
+    element["Button"]["Sprite"]("layer"):SetString("HUD");
+  </event>
+
+  <event name="gotNumFastclocks" params="element, msg">
+    if element("fastclockId"):GetInt()==msg.materialId then
+    element["Button"]["Text"]("text"):SetString(""..msg.materialAmount)
+    element("fastclockamount"):SetInt(msg.materialAmount)
+
+    end
+  </event>
+  <template type="HudButton" name="Button">
+    <templateVar name="$image" equals="btn_green" />
+    <templateVar name="$sheet" equals="rp_menu" />
+    <event name="show" params="element">
+      show(element)
+      local action = element:parent()("action"):GetString()
+      if action =="build_cancel" then
+      element["UpSprite"]("spriteName"):Set("btn_red")
+      element["DownSprite"]("spriteName"):Set("btn_red_over")
+      else
+      element["UpSprite"]("spriteName"):Set("btn_green")
+      element["DownSprite"]("spriteName"):Set("btn_green_over")
+      end
+      element["Sprite"]("visible"):SetInt(1)
+      element["Text"]("visible"):SetInt(1)
+    </event>
+    <event name="hide" params="element">
+      hide(element)
+      element["Sprite"]("visible"):SetInt(0)
+      element["Text"]("visible"):SetInt(0)
+    </event>
+    <spriteSheetComponent name="Sprite">
+      <position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+      <orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+      <event name="onInit" params="component, element" >
+        component("layer"):SetString("HUD");
+      </event>
+    </spriteSheetComponent>
+    <textComponent name="Text">
+      <position relativeTo="element:name()" vAnchor="BOTTOM" hAnchor="HCENTER" />
+      <orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+
+      <event name="onInit" params="component, element" >
+        component("font"):Set("rp_font_title")
+        component("size"):Set(0.75)
+        component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+
+        component("red"):SetFloat(1.0)
+        component("green"):SetFloat(1.0)
+        component("blue"):SetFloat(1.0)
+
+        component("text"):SetString("")
+        component("layer"):SetString("HUD");
+      </event>
+    </textComponent>
+    <touchComponent name="Touch">
+      <size dependentOnElement="element:name()"/>
+      <event name="onTouchUp" params="component, element">
+        onTouchUp(component, element)
+
+        local action = element:parent()("action"):GetString()
+        if action =="move" then
+        game.moveObjectRequest()
+        elseif action =="destroy" then
+			--[[menu:pushPopUp("remove_confirm_dialog")]]
+			game.engineReceiver():Send( game.MsgQueueMenuPopup("remove_confirm_dialog", false, 
+				game.MsgSetupRepairAndSalvageDialog( g_dismantleGridObject ) ) )
+        --[[game.destroyObjectRequest()]]
+        elseif action =="build" then
+        game.pushBuildButton()
+        elseif action =="build_cancel" then
+        game.pushCancelBuildButton()
+        elseif action == "fast_clock" then
+
+
+
+        if element:parent()("fastclockamount"):GetInt() > 0 then
+
+          game.sendQuestEvent( game.MsgQuestEvent():addEvent( "use_hourglass", 1 ) )
+          --[[hacky hack until the speed dive stuff is working properly]]
+          game.sendQuestEvent( game.MsgQuestEvent():addEvent( "dive_finished", 1 ) )
+
+          --[[do nothing for now]]
+          game.engineReceiver():Send( game.MsgUseClockOnSelectedObject() )
+
+
+          --[[hide the object select hud, sincethe interaction state of the object might change...]]
+	  --[[game.engineReceiver():Send(game.MsgSetHudModeRequest(1))]]
+        else
+
+			--[[element:root():GetElement("topElement")("hudMode"):SetInt(1)]]
+          game.engineReceiver():Send(game.MsgSetHudModeRequest(1))
+          game.engineReceiver():Send( game.MsgShowStore("clocks") )
+
+        end
+
+
+        elseif action=="salvage" then
+        --[[do nothing for now]]
+        game.engineReceiver():Send( game.MsgSalvageSelectedObject() )
+        --[[hide the object select hud, sincethe interaction state of the object might change...]]
+        --[[
+        game.engineReceiver():Send(game.MsgSetHudModeRequest(1))]]
+        elseif action=="repair" then
+        --[[do nothing for now]]
+        game.engineReceiver():Send( game.MsgRepairSelectedObject() )
+        --[[hide the object select hud, sincethe interaction state of the object might change...]]
+        --[[
+        game.engineReceiver():Send(game.MsgSetHudModeRequest(1))
+        ]]
+        else
+        --[[do nothing]]
+        print("invalid object action: "..action)
+        end
+      </event>
+    </touchComponent>
+  </template>
+</template>

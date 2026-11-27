@@ -1,0 +1,163 @@
+<template name="template_newspopup">
+
+	<defaultTemplateVar name="$background" equals="tarp01" />
+	<defaultTemplateVar name="$bgSheet" equals="xml_resources/xmodeSprites1.xml" />
+	<defaultTemplateVar name="$announcement" equals="NO_ANNOUNCEMENT" />
+	<defaultTemplateVar name="$closeX" equals="67.0" />
+	<defaultTemplateVar name="$closeY" equals="175.0" />
+	<defaultTemplateVar name="$openX" equals="-70.0" />
+	<defaultTemplateVar name="$openY" equals="50.0" />
+	
+	<size dependentOnElement="element:name()" dependentOnComponent="BGSprite" />
+	<spriteSheetComponent name="BGSprite">
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priorityOffset="2" />
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("$background")
+			component:GetVar("sheetName"):Set("$bgSheet")
+			state = 0
+		</event>
+	</spriteSheetComponent>
+	
+	<touchComponent name="Touch">
+		<size dependentOnElement="element:name()" dependentOnComponent="BGSprite" />
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priorityOffset="1" />
+		<event name="onTouchUp" params="component, element">
+			if (state == 0) then
+				state = 1
+				element:GetComponent("NewsLabel"):GetVar("visible"):SetInt(0)
+				element:GetComponent("AnnouncementText"):GetVar("visible"):SetInt(1)
+				element:GetComponent("AnnouncementText"):GetVar("text"):Set(lua_sys.fetchAnnouncement())
+				if(lua_sys.fetchAnnouncementLink() ~= "") then
+					element:GetComponent("GoButton"):GetVar("visible"):SetInt(1)
+					element:GetComponent("GoButtonLabel"):GetVar("visible"):SetInt(1)
+					element:GetComponent("GoButtonTouch"):GetVar("visible"):SetInt(1)
+				else
+					element:GetComponent("GoButton"):GetVar("visible"):SetInt(0)
+					element:GetComponent("GoButtonLabel"):GetVar("visible"):SetInt(0)
+					element:GetComponent("GoButtonTouch"):GetVar("visible"):SetInt(0)
+				end
+			elseif(state == 2) then
+				state = 3
+			end
+		</event>
+	</touchComponent>
+	
+	<textComponent name="NewsLabel">
+		<size w="75" h="200" />
+		<position relativeTo="element:name()" vAnchor="TOP" hAnchor="LEFT" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="20" yOffset="30" priorityOffset="0" />
+		<event name="onInit" params="component, element">
+			component:GetVar("alignment"):SetInt(16)
+			component:GetVar("font"):Set("font_main_suckies_black")
+			component:GetVar("size"):Set(0.53)
+			component:GetVar("text"):Set("NEWS")
+		</event>
+	</textComponent>
+	
+	<textComponent name="AnnouncementText">
+		<size w="200" h="200" />
+		<position relativeTo="element:name()" vAnchor="TOP" hAnchor="LEFT" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="25" yOffset="50" priorityOffset="0" />
+		<event name="onInit" params="component, element">
+			component:GetVar("alignment"):SetInt(16)
+			component:GetVar("font"):Set("font_main_suckies_black")
+			component:GetVar("size"):Set(0.7)
+			component:GetVar("text"):Set("$announcement")
+			component:GetVar("visible"):SetInt(0)
+		</event>
+	</textComponent>
+	
+	<animSpriteComponent name="GoButton">
+		<size w="120" h="80" />
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="-5" yOffset="-15" priorityOffset="1" />
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("BUTTON_NEWS")
+			component:GetVar("frame"):SetInt(0)
+		</event>
+	</animSpriteComponent>
+	
+	<textComponent name="GoButtonLabel">
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="-5" yOffset="-20" priorityOffset="0" />
+		<event name="onInit" params="component, element">
+			component:GetVar("alignment"):SetInt(16)
+			component:GetVar("font"):Set("font_main_suckies_black")
+			component:GetVar("size"):Set(0.75)
+			component:GetVar("text"):Set("GO")
+		</event>
+	</textComponent>
+	
+	<touchComponent name="GoButtonTouch">
+		<size dependentOnElement="element:name()" dependentOnComponent="GoButton" />
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="-5" yOffset="-15" priorityOffset="0" />
+		<event name="onTouchDown" params="component, element">
+			element:GetComponent("GoButton"):GetVar("frame"):SetInt(1)
+		</event>
+		<event name="onTouchUp" params="component, element">
+			element:GetComponent("GoButton"):GetVar("frame"):SetInt(0)
+			lua_sys.visitAnnouncementLink()
+		</event>
+		<event name="onTouchRelease" params="component, element">
+			element:GetComponent("GoButton"):GetVar("frame"):SetInt(0)
+		</event>
+	</touchComponent>
+	
+	<!-- <template type="template_animspritebutton" name="GoButton">
+		<templateVar name="$animSprite" equals="BUTTON_SCORES" />
+		<templateVar name="$text" equals="Go!" />
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="-40" yOffset="-40" priorityOffset="0" />
+		<touchComponent name="Touch">
+			<event name="onTouchUp" params="component, element">
+				onTouchUp(component, element)
+				print "Pressed"
+			</event>
+		</touchComponent>
+	</template>-->
+
+	<event name="onTick" params="element, dt">
+		curX = element:GetVar("xOffset"):GetFloat()
+		curY = element:GetVar("yOffset"):GetFloat()
+		if (state == 1) then
+			element:GetVar("xOffset"):Set(curX + ($closeX / $openX)*dt*600)
+			element:GetVar("yOffset"):Set(curY - ($closeY / $openY)*dt*150)
+		end
+		
+		if(state == 1) then
+			if($openX > element:GetVar("xOffset"):GetFloat()) then
+				element:GetVar("xOffset"):Set($openX)
+			end
+			if($openY > element:GetVar("yOffset"):GetFloat()) then
+				element:GetVar("yOffset"):Set($openY)
+			end
+			if($openX == element:GetVar("xOffset"):GetFloat() and $openY == element:GetVar("yOffset"):GetFloat()) then
+				state = 2
+				lua_sys.markAnnouncementRead()
+			end
+		end
+		
+		if (state == 3) then
+			element:GetVar("xOffset"):Set(curX - ($closeX / $openX)*dt*600)
+			element:GetVar("yOffset"):Set(curY + ($closeY / $openY)*dt*150)
+		end
+		
+		if(state == 3) then
+			if(element:GetVar("xOffset"):GetFloat() > $closeX) then
+				element:GetVar("xOffset"):Set($closeX)
+			end
+			if(element:GetVar("yOffset"):GetFloat() > $closeY) then
+				element:GetVar("yOffset"):Set($closeY)
+			end
+			if($closeX == element:GetVar("xOffset"):GetFloat() and $closeY == element:GetVar("yOffset"):GetFloat()) then
+				state = 0
+				element:GetComponent("NewsLabel"):GetVar("visible"):SetInt(1)
+				element:GetComponent("AnnouncementText"):GetVar("visible"):SetInt(0)
+			end
+		end
+	</event>
+	
+</template>
