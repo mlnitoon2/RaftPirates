@@ -7,12 +7,14 @@
 namespace rp {
     class RPMenuHandler;
     class TouchControls;
+
     // Reconstructed selection/request portion of the original game state.
     class BuildModeState {
       public:
-        enum class ViewMode { Normal=0, Footprints=2 };
+        enum class ViewMode { Normal = 0, Footprints = 2 };
         explicit BuildModeState(Game& game);
-        void BindView(OceanView* view, TouchControls* controls=nullptr, RPMenuHandler* menu=nullptr);
+        void BindView(OceanView* view, TouchControls* controls = nullptr,
+                      RPMenuHandler* menu = nullptr);
         void ApplyFootprintToRaft(Raft*, bool grid);
         void CleanupFootprints(Raft*, bool grid, bool points);
         void ChangeView(sys::gfx::Vec2, ViewMode, bool immediate);
@@ -33,23 +35,34 @@ namespace rp {
         void gotMsgTransitionDone(const MsgTransitionDone&);
         std::optional<sfs::Message> sendSelectedObjectRepairDataWithGold(sfs::SFSObjectWrapper&);
         void tick(float);
-        ViewMode viewMode() const { return viewMode_; }
-        bool hudBlocked(const std::string& name)const { return blockedHud_.count(name)!=0; }
-        struct Notification { int seconds; std::string key, textKey; };
+
+        ViewMode viewMode() const {
+            return viewMode_;
+        }
+
+        bool hudBlocked(const std::string& name) const {
+            return blockedHud_.count(name) != 0;
+        }
+
+        struct Notification {
+            int seconds;
+            std::string key, textKey;
+        };
+
         std::function<void(const Notification&)> scheduleNotification;
         std::function<void(const std::string&)> cancelNotification;
         std::function<void(const std::string&)> questEvent;
         std::function<void(const std::string&)> playMusic;
         std::function<void(const std::string&)> highlightHud;
         ~BuildModeState();
-        const char* name()const;
+        const char* name() const;
         void Pause();
         void gotMsgSparseGridObjectAdded();
         void SetCheckForHoles(const std::string&);
         bool gotMsgCheckForHoles(int);
-        void gotMsgWreckageSelected(int parent,int id);
-        std::optional<sfs::Message> doPlaceObject(int blueprint,int parent,Cell position);
-        std::optional<sfs::Message> repairObject(bool all)const;
+        void gotMsgWreckageSelected(int parent, int id);
+        std::optional<sfs::Message> doPlaceObject(int blueprint, int parent, Cell position);
+        std::optional<sfs::Message> repairObject(bool all) const;
         void selectObject(int parent, int userObjectID);
         void deselectObject();
         std::optional<sfs::Message> repairSelected(bool all) const;
@@ -95,16 +108,16 @@ namespace rp {
         int parent_ = 0, id_ = 0;
         size_t wreckedRaft_ = 0, wreckedComponent_ = 0;
         std::string waiting_;
-        bool checkHoles_=false;
-        OceanView* ocean_=nullptr;
-        TouchControls* controls_=nullptr;
-        RPMenuHandler* menu_=nullptr;
-        ViewMode viewMode_=ViewMode::Normal;
+        bool checkHoles_ = false;
+        OceanView* ocean_ = nullptr;
+        TouchControls* controls_ = nullptr;
+        RPMenuHandler* menu_ = nullptr;
+        ViewMode viewMode_ = ViewMode::Normal;
         std::set<std::string> blockedHud_;
         std::unique_ptr<diving_game::DivingGame> diving_;
-        bool closingDive_=false;
-        std::map<std::pair<int,int>,Notification> notifications_;
-        const RaftComponent* component(int parent,int id)const;
+        bool closingDive_ = false;
+        std::map<std::pair<int, int>, Notification> notifications_;
+        const RaftComponent* component(int parent, int id) const;
         std::vector<std::pair<int, int>> wrecked(bool components) const;
     };
 } // namespace rp

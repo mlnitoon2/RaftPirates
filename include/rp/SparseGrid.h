@@ -24,7 +24,10 @@ namespace rp {
         bool TempTick(float dt);
         bool IsAncestor(const GridObject* object) const;
         void AddedToOcean();
-        bool attachedToOcean() const { return attached_; }
+
+        bool attachedToOcean() const {
+            return attached_;
+        }
 
       private:
         struct Entry {

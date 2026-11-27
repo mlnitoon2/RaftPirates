@@ -9,6 +9,7 @@ namespace rp {
     class Game;
     struct MsgConfirmMapMovement;
     struct MsgToggleBlockHudItem;
+
     class MapView {
       public:
         MapView();
@@ -70,8 +71,9 @@ namespace rp {
         struct EnemyShipPoints {
             EnemyShipPoints();
             EnemyShipPoints(const EnemyShipPoints&);
-            EnemyShipPoints& operator=(const EnemyShipPoints&)=default;
-            EnemyShipPoints(int id,int x=0,int y=0,std::string name={},int battlePoints=0,bool nemesis=false);
+            EnemyShipPoints& operator=(const EnemyShipPoints&) = default;
+            EnemyShipPoints(int id, int x = 0, int y = 0, std::string name = {},
+                            int battlePoints = 0, bool nemesis = false);
             ~EnemyShipPoints();
             int id = 0, x = 0, y = 0;
             std::string name;
@@ -125,7 +127,7 @@ namespace rp {
         std::optional<EnemyShipPoints> boss_;
         sys::gfx::Vec2 player_{}, destination_{}, target_{};
         bool visible_ = false, playerVisible_ = true, targetVisible_ = false;
-        bool canMove_ = true, dragging_ = false, playerInitialized_=false, tutorialMove_=false;
+        bool canMove_ = true, dragging_ = false, playerInitialized_ = false, tutorialMove_ = false;
         std::set<std::string> blockedHud_;
     };
 } // namespace rp

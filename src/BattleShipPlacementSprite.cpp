@@ -16,8 +16,11 @@ namespace rp {
 
     void BattleShipPlacementSprite::Update(const Player& player) {
         pieces_ = player.rafts;
-        bossCores_.clear();adjacentBossCores_.clear();
-        for(const auto& raft:pieces_)if(!raft.Destroyed()&&raft.getName(player.objects)=="BossCoreRaft")bossCores_.push_back(raft.id);
+        bossCores_.clear();
+        adjacentBossCores_.clear();
+        for (const auto& raft : pieces_)
+            if (!raft.Destroyed() && raft.getName(player.objects) == "BossCoreRaft")
+                bossCores_.push_back(raft.id);
         SelectRaft(selected_);
         if (!selected_) {
             auto it = std::find_if(pieces_.begin(), pieces_.end(),
@@ -27,55 +30,81 @@ namespace rp {
         }
     }
 
-    void BattleShipPlacementSprite::SetToObject(const Player& player) { Update(player); }
-    void BattleShipPlacementSprite::SetPosition(Cell position) { SetObjectPosition(position); }
-    bool BattleShipPlacementSprite::Select(int id) { SelectRaft(id); return selected_ != 0; }
+    void BattleShipPlacementSprite::SetToObject(const Player& player) {
+        Update(player);
+    }
+
+    void BattleShipPlacementSprite::SetPosition(Cell position) {
+        SetObjectPosition(position);
+    }
+
+    bool BattleShipPlacementSprite::Select(int id) {
+        SelectRaft(id);
+        return selected_ != 0;
+    }
+
     void BattleShipPlacementSprite::HighlightAttackRafts(const BattleShipPlacementSprite& other) {
         HighlightRaftsNextTo(other);
     }
+
     // Original ARM implementation is a return-only weak hook.
     void BattleShipPlacementSprite::UpdateParticles() {}
 
     std::vector<GridSprite*> BattleShipPlacementSprite::graphics() const {
         std::vector<GridSprite*> result;
-        if (!view_) return result;
+        if (!view_)
+            return result;
         for (const auto& raft : pieces_) {
-            if (auto* sprite = view_->getGridSprite(0, raft.id)) result.push_back(sprite);
+            if (auto* sprite = view_->getGridSprite(0, raft.id))
+                result.push_back(sprite);
             for (const auto& component : raft.components)
-                if (auto* sprite = view_->getGridSprite(raft.id, component.id)) result.push_back(sprite);
+                if (auto* sprite = view_->getGridSprite(raft.id, component.id))
+                    result.push_back(sprite);
         }
         return result;
     }
 
     bool BattleShipPlacementSprite::ContainsGfx(const sys::gfx::Gfx* gfx) const {
-        if (!gfx) return false;
-        for (auto* sprite : graphics()) if (sprite->ContainsGfx(gfx)) return true;
+        if (!gfx)
+            return false;
+        for (auto* sprite : graphics())
+            if (sprite->ContainsGfx(gfx))
+                return true;
         return false;
     }
 
     bool BattleShipPlacementSprite::HasAccessorySprite(int id) const {
-        for (auto* sprite : graphics()) if (sprite->HasAccessorySprite(id)) return true;
+        for (auto* sprite : graphics())
+            if (sprite->HasAccessorySprite(id))
+                return true;
         return false;
     }
 
     size_t BattleShipPlacementSprite::GraphicsPieces() const {
         size_t count = 0;
-        for (auto* sprite : graphics()) count += sprite->Pieces();
+        for (auto* sprite : graphics())
+            count += sprite->Pieces();
         return count;
     }
 
     void BattleShipPlacementSprite::SetPriority(unsigned index, float priority) {
-        if (!std::isfinite(priority)) return;
+        if (!std::isfinite(priority))
+            return;
         size_t i = index;
         for (auto* sprite : graphics()) {
-            if (i < sprite->Pieces()) { sprite->SetPriority(static_cast<unsigned>(i), priority); return; }
+            if (i < sprite->Pieces()) {
+                sprite->SetPriority(static_cast<unsigned>(i), priority);
+                return;
+            }
             i -= sprite->Pieces();
         }
     }
 
     void BattleShipPlacementSprite::SetScale(float scale) {
-        if (!std::isfinite(scale) || scale <= 0) return;
-        for (auto* sprite : graphics()) sprite->SetScale(scale);
+        if (!std::isfinite(scale) || scale <= 0)
+            return;
+        for (auto* sprite : graphics())
+            sprite->SetScale(scale);
     }
 
     void BattleShipPlacementSprite::SetObjectPosition(Cell position) {
@@ -86,11 +115,18 @@ namespace rp {
         SetObjectPosition(position);
     }
 
-    std::vector<int> BattleShipPlacementSprite::BossCoreRaftsInMe()const{return bossCores_;}
-    const std::vector<int>& BattleShipPlacementSprite::BossCoreRaftsByMe()const{return adjacentBossCores_;}
+    std::vector<int> BattleShipPlacementSprite::BossCoreRaftsInMe() const {
+        return bossCores_;
+    }
+
+    const std::vector<int>& BattleShipPlacementSprite::BossCoreRaftsByMe() const {
+        return adjacentBossCores_;
+    }
+
     void BattleShipPlacementSprite::Revert() {
         offset_ = {};
-        highlighted_.clear();adjacentBossCores_.clear();
+        highlighted_.clear();
+        adjacentBossCores_.clear();
     }
 
     bool BattleShipPlacementSprite::OkayToPlace(const BattleShipPlacementSprite& other) const {
@@ -142,9 +178,16 @@ namespace rp {
     }
 
     void BattleShipPlacementSprite::HighlightRaftsNextTo(const BattleShipPlacementSprite& other) {
-        highlighted_.clear();adjacentBossCores_.clear();
-        for(const auto& b:other.pieces_)if(std::find(other.bossCores_.begin(),other.bossCores_.end(),b.id)!=other.bossCores_.end())
-            for(const auto& a:pieces_)if(!a.Destroyed()&&distance(a,offset_,b,other.offset_)==1){adjacentBossCores_.push_back(b.id);break;}
+        highlighted_.clear();
+        adjacentBossCores_.clear();
+        for (const auto& b : other.pieces_)
+            if (std::find(other.bossCores_.begin(), other.bossCores_.end(), b.id) !=
+                other.bossCores_.end())
+                for (const auto& a : pieces_)
+                    if (!a.Destroyed() && distance(a, offset_, b, other.offset_) == 1) {
+                        adjacentBossCores_.push_back(b.id);
+                        break;
+                    }
         for (const auto& a : pieces_)
             if (!a.Destroyed())
                 for (const auto& b : other.pieces_)

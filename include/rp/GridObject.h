@@ -20,22 +20,27 @@ namespace rp {
     struct GridObject {
         // Snapshot of one occupied shape, independent of the catalogue lifetime.
         struct GridShapePiece {
-            GridShapePiece(const GridObject& object,const GridObjectPiece& piece,
-                           unsigned index,Cell parent={},bool component=false,bool transpose=false);
-            const std::string& Filename()const;
-            Cell GetGridSpace(unsigned index)const;
-            std::pair<float,float> GetWorldSpace(unsigned index)const;
-            std::pair<float,float> TextureOffset()const;
-            bool precedes(const GridShapePiece& other)const;
-            unsigned index()const{return index_;}
+            GridShapePiece(const GridObject& object, const GridObjectPiece& piece, unsigned index,
+                           Cell parent = {}, bool component = false, bool transpose = false);
+            const std::string& Filename() const;
+            Cell GetGridSpace(unsigned index) const;
+            std::pair<float, float> GetWorldSpace(unsigned index) const;
+            std::pair<float, float> TextureOffset() const;
+            bool precedes(const GridShapePiece& other) const;
+
+            unsigned index() const {
+                return index_;
+            }
+
           private:
             std::string filename_;
             std::vector<Cell> cells_;
-            std::pair<float,float> base_;
-            int offsetX_=0,offsetY_=0;
-            unsigned index_=0;
-            bool component_=false;
+            std::pair<float, float> base_;
+            int offsetX_ = 0, offsetY_ = 0;
+            unsigned index_ = 0;
+            bool component_ = false;
         };
+
         GridObject() = default;
         GridObject(int user, int object, int px, int py, int points, int objectState);
         virtual ~GridObject();
@@ -44,9 +49,14 @@ namespace rp {
         virtual size_t Pieces(const GridObjectInfo* definition) const;
         virtual void AddedToOcean(SparseGrid& grid);
         bool Salvage(SparseGrid& grid);
-        bool setGridObjectData(const std::string& name, const std::map<int, GridObjectInfo>& catalogue);
+        bool setGridObjectData(const std::string& name,
+                               const std::map<int, GridObjectInfo>& catalogue);
+
         // Optional observer for native object-added notification; supplied by the host.
-        void setAddedObserver(std::function<void(const GridObject&)> observer) { addedObserver_ = std::move(observer); }
+        void setAddedObserver(std::function<void(const GridObject&)> observer) {
+            addedObserver_ = std::move(observer);
+        }
+
         std::vector<Cell> occupiedCells(const GridObjectInfo* definition) const;
         std::pair<float, float> Middleish(const GridObjectInfo* definition) const;
         bool Overlap(const GridObject& other, const GridObjectInfo* definition,
@@ -71,6 +81,7 @@ namespace rp {
         getAvailableActions(const GridObjectInfo* definition) const;
         virtual std::unique_ptr<GridObject> Duplicate() const;
         std::pair<float, float> GetWorldPosition(Cell raftPosition, bool component) const;
+
       private:
         std::shared_ptr<const GridObjectDataRes> resource_;
         std::function<void(const GridObject&)> addedObserver_;

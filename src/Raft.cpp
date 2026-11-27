@@ -45,7 +45,9 @@ namespace rp {
         return static_cast<float>(current) / total;
     }
 
-    bool Raft::Salvage() const {return Destroyed()&&id>0;}
+    bool Raft::Salvage() const {
+        return Destroyed() && id > 0;
+    }
 
     bool Raft::Destroyed() const {
         return state == 2;
@@ -120,11 +122,15 @@ namespace rp {
                             const std::map<int, GridObjectInfo>& catalogue, int ignoreId) const {
         if (Destroyed() || def.type != 1 || def.cells.empty())
             return false;
-        GridObject candidate(0,def.id,pos.x,pos.y,0,0);
+        GridObject candidate(0, def.id, pos.x, pos.y, 0, 0);
         OverlapTree footprint;
-        try {OverlapTree::GenerateOverlapTree(footprint,&candidate,&def);}
-        catch(const std::overflow_error&){return false;}
-        if(!footprint.Within({0,0},{raftSizeX(),raftSizeY()}))return false;
+        try {
+            OverlapTree::GenerateOverlapTree(footprint, &candidate, &def);
+        } catch (const std::overflow_error&) {
+            return false;
+        }
+        if (!footprint.Within({0, 0}, {raftSizeX(), raftSizeY()}))
+            return false;
         SparseGrid occupancy;
         int occupancyId = 1;
         for (const auto& component : components) {

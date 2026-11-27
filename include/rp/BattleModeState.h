@@ -6,7 +6,10 @@
 #include <array>
 #include <set>
 
-namespace sys::gfx { class AEAnim; class Gfx; }
+namespace sys::gfx {
+    class AEAnim;
+    class Gfx;
+} // namespace sys::gfx
 
 namespace rp {
     class Game;
@@ -34,43 +37,99 @@ namespace rp {
             std::shared_ptr<sys::gfx::AEAnim> animation;
             std::shared_ptr<sys::gfx::Gfx> graphics;
         };
+
         BattleModeState();
-        const char* name()const;
+        const char* name() const;
         void Pause();
         void HideDropdown();
         void StartWaiting(float seconds);
         void StopWaiting();
         void tick(float dt);
-        float waitRemaining()const{return waitRemaining_;}
+
+        float waitRemaining() const {
+            return waitRemaining_;
+        }
+
         void gotMsgBattleConfirmSwapStance();
         void gotMsgToPositioningView();
-        struct BattleRoll { int attack=0, defense=0, targetRaft=0; };
-        struct BattleInfo { std::string name; int points=0, healthPercent=0; bool own=false; };
+
+        struct BattleRoll {
+            int attack = 0, defense = 0, targetRaft = 0;
+        };
+
+        struct BattleInfo {
+            std::string name;
+            int points = 0, healthPercent = 0;
+            bool own = false;
+        };
+
         void PlayBattleAnimations();
         void SwapPopup();
         void SwapStance();
         void ToBattleView();
         void ToPositioningView();
         void gotMsgBattleInfoDropdown(const MsgBattleInfoDropdown&);
-        std::vector<BattleInfo> gotMsgBattleInfoRequest(const MsgBattleInfoRequest&,const Player&)const;
+        std::vector<BattleInfo> gotMsgBattleInfoRequest(const MsgBattleInfoRequest&,
+                                                        const Player&) const;
         void gotMsgHighlightHudItem(const MsgHighlightHudItem&);
-        void gotMsgQuestRead(const MsgQuestRead&,RPMenuHandler* menu=nullptr);
+        void gotMsgQuestRead(const MsgQuestRead&, RPMenuHandler* menu = nullptr);
         void gotMsgToggleBlockHudItem(const MsgToggleBlockHudItem&);
         void gotMsgTransitionDone(const MsgTransitionDone&);
-        const std::vector<BattleRoll>& battleRolls()const{return rolls_;}
-        float animationRemaining()const{return animationRemaining_;}
-        float introRemaining()const{return introRemaining_;}
-        bool dicePaused()const{return dicePaused_;}
-        bool battleView()const{return battleView_;}
-        bool swapPopupVisible()const{return swapPopupVisible_;}
-        int dropdownType()const{return dropdownType_;}
-        bool hudBlocked(const std::string& item)const{return blockedHud_.count(item)!=0;}
-        bool shouldSendClientReady()const{return phase_==Phase::Fighting&&needReady_&&!waiting()&&!dicePaused_&&animationRemaining_<=0&&!swapPopupVisible_&&!pendingSwap_;}
-        unsigned resultSequence() const { return resultSequence_; }
-        bool resultAttacker() const { return resultAttacker_; }
-        int resultAttackRaft() const { return resultAttackRaft_; }
-        void cancelSwapPopup(){swapPopupVisible_=false;}
-        std::optional<sfs::Message> RaftSelect(int own,int enemy,const Player&);
+
+        const std::vector<BattleRoll>& battleRolls() const {
+            return rolls_;
+        }
+
+        float animationRemaining() const {
+            return animationRemaining_;
+        }
+
+        float introRemaining() const {
+            return introRemaining_;
+        }
+
+        bool dicePaused() const {
+            return dicePaused_;
+        }
+
+        bool battleView() const {
+            return battleView_;
+        }
+
+        bool swapPopupVisible() const {
+            return swapPopupVisible_;
+        }
+
+        int dropdownType() const {
+            return dropdownType_;
+        }
+
+        bool hudBlocked(const std::string& item) const {
+            return blockedHud_.count(item) != 0;
+        }
+
+        bool shouldSendClientReady() const {
+            return phase_ == Phase::Fighting && needReady_ && !waiting() && !dicePaused_ &&
+                   animationRemaining_ <= 0 && !swapPopupVisible_ && !pendingSwap_;
+        }
+
+        unsigned resultSequence() const {
+            return resultSequence_;
+        }
+
+        bool resultAttacker() const {
+            return resultAttacker_;
+        }
+
+        int resultAttackRaft() const {
+            return resultAttackRaft_;
+        }
+
+        void cancelSwapPopup() {
+            swapPopupVisible_ = false;
+        }
+
+        std::optional<sfs::Message> RaftSelect(int own, int enemy, const Player&);
         std::optional<sfs::Message> endBattleAndPlunder();
         std::optional<sfs::Message> gotMsgBattleOverConfirm();
         std::optional<sfs::Message> gotMsgExitBattleModeRequest();
@@ -112,7 +171,8 @@ namespace rp {
         }
 
         bool readyForDice() const {
-            return phase_ == Phase::Fighting && !waiting() && !needReady_ && !dicePaused_ && animationRemaining_<=0 && !swapPopupVisible_ && !pendingSwap_;
+            return phase_ == Phase::Fighting && !waiting() && !needReady_ && !dicePaused_ &&
+                   animationRemaining_ <= 0 && !swapPopupVisible_ && !pendingSwap_;
         }
 
         bool attacker() const {
@@ -161,19 +221,19 @@ namespace rp {
         int ownRaft_ = 0, enemyRaft_ = 0;
         int sync_ = 0, opponentTime_ = 0;
         std::string pending_, message_;
-        float waitRemaining_=0;
-        bool dropdownVisible_=false,confirmSwap_=false;
+        float waitRemaining_ = 0;
+        bool dropdownVisible_ = false, confirmSwap_ = false;
         sfs::SFSObjectWrapper lastResult_;
         std::optional<sfs::SFSObjectWrapper> pendingSwap_;
         std::optional<bool> swapAttacker_;
         std::vector<BattleRoll> rolls_;
         std::set<std::string> blockedHud_;
-        float animationRemaining_=0, introRemaining_=0;
-        bool dicePaused_=false,battleView_=false,swapPopupVisible_=false;
-        int dropdownType_=-1;
-        unsigned resultSequence_=0;
-        bool resultAttacker_=false;
-        int resultAttackRaft_=0;
+        float animationRemaining_ = 0, introRemaining_ = 0;
+        bool dicePaused_ = false, battleView_ = false, swapPopupVisible_ = false;
+        int dropdownType_ = -1;
+        unsigned resultSequence_ = 0;
+        bool resultAttacker_ = false;
+        int resultAttackRaft_ = 0;
         std::optional<sfs::Message> action(const std::string& command,
                                            sfs::SFSObjectWrapper data = {}, bool withSync = true);
     };

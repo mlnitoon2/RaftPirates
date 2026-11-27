@@ -27,14 +27,19 @@ namespace rp {
         int gotMsgStoreItemPageRequest() const;
         int gotMsgBlueprintPageRequest() const;
         const std::string& gotMsgStoreCategoryRequest() const;
-        std::optional<int> storeCategoryId()const;
+        std::optional<int> storeCategoryId() const;
         void gotMsgStoreDisplayStatus(const MsgStoreDisplayStatus&);
-        bool storeVisible()const{return storeVisible_;}
+
+        bool storeVisible() const {
+            return storeVisible_;
+        }
+
         void gotMsgPopPopUpGlobal();
-        std::optional<sfs::Message> gotMsgQuestRead(Game&,const MsgQuestRead&);
+        std::optional<sfs::Message> gotMsgQuestRead(Game&, const MsgQuestRead&);
         void gotMsgStartDialog(const std::string&);
-        std::string gotMsgRequestLocalizedChristeningText(const std::string& localized, const Player* player) const;
-        std::vector<int> gotSimpleRequest(const std::string&)const;
+        std::string gotMsgRequestLocalizedChristeningText(const std::string& localized,
+                                                          const Player* player) const;
+        std::vector<int> gotSimpleRequest(const std::string&) const;
         const StoreItem* gotMsgStoreItemSelectedRequest() const;
         std::map<int, int> gotMsgRecipeSelectedRequest() const;
         void setHudMode(int mode);
@@ -56,8 +61,8 @@ namespace rp {
         std::vector<int> currentBlueprintPage(size_t pageSize) const;
         const Blueprint* gotMsgBlueprintDisplayRequest(int id) const;
         const StoreItem* gotMsgStoreItemDisplayRequest(int id) const;
-        std::optional<MsgStoreItemDisplayResponse> storeDisplayMessage(int id)const;
-        std::optional<MsgQuestData> questDataMessage(int id)const;
+        std::optional<MsgStoreItemDisplayResponse> storeDisplayMessage(int id) const;
+        std::optional<MsgQuestData> questDataMessage(int id) const;
         const MaterialInfo* gotMsgMaterialInformationRequest(int id) const;
         const sfs::SFSObjectWrapper* gotMsgQuestTypeInformationRequest(int id) const;
         bool gotMsgRequestOceanSafetyUpdate() const;
@@ -70,6 +75,6 @@ namespace rp {
         std::string category_;
         std::vector<std::string> menus_, popups_;
         std::deque<std::string> queued_;
-        bool newQuestPopups_ = true, storeVisible_=false;
+        bool newQuestPopups_ = true, storeVisible_ = false;
     };
 } // namespace rp

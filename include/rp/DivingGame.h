@@ -40,7 +40,7 @@ namespace rp::diving_game {
         void tick(float dt);
         void moveDiver(DiverMoveDirection direction, float seconds);
         void moveTo(float x, float y, float duration);
-        void setPos(float x,float y);
+        void setPos(float x, float y);
         void touchDown(const sys::gfx::Vec2& point);
         void touchDrag(const sys::gfx::Vec2& point);
         void touchUp(const sys::gfx::Vec2& point);
@@ -60,8 +60,13 @@ namespace rp::diving_game {
         void render(sys::gfx::Image& target);
         void setDuration(float seconds);
 
-        bool moving() const { return panelElapsed_ < panelDuration_; }
-        sys::gfx::Vec2 panelPosition() const { return panelPosition_; }
+        bool moving() const {
+            return panelElapsed_ < panelDuration_;
+        }
+
+        sys::gfx::Vec2 panelPosition() const {
+            return panelPosition_;
+        }
 
         bool finished() const {
             return finished_;
@@ -91,17 +96,19 @@ namespace rp::diving_game {
         sys::res::ResourceAEAnim robot_;
         std::mt19937 rng_;
         sys::gfx::GfxText label_;
+
         struct ItemFloater : DivingCollectable {
-            ItemFloater(CollectableType,float x,float y);
+            ItemFloater(CollectableType, float x, float y);
             ~ItemFloater();
-            void tick(float dt,float speed);
+            void tick(float dt, float speed);
         };
+
         std::vector<ItemFloater> items_;
         std::vector<ScrollingLayer> scrolling_;
         float x_ = 320, y_ = 144, targetX_ = 320, speed_ = 120, duration_ = 20, remaining_ = 20,
               elapsed_ = 0, spawn_ = 0;
         int level_ = 1, gears_ = 0, shape_ = 0, direction_ = 0;
-        sys::gfx::Vec2 panelPosition_{210,22}, panelFrom_{210,22}, panelTarget_{210,22};
+        sys::gfx::Vec2 panelPosition_{210, 22}, panelFrom_{210, 22}, panelTarget_{210, 22};
         float panelElapsed_ = 0, panelDuration_ = 0;
         void renderContents(sys::gfx::Image&);
         bool finished_ = false, confirmed_ = false, pressed_ = false;

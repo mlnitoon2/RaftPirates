@@ -6,11 +6,14 @@
 #include <stdexcept>
 
 namespace rp {
-    MapView::EnemyShipPoints::EnemyShipPoints()=default;
-    MapView::EnemyShipPoints::EnemyShipPoints(const EnemyShipPoints&)=default;
-    MapView::EnemyShipPoints::EnemyShipPoints(int i,int px,int py,std::string n,int bp,bool enemy)
-        :id(i),x(px),y(py),name(std::move(n)),battlePoints(bp),nemesis(enemy){}
-    MapView::EnemyShipPoints::~EnemyShipPoints()=default;
+    MapView::EnemyShipPoints::EnemyShipPoints() = default;
+    MapView::EnemyShipPoints::EnemyShipPoints(const EnemyShipPoints&) = default;
+
+    MapView::EnemyShipPoints::EnemyShipPoints(int i, int px, int py, std::string n, int bp,
+                                              bool enemy)
+        : id(i), x(px), y(py), name(std::move(n)), battlePoints(bp), nemesis(enemy) {}
+
+    MapView::EnemyShipPoints::~EnemyShipPoints() = default;
     MapView::TreasureMapPoints::~TreasureMapPoints() = default;
     MapView::MapView() = default;
     MapView::~MapView() = default;
@@ -24,7 +27,7 @@ namespace rp {
     }
 
     bool MapView::movementAllowed() const {
-        return canMove_&&!blockedHud_.count("map")&&!blockedHud_.count("movement");
+        return canMove_ && !blockedHud_.count("map") && !blockedHud_.count("movement");
     }
 
     void MapView::movementAllowed(bool allowed) {
@@ -33,37 +36,64 @@ namespace rp {
             DeleteShipPreview();
     }
 
-    void MapView::gotMsgHidePirateMap(){hideMap();}
-    void MapView::gotMsgShowPirateMap(){showMap();}
-    void MapView::gotMsgAnimationFinished(){player_=destination_;}
-    bool MapView::gotMsgConfirmMapMovement(const MsgConfirmMapMovement& msg){
-        if(!msg.confirmed){DeleteShipPreview();return false;}
+    void MapView::gotMsgHidePirateMap() {
+        hideMap();
+    }
+
+    void MapView::gotMsgShowPirateMap() {
+        showMap();
+    }
+
+    void MapView::gotMsgAnimationFinished() {
+        player_ = destination_;
+    }
+
+    bool MapView::gotMsgConfirmMapMovement(const MsgConfirmMapMovement& msg) {
+        if (!msg.confirmed) {
+            DeleteShipPreview();
+            return false;
+        }
         return moveShip();
     }
-    void MapView::gotMsgToggleBlockHudItem(const MsgToggleBlockHudItem& msg){
-        blockedHud_.insert(msg.block.begin(),msg.block.end());
-        for(const auto& item:msg.unblock)blockedHud_.erase(item);
-        if(!movementAllowed())DeleteShipPreview();
+
+    void MapView::gotMsgToggleBlockHudItem(const MsgToggleBlockHudItem& msg) {
+        blockedHud_.insert(msg.block.begin(), msg.block.end());
+        for (const auto& item : msg.unblock)
+            blockedHud_.erase(item);
+        if (!movementAllowed())
+            DeleteShipPreview();
     }
-    void MapView::setPlayer(const Game& game){
-        if(!map_)return;
-        const bool immediate=!playerInitialized_;
-        setPlayerPosition({(std::clamp(game.mapX,-100,100)+100)*map_->width*map_->tileWidth/200.f,
-                           (std::clamp(game.mapY,-100,100)+100)*map_->height*map_->tileHeight/200.f},immediate);
-        playerInitialized_=true;
+
+    void MapView::setPlayer(const Game& game) {
+        if (!map_)
+            return;
+        const bool immediate = !playerInitialized_;
+        setPlayerPosition(
+            {(std::clamp(game.mapX, -100, 100) + 100) * map_->width * map_->tileWidth / 200.f,
+             (std::clamp(game.mapY, -100, 100) + 100) * map_->height * map_->tileHeight / 200.f},
+            immediate);
+        playerInitialized_ = true;
     }
-    void MapView::updatePlayerInfo(const Game& game){
+
+    void MapView::updatePlayerInfo(const Game& game) {
         setPlayer(game);
         setPlayerVisible(true);
         movementAllowed(!game.pendingMap.has_value());
-        updateBoss(game.bossData,game.zone);
+        updateBoss(game.bossData, game.zone);
         updateEnemyShips(game.sonarShips);
     }
-    void MapView::gotMsgTutorialStartBattleMove(){tutorialMove_=true;}
-    bool MapView::tutorialBattleStartShipMove(){
-        if(!tutorialMove_||!movementAllowed()||!targetVisible_)return false;
-        tutorialMove_=false;return moveShip();
+
+    void MapView::gotMsgTutorialStartBattleMove() {
+        tutorialMove_ = true;
     }
+
+    bool MapView::tutorialBattleStartShipMove() {
+        if (!tutorialMove_ || !movementAllowed() || !targetVisible_)
+            return false;
+        tutorialMove_ = false;
+        return moveShip();
+    }
+
     void MapView::showMap() {
         visible_ = true;
     }
@@ -120,7 +150,8 @@ namespace rp {
 
     bool MapView::moveShip() {
         // Only indicates a valid requested destination. The server owns the player position.
-        if (!movementAllowed() || !visible_ || !targetVisible_ || !isValidIconLocation(target_.x, target_.y))
+        if (!movementAllowed() || !visible_ || !targetVisible_ ||
+            !isValidIconLocation(target_.x, target_.y))
             return false;
         DeleteShipPreview();
         return true;
@@ -205,7 +236,7 @@ namespace rp {
     void MapView::setMapFile(const std::filesystem::path& root, const std::string& name) {
         if (name.empty()) {
             map_.reset();
-            playerInitialized_=false;
+            playerInitialized_ = false;
             path_.clear();
             clearTreasureMapPoints();
             clearEnemyShips();
@@ -223,7 +254,7 @@ namespace rp {
             return;
         auto next = sys::res::TmxMap::Load(full);
         map_ = std::move(next);
-        playerInitialized_=false;
+        playerInitialized_ = false;
         path_ = full;
         clearTreasureMapPoints();
         clearEnemyShips();

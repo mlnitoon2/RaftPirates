@@ -125,10 +125,14 @@ namespace {
         std::string deviceInfo(sys::platform::DeviceField field) override {
             using F = sys::platform::DeviceField;
             switch (field) {
-            case F::Version: return path("getVersion");
-            case F::AndroidID: return path("getAndroidID");
-            case F::OpenUDID: return path("getOpenUDID");
-            case F::MAC: return path("getMACAddress");
+            case F::Version:
+                return path("getVersion");
+            case F::AndroidID:
+                return path("getAndroidID");
+            case F::OpenUDID:
+                return path("getOpenUDID");
+            case F::MAC:
+                return path("getMACAddress");
             case F::OS:
             case F::Type: {
 #ifdef __ANDROID__
@@ -156,7 +160,8 @@ namespace {
         }
 
         bool internetConnected() override {
-            auto value = e_->CallBooleanMethod(obj_, method(e_, obj_, "checkInternetConnection", "()Z"));
+            auto value =
+                e_->CallBooleanMethod(obj_, method(e_, obj_, "checkInternetConnection", "()Z"));
             check(e_, "checkInternetConnection");
             return value == JNI_TRUE;
         }
@@ -165,7 +170,8 @@ namespace {
             LocalFrame frame(e_);
             auto value = e_->NewStringUTF(text.c_str());
             if (blocking)
-                e_->CallVoidMethod(obj_, method(e_, obj_, "showPopupBlocking", "(Ljava/lang/String;ZZ)V"),
+                e_->CallVoidMethod(obj_,
+                                   method(e_, obj_, "showPopupBlocking", "(Ljava/lang/String;ZZ)V"),
                                    value, jboolean(buttons), JNI_TRUE);
             else
                 e_->CallVoidMethod(obj_, method(e_, obj_, "showPopup", "(Ljava/lang/String;Z)V"),
@@ -176,18 +182,20 @@ namespace {
         bool sendEmail(const std::string& address, const std::string& subject,
                        const std::string& body) override {
             LocalFrame frame(e_);
-            e_->CallVoidMethod(obj_, method(e_, obj_, "sendEmail",
-                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"),
-                e_->NewStringUTF(address.c_str()), e_->NewStringUTF(subject.c_str()),
-                e_->NewStringUTF(body.c_str()));
+            e_->CallVoidMethod(obj_,
+                               method(e_, obj_, "sendEmail",
+                                      "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"),
+                               e_->NewStringUTF(address.c_str()), e_->NewStringUTF(subject.c_str()),
+                               e_->NewStringUTF(body.c_str()));
             check(e_, "sendEmail");
             return true;
         }
 
         bool followTwitter(const std::string& account, const std::string& text) override {
             LocalFrame frame(e_);
-            e_->CallVoidMethod(obj_, method(e_, obj_, "followUsOnTwitter",
-                "(Ljava/lang/String;Ljava/lang/String;)V"),
+            e_->CallVoidMethod(
+                obj_,
+                method(e_, obj_, "followUsOnTwitter", "(Ljava/lang/String;Ljava/lang/String;)V"),
                 e_->NewStringUTF(account.c_str()), e_->NewStringUTF(text.c_str()));
             check(e_, "followUsOnTwitter");
             return true;
@@ -195,7 +203,8 @@ namespace {
 
         bool googleCheckout(const std::string& item, int quantity) override {
             LocalFrame frame(e_);
-            e_->CallVoidMethod(obj_, method(e_, obj_, "initGoogleCheckout", "(Ljava/lang/String;I)V"),
+            e_->CallVoidMethod(obj_,
+                               method(e_, obj_, "initGoogleCheckout", "(Ljava/lang/String;I)V"),
                                e_->NewStringUTF(item.c_str()), jint(quantity));
             check(e_, "initGoogleCheckout");
             return true;
@@ -222,12 +231,14 @@ namespace {
                     obj_,
                     method(e_, obj_, "showPasswordEntry",
                            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZIIZ)V"),
-                    a, b, e_->NewStringUTF(""), JNI_TRUE, jint(minimum), jint(maximum), jboolean(multiline));
+                    a, b, e_->NewStringUTF(""), JNI_TRUE, jint(minimum), jint(maximum),
+                    jboolean(multiline));
             else
                 e_->CallVoidMethod(obj_,
                                    method(e_, obj_, "showKeyboardEntry",
                                           "(Ljava/lang/String;Ljava/lang/String;ZIIZ)V"),
-                                   a, b, JNI_TRUE, jint(minimum), jint(maximum), jboolean(multiline));
+                                   a, b, JNI_TRUE, jint(minimum), jint(maximum),
+                                   jboolean(multiline));
             check(e_, "keyboard entry");
         }
 

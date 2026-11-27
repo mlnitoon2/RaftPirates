@@ -16,7 +16,8 @@ namespace rp {
         sheet = definition.getString("sheet_id");
         image = definition.getString("image_id");
         highlightFeature = definition.getString("highlight_feature");
-        popupImmediately = definition.getBool("popup_immediately", definition.getInt("popup_immediately") != 0);
+        popupImmediately =
+            definition.getBool("popup_immediately", definition.getInt("popup_immediately") != 0);
         group = definition.getInt("group");
         sheetLeft = definition.getString("sheet_id_left");
         imageLeft = definition.getString("image_id_left");
@@ -25,19 +26,24 @@ namespace rp {
         goals.clear();
         blockInterface.clear();
         unblockInterface.clear();
-        if(auto rows=definition.getSFSArray("goals"))
-            for(const auto& value:rows->values)
-                if(auto item=std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value);item&&*item)
-                    for(const auto& field:(*item)->fields())goals.push_back(field.first);
-        if(auto rows=definition.getSFSArray("block_interface"))
-            for(const auto& value:rows->values)
-                if(auto item=std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value);item&&*item){
-                    auto element=(*item)->getString("element");
-                    if(element.empty())continue;
-                    const bool toggle=(*item)->getBool("toggle",(*item)->getInt("toggle")!=0);
-                    (toggle?unblockInterface:blockInterface).push_back(std::move(element));
+        if (auto rows = definition.getSFSArray("goals"))
+            for (const auto& value : rows->values)
+                if (auto item = std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value);
+                    item && *item)
+                    for (const auto& field : (*item)->fields())
+                        goals.push_back(field.first);
+        if (auto rows = definition.getSFSArray("block_interface"))
+            for (const auto& value : rows->values)
+                if (auto item = std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value);
+                    item && *item) {
+                    auto element = (*item)->getString("element");
+                    if (element.empty())
+                        continue;
+                    const bool toggle = (*item)->getBool("toggle", (*item)->getInt("toggle") != 0);
+                    (toggle ? unblockInterface : blockInterface).push_back(std::move(element));
                 }
-        setProgressPercentage(state.getInt("percent",state.getInt("progress", state.getInt("percentage"))));
+        setProgressPercentage(
+            state.getInt("percent", state.getInt("progress", state.getInt("percentage"))));
         opened = false;
     }
 
@@ -57,7 +63,8 @@ namespace rp {
 
 namespace rp {
     QuestTypeInfo::QuestTypeInfo(const sfs::SFSObjectWrapper& row)
-        : id(row.getInt("type_id")), name(row.getString("name")),
-          sheet(row.getString("sheet_id")), image(row.getString("image_id")) {}
+        : id(row.getInt("type_id")), name(row.getString("name")), sheet(row.getString("sheet_id")),
+          image(row.getString("image_id")) {}
+
     QuestTypeInfo::~QuestTypeInfo() = default;
 } // namespace rp

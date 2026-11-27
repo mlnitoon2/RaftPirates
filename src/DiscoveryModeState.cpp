@@ -11,10 +11,12 @@ namespace rp {
         if (title_.find("Barnacle Bill") != std::string::npos) {
             try {
                 DiscoveryGridObject object(game.objects);
-                auto path=std::filesystem::path("xml_bin/anim_location_barnacle_bill.bin");
-                if(auto def=object.definition();def&&std::filesystem::path(def->asset).extension()==".bin")
-                    path=def->asset;
-                resource_=std::make_shared<sys::res::ResourceAEAnim>(sys::res::ResourceAEAnim::Create(root/path));
+                auto path = std::filesystem::path("xml_bin/anim_location_barnacle_bill.bin");
+                if (auto def = object.definition();
+                    def && std::filesystem::path(def->asset).extension() == ".bin")
+                    path = def->asset;
+                resource_ = std::make_shared<sys::res::ResourceAEAnim>(
+                    sys::res::ResourceAEAnim::Create(root / path));
             } catch (const std::exception&) {
             }
         }
@@ -52,7 +54,9 @@ namespace rp {
             leaving_ = true;
     }
 
-    const char* DiscoveryModeState::name() const { return "rp::DiscoveryMode"; }
+    const char* DiscoveryModeState::name() const {
+        return "rp::DiscoveryMode";
+    }
 
     bool DiscoveryModeState::leaving() const {
         return leaving_;

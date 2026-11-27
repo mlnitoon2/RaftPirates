@@ -11,4 +11,4 @@ namespace rp {
         bool prepare(LoadingManager*) override;
         void load(LoadingManager&) override;
     };
-}
+} // namespace rp

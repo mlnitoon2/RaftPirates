@@ -1,16 +1,28 @@
 #include "rp/Messages.h"
 
 namespace rp {
-    MsgTabbedItemScrollTo::MsgTabbedItemScrollTo(const std::string& value):item(value){}
-    MsgTabbedItemScrollTo::~MsgTabbedItemScrollTo()=default;
-    MsgConfirmMaterialPurchaseInfo::MsgConfirmMaterialPurchaseInfo(int material,int count,int gold):materialId(material),amount(count),goldPrice(gold){}
-    MsgConfirmMaterialPurchaseInfo::~MsgConfirmMaterialPurchaseInfo()=default;
-    MsgQuestData::MsgQuestData(const Quest& value):quest(value){}
-    MsgQuestData::~MsgQuestData()=default;
-    MsgQuestEvent::MsgQuestEvent(int id,int value):questId(id),progress(value){}
-    MsgQuestEvent::~MsgQuestEvent()=default;
-    MsgStoreItemDisplayResponse::MsgStoreItemDisplayResponse(const StoreItem& value):item(value){}
-    MsgStoreItemDisplayResponse::~MsgStoreItemDisplayResponse()=default;
+    MsgTabbedItemScrollTo::MsgTabbedItemScrollTo(const std::string& value) : item(value) {}
+
+    MsgTabbedItemScrollTo::~MsgTabbedItemScrollTo() = default;
+
+    MsgConfirmMaterialPurchaseInfo::MsgConfirmMaterialPurchaseInfo(int material, int count,
+                                                                   int gold)
+        : materialId(material), amount(count), goldPrice(gold) {}
+
+    MsgConfirmMaterialPurchaseInfo::~MsgConfirmMaterialPurchaseInfo() = default;
+
+    MsgQuestData::MsgQuestData(const Quest& value) : quest(value) {}
+
+    MsgQuestData::~MsgQuestData() = default;
+
+    MsgQuestEvent::MsgQuestEvent(int id, int value) : questId(id), progress(value) {}
+
+    MsgQuestEvent::~MsgQuestEvent() = default;
+
+    MsgStoreItemDisplayResponse::MsgStoreItemDisplayResponse(const StoreItem& value)
+        : item(value) {}
+
+    MsgStoreItemDisplayResponse::~MsgStoreItemDisplayResponse() = default;
     MsgAnimateGridSprite::~MsgAnimateGridSprite() = default;
     MsgAttackRequest::~MsgAttackRequest() = default;
     MsgAttackRequestFailed::~MsgAttackRequestFailed() = default;
@@ -110,7 +122,8 @@ namespace rp {
     MsgNumWreckedRafts::~MsgNumWreckedRafts() = default;
     MsgOceanSafetyUpdate::~MsgOceanSafetyUpdate() = default;
     MsgOceanViewPickResult::~MsgOceanViewPickResult() = default;
-    MsgPirateMapDiscoveries_GetAvail_Response::~MsgPirateMapDiscoveries_GetAvail_Response() = default;
+    MsgPirateMapDiscoveries_GetAvail_Response::~MsgPirateMapDiscoveries_GetAvail_Response() =
+        default;
     MsgPirateMapDiscoveries_Info_Request::~MsgPirateMapDiscoveries_Info_Request() = default;
     MsgPirateMapDiscoveries_Info_Response::~MsgPirateMapDiscoveries_Info_Response() = default;
     MsgPirateMapDiscoveries_Page_Response::~MsgPirateMapDiscoveries_Page_Response() = default;
@@ -187,10 +200,11 @@ namespace rp {
 
 namespace rp {
     MsgStartDialog::MsgStartDialog(int identifier, const std::string& a, const std::string& b,
-                                  const std::string& c, const std::vector<std::string>& d,
-                                  const std::vector<std::string>& e, const std::string& f,
-                                  const std::string& g, const std::string& h, const std::string& i,
-                                  const std::string& j, const std::string& k)
-        : id(identifier), leading{a,b,c}, first(d), second(e), trailing{f,g,h,i,j,k} {}
+                                   const std::string& c, const std::vector<std::string>& d,
+                                   const std::vector<std::string>& e, const std::string& f,
+                                   const std::string& g, const std::string& h, const std::string& i,
+                                   const std::string& j, const std::string& k)
+        : id(identifier), leading{a, b, c}, first(d), second(e), trailing{f, g, h, i, j, k} {}
+
     MsgStartDialog::~MsgStartDialog() = default;
 } // namespace rp

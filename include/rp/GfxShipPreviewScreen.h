@@ -10,9 +10,13 @@ namespace rp {
         ~GfxShipPreviewScreen();
         void aTickMethodThatsNotCalledTick(float dt);
         sys::gfx::Image render(const std::map<int, GridObjectInfo>& catalogue);
-        OceanView& view() { return view_; }
+
+        OceanView& view() {
+            return view_;
+        }
+
       private:
         OceanView view_;
         Player player_;
     };
-}
+} // namespace rp

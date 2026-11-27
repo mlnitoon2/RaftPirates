@@ -44,11 +44,12 @@ namespace rp {
     GridObjectInfo::GridObjectInfo(const std::string& data, int battlePoints) {
         auto& info = *this;
         info.bp = std::max(0, battlePoints);
-        std::string remaining=data;
-        auto part=Tokenize(remaining,";");
-        if(!part.empty()) info.type=number(part);
-        while(!remaining.empty()) {
-            part=Tokenize(remaining,";");
+        std::string remaining = data;
+        auto part = Tokenize(remaining, ";");
+        if (!part.empty())
+            info.type = number(part);
+        while (!remaining.empty()) {
+            part = Tokenize(remaining, ";");
             if (part.empty())
                 continue;
             GridObjectPiece piece(part);

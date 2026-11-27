@@ -15,8 +15,16 @@ namespace rp {
         sheet_ = ResourceSpriteSheet::Create(root / "xml_resources/rp_menu.xml");
         atlas_ = std::make_shared<Image>(loadAssetImage(root / sheet_.imagePath));
         font_ = ResourceSpriteFont::Create(root, "rp_font_title");
-        try{diceAnimation_=sys::res::ResourceAEAnim::Create(root/"xml_bin/anim_dice.bin",sys::res::AEFormat::RaftPirates2013);}catch(const std::exception&){}
-        try{vsAnimation_=sys::res::ResourceAEAnim::Create(root/"xml_bin/vs_screen_anim.bin",sys::res::AEFormat::RaftPirates2013);}catch(const std::exception&){}
+        try {
+            diceAnimation_ = sys::res::ResourceAEAnim::Create(root / "xml_bin/anim_dice.bin",
+                                                              sys::res::AEFormat::RaftPirates2013);
+        } catch (const std::exception&) {
+        }
+        try {
+            vsAnimation_ = sys::res::ResourceAEAnim::Create(root / "xml_bin/vs_screen_anim.bin",
+                                                            sys::res::AEFormat::RaftPirates2013);
+        } catch (const std::exception&) {
+        }
         try {
             explosion_ = sys::res::ResourceAEAnim::Create(root / "xml_bin/anim_explosion.bin",
                                                           sys::res::AEFormat::RaftPirates2013);
@@ -34,17 +42,23 @@ namespace rp {
 
     void GfxBattleScreen::SetObjectMute(bool own, const GridObject& object, bool mute, int parent) {
         auto& view = own ? ownView_ : enemyView_;
-        if (dynamic_cast<const Raft*>(&object)) view.SetRaftMute(object.id, mute);
-        else if (auto* sprite = view.getGridSprite(parent, object.id)) sprite->SetMute(mute);
+        if (dynamic_cast<const Raft*>(&object))
+            view.SetRaftMute(object.id, mute);
+        else if (auto* sprite = view.getGridSprite(parent, object.id))
+            sprite->SetMute(mute);
     }
 
-    void GfxBattleScreen::SetObjectVisible(bool own, const GridObject& object, float opacity, int parent) {
-        if (!std::isfinite(opacity)) return;
+    void GfxBattleScreen::SetObjectVisible(bool own, const GridObject& object, float opacity,
+                                           int parent) {
+        if (!std::isfinite(opacity))
+            return;
         auto& view = own ? ownView_ : enemyView_;
         int focus = own ? focusedOwn_ : focusedEnemy_;
-        if (focus && (parent == focus || (!parent && object.id == focus))) opacity = 1;
+        if (focus && (parent == focus || (!parent && object.id == focus)))
+            opacity = 1;
         opacity = std::clamp(opacity, 0.f, 1.f);
-        if (dynamic_cast<const Raft*>(&object)) view.SetRaftTransparent(object.id, opacity);
+        if (dynamic_cast<const Raft*>(&object))
+            view.SetRaftTransparent(object.id, opacity);
         else if (auto* sprite = view.getGridSprite(parent, object.id)) {
             sprite->SetVisible(opacity > 0);
             sprite->SetColour(255, 255, 255, static_cast<uint8_t>(255 * opacity));
@@ -54,15 +68,18 @@ namespace rp {
     void GfxBattleScreen::SetPlayerRaft(bool own, const Raft& raft, bool animate) {
         auto& view = own ? ownView_ : enemyView_;
         auto& focus = own ? focusedOwn_ : focusedEnemy_;
-        if (focus && focus != raft.id) view.SetRaftMute(focus, true);
+        if (focus && focus != raft.id)
+            view.SetRaftMute(focus, true);
         focus = raft.id;
         view.SetRaftMute(focus, false);
         view.SetRaftTransparent(focus, 1);
-        if (animate) SwoopIn();
+        if (animate)
+            SwoopIn();
     }
 
     void GfxBattleScreen::SetPlayerRaftsVisible(bool own, const Player& player, float opacity) {
-        for (const auto& raft : player.rafts) SetObjectVisible(own, raft, opacity);
+        for (const auto& raft : player.rafts)
+            SetObjectVisible(own, raft, opacity);
     }
 
     void GfxBattleScreen::tick(float dt) {
@@ -70,9 +87,12 @@ namespace rp {
             return;
         transition_ = std::clamp(transition_ + (exiting_ ? -1.f : 1.f) * dt * 4, 0.f, 1.f);
         arrow_.tick(dt);
-        for(auto it=explosions_.begin();it!=explosions_.end();){
+        for (auto it = explosions_.begin(); it != explosions_.end();) {
             it->second.tick(dt);
-            if(!it->second.active())it=explosions_.erase(it);else ++it;
+            if (!it->second.active())
+                it = explosions_.erase(it);
+            else
+                ++it;
         }
         for (auto& hit : damage_)
             hit.tick(dt);
@@ -99,9 +119,9 @@ namespace rp {
                 int bp = raft.GetBattlePoints();
                 next[raft.id] = bp;
                 auto it = previous.find(raft.id);
-                if (it != previous.end() && bp < it->second){
-                    damage_.emplace_back(own,raft.id,it->second-bp);
-                    explosions_.insert_or_assign({own,raft.id},ExplosionFXSprite(true));
+                if (it != previous.end() && bp < it->second) {
+                    damage_.emplace_back(own, raft.id, it->second - bp);
+                    explosions_.insert_or_assign({own, raft.id}, ExplosionFXSprite(true));
                 }
             }
             previous = std::move(next);
@@ -133,24 +153,28 @@ namespace rp {
             if (net.phase() == Phase::Over)
                 SwoopOut();
         }
-        if(lastPhase_==Phase::Idle||net.phase()==Phase::Starting)lastResultSequence_=0;
+        if (lastPhase_ == Phase::Idle || net.phase() == Phase::Starting)
+            lastResultSequence_ = 0;
         lastPhase_ = net.phase();
         lastAttacker_ = net.attacker();
         if (net.hasOpponent()) {
             placement_.Update(game, net.opponent());
-            if(net.resultSequence()!=lastResultSequence_){
-                lastResultSequence_=net.resultSequence();
-                if(net.animationRemaining()>0&&net.resultAttackRaft()>0){
-                    auto& view=net.resultAttacker()?ownView_:enemyView_;
-                    view.gotMsgUpdateOceanView(net.resultAttacker()?static_cast<const Player&>(game):net.opponent());
-                    view.PlayRaftAttackAnims(net.resultAttackRaft(),0);
+            if (net.resultSequence() != lastResultSequence_) {
+                lastResultSequence_ = net.resultSequence();
+                if (net.animationRemaining() > 0 && net.resultAttackRaft() > 0) {
+                    auto& view = net.resultAttacker() ? ownView_ : enemyView_;
+                    view.gotMsgUpdateOceanView(
+                        net.resultAttacker() ? static_cast<const Player&>(game) : net.opponent());
+                    view.PlayRaftAttackAnims(net.resultAttackRaft(), 0);
                 }
             }
             if (net.phase() == Phase::Fighting) {
                 if (const auto* raft = game.GetRaftByID(net.ownRaftId()))
-                    if (focusedOwn_ != raft->id) SetPlayerRaft(true, *raft, false);
+                    if (focusedOwn_ != raft->id)
+                        SetPlayerRaft(true, *raft, false);
                 if (const auto* raft = net.opponent().GetRaftByID(net.enemyRaftId()))
-                    if (focusedEnemy_ != raft->id) SetPlayerRaft(false, *raft, false);
+                    if (focusedEnemy_ != raft->id)
+                        SetPlayerRaft(false, *raft, false);
             }
         }
     }
@@ -200,7 +224,8 @@ namespace rp {
         if (auto raft = player.GetRaftByID(selected)) {
             auto p = view.WorldToScreen({float(raft->x) + .5f, float(raft->y) + .5f});
             GfxManager gfx;
-            submitSprite(gfx, "rp_battle_arrow", left + p.x - 160 - 15, p.y + arrow_.yOffset()-34, 30, 34);
+            submitSprite(gfx, "rp_battle_arrow", left + p.x - 160 - 15, p.y + arrow_.yOffset() - 34,
+                         30, 34);
             gfx.RenderScreen(out);
         }
     }
@@ -208,7 +233,10 @@ namespace rp {
     int GfxBattleScreen::pick(const Player& player, const OceanView& view, float x, float y,
                               int left) const {
         auto world = view.ScreenToWorld({x - left + 160, y});
-        if(!std::isfinite(world.x)||!std::isfinite(world.y)||double(world.x)<INT32_MIN||double(world.x)>INT32_MAX||double(world.y)<INT32_MIN||double(world.y)>INT32_MAX)return 0;
+        if (!std::isfinite(world.x) || !std::isfinite(world.y) || double(world.x) < INT32_MIN ||
+            double(world.x) > INT32_MAX || double(world.y) < INT32_MIN ||
+            double(world.y) > INT32_MAX)
+            return 0;
         auto r = player.GetRaftAtPosition({int(std::floor(world.x)), int(std::floor(world.y))});
         return r && !r->Destroyed() && r->bp > 0 ? r->id : 0;
     }
@@ -235,44 +263,60 @@ namespace rp {
         submitText(gfx, std::to_string(hp) + " BP", x + 125, 32, .55f, 240);
     }
 
-    void GfxBattleScreen::renderBattleAnimations(Image& out,const BattleModeState& net,float dt){
-        if(net.dropdownType()!=lastDropdownType_){
-            lastDropdownType_=net.dropdownType();
-            if(lastDropdownType_>=0){
-                MsgBattleInfoDropdown msg;msg.type=lastDropdownType_;
-                dropdown_=std::make_unique<GfxBattleInfoDropDown>(&ownView_,msg);
-            }else if(dropdown_)dropdown_->Hide();
+    void GfxBattleScreen::renderBattleAnimations(Image& out, const BattleModeState& net, float dt) {
+        if (net.dropdownType() != lastDropdownType_) {
+            lastDropdownType_ = net.dropdownType();
+            if (lastDropdownType_ >= 0) {
+                MsgBattleInfoDropdown msg;
+                msg.type = lastDropdownType_;
+                dropdown_ = std::make_unique<GfxBattleInfoDropDown>(&ownView_, msg);
+            } else if (dropdown_)
+                dropdown_->Hide();
         }
         GfxManager gfx;
-        if(dropdown_){dropdown_->aTickMethodThatsNotCalledTick(dt);dropdown_->submit(gfx);}
-        if(diceAnimation_&&net.animationRemaining()>0){
-            const float elapsed=2.5f-net.animationRemaining();
-            const auto& rolls=net.battleRolls();
-            for(unsigned i=0;i<rolls.size();++i){
-                const auto& row=rolls[i];
-                for(unsigned side=0;side<2;++side){
-                    const bool attack=side==0;
-                    const bool own=(attack==net.resultAttacker());
-                    const int value=attack?row.attack:row.defense;
-                    const bool won=attack?row.attack>row.defense:row.defense>row.attack;
-                    const bool win=elapsed>=1.25f&&won;
-                    std::string name=std::string("dice_")+(own?"green":"red")+(win?"_win00":"_roll00")+std::to_string(value);
-                    const auto* comp=diceAnimation_->find(name);if(!comp)continue;
-                    const float t=std::clamp(win?elapsed-1.25f:elapsed,0.f,comp->duration());
-                    const float x=(own?100.f:420.f)+float(i%4)*45.f,y=90.f+float(i/4)*48.f;
-                    effects_.submit(gfx,*diceAnimation_,*comp,t,
-                        Matrix::translation(x-comp->width*.3f,y-comp->height*.3f)*Matrix::scale(.6f,.6f),1100);
+        if (dropdown_) {
+            dropdown_->aTickMethodThatsNotCalledTick(dt);
+            dropdown_->submit(gfx);
+        }
+        if (diceAnimation_ && net.animationRemaining() > 0) {
+            const float elapsed = 2.5f - net.animationRemaining();
+            const auto& rolls = net.battleRolls();
+            for (unsigned i = 0; i < rolls.size(); ++i) {
+                const auto& row = rolls[i];
+                for (unsigned side = 0; side < 2; ++side) {
+                    const bool attack = side == 0;
+                    const bool own = (attack == net.resultAttacker());
+                    const int value = attack ? row.attack : row.defense;
+                    const bool won = attack ? row.attack > row.defense : row.defense > row.attack;
+                    const bool win = elapsed >= 1.25f && won;
+                    std::string name = std::string("dice_") + (own ? "green" : "red") +
+                                       (win ? "_win00" : "_roll00") + std::to_string(value);
+                    const auto* comp = diceAnimation_->find(name);
+                    if (!comp)
+                        continue;
+                    const float t =
+                        std::clamp(win ? elapsed - 1.25f : elapsed, 0.f, comp->duration());
+                    const float x = (own ? 100.f : 420.f) + float(i % 4) * 45.f,
+                                y = 90.f + float(i / 4) * 48.f;
+                    effects_.submit(
+                        gfx, *diceAnimation_, *comp, t,
+                        Matrix::translation(x - comp->width * .3f, y - comp->height * .3f) *
+                            Matrix::scale(.6f, .6f),
+                        1100);
                 }
             }
         }
-        if(vsAnimation_&&net.introRemaining()>0){
-            if(auto* c=vsAnimation_->find("vs intro");c&&c->width>0&&c->height>0)
-                effects_.submit(gfx,*vsAnimation_,*c,std::clamp(3.f-net.introRemaining(),0.f,c->duration()),Matrix::scale(640.f/c->width,400.f/c->height),1200);
+        if (vsAnimation_ && net.introRemaining() > 0) {
+            if (auto* c = vsAnimation_->find("vs intro"); c && c->width > 0 && c->height > 0)
+                effects_.submit(gfx, *vsAnimation_, *c,
+                                std::clamp(3.f - net.introRemaining(), 0.f, c->duration()),
+                                Matrix::scale(640.f / c->width, 400.f / c->height), 1200);
         }
         gfx.RenderScreen(out);
     }
+
     Image GfxBattleScreen::Render(const Game& game, float time) {
-        const float dt=lastTime_>=0?std::clamp(time-lastTime_,0.f,.25f):0;
+        const float dt = lastTime_ >= 0 ? std::clamp(time - lastTime_, 0.f, .25f) : 0;
         prepare(game);
         updateBattleDamage(game, time);
         const auto& net = game.onlineBattle;
@@ -305,7 +349,8 @@ namespace rp {
             for (const auto& raft : game.rafts) {
                 auto p = ownView_.WorldToScreen(
                     {float(raft.x + offset.x) + .5f, float(raft.y + offset.y) + .5f});
-                submitSprite(marker, "rp_battle_arrow", p.x - 15, p.y + arrow_.yOffset()-34, 30, 34);
+                submitSprite(marker, "rp_battle_arrow", p.x - 15, p.y + arrow_.yOffset() - 34, 30,
+                             34);
             }
             marker.RenderScreen(out);
         } else {
@@ -324,7 +369,7 @@ namespace rp {
         submitSprite(gfx, "battle_vs", 295, 9, 50, 50);
         if (net.isBoss())
             submitSprite(gfx, "battle_boss_token", 596, 61, 34, 34);
-        std::set<std::pair<bool,int>> drawnExplosions;
+        std::set<std::pair<bool, int>> drawnExplosions;
         if (!moving && net.hasOpponent())
             for (const auto& hit : damage_) {
                 const auto& player = hit.own ? static_cast<const Player&>(game) : net.opponent();
@@ -334,11 +379,13 @@ namespace rp {
                 auto& view = hit.own ? ownView_ : enemyView_;
                 auto point = view.WorldToScreen({float(raft->x) + .5f, float(raft->y) + .5f});
                 point.x += hit.own ? -160 : 160;
-                auto fx=explosions_.find({hit.own,hit.raft});
-                if (explosion_ && !explosion_->comps.empty() && fx!=explosions_.end() && drawnExplosions.emplace(hit.own,hit.raft).second) {
+                auto fx = explosions_.find({hit.own, hit.raft});
+                if (explosion_ && !explosion_->comps.empty() && fx != explosions_.end() &&
+                    drawnExplosions.emplace(hit.own, hit.raft).second) {
                     const auto& comp = explosion_->comps.front();
                     float elapsed = fx->second.elapsed();
-                    if(fx->second.Sparatic()&&comp.duration()>0)elapsed=std::fmod(elapsed,comp.duration());
+                    if (fx->second.Sparatic() && comp.duration() > 0)
+                        elapsed = std::fmod(elapsed, comp.duration());
                     if (comp.duration() > 0 && elapsed < comp.duration())
                         effects_.submit(gfx, *explosion_, comp, elapsed,
                                         Matrix::translation(point.x - comp.width * .35f,
@@ -346,11 +393,11 @@ namespace rp {
                                             Matrix::scale(.7f, .7f),
                                         3);
                 }
-                submitText(gfx, "-" + std::to_string(hit.amount), point.x,
-                           point.y + hit.yOffset(), .85f, 130);
+                submitText(gfx, "-" + std::to_string(hit.amount), point.x, point.y + hit.yOffset(),
+                           .85f, 130);
             }
         gfx.RenderScreen(out);
-        renderBattleAnimations(out,net,dt);
+        renderBattleAnimations(out, net, dt);
         loadMenu(game);
         if (menu_) {
             GfxManager ui;
@@ -448,8 +495,12 @@ namespace rp {
                 if (menuName_ == "attack_confirm_dialog" && (name == "Yes" || name == "No"))
                     return net.encounterResponse(name == "Yes");
                 if (menuName_ == "swap_stance_popup" && (name == "Yes" || name == "No")) {
-                    if(name=="Yes"){net.gotMsgBattleConfirmSwapStance();return net.SendClientReady(true);}
-                    net.cancelSwapPopup();return net.retreat();
+                    if (name == "Yes") {
+                        net.gotMsgBattleConfirmSwapStance();
+                        return net.SendClientReady(true);
+                    }
+                    net.cancelSwapPopup();
+                    return net.retreat();
                 }
                 if (menuName_ == "retreat_confirm" && (name == "Yes" || name == "No")) {
                     retreatConfirm_ = false;
@@ -472,7 +523,8 @@ namespace rp {
                 return {};
             }
         }
-        if (net.phase() == Phase::Positioning && !net.hudBlocked("positioningHud") && y >= 60 && y < 310) {
+        if (net.phase() == Phase::Positioning && !net.hudBlocked("positioningHud") && y >= 60 &&
+            y < 310) {
             if (net.attacker() && !net.positioned()) {
                 auto p = ownView_.ScreenToWorld({x, y});
                 auto anchor = game.mainRaft();
@@ -487,7 +539,8 @@ namespace rp {
                 placement_.SetPosition(cell);
                 if (positionChosen_ && cell.x == previous.x && cell.y == previous.y &&
                     placement_.OkayToPlace()) {
-                    if (net.isBoss()) placement_.CheckBossCoreRafts();
+                    if (net.isBoss())
+                        placement_.CheckBossCoreRafts();
                     const auto checked = placement_.GetWorldPosition(0);
                     if (checked.x == cell.x && checked.y == cell.y)
                         return net.gotMsgBattleScreenRaftsSelected(cell.x, cell.y);

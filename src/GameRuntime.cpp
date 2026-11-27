@@ -30,7 +30,7 @@ namespace {
         sys::EngineAndroid engine;
         std::unique_ptr<rp::PortView> view;
         std::unique_ptr<rp::Transition> transition;
-        int transitionMode=0;
+        int transitionMode = 0;
         std::unique_ptr<rp::SplashScreen> splash;
         std::unique_ptr<rp::TitleScreen> title;
         std::unique_ptr<rp::LoadingManager> startupResources;
@@ -80,7 +80,7 @@ namespace {
     }
 
     void music(Services& platform, const std::string& path) {
-        const auto desired=rt.view&&!rt.view->soundEnabled()?std::string{}:path;
+        const auto desired = rt.view && !rt.view->soundEnabled() ? std::string{} : path;
         if (rt.music == desired)
             return;
         audio(platform, [&] { platform.music(desired); });
@@ -88,13 +88,15 @@ namespace {
     }
 
     void effect(Services& platform, const char* path) {
-        if(!rt.view||rt.view->soundEnabled())audio(platform, [&] { platform.effect(path); });
+        if (!rt.view || rt.view->soundEnabled())
+            audio(platform, [&] { platform.effect(path); });
     }
 
     void prompt(Services& platform, const char* title, const std::string& value) {
         const bool password = rt.entry == rp::LoginScreen::Action::Password ||
                               rt.entry == rp::LoginScreen::Action::ConfirmPassword;
-        rt.engine.ShowKeyboardEntryEx(platform, title, value, password, 6, password ? 14 : 75, false);
+        rt.engine.ShowKeyboardEntryEx(platform, title, value, password, 6, password ? 14 : 75,
+                                      false);
     }
 
     std::string endpoint(std::string s) {
@@ -196,7 +198,7 @@ namespace {
         rt.snapshotReceived = false;
         rt.loggedTransportWait = false;
         rt.transition.reset();
-        rt.transitionMode=0;
+        rt.transitionMode = 0;
         rt.view.reset();
         rt.lastImage = {};
         rt.user.clear();
@@ -341,7 +343,7 @@ namespace sys::platform::game {
             rt.title.reset();
             rt.login.reset();
             rt.transition.reset();
-            rt.transitionMode=0;
+            rt.transitionMode = 0;
             rt.view.reset();
             rt.auth = {};
             rt.loginSent = false;
@@ -449,7 +451,7 @@ namespace sys::platform::game {
             rt.login.reset();
             rt.auth = {};
             rt.transition.reset();
-            rt.transitionMode=0;
+            rt.transitionMode = 0;
             rt.view.reset();
             rt.lastImage = {};
             rt.initialized = false;
@@ -473,28 +475,35 @@ namespace sys::platform::game {
             if (rt.view && !rt.login) {
                 rt.game.tick(dt);
                 rt.view->tick(dt);
-                if(rt.connected)if(auto request=rt.view->takePendingRequest(rt.game))send(platform,*request);
-                if(rt.connected&&rt.game.onlineBattle.shouldSendClientReady())
-                    if(auto ready=rt.game.onlineBattle.SendClientReady())send(platform,*ready);
-                if(!rt.title && rt.game.ready){
-                    const int mode=rt.game.onlineBattle.phase()!=rp::BattleModeState::Phase::Idle?2:
-                                   rt.game.discovery?1:0;
-                    if(!rt.transition) {
-                        rt.transition=std::make_unique<rp::Transition>(rt.assets,&rt.engine.engineReceiver());
-                        rt.transitionMode=mode;
-                        rt.transition->done=[](bool shown){
-                            if(shown){
+                if (rt.connected)
+                    if (auto request = rt.view->takePendingRequest(rt.game))
+                        send(platform, *request);
+                if (rt.connected && rt.game.onlineBattle.shouldSendClientReady())
+                    if (auto ready = rt.game.onlineBattle.SendClientReady())
+                        send(platform, *ready);
+                if (!rt.title && rt.game.ready) {
+                    const int mode =
+                        rt.game.onlineBattle.phase() != rp::BattleModeState::Phase::Idle ? 2
+                        : rt.game.discovery                                              ? 1
+                                                                                         : 0;
+                    if (!rt.transition) {
+                        rt.transition = std::make_unique<rp::Transition>(
+                            rt.assets, &rt.engine.engineReceiver());
+                        rt.transitionMode = mode;
+                        rt.transition->done = [](bool shown) {
+                            if (shown) {
                                 rt.game.GotTransitionMsgDone();
                                 rt.game.GotMsgStartTransition(false);
                                 rt.transition->hide();
-                            }else{
-                                rp::MsgTransitionDone msg;msg.shown=false;
+                            } else {
+                                rp::MsgTransitionDone msg;
+                                msg.shown = false;
                                 rt.game.onlineBattle.gotMsgTransitionDone(msg);
                             }
                         };
                     }
-                    if(mode!=rt.transitionMode&&!rt.transition->active()){
-                        rt.transitionMode=mode;
+                    if (mode != rt.transitionMode && !rt.transition->active()) {
+                        rt.transitionMode = mode;
                         rt.view->cancelInput();
                         rt.game.GotMsgStartTransition(true);
                         rt.transition->show();
@@ -560,10 +569,10 @@ namespace sys::platform::game {
                     platform.log(std::string("SmartFox login state unavailable: ") + ex.what());
                 }
             }
-            if (rt.connected && rt.game.ready && rt.view && !rt.login &&
-                !rt.rewardPopupPending) {
+            if (rt.connected && rt.game.ready && rt.view && !rt.login && !rt.rewardPopupPending) {
                 if (auto reward = rt.game.takeQuestRewardNotice()) {
-                    if (reward->message) rt.engine.engineReceiver().SendGeneric(*reward->message);
+                    if (reward->message)
+                        rt.engine.engineReceiver().SendGeneric(*reward->message);
                     try {
                         rt.rewardPopupPending = true;
                         rt.engine.PopupText(platform, reward->title + "\n" + reward->text);
@@ -679,18 +688,19 @@ namespace sys::platform::game {
                 effect(platform, "audio/sfx/diving_game_end.wav");
             rt.lastGears = gears;
             rt.lastDiveFinished = finished;
-            if(rt.transition&&rt.transition->active()){
-                auto frame=rt.lastImage;
+            if (rt.transition && rt.transition->active()) {
+                auto frame = rt.lastImage;
                 rt.transition->Render(frame);
-                platform.present(frame,rt.width,rt.height);
-            }else platform.present(rt.lastImage, rt.width, rt.height);
+                platform.present(frame, rt.width, rt.height);
+            } else
+                platform.present(rt.lastImage, rt.width, rt.height);
         });
     }
 
     void touchDown(Services& platform, float x, float y) {
         guarded(platform, [&] {
             if (!rt.initialized || rt.paused || !std::isfinite(x) || !std::isfinite(y) ||
-                rt.splash || (rt.transition&&rt.transition->blocksInput()))
+                rt.splash || (rt.transition && rt.transition->blocksInput()))
                 return;
             if (rt.title) {
                 if (!rt.titlePresented)
@@ -706,7 +716,8 @@ namespace sys::platform::game {
             if (rt.view && rt.game.ready)
                 rt.view->touchDown(x * 640 / rt.width, y * 400 / rt.height);
             const auto now = Clock::now();
-            if (rt.connected && rt.game.gotMsgTouchDown(std::chrono::duration<float>(now - rt.lastPing).count())) {
+            if (rt.connected &&
+                rt.game.gotMsgTouchDown(std::chrono::duration<float>(now - rt.lastPing).count())) {
                 rt.lastPing = now;
                 platform.keepAlive();
             }
@@ -803,10 +814,11 @@ namespace sys::platform::game {
                 return;
             }
             if (!rt.connected || !rt.game.ready || !rt.view ||
-                (rt.transition&&rt.transition->blocksInput()))
+                (rt.transition && rt.transition->blocksInput()))
                 return;
             const auto now = Clock::now();
-            if (rt.connected && rt.game.gotMsgTouchUp(std::chrono::duration<float>(now - rt.lastPing).count())) {
+            if (rt.connected &&
+                rt.game.gotMsgTouchUp(std::chrono::duration<float>(now - rt.lastPing).count())) {
                 rt.lastPing = now;
                 platform.keepAlive();
             }
@@ -826,7 +838,7 @@ namespace sys::platform::game {
     void touchMove(Services& platform, float x, float y) {
         guarded(platform, [&] {
             if (!rt.initialized || rt.paused || !std::isfinite(x) || !std::isfinite(y) ||
-                rt.splash || (rt.transition&&rt.transition->blocksInput()))
+                rt.splash || (rt.transition && rt.transition->blocksInput()))
                 return;
             if (rt.title) {
                 rt.title->touchDrag(x * 640 / rt.width, y * 400 / rt.height);
@@ -839,7 +851,8 @@ namespace sys::platform::game {
             if (rt.view && rt.game.ready)
                 rt.view->touchDrag(x * 640 / rt.width, y * 400 / rt.height);
             const auto now = Clock::now();
-            if (rt.connected && rt.game.gotMsgTouchDrag(std::chrono::duration<float>(now - rt.lastPing).count())) {
+            if (rt.connected &&
+                rt.game.gotMsgTouchDrag(std::chrono::duration<float>(now - rt.lastPing).count())) {
                 rt.lastPing = now;
                 platform.keepAlive();
             }
@@ -853,13 +866,15 @@ namespace sys::platform::game {
     void touchState(Services& platform, const std::vector<float>& x, const std::vector<float>& y) {
         guarded(platform, [&] {
             if (!rt.initialized || rt.paused || rt.width <= 0 || rt.height <= 0 ||
-                (rt.transition && rt.transition->blocksInput())) return;
+                (rt.transition && rt.transition->blocksInput()))
+                return;
             auto n = std::min({x.size(), y.size(), size_t(16)});
             sys::msg::MsgTouchState m;
             for (size_t i = 0; i < n; ++i)
                 if (std::isfinite(x[i]) && std::isfinite(y[i]) && x[i] >= 0 && y[i] >= 0 &&
                     x[i] <= rt.width && y[i] <= rt.height)
-                    m.AddPoint(int(double(x[i]) * 640 / rt.width), int(double(y[i]) * 400 / rt.height), int(i));
+                    m.AddPoint(int(double(x[i]) * 640 / rt.width),
+                               int(double(y[i]) * 400 / rt.height), int(i));
             rt.engine.engineReceiver().SendGeneric(m);
         });
     }

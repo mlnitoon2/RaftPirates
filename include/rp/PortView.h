@@ -39,7 +39,10 @@ namespace rp {
         }
 
         bool grid = false, map = false;
-        bool soundEnabled()const{return soundEnabled_;}
+
+        bool soundEnabled() const {
+            return soundEnabled_;
+        }
 
       private:
         friend struct PortViewTestAccess;
@@ -59,7 +62,7 @@ namespace rp {
         bool diveStarted_ = false;
         bool diveSeen_ = false;
         bool diveClosing_ = false;
-        std::pair<int,int> divingUnit_{};
+        std::pair<int, int> divingUnit_{};
         bool hudEnabled(const Game& game) const;
         MapView mapView_;
         int selectedQuest_ = 0;
@@ -87,11 +90,11 @@ namespace rp {
         };
         Panel panel_ = Panel::None;
         size_t page_ = 0;
-        static constexpr size_t BlueprintPageSize=5;
-        float blueprintListTop_=300;
+        static constexpr size_t BlueprintPageSize = 5;
+        float blueprintListTop_ = 300;
         std::optional<sys::gfx::Vec2> blueprintGesture_;
-        bool blueprintPageMove(const Game&,int);
-        void selectBlueprintSlot(const Game&,float);
+        bool blueprintPageMove(const Game&, int);
+        void selectBlueprintSlot(const Game&, float);
         int selectedBlueprint_ = 0;
         int selectedParent_ = 0, selectedComponent_ = 0;
         bool moving_ = false;
@@ -99,14 +102,14 @@ namespace rp {
         int placementParent_ = 0;
         int selectedStore_ = 0, shopSelection_ = 0;
         void updateShopFrame(const Game&);
-        std::vector<int> menuItemIds(const Game&, const std::string&)const;
+        std::vector<int> menuItemIds(const Game&, const std::string&) const;
         std::string blueprintIcon(const std::string&, const std::string&);
-        std::map<std::pair<std::string,std::string>,std::string> blueprintIcons_;
-        std::map<std::string,std::shared_ptr<sys::res::ResourceSpriteSheet>> blueprintSheets_;
-        std::map<std::string,std::shared_ptr<sys::gfx::Image>> previewImages_;
-        std::map<std::string,sys::res::ResourceAEAnim> previewBins_;
+        std::map<std::pair<std::string, std::string>, std::string> blueprintIcons_;
+        std::map<std::string, std::shared_ptr<sys::res::ResourceSpriteSheet>> blueprintSheets_;
+        std::map<std::string, std::shared_ptr<sys::gfx::Image>> previewImages_;
+        std::map<std::string, sys::res::ResourceAEAnim> previewBins_;
         std::unique_ptr<sys::gfx::AnimationRenderer> previewRenderer_;
-        bool soundEnabled_=true;
+        bool soundEnabled_ = true;
         std::string confirmAction_;
         unsigned swipe_ = 0;
         std::map<unsigned, double> scrollOrigins_;

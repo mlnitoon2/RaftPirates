@@ -3,11 +3,18 @@
 
 namespace rp {
     LoaderSpriteSheet::~LoaderSpriteSheet() = default;
-    const char* LoaderSpriteSheet::getType() const { return "SS"; }
-    const std::string& LoaderSpriteSheet::getId() const { return id_; }
+
+    const char* LoaderSpriteSheet::getType() const {
+        return "SS";
+    }
+
+    const std::string& LoaderSpriteSheet::getId() const {
+        return id_;
+    }
 
     bool LoaderSpriteSheet::prepare(LoadingManager* manager) {
-        if (!manager) return false;
+        if (!manager)
+            return false;
         const auto sheet = manager->sheet(id_);
         if (!sheet->imagePath.empty()) {
             auto path = std::filesystem::path(sheet->imagePath);
@@ -17,5 +24,7 @@ namespace rp {
         return true;
     }
 
-    void LoaderSpriteSheet::load(LoadingManager& manager) { manager.sheet(id_); }
-}
+    void LoaderSpriteSheet::load(LoadingManager& manager) {
+        manager.sheet(id_);
+    }
+} // namespace rp

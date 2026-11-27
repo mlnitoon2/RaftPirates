@@ -17,7 +17,9 @@ namespace rp {
     SparseGrid::SparseGrid() = default;
     SparseGrid::~SparseGrid() = default;
 
-    void SparseGrid::AddedToOcean() { attached_ = true; }
+    void SparseGrid::AddedToOcean() {
+        attached_ = true;
+    }
 
     bool SparseGrid::IsAncestor(const GridObject* object) const {
         // This host grid has only direct membership, not the native parent chain.
@@ -25,7 +27,8 @@ namespace rp {
     }
 
     void SparseGrid::AddToTempTick(GridObject* object) {
-        if (object) tempTick_.insert(object);
+        if (object)
+            tempTick_.insert(object);
     }
 
     void SparseGrid::RemoveFromTempTick(GridObject* object) {
@@ -33,10 +36,12 @@ namespace rp {
     }
 
     bool SparseGrid::TempTick(float dt) {
-        if (!std::isfinite(dt) || dt < 0) return tempTick_.empty();
+        if (!std::isfinite(dt) || dt < 0)
+            return tempTick_.empty();
         const auto snapshot = tempTick_;
         for (auto* object : snapshot)
-            if (tempTick_.count(object) && object->TempTick(dt)) tempTick_.erase(object);
+            if (tempTick_.count(object) && object->TempTick(dt))
+                tempTick_.erase(object);
         return tempTick_.empty();
     }
 

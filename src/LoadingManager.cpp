@@ -102,12 +102,14 @@ namespace rp {
         }
         if (pos != bytes.size())
             throw std::runtime_error("Unexpected manifest trailing data");
-        auto nextSeen=seen_;
-        auto nextJobs=jobs_;
-        for(const auto& job:parsed)if(nextSeen.emplace(job.kind,job.path).second){
-            if(nextJobs.size()>=10000)throw std::runtime_error("Manifest queue limit");
-            nextJobs.push_back(job);
-        }
+        auto nextSeen = seen_;
+        auto nextJobs = jobs_;
+        for (const auto& job : parsed)
+            if (nextSeen.emplace(job.kind, job.path).second) {
+                if (nextJobs.size() >= 10000)
+                    throw std::runtime_error("Manifest queue limit");
+                nextJobs.push_back(job);
+            }
         jobs_.swap(nextJobs);
         seen_.swap(nextSeen);
     }
@@ -134,14 +136,19 @@ namespace rp {
             full.string(), [&] { return sys::gfx::ResourceSpriteSheet::Create(full); });
     }
 
-    void LoadingManager::loadImageJob(const std::string& path){
-        if(path=="gfx/font/blue_highway"&&std::filesystem::is_regular_file(root_/"font/blue_highway.ttf"))
-            cache_.acquire<std::vector<uint8_t>>(path,[&]{return sys::File::readAll(root_/"font/blue_highway.ttf");});
-        else sprite(path);
+    void LoadingManager::loadImageJob(const std::string& path) {
+        if (path == "gfx/font/blue_highway" &&
+            std::filesystem::is_regular_file(root_ / "font/blue_highway.ttf"))
+            cache_.acquire<std::vector<uint8_t>>(
+                path, [&] { return sys::File::readAll(root_ / "font/blue_highway.ttf"); });
+        else
+            sprite(path);
     }
-    void LoadingManager::loadMenuJob(const std::string& path){
-        cache_.acquire<sys::res::XmlNode>(path,[&]{return sys::res::loadXML(checked(path));});
+
+    void LoadingManager::loadMenuJob(const std::string& path) {
+        cache_.acquire<sys::res::XmlNode>(path, [&] { return sys::res::loadXML(checked(path)); });
     }
+
     void LoadingManager::setPercentage(float value) {
         if (std::isfinite(value))
             progress_ = std::clamp(value, 0.f, 100.f);
@@ -174,18 +181,24 @@ namespace rp {
             case Kind::Sprite:
                 LoaderImage(job.path).load(*this);
                 break;
-            case Kind::Animation:
-                { LoaderAEAnim loader(job.path); if (loader.prepare(this)) loader.load(*this); }
-                break;
-            case Kind::Sheet:
-                { LoaderSpriteSheet loader(job.path); if (loader.prepare(this)) loader.load(*this); }
-                break;
+            case Kind::Animation: {
+                LoaderAEAnim loader(job.path);
+                if (loader.prepare(this))
+                    loader.load(*this);
+            } break;
+            case Kind::Sheet: {
+                LoaderSpriteSheet loader(job.path);
+                if (loader.prepare(this))
+                    loader.load(*this);
+            } break;
             case Kind::Menu:
                 LoaderMenu(job.path).prepare(this);
                 break;
-            case Kind::Xml:
-                { LoaderXml loader(job.path); if (loader.prepare(this)) loader.load(*this); }
-                break;
+            case Kind::Xml: {
+                LoaderXml loader(job.path);
+                if (loader.prepare(this))
+                    loader.load(*this);
+            } break;
             case Kind::Manifest:
                 LoaderManifest(job.path).prepare(this);
                 break;

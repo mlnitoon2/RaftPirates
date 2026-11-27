@@ -20,47 +20,76 @@ namespace rp {
         return result;
     }
 
-    std::vector<int> RPMenuHandler::storeItemsForTab(const std::string& menu)const{
-        if(menu.rfind("tabbed_menu_",0)!=0)return {};
-        const auto category=menu.substr(12);
-        auto ids=gotMsgGetAvailStoreItemRequest();
-        ids.erase(std::remove_if(ids.begin(),ids.end(),[&](int id){
-            const auto& group=game_.storeItems.at(id).group;
-            if(category=="diamonds")return group!="diamonds"&&group!="diamond";
-            if(category=="gold")return group!="gold"&&group!="offerwall";
-            return group!=category;
-        }),ids.end());
+    std::vector<int> RPMenuHandler::storeItemsForTab(const std::string& menu) const {
+        if (menu.rfind("tabbed_menu_", 0) != 0)
+            return {};
+        const auto category = menu.substr(12);
+        auto ids = gotMsgGetAvailStoreItemRequest();
+        ids.erase(std::remove_if(ids.begin(), ids.end(),
+                                 [&](int id) {
+                                     const auto& group = game_.storeItems.at(id).group;
+                                     if (category == "diamonds")
+                                         return group != "diamonds" && group != "diamond";
+                                     if (category == "gold")
+                                         return group != "gold" && group != "offerwall";
+                                     return group != category;
+                                 }),
+                  ids.end());
         return ids;
     }
-    std::optional<int> RPMenuHandler::storeCategoryId()const{
-        for(const auto& [id,name]:game_.storeGroups)if(name==category_)return id;
+
+    std::optional<int> RPMenuHandler::storeCategoryId() const {
+        for (const auto& [id, name] : game_.storeGroups)
+            if (name == category_)
+                return id;
         return {};
     }
-    void RPMenuHandler::gotMsgStoreDisplayStatus(const MsgStoreDisplayStatus& msg){storeVisible_=msg.visible;}
-    void RPMenuHandler::gotMsgPopPopUpGlobal(){popPopUp();}
-    std::optional<sfs::Message> RPMenuHandler::gotMsgQuestRead(Game& game,const MsgQuestRead& msg){
-        if(&game!=&game_||!game.quests.count(msg.id))return {};
+
+    void RPMenuHandler::gotMsgStoreDisplayStatus(const MsgStoreDisplayStatus& msg) {
+        storeVisible_ = msg.visible;
+    }
+
+    void RPMenuHandler::gotMsgPopPopUpGlobal() {
+        popPopUp();
+    }
+
+    std::optional<sfs::Message> RPMenuHandler::gotMsgQuestRead(Game& game,
+                                                               const MsgQuestRead& msg) {
+        if (&game != &game_ || !game.quests.count(msg.id))
+            return {};
         return game.openQuest(msg.id);
     }
-    void RPMenuHandler::gotMsgStartDialog(const std::string& name){displayPopUpImmediately(name);}
 
-    std::string RPMenuHandler::gotMsgRequestLocalizedChristeningText(
-            const std::string& localized, const Player* player) const {
+    void RPMenuHandler::gotMsgStartDialog(const std::string& name) {
+        displayPopUpImmediately(name);
+    }
+
+    std::string RPMenuHandler::gotMsgRequestLocalizedChristeningText(const std::string& localized,
+                                                                     const Player* player) const {
         // Native reads TUT_CHRISTEN_D, replaces the first percent-delimited
         // segment with the requested player's name and sends localized insert text.
-        if (!player) return {};
+        if (!player)
+            return {};
         const auto first = localized.find('%');
-        if (first == std::string::npos) return localized;
+        if (first == std::string::npos)
+            return localized;
         const auto last = localized.find('%', first + 1);
-        if (last == std::string::npos) return localized;
+        if (last == std::string::npos)
+            return localized;
         return localized.substr(0, first) + player->playerName + localized.substr(last + 1);
     }
-    std::vector<int> RPMenuHandler::gotSimpleRequest(const std::string& kind)const{
-        if(kind=="AVAIL_STOREITEMS")return category_.empty()?gotMsgGetAvailStoreItemRequest():storeItemsForTab("tabbed_menu_"+category_);
-        if(kind=="AVAIL_BLUEPRINTS")return gotMsgGetAvailBlueprintsRequest();
-        if(kind=="AVAIL_MATERIALS")return gotMsgGetAvailMaterialsRequest();
+
+    std::vector<int> RPMenuHandler::gotSimpleRequest(const std::string& kind) const {
+        if (kind == "AVAIL_STOREITEMS")
+            return category_.empty() ? gotMsgGetAvailStoreItemRequest()
+                                     : storeItemsForTab("tabbed_menu_" + category_);
+        if (kind == "AVAIL_BLUEPRINTS")
+            return gotMsgGetAvailBlueprintsRequest();
+        if (kind == "AVAIL_MATERIALS")
+            return gotMsgGetAvailMaterialsRequest();
         return {};
     }
+
     std::vector<int> RPMenuHandler::gotMsgGetAllBlueprintsRequest() const {
         std::vector<int> result;
         for (auto& [id, b] : game_.blueprints)
@@ -125,16 +154,20 @@ namespace rp {
         return it == game_.storeItems.end() ? nullptr : &it->second;
     }
 
-    std::optional<MsgStoreItemDisplayResponse> RPMenuHandler::storeDisplayMessage(int id)const{
-        auto p=gotMsgStoreItemDisplayRequest(id);
-        if(!p)return {};
+    std::optional<MsgStoreItemDisplayResponse> RPMenuHandler::storeDisplayMessage(int id) const {
+        auto p = gotMsgStoreItemDisplayRequest(id);
+        if (!p)
+            return {};
         return MsgStoreItemDisplayResponse(*p);
     }
-    std::optional<MsgQuestData> RPMenuHandler::questDataMessage(int id)const{
-        auto p=game_.quests.find(id);
-        if(p==game_.quests.end())return {};
+
+    std::optional<MsgQuestData> RPMenuHandler::questDataMessage(int id) const {
+        auto p = game_.quests.find(id);
+        if (p == game_.quests.end())
+            return {};
         return MsgQuestData(p->second);
     }
+
     const MaterialInfo* RPMenuHandler::gotMsgMaterialInformationRequest(int id) const {
         return id > 0 ? game_.materialDB.getMaterialInfo(unsigned(id)) : nullptr;
     }
@@ -272,7 +305,7 @@ namespace rp {
         queued_.clear();
         blueprintSelected_ = storeSelected_ = blueprintPage_ = storePage_ = hudMode_ = 0;
         category_.clear();
-        storeVisible_=false;
+        storeVisible_ = false;
     }
 
     namespace {
@@ -286,7 +319,8 @@ namespace rp {
 
     std::vector<int> RPMenuHandler::currentStorePage(size_t size) const {
         auto ids = gotMsgGetAvailStoreItemRequest();
-        if (!category_.empty())ids=storeItemsForTab("tabbed_menu_"+category_);
+        if (!category_.empty())
+            ids = storeItemsForTab("tabbed_menu_" + category_);
         return pageOf(std::move(ids), storePage_, size);
     }
 

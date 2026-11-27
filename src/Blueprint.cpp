@@ -4,7 +4,9 @@
 
 namespace rp {
     Blueprint::Blueprint(int id, int obj, int level, std::string name)
-        : object(obj), unlock(level), id_(id) { name_ = std::move(name); }
+        : object(obj), unlock(level), id_(id) {
+        name_ = std::move(name);
+    }
 
     void Blueprint::init(int id) {
         id_ = id;

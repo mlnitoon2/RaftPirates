@@ -7,7 +7,8 @@ namespace rp {
     // Native Ocean/SparseGrid ownership is not reproduced by this adapter.
     class ShipPlacementSprite final : public PlacementSprite {
       public:
-        ShipPlacementSprite(const Game&, const OceanView&, std::vector<Raft>, bool movingExisting = true);
+        ShipPlacementSprite(const Game&, const OceanView&, std::vector<Raft>,
+                            bool movingExisting = true);
         ~ShipPlacementSprite() override;
         bool ContainsGfx(const sys::gfx::Gfx*) const;
         bool OkayToPlace() const override;
@@ -19,21 +20,26 @@ namespace rp {
         void SetPriority(unsigned index, float priority);
         void SetToObject();
         void Update() override;
-        int submit(sys::gfx::GfxManager&, std::map<std::string,std::shared_ptr<sys::gfx::Image>>&,
-                   std::map<std::string,sys::res::ResourceAEAnim>&, sys::gfx::AnimationRenderer&,
+        int submit(sys::gfx::GfxManager&, std::map<std::string, std::shared_ptr<sys::gfx::Image>>&,
+                   std::map<std::string, sys::res::ResourceAEAnim>&, sys::gfx::AnimationRenderer&,
                    const std::filesystem::path&);
-        Cell position() const { return position_; }
+
+        Cell position() const {
+            return position_;
+        }
+
       private:
         struct Entry {
             std::unique_ptr<GridSprite> sprite;
             sys::gfx::Vec2 relative;
             bool raft;
         };
+
         std::vector<Raft> rafts_;
-        std::map<int,GridObjectInfo> catalogue_;
+        std::map<int, GridObjectInfo> catalogue_;
         Cell anchor_{};
         bool movingExisting_;
         std::vector<Entry> entries_;
         void rebuild();
     };
-}
+} // namespace rp

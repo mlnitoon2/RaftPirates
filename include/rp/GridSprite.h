@@ -20,21 +20,32 @@ namespace rp {
         virtual void Init();
         bool AttachAccessory(std::unique_ptr<AccessorySprite> accessory);
         bool AddAccessorySprite(std::unique_ptr<AccessorySprite>);
-        AccessorySprite* GetAccessorySprite(int id)const;
-        bool HasAccessorySprite(int id)const;
+        AccessorySprite* GetAccessorySprite(int id) const;
+        bool HasAccessorySprite(int id) const;
         bool RemoveAccessorySprite(int id);
         bool ListenForAnimation() const;
         void gotMsgAnimationStarted();
         void SetMute(bool mute);
-        bool muted()const{return muted_;}
+
+        bool muted() const {
+            return muted_;
+        }
+
         void UpdateParticles();
         void BuildPiece(const GridPiece&);
         virtual void UpdatePiece(unsigned index);
         bool DetachAccessory(int id);
         void Update();
         void SetGeometry(sys::gfx::Vec2 world, float scale);
-        void SetScale(float scale) { SetGeometry(world_, scale); }
-        sys::gfx::Vec2 worldPosition() const { return world_; }
+
+        void SetScale(float scale) {
+            SetGeometry(world_, scale);
+        }
+
+        sys::gfx::Vec2 worldPosition() const {
+            return world_;
+        }
+
         void SetTime(float time);
         void SetVisible(bool);
         bool GetVisible() const;
@@ -55,17 +66,40 @@ namespace rp {
         void UpdateAnimations(float);
         void SetAnimation(std::vector<std::string> names);
         bool HasAttack() const;
-        const std::string& definitionName() const { return definition_.name; }
-        const GridObjectInfo& definition() const { return definition_; }
-        void setConstructionTime(float time) { constructionTime_=time; }
-        float constructionTime() const { return constructionTime_; }
-        int objectState() const { return object_.state; }
-        int battlePoints() const { return visualBattlePoints_.value_or(object_.GetBattlePoints()); }
-        void setBattlePoints(int points) { visualBattlePoints_=points; }
+
+        const std::string& definitionName() const {
+            return definition_.name;
+        }
+
+        const GridObjectInfo& definition() const {
+            return definition_;
+        }
+
+        void setConstructionTime(float time) {
+            constructionTime_ = time;
+        }
+
+        float constructionTime() const {
+            return constructionTime_;
+        }
+
+        int objectState() const {
+            return object_.state;
+        }
+
+        int battlePoints() const {
+            return visualBattlePoints_.value_or(object_.GetBattlePoints());
+        }
+
+        void setBattlePoints(int points) {
+            visualBattlePoints_ = points;
+        }
+
         void Attack();
-        virtual int submit(sys::gfx::GfxManager&, std::map<std::string, std::shared_ptr<sys::gfx::Image>>&,
-                   std::map<std::string, sys::res::ResourceAEAnim>&, sys::gfx::AnimationRenderer&,
-                   const std::filesystem::path&, bool raft);
+        virtual int submit(sys::gfx::GfxManager&,
+                           std::map<std::string, std::shared_ptr<sys::gfx::Image>>&,
+                           std::map<std::string, sys::res::ResourceAEAnim>&,
+                           sys::gfx::AnimationRenderer&, const std::filesystem::path&, bool raft);
 
       private:
         const OceanView& ocean_;
@@ -73,8 +107,8 @@ namespace rp {
         std::optional<int> visualBattlePoints_;
         const GridObjectInfo& definition_;
         sys::gfx::Vec2 world_;
-        float scale_ = 1, time_ = 0, slack_ = 0, constructionTime_=0;
-        bool visible_ = true, selected_ = false, hasAttack_ = false, muted_=false;
+        float scale_ = 1, time_ = 0, slack_ = 0, constructionTime_ = 0;
+        bool visible_ = true, selected_ = false, hasAttack_ = false, muted_ = false;
         sys::gfx::Color colour_{};
         std::vector<SpritePiece> pieces_;
         std::map<int, std::unique_ptr<AccessorySprite>> accessories_;

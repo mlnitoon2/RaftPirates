@@ -8,10 +8,15 @@ namespace rp {
             player_.rafts.emplace_back(id++, raft.typeId, raft.positionX, raft.positionY,
                                        raft.battlePoints, 0, std::vector<Component>{});
     }
+
     GfxShipPreviewScreen::~GfxShipPreviewScreen() = default;
-    void GfxShipPreviewScreen::aTickMethodThatsNotCalledTick(float dt) { view_.tick(dt); }
+
+    void GfxShipPreviewScreen::aTickMethodThatsNotCalledTick(float dt) {
+        view_.tick(dt);
+    }
+
     sys::gfx::Image GfxShipPreviewScreen::render(const std::map<int, GridObjectInfo>& catalogue) {
         player_.objects = catalogue;
         return view_.render(player_, -1, false);
     }
-}
+} // namespace rp

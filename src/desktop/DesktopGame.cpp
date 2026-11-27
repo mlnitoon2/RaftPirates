@@ -20,20 +20,28 @@ namespace {
                 throw std::runtime_error("Expected extracted APK assets directory");
         }
 
-        fs::path assets(const fs::path&) override { return root_; }
+        fs::path assets(const fs::path&) override {
+            return root_;
+        }
+
         // This preview deliberately does not resume a live account session.
-        fs::path saveDirectory() override { return {}; }
+        fs::path saveDirectory() override {
+            return {};
+        }
 
         void present(const sys::gfx::Image& image, int, int) override {
             host_.present(image);
         }
 
         void music(const std::string&) override {}
+
         void pauseMusic(bool) override {}
+
         void effect(const std::string&) override {}
+
         void showPopup(const std::string& message) override {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Raft Pirates",
-                                     message.c_str(), nullptr);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Raft Pirates", message.c_str(),
+                                     nullptr);
         }
 
         void openWebPage(const std::string& url) override {
@@ -43,18 +51,22 @@ namespace {
                 throw std::runtime_error("Unable to open browser");
         }
 
-        bool loggedIn() override { return false; }
-        bool transportConnected() override { return false; }
+        bool loggedIn() override {
+            return false;
+        }
 
-        void keyboard(const std::string& title, const std::string& value,
-                      bool password) override {
+        bool transportConnected() override {
+            return false;
+        }
+
+        void keyboard(const std::string& title, const std::string& value, bool password) override {
             entry_ = Entry{title, value, password};
             host_.textInput(true);
             updateTitle();
         }
 
-        std::future<AuthResult> authenticate(std::string, std::string, std::string,
-                                             bool, int, std::string) override {
+        std::future<AuthResult> authenticate(std::string, std::string, std::string, bool, int,
+                                             std::string) override {
             std::promise<AuthResult> promise;
             AuthResult result;
             result.error = "Desktop SmartFox networking is not implemented yet.";
@@ -65,16 +77,23 @@ namespace {
         void connect(const std::string&, int) override {
             throw std::runtime_error("Desktop SmartFox networking unavailable");
         }
+
         void login(const std::string&, const std::string&, const std::string&,
                    const sfs::SFSObjectWrapper&) override {
             throw std::runtime_error("Desktop SmartFox networking unavailable");
         }
+
         void send(const sfs::Message&) override {
             throw std::runtime_error("Desktop SmartFox networking unavailable");
         }
+
         void disconnect() override {}
+
         void keepAlive() override {}
-        void log(const std::string& message) override { std::cerr << message << '\n'; }
+
+        void log(const std::string& message) override {
+            std::cerr << message << '\n';
+        }
 
         bool poll() {
             for (const auto& event : host_.poll()) {
@@ -126,13 +145,16 @@ namespace {
             return true;
         }
 
-        void delay() { host_.delay(10); }
+        void delay() {
+            host_.delay(10);
+        }
 
       private:
         struct Entry {
             std::string title, value;
             bool password;
         };
+
         fs::path root_;
         NativeHost host_;
         std::optional<Entry> entry_;
@@ -152,7 +174,7 @@ namespace {
             game::keyboardResult(*this, std::move(value), cancelled);
         }
     };
-}
+} // namespace
 
 int main(int argc, char** argv) {
     try {

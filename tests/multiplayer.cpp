@@ -116,7 +116,8 @@ int main(int argc, char** argv) {
     target.put("user_raft_id", int32_t(2));
     target.put("current_bp", int32_t(40));
     outcome.put("target_raft", std::make_shared<O>(target));
-    outcome.put("attack_roll",int32_t(5));outcome.put("defense_roll",int32_t(2));
+    outcome.put("attack_roll", int32_t(5));
+    outcome.put("defense_roll", int32_t(2));
     outcomes->values.emplace_back(std::make_shared<O>(outcome));
     result.put("results", outcomes);
     game.extension("gs_battle_attack", result);
@@ -126,16 +127,19 @@ int main(int argc, char** argv) {
           "authoritative boss damage");
     game.extension("gs_battle_attack", result);
     check(battle.syncCounter() == 3, "duplicate result ignored");
-    check(battle.battleRolls().size()==1&&battle.animationRemaining()==2.5f,"original dice animation timing");
-    check(!battle.SendClientReady(),"wait until dice animation finishes");
-    check(battle.resultSequence()==1&&battle.resultAttackRaft()==1&&battle.resultAttacker(),"result source identity");
+    check(battle.battleRolls().size() == 1 && battle.animationRemaining() == 2.5f,
+          "original dice animation timing");
+    check(!battle.SendClientReady(), "wait until dice animation finishes");
+    check(battle.resultSequence() == 1 && battle.resultAttackRaft() == 1 && battle.resultAttacker(),
+          "result source identity");
     O swap;
     swap.put("sync_counter", int32_t(3));
     game.extension("gs_swap_stance", swap);
     game.extension("gs_swap_stance", swap);
-    check(battle.attacker()&&!battle.shouldSendClientReady(),"defer duplicate swap during animation");
+    check(battle.attacker() && !battle.shouldSendClientReady(),
+          "defer duplicate swap during animation");
     battle.tick(2.5f);
-    check(battle.syncCounter()==4,"deferred swap applied once");
+    check(battle.syncCounter() == 4, "deferred swap applied once");
     check(!battle.attacker(), "stance swap");
     check(
         payload(battle.SendClientReady(), "gs_battle_client_ready").getBool("confirm_swap_stance"),

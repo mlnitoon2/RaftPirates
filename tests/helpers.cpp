@@ -88,22 +88,22 @@ int main(int argc, char** argv) {
         CHECK(a.Middleish(&def).first == .5f);
         {
             rp::OverlapTree tree;
-            rp::OverlapTree::GenerateOverlapTree(tree,&a,&def);
-            CHECK(tree.Within({0,0},{2,1}));
-            CHECK(!tree.Within({0,0},{1,1}));
+            rp::OverlapTree::GenerateOverlapTree(tree, &a, &def);
+            CHECK(tree.Within({0, 0}, {2, 1}));
+            CHECK(!tree.Within({0, 0}, {1, 1}));
             rp::PerimeterTree perimeter;
-            rp::PerimeterTree::GeneratePerimeterTree(perimeter,&a,&def);
-            CHECK(perimeter.edges().size()==6);
+            rp::PerimeterTree::GeneratePerimeterTree(perimeter, &a, &def);
+            CHECK(perimeter.edges().size() == 6);
         }
         rp::OceanView ocean(cache);
         auto multi = rp::GridObjectInfo::parse("0;one.png 0 0 0,0;two.png 30 0 1,0;", 800);
         rp::GridSprite visual(ocean, a, multi, {0, 0}, 1);
         CHECK(visual.Pieces() == 2 && visual.GetMaxOrder() == 1);
-        auto accessory=std::make_unique<rp::AccessorySprite>(&ocean,&visual,12);
-        CHECK(accessory->GetTimeString(3661)=="01:01:01");
+        auto accessory = std::make_unique<rp::AccessorySprite>(&ocean, &visual, 12);
+        CHECK(accessory->GetTimeString(3661) == "01:01:01");
         CHECK(visual.AddAccessorySprite(std::move(accessory)));
-        CHECK(visual.HasAccessorySprite(12)&&visual.GetAccessorySprite(12)->ticking());
-        CHECK(visual.RemoveAccessorySprite(12)&&!visual.HasAccessorySprite(12));
+        CHECK(visual.HasAccessorySprite(12) && visual.GetAccessorySprite(12)->ticking());
+        CHECK(visual.RemoveAccessorySprite(12) && !visual.HasAccessorySprite(12));
         visual.SetOrder(0, 4, 1);
         CHECK(visual.GetOrder(0) == 4 && visual.GetPriority(0) > visual.GetPriority(1));
         CHECK(visual.Select(&visual[0].appearance));
@@ -147,18 +147,20 @@ int main(int argc, char** argv) {
             rp::LoaderImage image("gfx/rafts/raft_core");
             rp::LoaderMenu menu("menus/test.xml");
             rp::LoaderManifest manifest("xml_bin/game_manifest.bin");
-            CHECK(std::string(image.getType())=="SPR" && image.getId()=="gfx/rafts/raft_core");
-            CHECK(std::string(menu.getType())=="MENU" && !menu.prepare(nullptr));
-            CHECK(std::string(manifest.getType())=="MANI" && !manifest.prepare(nullptr));
+            CHECK(std::string(image.getType()) == "SPR" && image.getId() == "gfx/rafts/raft_core");
+            CHECK(std::string(menu.getType()) == "MENU" && !menu.prepare(nullptr));
+            CHECK(std::string(manifest.getType()) == "MANI" && !manifest.prepare(nullptr));
         }
         {
-            rp::DamageIndicatorSprite damage(true,1,5);
+            rp::DamageIndicatorSprite damage(true, 1, 5);
             damage.tick(.5f);
-            CHECK(damage.remaining==1.f&&damage.yOffset()==-20.f);
-            damage.tick(2);CHECK(damage.remaining==0);
-            rp::diving_game::ScrollingLayer layer({"a","b"},128,.5f,288);
-            layer.SetSpeed(100);layer.tick(.5f);
-            CHECK(layer.tiles().front().y==-25.f);
+            CHECK(damage.remaining == 1.f && damage.yOffset() == -20.f);
+            damage.tick(2);
+            CHECK(damage.remaining == 0);
+            rp::diving_game::ScrollingLayer layer({"a", "b"}, 128, .5f, 288);
+            layer.SetSpeed(100);
+            layer.tick(.5f);
+            CHECK(layer.tiles().front().y == -25.f);
         }
         if (argc == 2) {
             rp::LoadingManager loading(argv[1]);

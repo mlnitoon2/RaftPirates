@@ -25,7 +25,7 @@ namespace rp {
         normal_ = menu_.find(1, "NormalHud", true);
         if (!normal_)
             throw std::runtime_error("Original NormalHud not found");
-        menu_.reuseUnchangedLayout=true;
+        menu_.reuseUnchangedLayout = true;
         menu_.resize(640, 400);
         menu_.initialize();
         for (const auto& name :
@@ -54,13 +54,24 @@ namespace rp {
         offset("EventNotification", (640.0 / 2 - half - main.w) / 2 + half, event.h / 2);
         menu_.solve();
         // Bind normal HUD touch rectangles to the rendered icons.
-        for(auto name:{"QuestMenu","MainMenu","PirateMap","EventNotification","DaringMeter","SafeFlag","BadZoneFlag"}){
-            auto owner=menu_.find(normal_,name,true);if(!owner)continue;
-            auto visual=menu_.find(owner,"Sprite");auto touch=menu_.find(owner,"Touch");
-            if(!visual||!touch)continue;
-            const auto b=menu_.node(visual).bounds;
-            if(b.w<=0||b.h<=0)continue;
-            auto& n=menu_.node(touch);n.set("absoluteX",double(b.x));n.set("absoluteY",double(b.y));n.set("width",double(b.w));n.set("height",double(b.h));n.set("layer",std::string("HUD"));
+        for (auto name : {"QuestMenu", "MainMenu", "PirateMap", "EventNotification", "DaringMeter",
+                          "SafeFlag", "BadZoneFlag"}) {
+            auto owner = menu_.find(normal_, name, true);
+            if (!owner)
+                continue;
+            auto visual = menu_.find(owner, "Sprite");
+            auto touch = menu_.find(owner, "Touch");
+            if (!visual || !touch)
+                continue;
+            const auto b = menu_.node(visual).bounds;
+            if (b.w <= 0 || b.h <= 0)
+                continue;
+            auto& n = menu_.node(touch);
+            n.set("absoluteX", double(b.x));
+            n.set("absoluteY", double(b.y));
+            n.set("width", double(b.w));
+            n.set("height", double(b.h));
+            n.set("layer", std::string("HUD"));
         }
         menu_.solve();
     }
@@ -213,10 +224,14 @@ namespace rp {
         if (auto instruction = menu_.find(options, "InstructionText", true))
             menu_.node(instruction).set("visible", false);
         menu_.solve();
-        const float total=float(actions.size())*54.f;
-        for(size_t i=0;i<std::min<size_t>(6,actions.size());++i){
-            auto id=menu_.find(options,"Button"+std::to_string(i+1),true);if(!id)continue;
-            auto& n=menu_.node(id);n.set("absoluteX",double((640-total)*.5f+i*54));n.set("absoluteY",340.0);
+        const float total = float(actions.size()) * 54.f;
+        for (size_t i = 0; i < std::min<size_t>(6, actions.size()); ++i) {
+            auto id = menu_.find(options, "Button" + std::to_string(i + 1), true);
+            if (!id)
+                continue;
+            auto& n = menu_.node(id);
+            n.set("absoluteX", double((640 - total) * .5f + i * 54));
+            n.set("absoluteY", 340.0);
         }
         menu_.solve();
     }

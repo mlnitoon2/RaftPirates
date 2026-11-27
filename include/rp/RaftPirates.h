@@ -56,15 +56,18 @@ namespace rp {
         void gotMsgPopupTextResult(bool accepted);
         std::optional<bool> takePopupResult();
         std::map<int, int> QuestRewards(const sfs::SFSObjectWrapper& rewardPacket) const;
+
         struct QuestRewardNotice {
             std::string title, text;
             std::shared_ptr<MsgBase> message;
         };
+
         std::optional<QuestRewardNotice> takeQuestRewardNotice();
         // Developer requests are disabled unless explicitly enabled for a loopback test server.
         void enableDevelopmentCommands(bool enabled);
         std::optional<sfs::Message> gotMsgCheat(const MsgCheat&) const;
-        std::optional<sfs::Message> gotMsgCheatDuplicatePlayer(const MsgCheatDuplicatePlayer&) const;
+        std::optional<sfs::Message>
+        gotMsgCheatDuplicatePlayer(const MsgCheatDuplicatePlayer&) const;
         std::optional<sfs::Message> gotMsgCheatStartBattle(const MsgCheatStartBattle&) const;
         std::optional<sfs::Message> gotMsgDebugGatherAllUsers(const MsgDebugGatherAllUsers&) const;
         std::optional<sfs::Message> gotMsgKeyboardEntryResult(const std::string& name,
@@ -72,15 +75,16 @@ namespace rp {
         std::optional<sfs::Message> gotMsgConfirmMaterialPurchase(int material, int amount,
                                                                   int goldCost) const;
         std::vector<sfs::Message> gotMsgConfirmBlueprintMaterialsPurchase(int blueprint) const;
-        std::optional<sfs::Message> gotMsgConfirmRepairGridObjectWithGold(int parent, int object,
-                                                                           int goldCost, bool all) const;
+        std::optional<sfs::Message>
+        gotMsgConfirmRepairGridObjectWithGold(int parent, int object, int goldCost, bool all) const;
         bool gotMsgTouchDown(float elapsed);
         bool gotMsgTouchDrag(float elapsed);
         bool gotMsgTouchUp(float elapsed);
         bool gotMsgStartBattleMode();
         bool gotMsgStartBuildMode();
         bool inBattleMode() const;
-        static std::map<std::string, sys::res::XmlNode> preloadMenus(const std::filesystem::path& root);
+        static std::map<std::string, sys::res::XmlNode>
+        preloadMenus(const std::filesystem::path& root);
         void GotMsgDoingFacebookAuth();
         void gotMsgAuthenticationChanged();
         void gotMsgGameCenterAuthChanged(bool usingGameCenter);

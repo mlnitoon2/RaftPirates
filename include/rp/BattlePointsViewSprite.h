@@ -9,12 +9,19 @@ namespace rp {
         ~BattlePointsViewSprite() override;
         void SetColour(uint8_t, uint8_t, uint8_t, uint8_t);
         void tick(float dt) override;
-        int submit(sys::gfx::GfxManager&,sys::gfx::AnimationRenderer&)const override;
-        sys::gfx::GfxText& graphics() { return text_; }
-        const std::string& text() const { return value_; }
+        int submit(sys::gfx::GfxManager&, sys::gfx::AnimationRenderer&) const override;
+
+        sys::gfx::GfxText& graphics() {
+            return text_;
+        }
+
+        const std::string& text() const {
+            return value_;
+        }
+
       private:
         std::string prefix_, value_;
         int override_, last_ = -1;
         sys::gfx::GfxText text_;
     };
-}
+} // namespace rp

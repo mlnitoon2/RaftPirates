@@ -18,13 +18,27 @@ namespace rp {
         static std::string name(PortView& v) {
             return v.xmlName_;
         }
-        static void openShop(PortView& v,const Game& g,const std::string& name){
-            v.panel_=PortView::Panel::Shop;v.openXml(g,name);
+
+        static void openShop(PortView& v, const Game& g, const std::string& name) {
+            v.panel_ = PortView::Panel::Shop;
+            v.openXml(g, name);
         }
-        static size_t page(const PortView& v){return v.page_;}
-        static int selection(const PortView& v){return v.shopSelection_;}
-        static size_t itemCount(const PortView& v){return v.xmlItems_.size();}
-        static float listTop(const PortView& v){return v.blueprintListTop_;}
+
+        static size_t page(const PortView& v) {
+            return v.page_;
+        }
+
+        static int selection(const PortView& v) {
+            return v.shopSelection_;
+        }
+
+        static size_t itemCount(const PortView& v) {
+            return v.xmlItems_.size();
+        }
+
+        static float listTop(const PortView& v) {
+            return v.blueprintListTop_;
+        }
     };
 } // namespace rp
 
@@ -100,14 +114,16 @@ int main(int argc, char** argv) {
         auto itemTouch = shopMenu.find(item, "Touch");
         auto itemBounds = shopMenu.node(itemTouch).bounds;
         CHECK(itemBounds.w > 0 && itemBounds.h > 0);
-        CHECK(shopMenu.hitTest(itemBounds.x + itemBounds.w/2,
-                               itemBounds.y + itemBounds.h/2) == itemTouch);
-        shop.touchDown(itemBounds.x + itemBounds.w/2, itemBounds.y + itemBounds.h/2);
-        shop.touch(g, itemBounds.x + itemBounds.w/2, itemBounds.y + itemBounds.h/2);
+        CHECK(shopMenu.hitTest(itemBounds.x + itemBounds.w / 2, itemBounds.y + itemBounds.h / 2) ==
+              itemTouch);
+        shop.touchDown(itemBounds.x + itemBounds.w / 2, itemBounds.y + itemBounds.h / 2);
+        shop.touch(g, itemBounds.x + itemBounds.w / 2, itemBounds.y + itemBounds.h / 2);
         CHECK(shopMenu.isVisible(frame));
-        for(int tab=1;tab<=4;++tab)if(auto id=shopMenu.find(1,"Tab"+std::to_string(tab),true)){
-            const auto b=shopMenu.node(id).bounds;CHECK(b.x>=0&&b.y>=0&&b.x+b.w<=640&&b.h<=50);
-        }
+        for (int tab = 1; tab <= 4; ++tab)
+            if (auto id = shopMenu.find(1, "Tab" + std::to_string(tab), true)) {
+                const auto b = shopMenu.node(id).bounds;
+                CHECK(b.x >= 0 && b.y >= 0 && b.x + b.w <= 640 && b.h <= 50);
+            }
         bounds = hud.bounds("QuestMenu");
         req = view.touch(g, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
         CHECK(req && req->payload.getString("c") == "gs_quest");
@@ -147,20 +163,23 @@ int main(int argc, char** argv) {
         // generic touch/layout traversal.
         rp::Game catalogue;
         loadPlayerFixture(catalogue);
-        for(int id=2;id<=8;++id){
-            auto entry=catalogue.blueprints.at(1);
-            catalogue.blueprints.emplace(id,std::move(entry));
+        for (int id = 2; id <= 8; ++id) {
+            auto entry = catalogue.blueprints.at(1);
+            catalogue.blueprints.emplace(id, std::move(entry));
         }
         rp::PortView browser(argv[1]);
-        rp::PortViewTestAccess::openShop(browser,catalogue,"tabbed_menu_blueprints");
-        CHECK(rp::PortViewTestAccess::itemCount(browser)==5);
-        const float listY=rp::PortViewTestAccess::listTop(browser)+12;
-        int first=rp::PortViewTestAccess::selection(browser);
-        browser.touchDown(190,listY);browser.touch(catalogue,190,listY);
-        CHECK(rp::PortViewTestAccess::selection(browser)!=first);
-        browser.touchDown(450,listY);browser.touchDrag(100,listY);browser.touch(catalogue,100,listY);
-        CHECK(rp::PortViewTestAccess::page(browser)==1);
-        CHECK(rp::PortViewTestAccess::itemCount(browser)==3);
+        rp::PortViewTestAccess::openShop(browser, catalogue, "tabbed_menu_blueprints");
+        CHECK(rp::PortViewTestAccess::itemCount(browser) == 5);
+        const float listY = rp::PortViewTestAccess::listTop(browser) + 12;
+        int first = rp::PortViewTestAccess::selection(browser);
+        browser.touchDown(190, listY);
+        browser.touch(catalogue, 190, listY);
+        CHECK(rp::PortViewTestAccess::selection(browser) != first);
+        browser.touchDown(450, listY);
+        browser.touchDrag(100, listY);
+        browser.touch(catalogue, 100, listY);
+        CHECK(rp::PortViewTestAccess::page(browser) == 1);
+        CHECK(rp::PortViewTestAccess::itemCount(browser) == 3);
         std::cout << "Original HUD asset, action, and protocol checks passed\n";
         return 0;
     } catch (const std::exception& e) {

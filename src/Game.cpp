@@ -102,7 +102,8 @@ namespace rp {
 
     void Game::extension(const std::string& cmd, const O& p) {
         BuildModeState build(*this);
-        if(!build.HandleExtensionResponse(cmd,p))applyExtension(cmd,p);
+        if (!build.HandleExtensionResponse(cmd, p))
+            applyExtension(cmd, p);
     }
 
     void Game::applyExtension(const std::string& cmd, const O& p) {
@@ -217,36 +218,38 @@ namespace rp {
         } else if (cmd == "gs_quest") {
             auto result = p.getSFSArray("result");
             // An error/ack without a result is not an authoritative empty quest snapshot.
-            if(!result)return;
+            if (!result)
+                return;
             questCount = 0;
             quests.clear();
             for (const auto& entry : result->values) {
-                    const O* state = nullptr;
-                    const O* definition = nullptr;
-                    if (auto item = std::get_if<std::shared_ptr<O>>(&entry); item && *item) {
-                        state = item->get();
-                        definition = state;
-                    } else if (auto pair = std::get_if<std::shared_ptr<A>>(&entry);
-                               pair && *pair && (*pair)->values.size() >= 2) {
-                        auto a = std::get_if<std::shared_ptr<O>>(&(*pair)->values[0]);
-                        auto b = std::get_if<std::shared_ptr<O>>(&(*pair)->values[1]);
-                        if (a && *a && b && *b) {
-                            state = a->get();
-                            definition = b->get();
-                        }
+                const O* state = nullptr;
+                const O* definition = nullptr;
+                if (auto item = std::get_if<std::shared_ptr<O>>(&entry); item && *item) {
+                    state = item->get();
+                    definition = state;
+                } else if (auto pair = std::get_if<std::shared_ptr<A>>(&entry);
+                           pair && *pair && (*pair)->values.size() >= 2) {
+                    auto a = std::get_if<std::shared_ptr<O>>(&(*pair)->values[0]);
+                    auto b = std::get_if<std::shared_ptr<O>>(&(*pair)->values[1]);
+                    if (a && *a && b && *b) {
+                        state = a->get();
+                        definition = b->get();
                     }
-                    if (!state || !definition)
-                        continue;
-                    ++questCount;
-                    Quest q;
-                    q.initWithSFSObject(*state, *definition);
-                    if (q.id > 0)
-                        quests[q.id] = std::move(q);
                 }
+                if (!state || !definition)
+                    continue;
+                ++questCount;
+                Quest q;
+                q.initWithSFSObject(*state, *definition);
+                if (q.id > 0)
+                    quests[q.id] = std::move(q);
+            }
         } else if (cmd == "quest_progress") {
             auto q = quests.find(num(p, "quest_logid"));
             if (q != quests.end())
-                q->second.setProgressPercentage(num(p, "percent", num(p, "progress", q->second.progress)));
+                q->second.setProgressPercentage(
+                    num(p, "percent", num(p, "progress", q->second.progress)));
         } else if (cmd == "gs_ocean") {
             setSafe(num(p, "safe_water", safe) != 0);
             hideMap = p.getBool("hidemap", false);
@@ -364,7 +367,8 @@ namespace rp {
         } else if (cmd == "dive_info") {
             const auto previous = std::make_pair(diveState.parent, diveState.object);
             diveState.initWithSFSObject(p);
-            if (!diveState.Diving() || previous != std::make_pair(diveState.parent, diveState.object))
+            if (!diveState.Diving() ||
+                previous != std::make_pair(diveState.parent, diveState.object))
                 diveCollectPending = false;
             diveSeconds = int(std::ceil(diveState.remaining));
             diveFraction = 0;
@@ -496,20 +500,33 @@ namespace rp {
         if (command.rfind("gs_battle_", 0) == 0 || command == "gs_encounter_response" ||
             command == "gs_swap_stance")
             onlineBattle.sendFailed();
-        else if (command == "ping_sonar") sonarPending = false;
-        else if (command == "daring_advance") daringAdvancePending = false;
-        else if (command == "gs_build_add") pending.reset();
-        else if (command == "gs_build_update") pendingMove.reset();
-        else if (command == "gs_map_move") pendingMap.reset();
-        else if (command == "zone_goto") pendingZone.reset();
-        else if (command == "discovery_goto") pendingDiscovery.reset();
-        else if (command == "dive_collect") diveCollectPending = false;
+        else if (command == "ping_sonar")
+            sonarPending = false;
+        else if (command == "daring_advance")
+            daringAdvancePending = false;
+        else if (command == "gs_build_add")
+            pending.reset();
+        else if (command == "gs_build_update")
+            pendingMove.reset();
+        else if (command == "gs_map_move")
+            pendingMap.reset();
+        else if (command == "zone_goto")
+            pendingZone.reset();
+        else if (command == "discovery_goto")
+            pendingDiscovery.reset();
+        else if (command == "dive_collect")
+            diveCollectPending = false;
     }
 
-    std::optional<Message> Game::collectDive(){
-        if(!ready||diveCollectPending||!diveState.Diving()||diveState.remaining>0||diveState.parent<=0||diveState.object<=0)return {};
-        if(!diveState.collected.empty())return BuildModeState(*this).SendBonusMaterials();
-        auto request=dive("dive_collect");diveCollectPending=true;return request;
+    std::optional<Message> Game::collectDive() {
+        if (!ready || diveCollectPending || !diveState.Diving() || diveState.remaining > 0 ||
+            diveState.parent <= 0 || diveState.object <= 0)
+            return {};
+        if (!diveState.collected.empty())
+            return BuildModeState(*this).SendBonusMaterials();
+        auto request = dive("dive_collect");
+        diveCollectPending = true;
+        return request;
     }
 
     Message Game::dive(const std::string& command) const {
@@ -643,7 +660,8 @@ namespace rp {
         }
         for (auto& raft : rafts)
             for (auto& component : raft.components)
-                if (component.Building() || (component.state == 4 && IsBarracks(&component, objects)))
+                if (component.Building() ||
+                    (component.state == 4 && IsBarracks(&component, objects)))
                     component.TempTick(dt);
     }
 

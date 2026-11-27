@@ -54,13 +54,13 @@ namespace rp {
         std::map<int, int> ownBP_, enemyBP_;
 
         std::vector<DamageIndicatorSprite> damage_;
-        std::map<std::pair<bool,int>,ExplosionFXSprite> explosions_;
+        std::map<std::pair<bool, int>, ExplosionFXSprite> explosions_;
         BattleArrowSprite arrow_;
-        std::optional<sys::res::ResourceAEAnim> explosion_,diceAnimation_,vsAnimation_;
+        std::optional<sys::res::ResourceAEAnim> explosion_, diceAnimation_, vsAnimation_;
         std::unique_ptr<GfxBattleInfoDropDown> dropdown_;
-        int lastDropdownType_=-1;
-        unsigned lastResultSequence_=0;
-        void renderBattleAnimations(sys::gfx::Image&,const BattleModeState&,float dt);
+        int lastDropdownType_ = -1;
+        unsigned lastResultSequence_ = 0;
+        void renderBattleAnimations(sys::gfx::Image&, const BattleModeState&, float dt);
         sys::gfx::AnimationRenderer effects_;
         float lastTime_ = -1, transition_ = 0;
         bool exiting_ = false;

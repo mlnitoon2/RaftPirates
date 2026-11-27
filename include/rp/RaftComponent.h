@@ -4,6 +4,7 @@
 
 namespace rp {
     class SparseGrid;
+
     struct RaftComponent : GridObject {
         RaftComponent() = default;
         RaftComponent(int user, int object, int px, int py, int points, int objectState,

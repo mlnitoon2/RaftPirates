@@ -7,6 +7,7 @@
 
 namespace rp {
     MaterialInfo::MaterialInfo(const MaterialInfo&) = default;
+
     namespace {
         using O = sfs::SFSObjectWrapper;
 

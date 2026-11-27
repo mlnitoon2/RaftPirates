@@ -30,7 +30,8 @@ namespace rp {
     };
 
     OceanView::OceanView(std::filesystem::path root)
-        : root_(std::move(root)), animations_(root_), gradient_(std::make_unique<GfxOceanGradient>(this,root_)) {}
+        : root_(std::move(root)), animations_(root_),
+          gradient_(std::make_unique<GfxOceanGradient>(this, root_)) {}
 
     OceanView::~OceanView() = default;
 
@@ -51,8 +52,10 @@ namespace rp {
 
     namespace {
         bool sameCells(const std::vector<Cell>& a, const std::vector<Cell>& b) {
-            return a.size() == b.size() && std::equal(a.begin(), a.end(), b.begin(),
-                [](const Cell& x, const Cell& y) { return x.x == y.x && x.y == y.y; });
+            return a.size() == b.size() &&
+                   std::equal(a.begin(), a.end(), b.begin(), [](const Cell& x, const Cell& y) {
+                       return x.x == y.x && x.y == y.y;
+                   });
         }
 
         bool sameArt(const GridObjectInfo& a, const GridObjectInfo& b) {
@@ -77,7 +80,7 @@ namespace rp {
         const bool destroyed = e.object.Destroyed();
         auto shade = uint8_t(destroyed ? 150 : 255);
         e.sprite->SetColour(shade, shade, shade,
-            uint8_t(std::round(alpha * (destroyed ? 180 : 255))));
+                            uint8_t(std::round(alpha * (destroyed ? 180 : 255))));
         e.sprite->SetVisible(alpha > 0);
     }
 
@@ -92,10 +95,13 @@ namespace rp {
         e->world = world;
         e->sprite = std::make_unique<GridSprite>(*this, e->object, e->definition, world, zoom_);
         e->sprite->setBattlePoints(object.GetBattlePoints());
-        if (const auto* c=dynamic_cast<const RaftComponent*>(&object)) e->sprite->setConstructionTime(c->GetRemainingTime());
-        if(e->sprite->constructionTime()>0) e->sprite->AddAccessorySprite(std::make_unique<PerimeterWallSprite>(this,e->sprite.get()));
+        if (const auto* c = dynamic_cast<const RaftComponent*>(&object))
+            e->sprite->setConstructionTime(c->GetRemainingTime());
+        if (e->sprite->constructionTime() > 0)
+            e->sprite->AddAccessorySprite(
+                std::make_unique<PerimeterWallSprite>(this, e->sprite.get()));
         appearance(*e, parent ? parent : object.id);
-        e->sprite->SetMute(RaftMuted(parent?parent:object.id));
+        e->sprite->SetMute(RaftMuted(parent ? parent : object.id));
         sprites_[key] = std::move(e);
         AddToTick(parent, object.id);
     }
@@ -113,10 +119,16 @@ namespace rp {
         e.sprite->setBattlePoints(object.GetBattlePoints());
         e.definition = definition;
         e.world = world;
-        if (const auto* c=dynamic_cast<const RaftComponent*>(&object)) e.sprite->setConstructionTime(c->GetRemainingTime());
-        else e.sprite->setConstructionTime(0);
-        if(e.sprite->constructionTime()>0&&!e.sprite->HasAccessorySprite(1)) e.sprite->AddAccessorySprite(std::make_unique<PerimeterWallSprite>(this,e.sprite.get()));
-        if(e.sprite->constructionTime()>0) if(auto* a=e.sprite->GetAccessorySprite(1)) a->AddToTick();
+        if (const auto* c = dynamic_cast<const RaftComponent*>(&object))
+            e.sprite->setConstructionTime(c->GetRemainingTime());
+        else
+            e.sprite->setConstructionTime(0);
+        if (e.sprite->constructionTime() > 0 && !e.sprite->HasAccessorySprite(1))
+            e.sprite->AddAccessorySprite(
+                std::make_unique<PerimeterWallSprite>(this, e.sprite.get()));
+        if (e.sprite->constructionTime() > 0)
+            if (auto* a = e.sprite->GetAccessorySprite(1))
+                a->AddToTick();
         e.sprite->SetGeometry(world, zoom_);
         appearance(e, parent ? parent : object.id);
     }
@@ -136,8 +148,9 @@ namespace rp {
             UpdateSprite(0, r, d->second, {float(r.x), float(r.y)});
         for (const auto& c : r.components)
             if (auto d = defs.find(c.type); d != defs.end())
-                UpdateSprite(r.id, c, d->second, {float(r.x) + float(c.x) / 6 + 1.f / 12,
-                                                 float(r.y) + float(c.y) / 6 + 1.f / 12});
+                UpdateSprite(r.id, c, d->second,
+                             {float(r.x) + float(c.x) / 6 + 1.f / 12,
+                              float(r.y) + float(c.y) / 6 + 1.f / 12});
     }
 
     void OceanView::RemoveGrid(int raft) {
@@ -147,7 +160,8 @@ namespace rp {
                 if (picked_ == it->first)
                     picked_.reset();
                 ticking_.erase(it->first);
-                if (diveLoadKey_ == it->first) diveLoadKey_.reset();
+                if (diveLoadKey_ == it->first)
+                    diveLoadKey_.reset();
                 it = sprites_.erase(it);
             } else
                 ++it;
@@ -173,13 +187,17 @@ namespace rp {
                 if (picked_ == it->first)
                     picked_.reset();
                 ticking_.erase(it->first);
-                if (diveLoadKey_ == it->first) diveLoadKey_.reset();
+                if (diveLoadKey_ == it->first)
+                    diveLoadKey_.reset();
                 it = sprites_.erase(it);
             } else
                 ++it;
         }
         for (auto it = mutedRafts_.begin(); it != mutedRafts_.end();)
-            if (!rafts.count(*it)) it = mutedRafts_.erase(it); else ++it;
+            if (!rafts.count(*it))
+                it = mutedRafts_.erase(it);
+            else
+                ++it;
         for (auto it = raftOpacity_.begin(); it != raftOpacity_.end();)
             if (!rafts.count(it->first))
                 it = raftOpacity_.erase(it);
@@ -197,7 +215,9 @@ namespace rp {
         return it == sprites_.end() ? nullptr : it->second->sprite.get();
     }
 
-    size_t OceanView::spriteCount() const { return sprites_.size(); }
+    size_t OceanView::spriteCount() const {
+        return sprites_.size();
+    }
 
     void OceanView::SetRaftTransparent(int raft, float alpha) {
         if (!std::isfinite(alpha) || raft <= 0)
@@ -238,10 +258,12 @@ namespace rp {
             try {
                 auto resource = std::make_shared<sys::res::ResourceAEAnim>(
                     sys::res::ResourceAEAnim::Create(root_ / "xml_bin/raft_cannons_anim.bin",
-                                                      sys::res::AEFormat::RaftPirates2013));
+                                                     sys::res::AEFormat::RaftPirates2013));
                 sprite->RemoveAccessorySprite(15);
-                sprite->AddAccessorySprite(std::make_unique<RaftAttackSprite>(this, sprite, resource, delay));
-            } catch (const std::exception&) {}
+                sprite->AddAccessorySprite(
+                    std::make_unique<RaftAttackSprite>(this, sprite, resource, delay));
+            } catch (const std::exception&) {
+            }
         }
         for (auto& [key, e] : sprites_) {
             if (key.first != raft && !(key.first == 0 && key.second == raft))
@@ -254,7 +276,7 @@ namespace rp {
     }
 
     void OceanView::gotMsgSparseGridObjectAdded(int parent, const GridObject& object,
-                                               const GridObjectInfo& def, Vec2 world) {
+                                                const GridObjectInfo& def, Vec2 world) {
         UpdateSprite(parent, object, def, world);
     }
 
@@ -266,18 +288,22 @@ namespace rp {
     }
 
     void OceanView::gotMsgGridObjectEvent(int parent, const GridObject& object,
-                                        const GridObjectInfo& def, Vec2 world) {
+                                          const GridObjectInfo& def, Vec2 world) {
         UpdateSprite(parent, object, def, world);
     }
 
-    void OceanView::gotMsgUpdateOceanView(const Player& game) { sync(game); }
+    void OceanView::gotMsgUpdateOceanView(const Player& game) {
+        sync(game);
+    }
 
     void OceanView::SetOrdering() {
         for (auto& [key, e] : sprites_)
             e->sprite->SetPriorities();
     }
 
-    void OceanView::SetTempPriorities(GridSprite& sprite) { sprite.SetPriorities(); }
+    void OceanView::SetTempPriorities(GridSprite& sprite) {
+        sprite.SetPriorities();
+    }
 
     bool OceanView::GetPriority(const GridSprite* sprite, unsigned piece, float& result) const {
         if (!sprite || piece >= sprite->Pieces())
@@ -303,7 +329,9 @@ namespace rp {
         return out;
     }
 
-    Vec2 OceanView::FocalPoint() const { return ScreenToWorld({width_ / 2, height_ / 2}); }
+    Vec2 OceanView::FocalPoint() const {
+        return ScreenToWorld({width_ / 2, height_ / 2});
+    }
 
     void OceanView::SetAxiseseses(Vec2 x, Vec2 y) {
         const double determinant = double(x.x) * y.y - double(y.x) * x.y;
@@ -314,9 +342,17 @@ namespace rp {
         customAxes_ = true;
     }
 
-    void OceanView::showHealthBars(bool show) { healthBars_ = show; }
-    void OceanView::removeAllHealthBars() { healthBars_ = false; }
-    void OceanView::ShowWaterBuckets(bool show) { waterBuckets_ = show; }
+    void OceanView::showHealthBars(bool show) {
+        healthBars_ = show;
+    }
+
+    void OceanView::removeAllHealthBars() {
+        healthBars_ = false;
+    }
+
+    void OceanView::ShowWaterBuckets(bool show) {
+        waterBuckets_ = show;
+    }
 
     bool OceanView::CheckForBucket(int parent, int id) const {
         auto it = sprites_.find({parent, id});
@@ -334,19 +370,33 @@ namespace rp {
         ticking_.erase({parent, id});
     }
 
-    unsigned OceanView::Layer() const { return layer_; }
-    void OceanView::SetLayer(unsigned layer) { layer_ = layer; }
-
-    void OceanView::SetBossOcean(bool enabled) { bossOcean_ = enabled; }
-
-    void OceanView::SetRaftMute(int raft, bool mute) {
-        if (raft <= 0) return;
-        if (mute) mutedRafts_.insert(raft);
-        else mutedRafts_.erase(raft);
-        for(auto& item:sprites_)if(item.first.first==raft||(!item.first.first&&item.first.second==raft))item.second->sprite->SetMute(mute);
+    unsigned OceanView::Layer() const {
+        return layer_;
     }
 
-    bool OceanView::RaftMuted(int raft) const { return mutedRafts_.count(raft) != 0; }
+    void OceanView::SetLayer(unsigned layer) {
+        layer_ = layer;
+    }
+
+    void OceanView::SetBossOcean(bool enabled) {
+        bossOcean_ = enabled;
+    }
+
+    void OceanView::SetRaftMute(int raft, bool mute) {
+        if (raft <= 0)
+            return;
+        if (mute)
+            mutedRafts_.insert(raft);
+        else
+            mutedRafts_.erase(raft);
+        for (auto& item : sprites_)
+            if (item.first.first == raft || (!item.first.first && item.first.second == raft))
+                item.second->sprite->SetMute(mute);
+    }
+
+    bool OceanView::RaftMuted(int raft) const {
+        return mutedRafts_.count(raft) != 0;
+    }
 
     void OceanView::gotMsgDiveUnitLoadChange(int parent, int id, int load, int maximum) {
         if (maximum <= 0 || !getGridSprite(parent, id)) {
@@ -384,7 +434,9 @@ namespace rp {
         return true;
     }
 
-    std::optional<OceanView::SpriteKey> OceanView::pickedSprite() const { return picked_; }
+    std::optional<OceanView::SpriteKey> OceanView::pickedSprite() const {
+        return picked_;
+    }
 
     void OceanView::SetPosition(Vec2 p) {
         position_ = p;
@@ -537,20 +589,23 @@ namespace rp {
             if (e.customAnimation && animationClock_ >= e.animationStart + e.animationDelay &&
                 animationClock_ - e.animationStart - e.animationDelay <= 3.f) {
                 e.sprite->SetAnimation(e.animation);
-                e.sprite->SetTime(std::max(0.f, animationClock_ - e.animationStart -
-                                           e.animationDelay - e.slack));
+                e.sprite->SetTime(
+                    std::max(0.f, animationClock_ - e.animationStart - e.animationDelay - e.slack));
             } else {
-                if (e.customAnimation && animationClock_ - e.animationStart - e.animationDelay > 3.f)
+                if (e.customAnimation &&
+                    animationClock_ - e.animationStart - e.animationDelay > 3.f)
                     e.customAnimation = false;
                 e.sprite->SetAnimation(names);
                 e.sprite->SetTime(std::max(0.f, fallback - e.slack));
             }
         };
         const bool diving = dive && dive->Diving();
-        const bool changed=diving&&(lastDiveParent_!=dive->parent||lastDiveObject_!=dive->object);
-        if(lastDiving_&&(!diving||changed)){
-            if(auto* previous=getGridSprite(lastDiveParent_,lastDiveObject_)){
-                previous->RemoveAccessorySprite(2);previous->RemoveAccessorySprite(8);
+        const bool changed =
+            diving && (lastDiveParent_ != dive->parent || lastDiveObject_ != dive->object);
+        if (lastDiving_ && (!diving || changed)) {
+            if (auto* previous = getGridSprite(lastDiveParent_, lastDiveObject_)) {
+                previous->RemoveAccessorySprite(2);
+                previous->RemoveAccessorySprite(8);
             }
             diveLoadKey_.reset();
         }
@@ -565,13 +620,15 @@ namespace rp {
             dive->AddedToOcean(*this);
         else {
             diveLoadKey_.reset();
-            if(auto* sprite=getGridSprite(lastDiveParent_,lastDiveObject_)) {
-                sprite->RemoveAccessorySprite(2);sprite->RemoveAccessorySprite(8);
+            if (auto* sprite = getGridSprite(lastDiveParent_, lastDiveObject_)) {
+                sprite->RemoveAccessorySprite(2);
+                sprite->RemoveAccessorySprite(8);
             }
         }
-        Image out(640,400);
-        gradient_->SetZone(bossOcean_ ? GfxOceanGradient::GradientZone::Boss :
-                           game.safe ? GfxOceanGradient::GradientZone::Safe : GfxOceanGradient::GradientZone::Open);
+        Image out(640, 400);
+        gradient_->SetZone(bossOcean_  ? GfxOceanGradient::GradientZone::Boss
+                           : game.safe ? GfxOceanGradient::GradientZone::Safe
+                                       : GfxOceanGradient::GradientZone::Open);
         gradient_->Render(out);
         GfxManager mgr;
         mgr.setLayerOffset(Layer());
@@ -588,7 +645,7 @@ namespace rp {
         for (auto& r : game.rafts) {
             auto b = base(r);
             if (grid) {
-                GfxOceanGrid overlay(this,Unit());
+                GfxOceanGrid overlay(this, Unit());
                 overlay.SetPosition(b);
                 overlay.Render(out);
             }
@@ -600,9 +657,9 @@ namespace rp {
                 std::vector<std::string> names;
                 float animTime = std::max(0.f, time);
                 if (diving && dive->parent == r.id && dive->object == c.id) {
-                    auto pose=dive->PlayAnimations();
-                    names=std::move(pose.first);
-                    animTime=pose.second;
+                    auto pose = dive->PlayAnimations();
+                    names = std::move(pose.first);
+                    animTime = pose.second;
                 } else if (r.id == lastDiveParent_ && c.id == lastDiveObject_ &&
                            time - returnStart_ < .6833f && time >= returnStart_) {
                     names = {"return"};
@@ -615,43 +672,67 @@ namespace rp {
         mgr.RenderScreen(out);
         if (healthBars_) {
             try {
-                auto load=[&](const std::string& path){
-                    auto it=images_.find(path);
-                    if(it==images_.end())
-                        it=images_.emplace(path,std::make_shared<Image>(loadAssetImage(root_/path))).first;
+                auto load = [&](const std::string& path) {
+                    auto it = images_.find(path);
+                    if (it == images_.end())
+                        it = images_
+                                 .emplace(path,
+                                          std::make_shared<Image>(loadAssetImage(root_ / path)))
+                                 .first;
                     return it->second;
                 };
-                UnitHealthBarSprite bar(*this,load("gfx/HUD/health_meter.png"),
-                                         load("gfx/HUD/health_meter_green.pvr"));
+                UnitHealthBarSprite bar(*this, load("gfx/HUD/health_meter.png"),
+                                        load("gfx/HUD/health_meter_green.pvr"));
                 for (const auto& [key, e] : sprites_) {
-                    if (!e->sprite->GetVisible() || e->definition.bp <= 0) continue;
-                    bar.Update(e->world,e->object.GetHealth(e->definition.bp));
+                    if (!e->sprite->GetVisible() || e->definition.bp <= 0)
+                        continue;
+                    bar.Update(e->world, e->object.GetHealth(e->definition.bp));
                     bar.Render(out);
                 }
-            } catch(const std::exception&) { /* Original health-meter assets unavailable. */ }
+            } catch (const std::exception&) { /* Original health-meter assets unavailable. */
+            }
         }
-        if(waterBuckets_||picked_){
-            try{
-                const std::string key="xml_resources/rp_menu.xml";
-                if(!overlaySheet_)overlaySheet_=std::make_shared<ResourceSpriteSheet>(ResourceSpriteSheet::Create(root_/key));
-                auto image=images_.find(overlaySheet_->imagePath);
-                if(image==images_.end())image=images_.emplace(overlaySheet_->imagePath,std::make_shared<Image>(loadAssetImage(root_/overlaySheet_->imagePath))).first;
+        if (waterBuckets_ || picked_) {
+            try {
+                const std::string key = "xml_resources/rp_menu.xml";
+                if (!overlaySheet_)
+                    overlaySheet_ = std::make_shared<ResourceSpriteSheet>(
+                        ResourceSpriteSheet::Create(root_ / key));
+                auto image = images_.find(overlaySheet_->imagePath);
+                if (image == images_.end())
+                    image = images_
+                                .emplace(overlaySheet_->imagePath,
+                                         std::make_shared<Image>(
+                                             loadAssetImage(root_ / overlaySheet_->imagePath)))
+                                .first;
                 GfxManager overlays;
-                auto draw=[&](const VisualEntry& entry,const char* name,float scale,float offset){
-                    if(!entry.sprite->GetVisible())return;
-                    auto cell=overlaySheet_->findSpriteByName(name);if(!cell)return;
-                    const auto point=WorldToScreen(entry.world);
-                    GfxSprite s;s.image=image->second;s.cell=*cell;
-                    s.SetPos(point.x-cell->ow*scale*.5f,point.y+offset-cell->oh*scale*.5f);
-                    s.SetScale(scale,scale);overlays.submit(s);
+                auto draw = [&](const VisualEntry& entry, const char* name, float scale,
+                                float offset) {
+                    if (!entry.sprite->GetVisible())
+                        return;
+                    auto cell = overlaySheet_->findSpriteByName(name);
+                    if (!cell)
+                        return;
+                    const auto point = WorldToScreen(entry.world);
+                    GfxSprite s;
+                    s.image = image->second;
+                    s.cell = *cell;
+                    s.SetPos(point.x - cell->ow * scale * .5f,
+                             point.y + offset - cell->oh * scale * .5f);
+                    s.SetScale(scale, scale);
+                    overlays.submit(s);
                 };
-                for(const auto& entry:sprites_){
-                    const auto& k=entry.first;const auto& visual=*entry.second;
-                    if(CheckForBucket(k.first,k.second))draw(visual,"btn_water",visual.bucket.scale(),-34);
-                    if(picked_&&*picked_==k)draw(visual,"battle_slider_arrow",1,visual.indicator.offset());
+                for (const auto& entry : sprites_) {
+                    const auto& k = entry.first;
+                    const auto& visual = *entry.second;
+                    if (CheckForBucket(k.first, k.second))
+                        draw(visual, "btn_water", visual.bucket.scale(), -34);
+                    if (picked_ && *picked_ == k)
+                        draw(visual, "battle_slider_arrow", 1, visual.indicator.offset());
                 }
                 overlays.RenderScreen(out);
-            }catch(const std::exception&){}
+            } catch (const std::exception&) {
+            }
         }
         if (diveLoadKey_ && diveCapacity_ > 0) {
             const auto& entry = *sprites_.at(*diveLoadKey_);
@@ -663,7 +744,8 @@ namespace rp {
                     for (int x = 0; x < 30; ++x) {
                         const int px = int(p.x) - 15 + x, py = int(p.y) - 34 + y;
                         if (px >= 0 && px < out.width && py >= 0 && py < out.height)
-                            out.at(px, py) = x < fill ? Color{240, 203, 78, 255} : Color{40, 40, 40, 255};
+                            out.at(px, py) =
+                                x < fill ? Color{240, 203, 78, 255} : Color{40, 40, 40, 255};
                     }
             }
         }

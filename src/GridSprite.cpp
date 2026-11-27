@@ -22,8 +22,10 @@ namespace rp {
     bool GridSprite::AttachAccessory(std::unique_ptr<AccessorySprite> accessory) {
         return AddAccessorySprite(std::move(accessory));
     }
+
     bool GridSprite::AddAccessorySprite(std::unique_ptr<AccessorySprite> accessory) {
-        if (!accessory || accessory->parent()!=this || accessories_.count(accessory->GetID())) return false;
+        if (!accessory || accessory->parent() != this || accessories_.count(accessory->GetID()))
+            return false;
         accessory->Init();
         accessory->SetScale(scale_);
         accessory->SetMute(muted_);
@@ -36,39 +38,68 @@ namespace rp {
         accessories_.emplace(id, std::move(accessory));
         return true;
     }
-    bool GridSprite::DetachAccessory(int id) { return RemoveAccessorySprite(id); }
-    AccessorySprite* GridSprite::GetAccessorySprite(int id)const{
-        auto it=accessories_.find(id);return it==accessories_.end()?nullptr:it->second.get();
+
+    bool GridSprite::DetachAccessory(int id) {
+        return RemoveAccessorySprite(id);
     }
-    bool GridSprite::HasAccessorySprite(int id)const{return GetAccessorySprite(id)!=nullptr;}
-    bool GridSprite::RemoveAccessorySprite(int id){
-        auto it=accessories_.find(id);if(it==accessories_.end())return false;
-        it->second->RemoveFromTick();accessories_.erase(it);return true;
+
+    AccessorySprite* GridSprite::GetAccessorySprite(int id) const {
+        auto it = accessories_.find(id);
+        return it == accessories_.end() ? nullptr : it->second.get();
     }
-    bool GridSprite::ListenForAnimation()const{return true;}
-    void GridSprite::gotMsgAnimationStarted(){
-        for(auto& item:accessories_)if(item.second->ListenForAnimation())item.second->AnimationStarted();
+
+    bool GridSprite::HasAccessorySprite(int id) const {
+        return GetAccessorySprite(id) != nullptr;
     }
-    void GridSprite::SetMute(bool mute){
+
+    bool GridSprite::RemoveAccessorySprite(int id) {
+        auto it = accessories_.find(id);
+        if (it == accessories_.end())
+            return false;
+        it->second->RemoveFromTick();
+        accessories_.erase(it);
+        return true;
+    }
+
+    bool GridSprite::ListenForAnimation() const {
+        return true;
+    }
+
+    void GridSprite::gotMsgAnimationStarted() {
+        for (auto& item : accessories_)
+            if (item.second->ListenForAnimation())
+                item.second->AnimationStarted();
+    }
+
+    void GridSprite::SetMute(bool mute) {
         // Native exempts the diving unit.
-        if(definition_.name=="DivingUnit")return;
-        muted_=mute;
-        for(auto& item:accessories_)item.second->SetMute(mute);
+        if (definition_.name == "DivingUnit")
+            return;
+        muted_ = mute;
+        for (auto& item : accessories_)
+            item.second->SetMute(mute);
     }
-    void GridSprite::UpdateParticles(){
-        for(auto& item:accessories_)item.second->UpdateParticles();
+
+    void GridSprite::UpdateParticles() {
+        for (auto& item : accessories_)
+            item.second->UpdateParticles();
     }
-    void GridSprite::BuildPiece(const GridPiece& def){
-        SpritePiece piece;piece.definition=def;piece.order=unsigned(pieces_.size());
+
+    void GridSprite::BuildPiece(const GridPiece& def) {
+        SpritePiece piece;
+        piece.definition = def;
+        piece.order = unsigned(pieces_.size());
         pieces_.push_back(std::move(piece));
     }
-    void GridSprite::UpdatePiece(unsigned index){
-        auto base=ocean_.WorldToScreen(world_);
-        auto& piece=pieces_.at(index);
-        piece.appearance.SetPos(base.x+piece.definition.offsetX*scale_,base.y+piece.definition.offsetY*scale_);
-        piece.appearance.SetScale(scale_,scale_);
+
+    void GridSprite::UpdatePiece(unsigned index) {
+        auto base = ocean_.WorldToScreen(world_);
+        auto& piece = pieces_.at(index);
+        piece.appearance.SetPos(base.x + piece.definition.offsetX * scale_,
+                                base.y + piece.definition.offsetY * scale_);
+        piece.appearance.SetScale(scale_, scale_);
         piece.appearance.SetVisible(visible_);
-        piece.appearance.SetColor(colour_.r,colour_.g,colour_.b,colour_.a);
+        piece.appearance.SetColor(colour_.r, colour_.g, colour_.b, colour_.a);
         piece.appearance.SetPriority(piece.priority);
     }
 
@@ -83,28 +114,33 @@ namespace rp {
             piece.cells = definition_.cells;
             definitions.push_back(std::move(piece));
         }
-        for(const auto& def:definitions)BuildPiece(def);
-        if(pieces_.size()>1&&pieces_.size()<=4096){
+        for (const auto& def : definitions)
+            BuildPiece(def);
+        if (pieces_.size() > 1 && pieces_.size() <= 4096) {
             std::vector<GridObject::GridShapePiece> shapes;
-            for(unsigned i=0;i<pieces_.size();++i)
-                shapes.emplace_back(object_,pieces_[i].definition,i);
+            for (unsigned i = 0; i < pieces_.size(); ++i)
+                shapes.emplace_back(object_, pieces_[i].definition, i);
             std::vector<GridObject::GridShapePiece*> order;
-            performaIsoSort(shapes,order);
-            for(unsigned i=0;i<order.size();++i)pieces_[order[i]->index()].order=i;
+            performaIsoSort(shapes, order);
+            for (unsigned i = 0; i < order.size(); ++i)
+                pieces_[order[i]->index()].order = i;
         }
         Update();
         SetPriorities();
     }
 
     void GridSprite::Update() {
-        for(unsigned i=0;i<pieces_.size();++i)UpdatePiece(i);
-        for (auto& entry : accessories_) entry.second->Update();
+        for (unsigned i = 0; i < pieces_.size(); ++i)
+            UpdatePiece(i);
+        for (auto& entry : accessories_)
+            entry.second->Update();
     }
 
     void GridSprite::SetGeometry(Vec2 world, float scale) {
         world_ = world;
         scale_ = scale;
-        for (auto& entry : accessories_) entry.second->SetScale(scale);
+        for (auto& entry : accessories_)
+            entry.second->SetScale(scale);
         Update();
         SetPriorities();
     }
@@ -117,7 +153,8 @@ namespace rp {
         visible_ = v;
         for (auto& p : pieces_)
             p.appearance.SetVisible(v);
-        for (auto& entry : accessories_) entry.second->SetVisible(v);
+        for (auto& entry : accessories_)
+            entry.second->SetVisible(v);
     }
 
     bool GridSprite::GetVisible() const {
@@ -126,7 +163,8 @@ namespace rp {
 
     void GridSprite::SetColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
         colour_ = {r, g, b, a};
-        for (auto& entry : accessories_) entry.second->SetColour(r,g,b,a);
+        for (auto& entry : accessories_)
+            entry.second->SetColour(r, g, b, a);
         Update();
     }
 
@@ -147,8 +185,10 @@ namespace rp {
     void GridSprite::SetPriorities() {
         auto base = ocean_.WorldToScreen(world_);
         for (unsigned i = 0; i < pieces_.size(); ++i)
-            SetPriority(i, ocean_.Priority() + base.y + pieces_[i].order * .01f + pieces_[i].suborder * .0001f);
-        for (auto& entry : accessories_) entry.second->SetPriorities();
+            SetPriority(i, ocean_.Priority() + base.y + pieces_[i].order * .01f +
+                               pieces_[i].suborder * .0001f);
+        for (auto& entry : accessories_)
+            entry.second->SetPriorities();
     }
 
     void GridSprite::SetOrder(unsigned i, unsigned order, unsigned sub) {
@@ -178,10 +218,13 @@ namespace rp {
     }
 
     bool GridSprite::ContainsGfx(const Gfx* gfx) const {
-        if (!gfx) return false;
-        for (const auto& entry : accessories_) if (entry.second->ContainsGfx(gfx)) return true;
+        if (!gfx)
+            return false;
+        for (const auto& entry : accessories_)
+            if (entry.second->ContainsGfx(gfx))
+                return true;
         return std::any_of(pieces_.begin(), pieces_.end(),
-                                  [&](const auto& p) { return &p.appearance == gfx; });
+                           [&](const auto& p) { return &p.appearance == gfx; });
     }
 
     bool GridSprite::Select(const Gfx* gfx) {
@@ -206,19 +249,24 @@ namespace rp {
             // ARM UpdateAnimations consumes all slack as additional elapsed time.
             time_ += dt + slack_;
             slack_ = 0;
-            for (auto& entry : accessories_) if (entry.second->ticking()) entry.second->tick(dt);
+            for (auto& entry : accessories_)
+                if (entry.second->ticking())
+                    entry.second->tick(dt);
             // Defer removal until after callbacks; deleting an accessory during its tick
             // invalidates the iterator and destroys the executing object.
             for (auto it = accessories_.begin(); it != accessories_.end();) {
-                if (it->second->finished()) it = accessories_.erase(it);
-                else ++it;
+                if (it->second->finished())
+                    it = accessories_.erase(it);
+                else
+                    ++it;
             }
             UpdateParticles();
         }
     }
 
     void GridSprite::SetAnimation(std::vector<std::string> names) {
-        if(animations_==names)return;
+        if (animations_ == names)
+            return;
         animations_ = std::move(names);
         time_ = 0;
         gotMsgAnimationStarted();
@@ -248,8 +296,8 @@ namespace rp {
                 if (std::filesystem::path(path).extension() == ".bin") {
                     auto a = bins.find(path);
                     if (a == bins.end())
-                        a = bins.emplace(path, ResourceAEAnim::Create(root / path,
-                                                                      AEFormat::Rev1_5))
+                        a = bins.emplace(path,
+                                         ResourceAEAnim::Create(root / path, AEFormat::Rev1_5))
                                 .first;
                     const auto& bin = a->second;
                     const AEComp* comp = nullptr;

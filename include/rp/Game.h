@@ -70,9 +70,11 @@ namespace rp {
         void accept(const sfs::Message&);
         void extension(const std::string&, const sfs::SFSObjectWrapper&);
         void requestSendFailed(const std::string& command);
+
       private:
         friend class BuildModeState;
         void applyExtension(const std::string&, const sfs::SFSObjectWrapper&);
+
       public:
         sfs::Message handshake() const;
         sfs::Message login(const std::string& id, const std::string& hash) const;
@@ -102,6 +104,7 @@ namespace rp {
 
     class GridSprite;
     class GfxOceanGradient;
+
     class OceanView {
       public:
         using SpriteKey = std::pair<int, int>; // parent raft, object ID (parent=0 for raft)
@@ -123,7 +126,8 @@ namespace rp {
         void RemoveGrid(int raft);
         void AddSprite(int parent, const GridObject&, const GridObjectInfo&, sys::gfx::Vec2 world);
         void RemoveSprite(int parent, int id);
-        void UpdateSprite(int parent, const GridObject&, const GridObjectInfo&, sys::gfx::Vec2 world);
+        void UpdateSprite(int parent, const GridObject&, const GridObjectInfo&,
+                          sys::gfx::Vec2 world);
         GridSprite* getGridSprite(int parent, int id) const;
         void SetRaftTransparent(int raft, float alpha);
         void AddAnimSlack(int parent, int id, float seconds);
@@ -133,7 +137,7 @@ namespace rp {
                                          sys::gfx::Vec2 world);
         void gotMsgSparseGridObjectRemoved(int parent, int id);
         void gotMsgGridObjectEvent(int parent, const GridObject&, const GridObjectInfo&,
-                                  sys::gfx::Vec2 world);
+                                   sys::gfx::Vec2 world);
         void gotMsgUpdateOceanView(const Player&);
         void PlayRaftAttackAnims(int raft, float delay);
         void SetOrdering();
@@ -174,7 +178,11 @@ namespace rp {
         sys::gfx::Vec2 ScreenToWorld(sys::gfx::Vec2 screen) const;
         void SetZoom(float zoom);
         float Zoom() const;
-        const std::filesystem::path& assetRoot() const { return root_; }
+
+        const std::filesystem::path& assetRoot() const {
+            return root_;
+        }
+
         void SetOffset(sys::gfx::Vec2 offset, bool immediate);
         sys::gfx::Vec2 Offset() const;
         void CalculateHelpers();

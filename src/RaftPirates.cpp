@@ -121,7 +121,7 @@ namespace rp {
         if (!connected_ && !connecting_)
             return;
         if (!processing_ || !connected_) {
-            queued_.add(Game::request(command,data));
+            queued_.add(Game::request(command, data));
             return;
         }
         gotMsgOnExtensionResponse2(command, data);
@@ -240,8 +240,7 @@ namespace rp {
     }
 
     std::vector<int> RaftPirates::GotMsgShowStore() const {
-        return ready ? RPMenuHandler(*this).gotMsgGetAvailStoreItemRequest()
-                     : std::vector<int>{};
+        return ready ? RPMenuHandler(*this).gotMsgGetAvailStoreItemRequest() : std::vector<int>{};
     }
 
     void RaftPirates::GotMsgOnMenuLoadGlobal(const std::string& menu) {
@@ -249,7 +248,9 @@ namespace rp {
             currentMenu_ = menu;
     }
 
-    const std::string& RaftPirates::currentMenu() const { return currentMenu_; }
+    const std::string& RaftPirates::currentMenu() const {
+        return currentMenu_;
+    }
 
     bool RaftPirates::gotMsgReconnect(bool savedSessionAvailable) {
         if (connected_ || connecting_ || !savedSessionAvailable)
@@ -258,7 +259,9 @@ namespace rp {
         return true;
     }
 
-    void RaftPirates::gotMsgPopupTextResult(bool accepted) { popupResult_ = accepted; }
+    void RaftPirates::gotMsgPopupTextResult(bool accepted) {
+        popupResult_ = accepted;
+    }
 
     std::optional<bool> RaftPirates::takePopupResult() {
         auto value = popupResult_;
@@ -272,26 +275,30 @@ namespace rp {
         std::map<int, int> out;
         if (auto entries = packet.getSFSArray("materials_changed"))
             for (const auto& value : entries->values)
-                if (auto row = std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value); row && *row) {
+                if (auto row = std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value);
+                    row && *row) {
                     const int id = (*row)->getInt("id", (*row)->getInt("material"));
                     const int amount = (*row)->getInt("amt", (*row)->getInt("amount"));
                     if (id > 0 && amount > 0) {
                         const auto sum = static_cast<long long>(out[id]) + amount;
-                        out[id] = int(std::min(sum, static_cast<long long>(std::numeric_limits<int>::max())));
+                        out[id] = int(
+                            std::min(sum, static_cast<long long>(std::numeric_limits<int>::max())));
                     }
                 }
         return out;
     }
 
     std::optional<RaftPirates::QuestRewardNotice> RaftPirates::takeQuestRewardNotice() {
-        if (rewardNotices_.empty()) return {};
+        if (rewardNotices_.empty())
+            return {};
         auto notice = std::move(rewardNotices_.front());
         rewardNotices_.pop_front();
         return notice;
     }
 
     void RaftPirates::acceptQuestReward(const sfs::SFSObjectWrapper& packet) {
-        if (!connected_ || !ready) return;
+        if (!connected_ || !ready)
+            return;
         const auto title = packet.getString("quest_title", "Quest complete").substr(0, 256);
         auto notice = [&](const std::string& text, std::shared_ptr<MsgBase> message) {
             if (rewardNotices_.size() < 64)
@@ -309,7 +316,9 @@ namespace rp {
                 if (text.size() < 2048) {
                     auto name = materialNames.find(id);
                     text += std::to_string(amount) + " " +
-                        (name == materialNames.end() ? "Material " + std::to_string(id) : name->second) + "\n";
+                            (name == materialNames.end() ? "Material " + std::to_string(id)
+                                                         : name->second) +
+                            "\n";
                 }
             }
             notice(text, event);
@@ -317,15 +326,18 @@ namespace rp {
         if (auto added = packet.getSFSArray("blueprints_added"))
             for (const auto& value : added->values) {
                 auto row = std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value);
-                if (!row || !*row) continue;
+                if (!row || !*row)
+                    continue;
                 const int id = (*row)->getInt("blueprint_id");
-                if (id <= 0) continue;
+                if (id <= 0)
+                    continue;
                 giveBlueprint(id);
                 auto event = std::make_shared<MsgCollectedBlueprint>();
                 event->popupTitle = title;
                 event->blueprintId = id;
                 auto info = blueprints.find(id);
-                event->text = info == blueprints.end() ? "Blueprint " + std::to_string(id) : info->second.name();
+                event->text = info == blueprints.end() ? "Blueprint " + std::to_string(id)
+                                                       : info->second.name();
                 if (info != blueprints.end()) {
                     event->image = info->second.image;
                     event->spriteSheet = info->second.sheet;
@@ -339,25 +351,29 @@ namespace rp {
         if (int count = amount("fastclocks_added", "num_fastclocks"); count > 0) {
             giveMaterial(10, count);
             auto event = std::make_shared<MsgCollectedFastclocks>();
-            event->popupTitle = title; event->numFastclocks = count;
+            event->popupTitle = title;
+            event->numFastclocks = count;
             notice(std::to_string(count) + " Fastclocks", event);
         }
         if (int count = amount("sonar_added", "num_sonar"); count > 0) {
             giveMaterial(12, count);
             auto event = std::make_shared<MsgCollectedSonar>();
-            event->popupTitle = title; event->numSonar = count;
+            event->popupTitle = title;
+            event->numSonar = count;
             notice(std::to_string(count) + " Sonar", event);
         }
         if (int count = amount("mapmove_added", "num_mapmove"); count > 0) {
             // The map-action state still comes from the authoritative map state packet.
             auto event = std::make_shared<MsgCollectedMapMove>();
-            event->popupTitle = title; event->numMapMove = count;
+            event->popupTitle = title;
+            event->numMapMove = count;
             notice(std::to_string(count) + " Map moves", event);
         }
         if (auto maps = packet.getSFSArray("treasuremaps"))
             for (const auto& value : maps->values) {
                 auto row = std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value);
-                if (!row || !*row) continue;
+                if (!row || !*row)
+                    continue;
                 auto event = std::make_shared<MsgTreasureMapGotOne>();
                 event->popupTitle = title;
                 event->type = (*row)->getString("type");
@@ -366,28 +382,46 @@ namespace rp {
             }
     }
 
-    void RaftPirates::enableDevelopmentCommands(bool enabled) { developmentCommands_ = enabled; }
+    void RaftPirates::enableDevelopmentCommands(bool enabled) {
+        developmentCommands_ = enabled;
+    }
+
     bool RaftPirates::developmentAllowed() const {
         return developmentCommands_ && ready && connected_ &&
-            (serverName_ == "localhost" || serverName_ == "127.0.0.1" || serverName_ == "::1");
+               (serverName_ == "localhost" || serverName_ == "127.0.0.1" || serverName_ == "::1");
     }
+
     std::optional<sfs::Message> RaftPirates::gotMsgCheat(const MsgCheat& m) const {
-        if (!developmentAllowed() || m.type.empty() || m.type.size() > 128) return {};
-        sfs::SFSObjectWrapper p; p.put("type", m.type);
+        if (!developmentAllowed() || m.type.empty() || m.type.size() > 128)
+            return {};
+        sfs::SFSObjectWrapper p;
+        p.put("type", m.type);
         return request("cheat", p);
     }
-    std::optional<sfs::Message> RaftPirates::gotMsgCheatDuplicatePlayer(const MsgCheatDuplicatePlayer& m) const {
-        if (!developmentAllowed() || m.username.empty() || m.username.size() > 128) return {};
-        sfs::SFSObjectWrapper p; p.put("type", std::string("player_dup")); p.put("dup_name", m.username);
+
+    std::optional<sfs::Message>
+    RaftPirates::gotMsgCheatDuplicatePlayer(const MsgCheatDuplicatePlayer& m) const {
+        if (!developmentAllowed() || m.username.empty() || m.username.size() > 128)
+            return {};
+        sfs::SFSObjectWrapper p;
+        p.put("type", std::string("player_dup"));
+        p.put("dup_name", m.username);
         return request("cheat", p);
     }
-    std::optional<sfs::Message> RaftPirates::gotMsgCheatStartBattle(const MsgCheatStartBattle& m) const {
-        if (!developmentAllowed() || m.username.empty() || m.username.size() > 128) return {};
-        sfs::SFSObjectWrapper p; p.put("opponent", m.username);
+
+    std::optional<sfs::Message>
+    RaftPirates::gotMsgCheatStartBattle(const MsgCheatStartBattle& m) const {
+        if (!developmentAllowed() || m.username.empty() || m.username.size() > 128)
+            return {};
+        sfs::SFSObjectWrapper p;
+        p.put("opponent", m.username);
         return request("gs_debug_battle", p);
     }
-    std::optional<sfs::Message> RaftPirates::gotMsgDebugGatherAllUsers(const MsgDebugGatherAllUsers&) const {
-        if (!developmentAllowed()) return {};
+
+    std::optional<sfs::Message>
+    RaftPirates::gotMsgDebugGatherAllUsers(const MsgDebugGatherAllUsers&) const {
+        if (!developmentAllowed())
+            return {};
         return request("gatherallusers");
     }
 
@@ -399,7 +433,7 @@ namespace rp {
     }
 
     std::optional<sfs::Message> RaftPirates::gotMsgKeyboardEntryResult(const std::string& name,
-                                                                         bool cancelled) {
+                                                                       bool cancelled) {
         if (!namingShip_)
             return {};
         namingShip_ = false;
@@ -414,7 +448,7 @@ namespace rp {
     }
 
     std::optional<sfs::Message> RaftPirates::gotMsgConfirmMaterialPurchase(int material, int amount,
-                                                                             int goldCost) const {
+                                                                           int goldCost) const {
         if (!connected_ || !ready || material <= 0 || amount <= 0 || goldCost < 0 ||
             !materialNames.count(material))
             return {};
@@ -425,7 +459,8 @@ namespace rp {
         return request("purchase_item", packet);
     }
 
-    std::vector<sfs::Message> RaftPirates::gotMsgConfirmBlueprintMaterialsPurchase(int blueprint) const {
+    std::vector<sfs::Message>
+    RaftPirates::gotMsgConfirmBlueprintMaterialsPurchase(int blueprint) const {
         std::vector<sfs::Message> requests;
         const auto entry = blueprints.find(blueprint);
         if (!ready || !connected_ || entry == blueprints.end() || !owned.count(blueprint))
@@ -435,7 +470,8 @@ namespace rp {
             if (!missing)
                 continue;
             auto price = materialGoldCosts.find(id);
-            if (price == materialGoldCosts.end() || !std::isfinite(price->second) || price->second < 0)
+            if (price == materialGoldCosts.end() || !std::isfinite(price->second) ||
+                price->second < 0)
                 return {};
             const double cost = std::ceil(price->second * missing);
             if (cost > std::numeric_limits<int>::max())
@@ -448,8 +484,10 @@ namespace rp {
         return requests;
     }
 
-    std::optional<sfs::Message> RaftPirates::gotMsgConfirmRepairGridObjectWithGold(
-        int parent, int object, int goldCost, bool all) const {
+    std::optional<sfs::Message> RaftPirates::gotMsgConfirmRepairGridObjectWithGold(int parent,
+                                                                                   int object,
+                                                                                   int goldCost,
+                                                                                   bool all) const {
         if (!ready || !connected_ || object <= 0 || parent < 0 || goldCost < 0 || battleMode_)
             return {};
         const GridObject* target = nullptr;
@@ -477,9 +515,17 @@ namespace rp {
         return request("purchase_repair", packet);
     }
 
-    bool RaftPirates::gotMsgTouchDown(float elapsed) { return checkKeepAlive(elapsed); }
-    bool RaftPirates::gotMsgTouchDrag(float elapsed) { return checkKeepAlive(elapsed); }
-    bool RaftPirates::gotMsgTouchUp(float elapsed) { return checkKeepAlive(elapsed); }
+    bool RaftPirates::gotMsgTouchDown(float elapsed) {
+        return checkKeepAlive(elapsed);
+    }
+
+    bool RaftPirates::gotMsgTouchDrag(float elapsed) {
+        return checkKeepAlive(elapsed);
+    }
+
+    bool RaftPirates::gotMsgTouchUp(float elapsed) {
+        return checkKeepAlive(elapsed);
+    }
 
     bool RaftPirates::gotMsgStartBattleMode() {
         if (!ready || !connected_ || onlineBattle.phase() == BattleModeState::Phase::Idle)
@@ -495,15 +541,18 @@ namespace rp {
         return true;
     }
 
-    bool RaftPirates::inBattleMode() const { return battleMode_; }
+    bool RaftPirates::inBattleMode() const {
+        return battleMode_;
+    }
 
-    std::map<std::string, sys::res::XmlNode> RaftPirates::preloadMenus(
-        const std::filesystem::path& root) {
+    std::map<std::string, sys::res::XmlNode>
+    RaftPirates::preloadMenus(const std::filesystem::path& root) {
         std::map<std::string, sys::res::XmlNode> result;
         for (const char* name : {"tabbed_menu_blueprints", "tabbed_menu_free",
                                  "tabbed_menu_inventory", "tabbed_menu_misc"}) {
             try {
-                result.emplace(name, sys::res::loadXML(root / "menus" / (std::string(name) + ".xml")));
+                result.emplace(name,
+                               sys::res::loadXML(root / "menus" / (std::string(name) + ".xml")));
             } catch (const std::exception&) {
                 // A missing optional menu is handled by the existing UI fallback.
             }
@@ -517,7 +566,9 @@ namespace rp {
             status = "Facebook login is not available.";
     }
 
-    void RaftPirates::gotMsgAuthenticationChanged() { handleLogOut(); }
+    void RaftPirates::gotMsgAuthenticationChanged() {
+        handleLogOut();
+    }
 
     void RaftPirates::gotMsgGameCenterAuthChanged(bool usingGameCenter) {
         if (usingGameCenter)
@@ -539,8 +590,13 @@ namespace rp {
             completedTutorials_.insert(id);
     }
 
-    bool RaftPirates::tutorialStarted(int id) const { return startedTutorials_.count(id) != 0; }
-    bool RaftPirates::tutorialCompleted(int id) const { return completedTutorials_.count(id) != 0; }
+    bool RaftPirates::tutorialStarted(int id) const {
+        return startedTutorials_.count(id) != 0;
+    }
+
+    bool RaftPirates::tutorialCompleted(int id) const {
+        return completedTutorials_.count(id) != 0;
+    }
 
     void RaftPirates::gotMsgBoughtCurrency(const sfs::SFSObjectWrapper& packet) {
         if (connected_)

@@ -8,6 +8,7 @@ namespace rp {
     struct BlueprintInfo {
         ~BlueprintInfo();
         std::string sheet, image;
+
       protected:
         std::string name_;
     };

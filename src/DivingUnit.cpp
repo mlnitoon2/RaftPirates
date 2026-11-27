@@ -26,30 +26,51 @@ namespace rp {
     } // namespace
 
     DivingUnit::DivingUnit() = default;
+
     void DivingUnit::AddedToOcean(OceanView& ocean) const {
         // Game::tick owns countdown advancement; this adapter broadcasts current visual state.
-        auto* sprite=ocean.getGridSprite(parent,object);
-        if(!sprite)return;
-        ocean.gotMsgDiveUnitLoadChange(parent,object,GetLoadValue(),GetMaxLoad());
-        if(!sprite->HasAccessorySprite(2))sprite->AddAccessorySprite(std::make_unique<DiveMeterSprite>(&ocean,sprite));
-        if(auto* meter=dynamic_cast<DiveMeterSprite*>(sprite->GetAccessorySprite(2)))meter->SetDive(*this);
-        if(!sprite->HasAccessorySprite(8))sprite->AddAccessorySprite(std::make_unique<DiveUnitReadoutSprite>(&ocean,sprite));
-        if(auto* readout=dynamic_cast<DiveUnitReadoutSprite*>(sprite->GetAccessorySprite(8))){
-            MsgDiveDepthChange msg;msg.depth=depth;msg.maximum=maxDepth;readout->gotMsgDiveDepthChange(msg);
+        auto* sprite = ocean.getGridSprite(parent, object);
+        if (!sprite)
+            return;
+        ocean.gotMsgDiveUnitLoadChange(parent, object, GetLoadValue(), GetMaxLoad());
+        if (!sprite->HasAccessorySprite(2))
+            sprite->AddAccessorySprite(std::make_unique<DiveMeterSprite>(&ocean, sprite));
+        if (auto* meter = dynamic_cast<DiveMeterSprite*>(sprite->GetAccessorySprite(2)))
+            meter->SetDive(*this);
+        if (!sprite->HasAccessorySprite(8))
+            sprite->AddAccessorySprite(std::make_unique<DiveUnitReadoutSprite>(&ocean, sprite));
+        if (auto* readout = dynamic_cast<DiveUnitReadoutSprite*>(sprite->GetAccessorySprite(8))) {
+            MsgDiveDepthChange msg;
+            msg.depth = depth;
+            msg.maximum = maxDepth;
+            readout->gotMsgDiveDepthChange(msg);
         }
     }
-    DivingUnit DivingUnit::Duplicate() const { return *this; }
-    bool DivingUnit::RequestDive() const { return OkayToDive(); }
+
+    DivingUnit DivingUnit::Duplicate() const {
+        return *this;
+    }
+
+    bool DivingUnit::RequestDive() const {
+        return OkayToDive();
+    }
+
     void DivingUnit::UseClock(float seconds) {
-        if(Diving() && std::isfinite(seconds) && seconds>0) TempTick(seconds);
+        if (Diving() && std::isfinite(seconds) && seconds > 0)
+            TempTick(seconds);
     }
-    std::pair<std::vector<std::string>,float> DivingUnit::PlayAnimations() const {
-        if(!Diving())return {{},0.f};
-        const float elapsed=std::max(0.f,float(totalSeconds)-remaining);
-        if(elapsed<2.0167f)return {{"drop"},elapsed};
-        if(remaining<=0)return {{"return"},.68f};
-        return {{"diving"},elapsed-2.0167f};
+
+    std::pair<std::vector<std::string>, float> DivingUnit::PlayAnimations() const {
+        if (!Diving())
+            return {{}, 0.f};
+        const float elapsed = std::max(0.f, float(totalSeconds) - remaining);
+        if (elapsed < 2.0167f)
+            return {{"drop"}, elapsed};
+        if (remaining <= 0)
+            return {{"return"}, .68f};
+        return {{"diving"}, elapsed - 2.0167f};
     }
+
     bool DivingUnit::Diving() const {
         return state == 3;
     }
@@ -124,19 +145,23 @@ namespace rp {
             float(std::clamp(num(p, "time_total_secs", num(p, "time_remaining_secs")), 0, 86400)),
             float(std::max(0, num(p, "time_remaining_secs"))));
         next.SetState(num(p, "state"));
-        if(auto rows=p.getSFSArray("bonus_items")){
-            for(const auto& value:rows->values){
-                const auto item=std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value);
-                if(!item||!*item)continue;
-                const int id=num(**item,"material_id"),amount=num(**item,"amt");
-                if(id>0&&amount>0)next.bonus.emplace(id,amount);
+        if (auto rows = p.getSFSArray("bonus_items")) {
+            for (const auto& value : rows->values) {
+                const auto item = std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value);
+                if (!item || !*item)
+                    continue;
+                const int id = num(**item, "material_id"), amount = num(**item, "amt");
+                if (id > 0 && amount > 0)
+                    next.bonus.emplace(id, amount);
             }
         }
-        if(Diving()&&next.Diving()&&parent==next.parent&&object==next.object){
-            if(!p.get("bonus_items"))next.bonus=bonus;
-            for(const auto& [id,amount]:collected){
-                auto found=next.bonus.find(id);
-                if(found!=next.bonus.end()&&amount>0&&amount<=found->second)next.collected.emplace(id,amount);
+        if (Diving() && next.Diving() && parent == next.parent && object == next.object) {
+            if (!p.get("bonus_items"))
+                next.bonus = bonus;
+            for (const auto& [id, amount] : collected) {
+                auto found = next.bonus.find(id);
+                if (found != next.bonus.end() && amount > 0 && amount <= found->second)
+                    next.collected.emplace(id, amount);
             }
         }
         *this = std::move(next);

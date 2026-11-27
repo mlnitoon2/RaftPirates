@@ -15,9 +15,9 @@ namespace rp {
     };
 
     struct MsgConfirmMaterialPurchaseInfo : MsgBase {
-        MsgConfirmMaterialPurchaseInfo(int material,int count,int gold);
+        MsgConfirmMaterialPurchaseInfo(int material, int count, int gold);
         ~MsgConfirmMaterialPurchaseInfo() override;
-        int materialId=0,amount=0,goldPrice=0;
+        int materialId = 0, amount = 0, goldPrice = 0;
     };
 
     struct MsgQuestData : MsgBase {
@@ -27,9 +27,9 @@ namespace rp {
     };
 
     struct MsgQuestEvent : MsgBase {
-        MsgQuestEvent(int id,int value);
+        MsgQuestEvent(int id, int value);
         ~MsgQuestEvent() override;
-        int questId=0,progress=0;
+        int questId = 0, progress = 0;
     };
 
     struct MsgStoreItemDisplayResponse : MsgBase {
@@ -60,7 +60,8 @@ namespace rp {
 
     struct MsgAnimateGridSprite : MsgBase {
         ~MsgAnimateGridSprite() override;
-        int parent = 0, id = 0; std::vector<std::string> animations;
+        int parent = 0, id = 0;
+        std::vector<std::string> animations;
     };
 
     struct MsgAttackRequest : OpaqueGameMessage {
@@ -196,7 +197,8 @@ namespace rp {
 
     struct MsgCollectedBlueprint : MsgBase {
         ~MsgCollectedBlueprint() override;
-        std::string popupTitle, image, spriteSheet, text; int blueprintId = 0;
+        std::string popupTitle, image, spriteSheet, text;
+        int blueprintId = 0;
     };
 
     struct MsgCollectedCourage : MsgBase {
@@ -206,22 +208,26 @@ namespace rp {
 
     struct MsgCollectedFastclocks : MsgBase {
         ~MsgCollectedFastclocks() override;
-        std::string popupTitle; int numFastclocks = 0;
+        std::string popupTitle;
+        int numFastclocks = 0;
     };
 
     struct MsgCollectedMapMove : MsgBase {
         ~MsgCollectedMapMove() override;
-        std::string popupTitle; int numMapMove = 0;
+        std::string popupTitle;
+        int numMapMove = 0;
     };
 
     struct MsgCollectedMaterials : MsgBase {
         ~MsgCollectedMaterials() override;
-        std::string popupTitle; std::vector<int> materialIds, materialAmts;
+        std::string popupTitle;
+        std::vector<int> materialIds, materialAmts;
     };
 
     struct MsgCollectedSonar : MsgBase {
         ~MsgCollectedSonar() override;
-        std::string popupTitle; int numSonar = 0;
+        std::string popupTitle;
+        int numSonar = 0;
     };
 
     struct MsgConfirmBlueprintMaterialsPurchase : MsgBase {
@@ -241,7 +247,8 @@ namespace rp {
 
     struct MsgConfirmRepairGridObjectWithGold : MsgBase {
         ~MsgConfirmRepairGridObjectWithGold() override;
-        int parent = 0, object = 0, goldCost = 0; bool all = false;
+        int parent = 0, object = 0, goldCost = 0;
+        bool all = false;
     };
 
     struct MsgConfirmZoneMovement : MsgBase {
@@ -369,13 +376,14 @@ namespace rp {
     };
 
     struct MsgGridObjectEvent : OpaqueGameMessage {
-        int parent=0, id=0, event=0;
+        int parent = 0, id = 0, event = 0;
         ~MsgGridObjectEvent() override;
     };
 
     struct MsgGridObjectRepairInfo : MsgBase {
         ~MsgGridObjectRepairInfo() override;
-        int id = 0, goldCost = 0; bool all = false;
+        int id = 0, goldCost = 0;
+        bool all = false;
     };
 
     struct MsgGridObjectSelected : MsgBase {
@@ -444,7 +452,8 @@ namespace rp {
 
     struct MsgMapMarkerMoved : MsgBase {
         ~MsgMapMarkerMoved() override;
-        int x = 0, y = 0, enemy = 0; bool safe = false, sonar = false;
+        int x = 0, y = 0, enemy = 0;
+        bool safe = false, sonar = false;
     };
 
     struct MsgMaterialInformationRequest : MsgBase {
@@ -564,7 +573,9 @@ namespace rp {
 
     struct MsgQueueMenuPopup : MsgBase {
         ~MsgQueueMenuPopup() override;
-        std::string menu; bool modal = true; std::shared_ptr<MsgBase> data;
+        std::string menu;
+        bool modal = true;
+        std::shared_ptr<MsgBase> data;
     };
 
     struct MsgQuickTravelGetAllKnownRequest : MsgBase {
@@ -583,7 +594,7 @@ namespace rp {
 
     struct MsgRecipeInformationResponse : MsgBase {
         ~MsgRecipeInformationResponse() override;
-        std::map<int,int> recipe;
+        std::map<int, int> recipe;
     };
 
     struct MsgReconnect : MsgBase {
@@ -783,13 +794,14 @@ namespace rp {
     };
 
     struct MsgTransitionDone : MsgBase {
-        bool shown=false;
+        bool shown = false;
         ~MsgTransitionDone() override;
     };
 
     struct MsgTreasureMapGotOne : MsgBase {
         ~MsgTreasureMapGotOne() override;
-        std::string popupTitle, type; int typedata = 0;
+        std::string popupTitle, type;
+        int typedata = 0;
     };
 
     struct MsgTutorialStartBattleMove : OpaqueGameMessage {

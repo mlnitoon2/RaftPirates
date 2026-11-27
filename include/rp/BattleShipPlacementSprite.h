@@ -12,14 +12,18 @@ namespace rp {
         bool Select(int id);
         void HighlightAttackRafts(const BattleShipPlacementSprite& other);
         void UpdateParticles();
-        void BindView(const OceanView* view) { view_ = view; }
+
+        void BindView(const OceanView* view) {
+            view_ = view;
+        }
+
         bool ContainsGfx(const sys::gfx::Gfx*) const;
         bool HasAccessorySprite(int id) const;
         void SetPriority(unsigned index, float priority);
         void SetScale(float scale);
         size_t GraphicsPieces() const;
-        std::vector<int> BossCoreRaftsInMe()const;
-        const std::vector<int>& BossCoreRaftsByMe()const;
+        std::vector<int> BossCoreRaftsInMe() const;
+        const std::vector<int>& BossCoreRaftsByMe() const;
         void SetObjectPosition(Cell position);
         void SetPositionOfSprites(Cell position);
         void Revert();
@@ -48,7 +52,7 @@ namespace rp {
         std::vector<GridSprite*> graphics() const;
         const OceanView* view_ = nullptr;
         std::vector<Raft> pieces_;
-        std::vector<int> highlighted_,bossCores_,adjacentBossCores_;
+        std::vector<int> highlighted_, bossCores_, adjacentBossCores_;
         Cell offset_{};
         int selected_ = 0;
     };

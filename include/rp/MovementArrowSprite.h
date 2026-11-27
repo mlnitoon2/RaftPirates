@@ -8,9 +8,13 @@ namespace rp {
         MovementArrowSprite(const OceanView*, GridSprite*, int piece);
         ~MovementArrowSprite() override;
         void tick(float dt) override;
-        sys::gfx::GfxSprite& graphics() { return arrow_; }
+
+        sys::gfx::GfxSprite& graphics() {
+            return arrow_;
+        }
+
       private:
         int piece_;
         sys::gfx::GfxSprite arrow_;
     };
-}
+} // namespace rp

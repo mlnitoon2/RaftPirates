@@ -38,8 +38,8 @@ namespace rp {
         const auto cores = enemy_.BossCoreRaftsInMe();
         const auto& adjacent = own_.BossCoreRaftsByMe();
         if (!std::all_of(cores.begin(), cores.end(), [&](int id) {
-            return std::find(adjacent.begin(), adjacent.end(), id) != adjacent.end();
-        })) {
+                return std::find(adjacent.begin(), adjacent.end(), id) != adjacent.end();
+            })) {
             own_.Revert();
             own_.HighlightAttackRafts(enemy_);
             enemy_.HighlightAttackRafts(own_);
@@ -47,24 +47,30 @@ namespace rp {
     }
 
     bool BattlePlacementScreen::ContainsGfx(sys::gfx::Gfx* gfx) {
-        if (!gfx) return false;
-        if (own_.ContainsGfx(gfx)) return true;
+        if (!gfx)
+            return false;
+        if (own_.ContainsGfx(gfx))
+            return true;
         return std::any_of(ownGfx_.begin(), ownGfx_.end(),
                            [&](const auto& entry) { return entry.second == gfx; });
     }
 
     void BattlePlacementScreen::SetPriority(unsigned index, float priority) {
-        if (!std::isfinite(priority)) return;
+        if (!std::isfinite(priority))
+            return;
         if (ownView_ || enemyView_) {
             const auto count = own_.GraphicsPieces();
-            if (index < count) own_.SetPriority(index, priority);
-            else enemy_.SetPriority(static_cast<unsigned>(index-count), priority);
+            if (index < count)
+                own_.SetPriority(index, priority);
+            else
+                enemy_.SetPriority(static_cast<unsigned>(index - count), priority);
             return;
         }
         const auto count = own_.Pieces();
         auto& sprites = index < count ? ownGfx_ : enemyGfx_;
         auto it = sprites.find(index < count ? index : static_cast<unsigned>(index - count));
-        if (it != sprites.end()) it->second->SetPriority(priority);
+        if (it != sprites.end())
+            it->second->SetPriority(priority);
     }
 
     void BattlePlacementScreen::BindViews(const OceanView* own, const OceanView* enemy) {
@@ -75,10 +81,13 @@ namespace rp {
     }
 
     void BattlePlacementScreen::BindGfx(unsigned side, unsigned index, sys::gfx::Gfx* gfx) {
-        if (side > 1 || index >= (*this)[side].Pieces()) return;
+        if (side > 1 || index >= (*this)[side].Pieces())
+            return;
         auto& sprites = side ? enemyGfx_ : ownGfx_;
-        if (gfx) sprites[index] = gfx;
-        else sprites.erase(index);
+        if (gfx)
+            sprites[index] = gfx;
+        else
+            sprites.erase(index);
     }
 
     void BattlePlacementScreen::SetToObject() {

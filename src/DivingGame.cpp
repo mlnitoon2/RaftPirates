@@ -5,11 +5,16 @@
 #include <cmath>
 
 namespace rp::diving_game {
-    DivingGame::ItemFloater::ItemFloater(CollectableType type,float x,float y):DivingCollectable(type,x,y){}
-    DivingGame::ItemFloater::~ItemFloater()=default;
-    void DivingGame::ItemFloater::tick(float dt,float speed){
-        if(std::isfinite(dt)&&dt>0&&std::isfinite(speed))y-=speed*dt;
+    DivingGame::ItemFloater::ItemFloater(CollectableType type, float x, float y)
+        : DivingCollectable(type, x, y) {}
+
+    DivingGame::ItemFloater::~ItemFloater() = default;
+
+    void DivingGame::ItemFloater::tick(float dt, float speed) {
+        if (std::isfinite(dt) && dt > 0 && std::isfinite(speed))
+            y -= speed * dt;
     }
+
     using namespace sys::gfx;
 
     DivingCollectable::DivingCollectable(CollectableType kind, float px, float py)
@@ -22,8 +27,11 @@ namespace rp::diving_game {
         image_ = std::make_shared<Image>(loadAssetImage(root_ / atlas_->imagePath));
         robot_ = sys::res::ResourceAEAnim::Create(root_ / "xml_bin/anim_diving_robot.bin");
         // Draw the continuous rope separately, without copying compositions every frame.
-        for(auto& comp:robot_.comps)
-            comp.layers.erase(std::remove_if(comp.layers.begin(),comp.layers.end(),[](const auto& layer){return layer.name=="rope";}),comp.layers.end());
+        for (auto& comp : robot_.comps)
+            comp.layers.erase(
+                std::remove_if(comp.layers.begin(), comp.layers.end(),
+                               [](const auto& layer) { return layer.name == "rope"; }),
+                comp.layers.end());
         label_.init(std::make_shared<sys::gfx::ResourceSpriteFont>(
                         sys::gfx::ResourceSpriteFont::Create(root_, "rp_font_title")),
                     "", {});
@@ -36,11 +44,15 @@ namespace rp::diving_game {
     void DivingGame::Reset() {
         items_.clear();
         scrolling_.clear();
-        scrolling_.emplace_back(std::vector<std::string>{"diving_layer003_01","diving_layer003_02"},128,.25f,288);
-        scrolling_.emplace_back(std::vector<std::string>{"diving_layer002_01","diving_layer002_02"},128,.5f,288);
-        scrolling_.emplace_back(std::vector<std::string>{"diving_layer001_01","diving_layer001_02"},128,1.f,288);
-        x_=targetX_=320; y_=144;
-        setPos(210,22);
+        scrolling_.emplace_back(
+            std::vector<std::string>{"diving_layer003_01", "diving_layer003_02"}, 128, .25f, 288);
+        scrolling_.emplace_back(
+            std::vector<std::string>{"diving_layer002_01", "diving_layer002_02"}, 128, .5f, 288);
+        scrolling_.emplace_back(
+            std::vector<std::string>{"diving_layer001_01", "diving_layer001_02"}, 128, 1.f, 288);
+        x_ = targetX_ = 320;
+        y_ = 144;
+        setPos(210, 22);
         gears_ = 0;
         level_ = 1;
         shape_ = 0;
@@ -52,14 +64,16 @@ namespace rp::diving_game {
     }
 
     void DivingGame::setDuration(float seconds) {
-        if (!std::isfinite(seconds)) return;
+        if (!std::isfinite(seconds))
+            return;
         duration_ = std::clamp(seconds, 1.f, 120.f);
         Reset();
     }
 
     void DivingGame::InitLevel() {
         speed_ = 95 + 25 * level_;
-        for(auto& layer:scrolling_)layer.SetSpeed(speed_);
+        for (auto& layer : scrolling_)
+            layer.SetSpeed(speed_);
         spawn_ = 0.3f;
     }
 
@@ -112,17 +126,26 @@ namespace rp::diving_game {
                               238.f, 402.f);
     }
 
-    void DivingGame::setPos(float x,float y) {
-        if (!std::isfinite(x)||!std::isfinite(y))return;
-        panelPosition_=panelFrom_=panelTarget_={x,y};
-        panelElapsed_=panelDuration_=0;
+    void DivingGame::setPos(float x, float y) {
+        if (!std::isfinite(x) || !std::isfinite(y))
+            return;
+        panelPosition_ = panelFrom_ = panelTarget_ = {x, y};
+        panelElapsed_ = panelDuration_ = 0;
     }
 
     void DivingGame::moveTo(float x, float y, float duration) {
-        if (!std::isfinite(x)||!std::isfinite(y)||!std::isfinite(duration)) return;
-        if(duration<=0){setPos(x,y);return;}
-        panelFrom_=panelPosition_;panelTarget_={x,y};panelElapsed_=0;panelDuration_=duration;
-        pressed_=false;direction_=0;
+        if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(duration))
+            return;
+        if (duration <= 0) {
+            setPos(x, y);
+            return;
+        }
+        panelFrom_ = panelPosition_;
+        panelTarget_ = {x, y};
+        panelElapsed_ = 0;
+        panelDuration_ = duration;
+        pressed_ = false;
+        direction_ = 0;
     }
 
     bool DivingGame::wasLeftButtonTouched(const Vec2& p) const {
@@ -140,7 +163,7 @@ namespace rp::diving_game {
     void DivingGame::CheckMenuButtonStates(const Vec2& p) {
         direction_ = wasLeftButtonTouched(p) ? -1 : wasRightButtonTouched(p) ? 1 : 0;
         if (!direction_ && p.y < 340)
-            targetX_ = std::clamp(p.x,238.f,402.f);
+            targetX_ = std::clamp(p.x, 238.f, 402.f);
     }
 
     void DivingGame::updateButtonStates() {
@@ -161,7 +184,8 @@ namespace rp::diving_game {
     }
 
     void DivingGame::touchUp(const Vec2& p) {
-        if(moving() || !std::isfinite(p.x) || !std::isfinite(p.y)) return;
+        if (moving() || !std::isfinite(p.x) || !std::isfinite(p.y))
+            return;
         if (finished_) {
             ConfirmDiveFinish();
             return;
@@ -174,7 +198,7 @@ namespace rp::diving_game {
             else if (wasRightButtonTouched(p))
                 moveDiver(DiverMoveDirection::Right, .25f);
             else
-                targetX_ = std::clamp(p.x,238.f,402.f);
+                targetX_ = std::clamp(p.x, 238.f, 402.f);
         }
         pressed_ = false;
         updateButtonStates();
@@ -213,20 +237,24 @@ namespace rp::diving_game {
     }
 
     void DivingGame::tick(float dt) {
-        if (!std::isfinite(dt) || dt <= 0) return;
-        if(moving()){
-            const float step=std::min(dt,panelDuration_-panelElapsed_);
-            panelElapsed_+=step;
-            const float t=std::min(1.f,panelElapsed_/panelDuration_);
-            panelPosition_={panelFrom_.x+(panelTarget_.x-panelFrom_.x)*t,
-                            panelFrom_.y+(panelTarget_.y-panelFrom_.y)*t};
-            if(!moving())panelPosition_=panelTarget_;
-            dt-=step;
+        if (!std::isfinite(dt) || dt <= 0)
+            return;
+        if (moving()) {
+            const float step = std::min(dt, panelDuration_ - panelElapsed_);
+            panelElapsed_ += step;
+            const float t = std::min(1.f, panelElapsed_ / panelDuration_);
+            panelPosition_ = {panelFrom_.x + (panelTarget_.x - panelFrom_.x) * t,
+                              panelFrom_.y + (panelTarget_.y - panelFrom_.y) * t};
+            if (!moving())
+                panelPosition_ = panelTarget_;
+            dt -= step;
         }
-        if(finished_ || dt<=0) return;
+        if (finished_ || dt <= 0)
+            return;
         dt = std::min(dt, .1f);
         elapsed_ += dt;
-        for(auto& layer:scrolling_)layer.tick(dt);
+        for (auto& layer : scrolling_)
+            layer.tick(dt);
         remaining_ = std::max(0.f, remaining_ - dt);
         if (direction_)
             moveDiver(direction_ < 0 ? DiverMoveDirection::Left : DiverMoveDirection::Right, dt);
@@ -239,7 +267,7 @@ namespace rp::diving_game {
             spawn_ += .65f;
         }
         for (auto i = items_.begin(); i != items_.end();) {
-            i->tick(dt,speed_);
+            i->tick(dt, speed_);
             if (robotCollidesWithItem(*i)) {
                 if (i->type == DivingCollectable::CollectableType::Mine) {
                     SaveYourself();
@@ -271,14 +299,17 @@ namespace rp::diving_game {
     }
 
     void DivingGame::render(Image& target) {
-        if(target.width!=640||target.height!=400)target=Image(640,400,{9,36,60,255});
-        const float x=panelPosition_.x-210,y=panelPosition_.y-22;
-        if(std::abs(x)>=640||std::abs(y)>=400)return;
-        Image contents;renderContents(contents);
-        const int dx=int(std::round(x)),dy=int(std::round(y));
-        for(int row=std::max(0,-dy);row<std::min(400,400-dy);++row)
-            for(int col=std::max(0,-dx);col<std::min(640,640-dx);++col)
-                target.at(col+dx,row+dy)=contents.at(col,row);
+        if (target.width != 640 || target.height != 400)
+            target = Image(640, 400, {9, 36, 60, 255});
+        const float x = panelPosition_.x - 210, y = panelPosition_.y - 22;
+        if (std::abs(x) >= 640 || std::abs(y) >= 400)
+            return;
+        Image contents;
+        renderContents(contents);
+        const int dx = int(std::round(x)), dy = int(std::round(y));
+        for (int row = std::max(0, -dy); row < std::min(400, 400 - dy); ++row)
+            for (int col = std::max(0, -dx); col < std::min(640, 640 - dx); ++col)
+                target.at(col + dx, row + dy) = contents.at(col, row);
     }
 
     void DivingGame::renderContents(Image& target) {
@@ -286,21 +317,30 @@ namespace rp::diving_game {
         sprite(target, "diving_bg", 210, 22, 1);
         {
             GfxManager background;
-            background.setScreenClip(std::array<float,4>{219,29,421,277});
-            for(const auto& layer:scrolling_)for(const auto& tile:layer.tiles())
-                if(auto c=atlas_->findSpriteByName(tile.name)){
-                    GfxSprite s;s.cell=*c;s.image=image_;s.SetPos(210,22+tile.y);background.submit(s);
-                }
+            background.setScreenClip(std::array<float, 4>{219, 29, 421, 277});
+            for (const auto& layer : scrolling_)
+                for (const auto& tile : layer.tiles())
+                    if (auto c = atlas_->findSpriteByName(tile.name)) {
+                        GfxSprite s;
+                        s.cell = *c;
+                        s.image = image_;
+                        s.SetPos(210, 22 + tile.y);
+                        background.submit(s);
+                    }
             background.RenderScreen(target);
         }
         {
             GfxManager items;
-            items.setScreenClip(std::array<float,4>{219,29,421,277});
+            items.setScreenClip(std::array<float, 4>{219, 29, 421, 277});
             for (auto& i : items_) {
                 auto cell = atlas_->findSpriteByName(
-                    i.type == DivingCollectable::CollectableType::Mine ? "diving_mine" : "diving_gear");
-                if (!cell) continue;
-                GfxSprite s; s.cell = *cell; s.image = image_;
+                    i.type == DivingCollectable::CollectableType::Mine ? "diving_mine"
+                                                                       : "diving_gear");
+                if (!cell)
+                    continue;
+                GfxSprite s;
+                s.cell = *cell;
+                s.image = image_;
                 s.SetPos(i.x - cell->ow * .5f, i.y - cell->oh * .5f);
                 items.submit(s);
             }
@@ -314,15 +354,21 @@ namespace rp::diving_game {
             const auto& c = composition ? *composition : robot_.comps.front();
             GfxManager m;
             // Robot animation includes the rope; let it reach the inner top/bottom frame edges.
-            m.setScreenClip(std::array<float,4>{219,22,421,310});
+            m.setScreenClip(std::array<float, 4>{219, 22, 421, 310});
             // The atlas rope has 32 transparent pixels in its logical height. Tile the
             // visible region end-to-end; the exported pair otherwise leaves a gap.
-            if(auto rope=atlas_->findSpriteByName("diving_rope")){
-                auto cell=*rope;cell.ox=cell.oy=0;cell.ow=cell.w;cell.oh=cell.h;
+            if (auto rope = atlas_->findSpriteByName("diving_rope")) {
+                auto cell = *rope;
+                cell.ox = cell.oy = 0;
+                cell.ow = cell.w;
+                cell.oh = cell.h;
                 GfxManager ropeGfx;
-                ropeGfx.setScreenClip(std::array<float,4>{219,29,421,y_});
-                for(float y=29;y<y_;y+=cell.h){
-                    GfxSprite s;s.cell=cell;s.image=image_;s.SetPos(x_+3-cell.w*.5f,y);
+                ropeGfx.setScreenClip(std::array<float, 4>{219, 29, 421, y_});
+                for (float y = 29; y < y_; y += cell.h) {
+                    GfxSprite s;
+                    s.cell = cell;
+                    s.image = image_;
+                    s.SetPos(x_ + 3 - cell.w * .5f, y);
                     ropeGfx.submit(s);
                 }
                 ropeGfx.RenderScreen(target);
@@ -346,22 +392,22 @@ namespace rp::diving_game {
 } // namespace rp::diving_game
 
 namespace rp::diving_game {
-DivingMaterial::DivingMaterial(int px, int py, sys::gfx::Gfx* parent)
-            : x(static_cast<float>(px)), y(static_cast<float>(py)) {
-            sprite.setParent(parent);
-            sprite.setHAnchor(sys::gfx::Gfx::HorizontalAnchor::Center);
-            sprite.setVAnchor(sys::gfx::Gfx::VerticalAnchor::Center);
-            sprite.SetPriority(50);
-            sprite.SetPos(x, y);
-        }
+    DivingMaterial::DivingMaterial(int px, int py, sys::gfx::Gfx* parent)
+        : x(static_cast<float>(px)), y(static_cast<float>(py)) {
+        sprite.setParent(parent);
+        sprite.setHAnchor(sys::gfx::Gfx::HorizontalAnchor::Center);
+        sprite.setVAnchor(sys::gfx::Gfx::VerticalAnchor::Center);
+        sprite.SetPriority(50);
+        sprite.SetPos(x, y);
+    }
 
-        void DivingMaterial::configure(std::shared_ptr<const sys::res::ResourceSpriteSheet> atlas,
-                                      std::shared_ptr<const sys::gfx::Image> image,
-                                      const std::string& cell) {
-            if (!atlas || !image || !atlas->findSpriteByName(cell))
-                throw std::invalid_argument("Missing diving material atlas cell");
-            sprite.sheet = std::move(atlas);
-            sprite.SetImage(std::move(image));
-            sprite.setSpriteName(cell);
-        }
+    void DivingMaterial::configure(std::shared_ptr<const sys::res::ResourceSpriteSheet> atlas,
+                                   std::shared_ptr<const sys::gfx::Image> image,
+                                   const std::string& cell) {
+        if (!atlas || !image || !atlas->findSpriteByName(cell))
+            throw std::invalid_argument("Missing diving material atlas cell");
+        sprite.sheet = std::move(atlas);
+        sprite.SetImage(std::move(image));
+        sprite.setSpriteName(cell);
+    }
 } // namespace rp::diving_game
