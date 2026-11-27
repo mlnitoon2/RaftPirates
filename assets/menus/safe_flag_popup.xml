@@ -1,0 +1,144 @@
+<menu>
+
+
+	<element name="topElement">
+		<size dependentOnElement="element:name()"/>
+
+		<element name="bg">
+			<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+			<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="6" />
+			<ninesliceComponent name="Sprite">
+				<event name="onInit" params="component, element" >
+				<![CDATA[
+					component("spriteName"):Set("gfx/menu/menu_overlay")
+					component("width"):SetFloat( screenWidth() );
+					component("height"):SetFloat( screenHeight() );
+					component("layer"):SetString("PIRATE_MAP_HUD");
+				]]>
+				</event>
+			</ninesliceComponent>
+			<touchComponent name="Touch">
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">
+				<![CDATA[
+					playSoundFx("audio/sfx/menu_button_down.wav")	
+					menu:popPopUp()
+				]]>
+				</event>
+			</touchComponent>
+		</element>
+
+		<element name="PopupDialog">
+			<size dependentOnElement="element:name()" dependentOnComponent="ImageRight"/>
+
+			<element name="ImageRight">
+				<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+				<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="TOP" hAnchor="RIGHT" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="10" yOffset="0" priority="-1" />
+				<spriteSheetComponent name="Sprite">
+					<event name="onInit" params="component, element" >
+						<![CDATA[
+						--[[component("useOffsets"):SetInt(1)]]
+						component("layer"):SetString("PIRATE_MAP_HUD");
+
+						component("sheetName"):Set( "xml_resources/rp_menu.xml" )
+						component("spriteName"):Set( "tutorial_bird" )
+
+						]]>
+					</event>
+				</spriteSheetComponent>
+			</element>
+			
+			<spriteSheetComponent name="BackSprite">
+				<position relativeTo="element[&quot;bg&quot;]" vAnchor="TOP" hAnchor="LEFT" />
+				<orientation vAnchor="BOTTOM" hAnchor="RIGHT" xOffset="0" yOffset="0" priority="-1" />
+				<event name="onInit" params="component, element">
+				  component("spriteName"):SetString("btn_return")
+				  component("sheetName"):SetString("xml_resources/rp_menu.xml")
+				  component("layer"):SetString("PIRATE_MAP_HUD")
+				</event>
+				<event name="onPostSolve" params="component, element">
+				</event>
+			</spriteSheetComponent>			
+			
+			<element name="bg">
+				<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+				<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="-screenHeight()*0.1" priority="3" />
+				<ninesliceComponent name="Sprite">
+					<event name="onInit" params="component, element">
+						<![CDATA[
+
+						component("width"):SetFloat( screenWidth()*0.66 );
+
+						component("topHeight"):SetFloat( 16 );
+						component("bottomHeight"):SetFloat( 16 );
+						component("leftWidth"):SetFloat( 16 );
+						component("rightWidth"):SetFloat( 16 );
+
+						component("spriteName"):Set("gfx/menu/popup_bg")
+
+						component("layer"):SetString("PIRATE_MAP_HUD")
+
+						]]>
+					</event>
+					<event name="onPostInit" params="component, element">
+						component("height"):SetFloat( element:parent()["Title"]["Text"]("height"):GetInt() + element:parent()["TutorialText"]["Text"]("height"):GetInt() );
+					</event>
+				</ninesliceComponent>
+			</element>
+
+			<element name="Title">
+				<size dependentOnElement="element:name()" dependentOnComponent="Text" />
+				<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="TOP" hAnchor="HCENTER" />
+				<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="-8" priority="-1" />
+				<textComponent name="Text" >
+
+					<event name="onInit" params="component, element" >
+						<![CDATA[
+						component("font"):Set("rp_font_title")
+						component("size"):Set(1.0)
+						component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+
+						component("red"):SetFloat(1.0)
+						component("green"):SetFloat(1.0)
+						component("blue"):SetFloat(1.0)
+
+						component("text"):SetString("IN_SAFE_WATER_TITLE")
+
+						component("layer"):SetString("PIRATE_MAP_HUD");
+						]]>
+					</event>
+
+				</textComponent>
+			</element>
+
+			<element name="TutorialText">
+				<size dependentOnElement="element:name()" dependentOnComponent="Text" />
+				<position relativeTo="element:parent()[&quot;Title&quot;]" vAnchor="BOTTOM" hAnchor="HCENTER" />
+				<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+				<textComponent name="Text" >
+					<size w="screenWidth()*0.50" h="0" />
+
+					<event name="onInit" params="component, element" >
+						<![CDATA[
+						component("font"):Set("blue_highway")
+						component("size"):Set(1.0)
+						component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+
+						component("red"):SetFloat(1.0)
+						component("green"):SetFloat(1.0)
+						component("blue"):SetFloat(1.0)
+
+						component("text"):SetString("IN_SAFE_WATER_DESC")
+						component("layer"):SetString("PIRATE_MAP_HUD");
+
+						]]>
+					</event>
+
+				</textComponent>
+			</element>
+		</element>
+	</element>
+</menu>

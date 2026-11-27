@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-16"?>
+<menu>
+	<element name="topElement">
+		<event name="onPostInit" params="element">
+			element:SetupGenericListener(game.engineReceiver(), "rp::MsgTreasureMapGotOne", "gotMsgTreasureMapGotOne")
+		</event>
+		
+		<event name="gotMsgTreasureMapGotOne" params="element, msg">
+			
+			element("treasuremap_type"):SetString(msg.type);
+			element("treasuremap_typedata"):SetInt(msg.typedata);
+			
+			element["DialogPopup"]["children"]:DoStoredScript("gotoCurPage")
+		</event>
+		<element name="bg">
+			<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+			<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="15" />
+			<ninesliceComponent name="Sprite">
+				<event name="onInit" params="component, element" >
+					component("spriteName"):Set("gfx/menu/menu_overlay")
+					component("width"):SetFloat( screenWidth() );
+					component("height"):SetFloat( screenHeight() );
+					component("layer"):SetString("PIRATE_MAP_HUD");
+				</event>
+			</ninesliceComponent>
+			<touchComponent name="Touch">
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">
+					menu:popPopUp()
+				</event>
+			</touchComponent>
+		</element>	
+
+		<element name="DialogPopup">
+			<element name="children">
+				
+				<event name="gotoCurPage" params="element">
+				</event>
+				
+				<element name="bg">
+					<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+					<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+					<orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="14" />
+					<spriteSheetComponent name="Sprite">
+						<event name="onInit" params="component, element" >
+							component("useOffsets"):SetInt(1)
+							component("spriteName"):Set("tutorial_pop")
+							component("sheetName"):Set("xml_resources/rp_menu.xml")
+							component("layer"):SetString("PIRATE_MAP_HUD");
+						</event>
+					</spriteSheetComponent>
+		
+					<touchComponent name="Touch">
+						<size dependentOnElement="element:name()" />
+						<event name="onTouchUp" params="component, element">
+						</event>
+					</touchComponent>
+				</element>
+				<element name="bottomBg">
+					<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+					<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="BOTTOM" hAnchor="HCENTER" />
+					<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+					<spriteSheetComponent name="Sprite">
+						<event name="onInit" params="component, element" >
+							component("useOffsets"):SetInt(1)
+							component("spriteName"):Set("tutorial_pop_03")
+							component("sheetName"):Set("xml_resources/rp_menu.xml")
+							component("layer"):SetString("PIRATE_MAP_HUD");
+						</event>
+					</spriteSheetComponent>
+					<touchComponent name="Touch">
+						<size dependentOnElement="element:name()" />
+						<event name="onTouchUp" params="component, element">
+						</event>
+					</touchComponent>
+				</element>
+				<element name="Text">
+					<size dependentOnElement="element:name()" dependentOnComponent="Text" />
+					<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="TOP" hAnchor="LEFT" />
+					<orientation vAnchor="VCENTER" hAnchor="LEFT" xOffset="0" yOffset="screenHeight()/32*5" priority="-2" />
+					<textComponent name="Text" >
+						<size w="screenWidth()/4*3" h="screenHeight()/4" />
+						
+						<event name="onInit" params="component, element" >
+							component("font"):Set("rp_font_title")
+							component("size"):Set(1.0)
+							component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+							
+							component("red"):SetFloat(1.0)
+							component("green"):SetFloat(1.0)
+							component("blue"):SetFloat(1.0)
+							
+							component("text"):SetString("GOT_TREASURE_MAP")
+
+							component("layer"):SetString("PIRATE_MAP_HUD");
+						</event>
+					</textComponent>	
+					
+				</element>				
+				
+				
+				<template type="HudButton" name="CollectIt">
+					<templateVar name="$image" equals="btn_long_green" />
+					<templateVar name="$sheet" equals="rp_menu" />
+					<position relativeTo="element:parent()[&quot;bottomBg&quot;]" vAnchor="BOTTOM" hAnchor="HCENTER" />
+					<orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="0" yOffset="screenHeight()/32" priority="-1" />
+					<event name="onPostInit" params="element">
+
+						element["UpSprite"]("layer"):SetString("PIRATE_MAP_HUD");
+						element["DownSprite"]("layer"):SetString("PIRATE_MAP_HUD");
+					</event>
+					
+					<textComponent name="Text" >
+						<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+						<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+						<event name="onInit" params="component, element" >
+							component("font"):Set("rp_font_title")
+							component("size"):Set(1.0)
+							component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+							
+							component("red"):SetFloat(1.0)
+							component("green"):SetFloat(1.0)
+							component("blue"):SetFloat(1.0)
+							
+							component("text"):SetString("COLLECT_MATERIALS_CONFIRM")
+							
+							component("layer"):SetString("PIRATE_MAP_HUD");
+						</event>
+					</textComponent>
+					<touchComponent name="Touch">
+						<size dependentOnElement="element:name()"/>
+						<event name="onTouchUp" params="component, element">
+							onTouchUp(component, element)
+							menu:popPopUp()
+						</event>
+					</touchComponent>
+				</template>
+				
+			</element>
+		</element>
+	</element>
+</menu>
