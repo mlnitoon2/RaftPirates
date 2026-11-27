@@ -26,6 +26,7 @@ namespace rp {
         void touchDown(float x, float y);
         void touchDrag(float x, float y);
         void cancelInput();
+        void purchaseCompleted(const Game&, bool success, int blueprint);
 
         bool isDiving() const {
             return bool(diving_);
@@ -115,6 +116,9 @@ namespace rp {
         unsigned swipe_ = 0;
         std::map<unsigned, double> scrollOrigins_;
         bool xmlCaptured_ = false;
+        bool shopButtonArmed_ = false;
+        std::optional<int> pendingStoreItem_;
+        unsigned shopButtonAt(float x, float y) const;
         void updateHud(const Game& game);
         void updateScroll();
         std::optional<sfs::Message> panelTouch(Game&, float x, float y);

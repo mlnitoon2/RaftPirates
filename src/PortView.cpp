@@ -141,6 +141,7 @@ namespace rp {
     }
 
     void PortView::cancelInput() {
+        shopButtonArmed_ = false;
         if (xmlCaptured_ && xmlMenu_)
             xmlMenu_->touchCancel();
         if (oceanGesture_)
@@ -154,6 +155,11 @@ namespace rp {
     void PortView::touchDown(float x, float y) {
         xmlCaptured_ = false;
         blueprintGesture_.reset();
+        shopButtonArmed_ = shopButtonAt(x, y) != 0;
+        if (shopButtonArmed_) {
+            oceanGesture_ = false;
+            return;
+        }
         if (xmlMenu_ && xmlName_ == "tabbed_menu_blueprints" && panel_ == Panel::Shop &&
             y >= blueprintListTop_ && y < 400 && x >= 0 && x < 640) {
             blueprintGesture_ = Vec2{x, y};
@@ -186,6 +192,34 @@ namespace rp {
             diving_->touchDrag({x, y});
         else if (oceanGesture_)
             touchControls_.touchDrag({x, y});
+    }
+
+    void PortView::purchaseCompleted(const Game& g, bool success, int blueprint) {
+        if (!pendingStoreItem_)
+            return;
+        pendingStoreItem_.reset();
+        if (success && blueprint > 0 && g.blueprints.count(blueprint) && g.owned.count(blueprint)) {
+            const auto ids = RPMenuHandler(g).gotMsgGetAllBlueprintsRequest();
+            auto it = std::find(ids.begin(), ids.end(), blueprint);
+            if (it != ids.end()) {
+                panel_ = Panel::Shop;
+                xmlName_ = "tabbed_menu_blueprints";
+                page_ = size_t(it - ids.begin()) / BlueprintPageSize;
+                shopSelection_ = blueprint;
+                openXml(g, "tabbed_menu_blueprints");
+            }
+        }
+    }
+
+    unsigned PortView::shopButtonAt(float x, float y) const {
+        if (!xmlMenu_ || !shopSelection_ || xmlName_.rfind("tabbed_menu_", 0) != 0 ||
+            xmlName_ == "tabbed_menu_maps" || xmlName_ == "tabbed_menu_inventory")
+            return 0;
+        auto& m = *xmlMenu_;
+        auto button = m.find(1, "buyBtn", true);
+        if (button && m.isVisible(button) && m.node(button).bounds.contains(x, y))
+            return m.find(button, "Touch");
+        return 0;
     }
 
     Image PortView::renderTitleBackground(const Game& g, float time) {
@@ -410,6 +444,12 @@ namespace rp {
     }
 
     std::optional<sfs::Message> PortView::touch(Game& g, float x, float y) {
+        if (shopButtonArmed_) {
+            shopButtonArmed_ = false;
+            if (auto hit = shopButtonAt(x, y))
+                return xmlTouch(g, x, y, hit);
+            return {};
+        }
         if (blueprintGesture_) {
             auto start = *blueprintGesture_;
             blueprintGesture_.reset();
@@ -1112,6 +1152,8 @@ namespace rp {
                     // SlideInDialog's LEFT end position reveals one quarter of the viewport.
                     const float dialogWidth = 288.f;
                     const float dialogHeight = std::min(m.height(), 384.f);
+                    const float visibleWidth = m.width() * .25f;
+                    m.setLayerOrder("HUD", 2);
                     // Keep the visible quest-book page and its buttons inside the viewport.
                     m.node(dialog).set("absoluteX", double(m.width() * .25f - dialogWidth));
                     m.node(dialog).set("width", double(dialogWidth));
@@ -1132,6 +1174,7 @@ namespace rp {
                         m.node(children).set("width",
                                              double(std::min(dialogWidth, m.width() * .25f)));
                         m.node(children).set("absoluteX", 0.0);
+                        m.node(children).set("layer", std::string("HUD"));
                         m.node(children).set(
                             "absoluteY", double(std::max(0.f, (m.height() - dialogHeight) * .5f)));
                         m.node(children).set("height", double(dialogHeight));
@@ -1147,6 +1190,7 @@ namespace rp {
                             m.node(el).set("orientationAnchorX", .5);
                             m.node(el).set("relativeAnchorY", 0.0);
                             m.node(el).set("orientationAnchorY", 0.0);
+                            m.node(el).set("absoluteX", double((visibleWidth - 64.f) * .5f));
                             m.node(el).set("width", 64.0);
                             m.node(el).set("height", 64.0);
                             m.node(el).set("xOffset", 0.0);
@@ -1506,14 +1550,52 @@ namespace rp {
                     set(id, "Text", "text", strings_.getText(q.name));
                 if (auto id = m.find(1, "DescriptionText", true))
                     set(id, "Text", "text", strings_.getText(q.description));
+                m.setLayerOrder("PIRATE_MAP_HUD", 2);
+                m.setLayerOrder("PIRATE_MAP_HUD_CLIPPED", 3);
+                m.setLayerOrder("LOADING", 4);
                 if (auto popup = m.find(1, "PopupDialog", true)) {
+                    const float w = m.width() * .70f, h = m.height() * .62f;
+                    const float x = (m.width() - w) / 2, y = (m.height() - h) / 2;
+                    auto place = [&](unsigned id, float px, float py, float pw, float ph) {
+                        if (!id)
+                            return;
+                        auto& n = m.node(id);
+                        n.set("absoluteX", double(px));
+                        n.set("absoluteY", double(py));
+                        n.set("width", double(pw));
+                        n.set("height", double(ph));
+                        n.set("visible", true);
+                    };
+                    place(popup, x, y, w, h);
                     if (auto bg = m.find(popup, "bg")) {
-                        m.node(bg).set("width", m.width() * .7);
-                        m.node(bg).set("height", m.height() * .75);
+                        place(bg, x, y, w, h);
                         if (auto sprite = m.find(bg, "Sprite")) {
-                            m.node(sprite).set("width", m.width() * .7);
-                            m.node(sprite).set("height", m.height() * .75);
+                            place(sprite, x, y, w, h);
+                            m.node(sprite).set("priority", 2.0);
+                            m.node(sprite).set("layer", std::string("PIRATE_MAP_HUD"));
                         }
+                    }
+                    for (const auto& entry : {std::make_pair("TitleText", y + 12),
+                                              std::make_pair("DescriptionText", y + 48)}) {
+                        if (auto el = m.find(popup, entry.first)) {
+                            const bool title = std::string(entry.first) == "TitleText";
+                            const float th = title ? 32.f : h - 80;
+                            place(el, x + 28, entry.second, w - 56, th);
+                            if (auto label = m.find(el, "Text")) {
+                                place(label, x + 28, entry.second, w - 56, th);
+                                auto& n = m.node(label);
+                                n.set("layer", std::string("PIRATE_MAP_HUD_CLIPPED"));
+                                n.set("priority", -10.0);
+                                n.set("alignment", 1.0);
+                                n.set("autoScale", true);
+                                n.set("multiline", !title);
+                                n.set("clipText", true);
+                            }
+                        }
+                    }
+                    if (auto anim = m.find(popup, "Anim")) {
+                        m.node(anim).set("absoluteX", double(x + w - 45));
+                        m.node(anim).set("absoluteY", double(y + h - 32));
                     }
                 }
             }
@@ -1789,13 +1871,13 @@ namespace rp {
             n.set("absoluteX", 105.0);
             n.set("absoluteY", 42.0);
             n.set("width", 430.0);
-            n.set("height", 190.0);
+            n.set("height", 210.0);
             if (auto bg = m.find(frame, "bg")) {
                 auto& c = m.node(bg);
                 c.set("absoluteX", 105.0);
                 c.set("absoluteY", 42.0);
                 c.set("width", 430.0);
-                c.set("height", 190.0);
+                c.set("height", 210.0);
                 c.set("includeBorder", false);
             }
         }
@@ -1931,7 +2013,7 @@ namespace rp {
             prop(frame, "itemTitle", "autoScale", true);
             if (auto icon = m.find(frame, "itemImage")) {
                 auto ib = m.node(icon).bounds;
-                float factor = std::min(1.f, 50.f / std::max(1.f, std::max(ib.w, ib.h)));
+                float factor = 76.f / std::max(1.f, std::max(ib.w, ib.h));
                 place(icon, b.x + (b.w - ib.w * factor) * .5f, b.y + 24, ib.w * factor,
                       ib.h * factor);
             }
@@ -1969,8 +2051,8 @@ namespace rp {
             const auto bb = m.node(btn).bounds;
             const float bw = std::clamp(bb.w, 100.f, 190.f), bh = std::clamp(bb.h, 24.f, 38.f);
             place(btn, b.x + (b.w - bw) * .5f, b.y + b.h - bh - 5, bw, bh);
-            if (auto touch = m.find(btn, "Touch"))
-                place(touch, b.x + (b.w - bw) * .5f, b.y + b.h - bh - 5, bw, bh);
+            for (auto part : {"Touch", "UpSprite", "DownSprite"})
+                place(m.find(btn, part), b.x + (b.w - bw) * .5f, b.y + b.h - bh - 5, bw, bh);
             m.solve();
         } else if (local && btn) {
             const auto b = m.node(frame).bounds;
@@ -2016,6 +2098,7 @@ namespace rp {
                 n.set("autoScale", true);
                 n.set("clipText", true);
                 n.set("alignment", 1.0);
+                n.set("verticalCenter", true);
             };
             if (b.w > 30 && b.h > 8) {
                 const float side = std::min(18.f, b.h - 6);
@@ -2116,6 +2199,11 @@ namespace rp {
                                 break;
                         }
                     }
+                    if (!placement_) {
+                        g.status = "No free space for this object";
+                        selectedBlueprint_ = 0;
+                        return {};
+                    }
                     grid = true;
                     map = false;
                     panel_ = Panel::None;
@@ -2157,8 +2245,10 @@ namespace rp {
                 return {};
             std::optional<sfs::Message> req;
             if (confirmAction_ == "purchase") {
-                if (RPMenuHandler(g).canPurchase(selectedStore_))
+                if (!pendingStoreItem_ && RPMenuHandler(g).canPurchase(selectedStore_)) {
                     req = g.buyStoreItem(selectedStore_);
+                    pendingStoreItem_ = selectedStore_;
+                }
             } else {
                 BuildModeState build(g);
                 build.gotMsgGridObjectSelected(selectedParent_, selectedComponent_);

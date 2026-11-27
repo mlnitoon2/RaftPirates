@@ -398,12 +398,14 @@ namespace rp::diving_game {
         sprite(target, "diving_arrow", 242, 350, 1.4f, true);
         sprite(target, "diving_arrow", 365, 350, 1.4f);
         sprite(target, "diving_gear", 307, 350, 1.2f);
+        label_.SetScale(.65f, .65f);
         label_.changeText(std::to_string(gears_));
         AutoScaleText(&label_);
         label_.SetPos(298, 31);
         label_.Render(target);
         label_.changeText(std::to_string(int(std::ceil(std::max(0.f, remaining_)))));
-        label_.SetPos(365, 31);
+        label_.SetScale(1.f, 1.f);
+        label_.SetPos(285, 276);
         label_.Render(target);
     }
 } // namespace rp::diving_game

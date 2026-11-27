@@ -1040,9 +1040,15 @@ namespace sys::platform::game {
                 return;
             }
             rt.status = rt.game.status;
-            if (command == "purchase_response" && !data.getBool("result")) {
-                platform.log("Server rejected purchase_item");
-                platform.showPopup("Purchase failed.");
+            if (command == "purchase_response") {
+                const bool accepted = data.getBool("result");
+                platform.log(std::string("purchase_response result=") +
+                    (accepted ? "true" : "false") + " blueprint_id=" +
+                    std::to_string(data.getInt("blueprint_id")));
+                if (rt.view)
+                    rt.view->purchaseCompleted(rt.game, accepted, data.getInt("blueprint_id"));
+                if (!accepted)
+                    platform.showPopup("Purchase failed.");
             }
             if (command == "gs_ocean") {
                 rt.oceanReceived = true;
