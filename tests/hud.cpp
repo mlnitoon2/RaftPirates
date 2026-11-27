@@ -9,6 +9,18 @@
             throw std::runtime_error(#x);                                                          \
     } while (false)
 
+namespace rp {
+    struct PortViewTestAccess {
+        static auto& menu(PortView& v) {
+            return *v.xmlMenu_;
+        }
+
+        static std::string name(PortView& v) {
+            return v.xmlName_;
+        }
+    };
+} // namespace rp
+
 int main(int argc, char** argv) {
     if (argc != 2) {
         std::cerr << "Usage: raftpirates_hud_tests ASSET_ROOT\n";
@@ -49,6 +61,33 @@ int main(int argc, char** argv) {
         auto bounds = hud.bounds("DaringMeter");
         auto req = view.touch(g, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
         CHECK(req && req->payload.getString("c") == "daring_advance");
+        // Original Daring popup should open its matching store category, not send a purchase.
+        g.daringRemaining = 60;
+        rp::StoreItem daring;
+        daring.id = 101;
+        daring.name = "daring";
+        daring.group = "misc";
+        daring.currency = 4;
+        daring.price = 10;
+        daring.title = "DARING_METER_DESC";
+        g.storeItems.emplace(daring.id, daring);
+        rp::PortView shop(argv[1]);
+        shop.touch(g, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
+        shop.render(g, 0, "");
+        CHECK(rp::PortViewTestAccess::name(shop) == "daring_popup");
+        auto& daringMenu = rp::PortViewTestAccess::menu(shop);
+        auto mainButton = daringMenu.find(1, "MainButton", true);
+        CHECK(mainButton && daringMenu.node(mainButton).number("gotostore") == 1);
+        auto touchId = daringMenu.find(mainButton, "Touch");
+        auto touchBounds = daringMenu.node(touchId).bounds;
+        shop.touch(g, touchBounds.x + touchBounds.w / 2, touchBounds.y + touchBounds.h / 2);
+        CHECK(rp::PortViewTestAccess::name(shop) == "tabbed_menu_misc");
+        auto& shopMenu = rp::PortViewTestAccess::menu(shop);
+        auto frame = shopMenu.find(1, "Frame", true);
+        CHECK(frame && shopMenu.isVisible(frame));
+        auto price = shopMenu.find(frame, "PriceText");
+        CHECK(price && shopMenu.node(price).text("text") == "10");
+        shop.render(g, 0, "");
         bounds = hud.bounds("QuestMenu");
         req = view.touch(g, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
         CHECK(req && req->payload.getString("c") == "gs_quest");

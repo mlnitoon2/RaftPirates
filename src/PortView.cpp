@@ -24,9 +24,8 @@ namespace rp {
         };
 
         MapRect mapRect(int w, int h) {
-            const float scale = std::min(624.f / std::max(1, w), 384.f / std::max(1, h));
-            int width = std::max(1, int(w * scale)), height = std::max(1, int(h * scale));
-            return {(640 - width) / 2, (400 - height) / 2, width, height};
+            // The map is a full-screen surface; use the same conversion for picking.
+            return {0, 0, 640, 400};
         }
     } // namespace
 
@@ -262,8 +261,7 @@ namespace rp {
                         int mx = box.x + int(ship.x * box.w / (m.width * m.tileWidth)),
                             my = box.y + int(ship.y * box.h / (m.height * m.tileHeight));
                         if (!renderItemIcon(out, "rp_menu.xml",
-                                            boss ? "rp_map_boss" : "rp_battle_arrow", mx - 13,
-                                            my - 13))
+                                            boss ? "rp_map_boss" : "sonar_enemy", mx - 13, my - 13))
                             rect(out, mx - 4, my - 4, 9, 9, {240, 110, 85, 255});
                     };
                     if (mapView_.boss())
@@ -400,7 +398,7 @@ namespace rp {
                 return {};
             case Hud::Action::Daring: {
                 if (g.canAdvanceDaring())
-                    return Game::request("daring_advance");
+                    return g.advanceDaring();
                 panel_ = Panel::Daring;
                 return {};
             }
@@ -490,6 +488,28 @@ namespace rp {
             int enemyId = 0;
             bool usedSonar = false;
             if (const auto* target = mapView_.enemyAt(wx, wy)) {
+                if (mapInfoEnemy_ != target->id) {
+                    mapInfoEnemy_ = target->id;
+                    if (xmlMenu_ && xmlName_ == "piratemap_menu") {
+                        auto& m = *xmlMenu_;
+                        if (auto dialog = m.find(1, "PopupDialog", true)) {
+                            m.node(dialog).set("visible", true);
+                            for (const auto& entry :
+                                 {std::make_pair("PIRATE_NAME", target->name),
+                                  std::make_pair("PIRATE_BP",
+                                                 "Strength:" +
+                                                     std::to_string(target->battlePoints))})
+                                if (auto element = m.find(dialog, entry.first, true))
+                                    if (auto text = m.find(element, "Text")) {
+                                        m.node(text).set("text", entry.second);
+                                        m.node(text).set("visible", true);
+                                    }
+                            m.solve();
+                        }
+                    }
+                    return {};
+                }
+                mapInfoEnemy_.reset();
                 if (mapView_.selectEnemy(*target)) {
                     enemyId = target->id;
                     usedSonar = !mapView_.boss() || mapView_.boss()->id != enemyId;
@@ -498,8 +518,10 @@ namespace rp {
                     u = wx / (mapView_.data()->width * mapView_.data()->tileWidth);
                     v = wy / (mapView_.data()->height * mapView_.data()->tileHeight);
                 }
-            } else
+            } else {
+                mapInfoEnemy_.reset();
                 mapView_.touchDown({wx, wy});
+            }
             if (!enemyId)
                 mapView_.touchUp({wx, wy});
             if (!mapView_.moveShip()) {
@@ -599,7 +621,8 @@ namespace rp {
             sprite.image = it->second.second;
             float scale = std::min(26.f / cell->w, 26.f / cell->h);
             sprite.SetScale(scale, scale);
-            sprite.SetPos(float(x), float(y));
+            sprite.SetPos(float(x + 13) - scale * (cell->ox + cell->w / 2.f),
+                          float(y + 13) - scale * (cell->oy + cell->h / 2.f));
             drawSprite(target, sprite);
             return true;
         } catch (const std::exception&) {
@@ -609,6 +632,8 @@ namespace rp {
 
     void PortView::openXml(const Game& g, const std::string& name) {
         using namespace sys::menu_redux;
+        if (xmlName_ != name)
+            shopSelection_ = 0;
         xmlMenu_ = std::make_unique<MenuRuntime>(root_);
         xmlName_ = name;
         xmlItems_.clear();
@@ -664,7 +689,8 @@ namespace rp {
                     ++i;
                 }
             } else if (name.rfind("tabbed_menu_", 0) == 0) {
-                if (auto* list = find(find, xml, "itemList")) {
+                const char* listName = name == "tabbed_menu_misc" ? "itemListMisc" : "itemList";
+                if (auto* list = find(find, xml, listName)) {
                     std::vector<int> ids;
                     if (name == "tabbed_menu_blueprints")
                         ids = RPMenuHandler(g).gotMsgGetAllBlueprintsRequest();
@@ -679,8 +705,8 @@ namespace rp {
                     for (size_t i = 0; i < ids.size(); ++i) {
                         auto key = "tabbedItem" + std::to_string(i);
                         xmlItems_[key] = ids[i];
-                        add(*list, "TabbedMenuItem", key, 12 + int(i) * 128, 0, "itemList",
-                            "BOTTOM", "LEFT");
+                        add(*list, "TabbedMenuItem", key, int(i) * 128, 0, listName, "BOTTOM",
+                            "LEFT");
                     }
                 }
             } else if (name == "quest_log") {
@@ -704,10 +730,44 @@ namespace rp {
                 if (auto id = m.find(1, name, true))
                     m.node(id).set("visible", visible);
             };
-            if (name == "piratemap_menu") {
-                for (auto n : {"AutoSafeWater", "PopupDialog", "TutorialArrow"})
+            if (name == "daring_popup") {
+                std::string description = "DARING_METER_DESC";
+                bool locked = g.daringLocked();
+                if (g.safe)
+                    description = "DARING_METER_DESC_INSAFEWATER";
+                else if (g.badZone)
+                    description = "DARING_METER_DESC_BADZONE";
+                else if (locked)
+                    description = "DARING_METER_DESC_ZONELIMIT";
+                if (auto e = m.find(1, "TutorialText", true))
+                    if (auto t = m.find(e, "Text"))
+                        m.node(t).set("text", strings_.getText(description));
+                if (auto e = m.find(1, "MainButton", true)) {
+                    m.node(e).set("gotostore", !locked);
+                    if (auto t = m.find(e, "Text"))
+                        m.node(t).set("text", strings_.getText(locked ? "OK" : "FILL_IT_NOW"));
+                }
+                m.solve();
+                if (auto popup = m.find(1, "PopupDialog", true))
+                    if (auto bg = m.find(popup, "bg", true))
+                        if (auto s = m.find(bg, "Sprite")) {
+                            auto text = m.find(1, "TutorialText", true);
+                            auto button = m.find(1, "MainButton", true);
+                            if (text && button)
+                                m.node(s).set("height", double(m.node(text).bounds.h +
+                                                               m.node(button).bounds.h + 18));
+                        }
+            } else if (name == "piratemap_menu") {
+                for (auto n : {"PopupDialog", "TutorialArrow"})
                     show(n, false);
                 show("MapActionsIcon", g.mapActionMax > 0);
+                if (auto e = m.find(1, "AutoSafeWater", true)) {
+                    m.node(e).set("xOffset", -3.0);
+                    if (auto icon = m.find(e, "Sprite"))
+                        m.node(icon).set(
+                            "spriteName",
+                            std::string(g.autoSafe ? "btn_autosafe_on" : "btn_autosafe_off"));
+                }
                 if (auto quick = xmlMenu_->find(1, "QuickTravel", true)) {
                     if (auto sprite = xmlMenu_->find(quick, "Sprite")) {
                         if (auto zone = g.zones.find(g.zone); zone != g.zones.end()) {
@@ -729,9 +789,24 @@ namespace rp {
                                        std::string(n) == "PingSonar" ? b.w / 2 + 3 : -b.w / 2 - 3);
                         m.node(id).set("yOffset", -b.h / 2 - 3);
                     }
+            } else if (name == "auto_safe_water_menu") {
+                for (const auto& entry : {std::make_pair("SafeDescrText", g.autoSafe),
+                                          std::make_pair("UnsafeDescrText", !g.autoSafe)})
+                    if (auto id = m.find(1, entry.first, true))
+                        if (auto label = m.find(id, "Text"))
+                            m.node(label).set("alpha", entry.second ? 1.0 : 0.5);
+                for (const auto& entry : {std::make_pair("SafeFace", g.autoSafe),
+                                          std::make_pair("UnsafeFace", !g.autoSafe)})
+                    if (auto id = m.find(1, entry.first))
+                        m.node(id).set("alpha", entry.second ? 1.0 : 0.5);
+                if (auto id = m.find(1, "Toggle", true))
+                    if (auto label = m.find(id, "Text"))
+                        m.node(label).set("text",
+                                          strings_.getText(g.autoSafe ? "SAFE_WATER_ENABLED"
+                                                                      : "SAFE_WATER_DISABLED"));
             } else if (name == "quest_log") {
                 if (auto dialog = m.find(1, "DialogPopup", true)) {
-                    m.node(dialog).set("absoluteX", m.width() / 4 - m.node(dialog).bounds.w);
+                    m.node(dialog).set("absoluteX", 0.0);
                     if (auto sprite = m.find(dialog, "DialogSprite"))
                         m.node(sprite).set("hFlip", 1.0);
                     if (auto children = m.find(dialog, "children")) {
@@ -746,12 +821,13 @@ namespace rp {
                                                               m.node(dialog).bounds.h));
                             for (auto& [key, item] : xmlItems_)
                                 if (auto el = m.find(children, key, true))
-                                    scrollOrigins_[el] =
-                                        m.node(el).bounds.y - m.node(children).bounds.y;
+                                    scrollOrigins_[el] = m.node(el).number("yOffset", 48);
                         }
                     }
                 }
             } else if (name.rfind("tabbed_menu_", 0) == 0) {
+                // Information frame is populated when an item is selected; do not show its
+                // uninitialized template.
                 show("Frame", false);
                 // Match MenuTab and MenuTabCurrency's original onInit/onPostSolve placement.
                 double x = 40;
@@ -775,7 +851,8 @@ namespace rp {
                 for (const auto& n : m.nodes())
                     if (n.text("layer") == "TABS")
                         m.node(n.id).set("clipScreenHeight", m.height() * .75);
-                if (auto list = m.find(1, "itemList", true))
+                if (auto list =
+                        m.find(1, name == "tabbed_menu_misc" ? "itemListMisc" : "itemList", true))
                     if ((swipe_ = m.find(list, "Swiper"))) {
                         m.node(list).set("clipChildren", true);
                         m.node(swipe_).set("direction", 0.0);
@@ -787,8 +864,8 @@ namespace rp {
                         for (auto& [key, id] : xmlItems_)
                             if (auto el = m.find(list, key, true)) {
                                 auto index = std::stoi(key.substr(10));
-                                scrollOrigins_[el] = std::max(0.f, -m.node(list).bounds.x) + 12 +
-                                                     index * m.width() * .2;
+                                scrollOrigins_[el] =
+                                    std::max(0.f, -m.node(list).bounds.x) + index * m.width() * .2;
                             }
                     }
             }
@@ -835,6 +912,10 @@ namespace rp {
                         const auto& q = g.quests.at(id);
                         set(element, "ProgressText", "text", std::to_string(q.progress) + "%");
                         set(element, "ProgressText", "visible", q.progress > 0 && q.progress < 100);
+                        if (!q.sheet.empty() && !q.image.empty()) {
+                            set(element, "ItemImage", "spriteName", q.image);
+                            set(element, "ItemImage", "sheetName", q.sheet);
+                        }
                         if (auto type = g.questTypeDB.getQuestTypeInfo(unsigned(q.type))) {
                             auto sheet = type->getString(
                                 "sheet_id", type->getString("sprite_sheet_id", q.sheet));
@@ -898,6 +979,35 @@ namespace rp {
                 }
             }
             m.solve();
+            if (name.rfind("tabbed_menu_", 0) == 0 && name != "tabbed_menu_inventory") {
+                for (auto& [key, item] : xmlItems_) {
+                    auto element = m.find(1, key, true);
+                    if (!element)
+                        continue;
+                    if (auto image = m.find(element, "itemImage")) {
+                        const auto b = m.node(image).bounds;
+                        const auto slot = m.node(element).bounds;
+                        if (b.w > 0 && b.h > 0 && slot.w > 0 && slot.h > 0) {
+                            double factor =
+                                std::min(double(slot.w * .9 / b.w), double(slot.h * .72 / b.h));
+                            m.node(image).set("size", m.node(image).number("size", 1) * factor);
+                        }
+                    }
+                    if (!requestedStoreItem_.empty() && g.storeItems.count(item) &&
+                        g.storeItems.at(item).name == requestedStoreItem_) {
+                        shopSelection_ = item;
+                        if (swipe_) {
+                            auto origin = scrollOrigins_.find(element);
+                            if (origin != scrollOrigins_.end())
+                                m.setScrollOffset(
+                                    swipe_, -float(std::max(0.0, origin->second - m.width() / 2)));
+                        }
+                    }
+                }
+                requestedStoreItem_.clear();
+                updateShopFrame(g);
+                m.solve();
+            }
             updateScroll();
         } catch (const std::exception&) {
             xmlMenu_.reset();
@@ -930,6 +1040,11 @@ namespace rp {
                     xmlMenu_->node(label).set("visible", g.mapActions < g.mapActionMax);
                 }
             }
+            if (auto autoSafe = xmlMenu_->find(1, "AutoSafeWater", true))
+                if (auto sprite = xmlMenu_->find(autoSafe, "Sprite"))
+                    xmlMenu_->node(sprite).set(
+                        "spriteName",
+                        std::string(g.autoSafe ? "btn_autosafe_on" : "btn_autosafe_off"));
             if (auto sonar = xmlMenu_->find(1, "PingSonar", true))
                 if (auto label = xmlMenu_->find(sonar, "Text"))
                     xmlMenu_->node(label).set("text", std::to_string(g.numOfMaterialPossessed(12)));
@@ -974,9 +1089,101 @@ namespace rp {
         if (xmlMenu_ && xmlName_.rfind("tabbed_menu_", 0) == 0 &&
             (panel_ == Panel::Shop || panel_ == Panel::Build || panel_ == Panel::Travel))
             name = xmlName_;
-        if (xmlName_ == "sonar_popup" && panel_ == Panel::Safety)
+        if ((xmlName_ == "sonar_popup" || xmlName_ == "auto_safe_water_menu") &&
+            panel_ == Panel::Safety)
             name = xmlName_;
         renderXml(image, g, name);
+    }
+
+    void PortView::updateShopFrame(const Game& g) {
+        if (!xmlMenu_)
+            return;
+        auto& m = *xmlMenu_;
+        auto frame = m.find(1, "Frame", true);
+        if (!frame)
+            return;
+        bool blueprint = xmlName_ == "tabbed_menu_blueprints";
+        bool valid = shopSelection_ > 0 && (blueprint ? g.blueprints.count(shopSelection_)
+                                                      : g.storeItems.count(shopSelection_));
+        m.node(frame).set("visible", valid);
+        if (!valid)
+            return;
+        auto prop = [&](unsigned parent, const char* node, const char* key,
+                        sys::menu_redux::Property value) {
+            if (auto id = m.find(parent, node))
+                m.node(id).set(key, std::move(value));
+        };
+        auto btn = m.find(frame, "buyBtn", true);
+        std::string title, sheet, image;
+        const StoreItem* store = nullptr;
+        if (blueprint) {
+            const auto& b = g.blueprints.at(shopSelection_);
+            title = b.name();
+            sheet = b.sheet;
+            image = b.image;
+            for (const auto& [id, item] : g.storeItems)
+                if (item.name == title) {
+                    store = &item;
+                    break;
+                }
+            unsigned i = 0;
+            for (const auto& [id, amount] : b.recipe) {
+                if (++i > 4)
+                    break;
+                if (auto material = m.find(frame, "Material" + std::to_string(i), true)) {
+                    m.node(material).set("visible", true);
+                    if (auto icon = m.find(material, "ItemImage", true))
+                        if (auto info = g.materialDB.getMaterialInfo(unsigned(id))) {
+                            for (auto child : m.node(icon).children) {
+                                m.node(child).set("sheetName", info->sheet);
+                                m.node(child).set("spriteName", info->image);
+                            }
+                        }
+                    if (auto req = m.find(material, "MaterialReqs", true))
+                        prop(req, "Text", "text",
+                             std::to_string(g.numOfMaterialPossessed(id)) + "/" +
+                                 std::to_string(amount));
+                }
+            }
+            for (; i < 4; ++i)
+                if (auto el = m.find(frame, "Material" + std::to_string(i + 1), true))
+                    m.node(el).set("visible", false);
+            for (auto name :
+                 {"lockedOverlay", "constructionJerks", "buildLimitOverlay", "buildLimitExplain"})
+                prop(frame, name, "visible", false);
+            for (auto name : {"Footprint", "BP"})
+                if (auto el = m.find(frame, name, true))
+                    m.node(el).set("visible", false);
+        } else {
+            store = &g.storeItems.at(shopSelection_);
+            title = store->title.empty() ? store->name : store->title;
+            sheet = store->sheet;
+            image = store->image;
+            prop(frame, "itemDesc", "text", std::string());
+            for (auto name : {"CommonText", "UnCommonText", "RareText"})
+                if (auto el = m.find(frame, name, true))
+                    m.node(el).set("visible", false);
+        }
+        prop(frame, "itemTitle", "text", strings_.getText(title));
+        prop(frame, "itemImage", "sheetName", sheet);
+        prop(frame, "itemImage", "spriteName", image);
+        prop(frame, "itemImage", "visible", !image.empty());
+        if (btn) {
+            bool build = blueprint && g.owned.count(shopSelection_);
+            prop(btn, "Text", "text", strings_.getText(build ? "BUILD" : "BUY_MENU_BUTTON_PREFIX"));
+            prop(btn, "PriceText", "visible", !build && store);
+            prop(btn, "currencySprite", "visible", !build && store);
+            if (store && !build) {
+                prop(btn, "PriceText", "text", std::to_string(store->price));
+                prop(btn, "currencySprite", "sheetName", std::string("rp_menu"));
+                prop(btn, "currencySprite", "spriteName",
+                     std::string(store->currency == 11 ? "shop_diamond_mini" : "shop_gold_mini"));
+            }
+        }
+        for (const auto& [key, id] : xmlItems_)
+            if (auto el = m.find(1, key, true))
+                prop(el, "selectionOverlay", "visible", id == shopSelection_);
+        m.solve();
     }
 
     std::optional<sfs::Message> PortView::xmlTouch(Game& g, float x, float y) {
@@ -990,6 +1197,57 @@ namespace rp {
         auto name = m.node(owner).name;
         auto body = m.node(hit).events.find("onTouchUp");
         std::string script = body == m.node(hit).events.end() ? "" : body->second.source;
+        if (panel_ == Panel::Daring && name == "MainButton") {
+            if (m.node(owner).number("gotostore", 0)) {
+                requestedStoreItem_ = "daring";
+                panel_ = Panel::Shop;
+                openXml(g, "tabbed_menu_misc");
+            } else {
+                panel_ = Panel::None;
+                xmlMenu_.reset();
+            }
+            return {};
+        }
+        if (xmlName_ == "auto_safe_water_menu" && name == "Toggle") {
+            sfs::SFSObjectWrapper packet;
+            packet.put("is_enabled", !g.autoSafe);
+            panel_ = Panel::None;
+            xmlMenu_.reset();
+            return Game::request("set_auto_safe_enabled", packet);
+        }
+        if (name == "buyBtn" && shopSelection_ > 0 && xmlName_.rfind("tabbed_menu_", 0) == 0) {
+            int item = shopSelection_;
+            if (xmlName_ == "tabbed_menu_blueprints") {
+                if (BuildModeState(g).gotMsgStartBuildRequest(item)) {
+                    selectedBlueprint_ = item;
+                    selectedComponent_ = selectedParent_ = 0;
+                    placement_.reset();
+                    grid = true;
+                    map = false;
+                    panel_ = Panel::None;
+                    xmlMenu_.reset();
+                    return {};
+                }
+                if (!g.owned.count(item))
+                    for (const auto& [id, store] : g.storeItems)
+                        if (store.name == g.blueprints.at(item).name() &&
+                            RPMenuHandler(g).canPurchase(id)) {
+                            selectedStore_ = id;
+                            confirmAction_ = "purchase";
+                            panel_ = Panel::Confirm;
+                            openXml(g, "purchase_confirm_dialog_tabbed");
+                            return {};
+                        }
+                return {};
+            }
+            if (RPMenuHandler(g).canPurchase(item)) {
+                selectedStore_ = item;
+                confirmAction_ = "purchase";
+                panel_ = Panel::Confirm;
+                openXml(g, "purchase_confirm_dialog_tabbed");
+            }
+            return {};
+        }
         if (panel_ == Panel::Confirm) {
             if (name == "No" || name == "Back" || name == "Close") {
                 panel_ = Panel::None;
@@ -1018,9 +1276,24 @@ namespace rp {
             return req;
         }
         if (xmlName_ == "piratemap_menu") {
+            if (mapInfoEnemy_ &&
+                (name == "DISMISS_BUTTON" || name == "TOUCH_CATCHER" || name == "BG")) {
+                if (name != "BG") {
+                    if (auto dialog = m.find(1, "PopupDialog", true))
+                        m.node(dialog).set("visible", false);
+                    // Retain the inspected marker until movement or leaving the map.
+                }
+                return {};
+            }
             if (name == "Back") {
                 map = false;
+                mapInfoEnemy_.reset();
                 xmlMenu_.reset();
+                return {};
+            }
+            if (name == "AutoSafeWater") {
+                panel_ = Panel::Safety;
+                openXml(g, "auto_safe_water_menu");
                 return {};
             }
             if (name == "QuickTravel") {
@@ -1058,29 +1331,6 @@ namespace rp {
             if (i == xmlItems_.end())
                 continue;
             int item = i->second;
-            if (xmlName_ == "tabbed_menu_blueprints") {
-                if (!BuildModeState(g).gotMsgStartBuildRequest(item)) {
-                    if (!g.owned.count(item))
-                        for (auto& [id, store] : g.storeItems)
-                            if (store.name == g.blueprints.at(item).name() &&
-                                RPMenuHandler(g).canPurchase(id)) {
-                                selectedStore_ = id;
-                                confirmAction_ = "purchase";
-                                panel_ = Panel::Confirm;
-                                openXml(g, "purchase_confirm_dialog_tabbed");
-                                return {};
-                            }
-                    return {};
-                }
-                selectedBlueprint_ = item;
-                selectedComponent_ = selectedParent_ = 0;
-                placement_.reset();
-                grid = true;
-                map = false;
-                panel_ = Panel::None;
-                xmlMenu_.reset();
-                return {};
-            }
             if (xmlName_ == "quest_log") {
                 selectedQuest_ = item;
                 panel_ = Panel::QuestDetail;
@@ -1092,11 +1342,9 @@ namespace rp {
                 xmlMenu_.reset();
                 return g.travel(item);
             }
-            if (RPMenuHandler(g).canPurchase(item)) {
-                selectedStore_ = item;
-                confirmAction_ = "purchase";
-                panel_ = Panel::Confirm;
-                openXml(g, "purchase_confirm_dialog_tabbed");
+            if (xmlName_ != "tabbed_menu_inventory") {
+                shopSelection_ = item;
+                updateShopFrame(g);
             }
             return {};
         }

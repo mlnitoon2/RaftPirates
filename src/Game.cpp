@@ -123,6 +123,7 @@ namespace rp {
         if (cmd == "gs_error") {
             // Legacy generic rejection has no correlation ID. Release pending actions without
             // applying optimistic movement or construction.
+            daringAdvancePending = false;
             pending.reset();
             pendingMove.reset();
             pendingZone.reset();
@@ -189,6 +190,7 @@ namespace rp {
             mapX = std::clamp(num(p, "map_x"), -95, 95);
             mapY = std::clamp(num(p, "map_y"), -95, 95);
             setSafe(num(p, "safe", 1) != 0);
+            autoSafe = num(p, "auto_safe") != 0;
             daring = num(p, "daring_level");
             daringRemaining = std::max(0, num(p, "daring_timeremaining"));
             daringFraction = 0;
@@ -245,7 +247,14 @@ namespace rp {
             }
             if (p.getString("eventType") == "discovery")
                 discovery = num(p, "discovery_id");
+        } else if (cmd == "set_auto_safe_enabled") {
+            if (p.get("is_enabled"))
+                autoSafe = p.getBool("is_enabled");
+            else if (p.get("auto_safe"))
+                autoSafe = num(p, "auto_safe") != 0;
         } else if (cmd == "daring_state" || cmd == "daring_advanceresult") {
+            if (cmd == "daring_advanceresult")
+                daringAdvancePending = false;
             if (cmd == "daring_advanceresult" && num(p, "success", 1) == 0) {
                 status = "Daring advance rejected";
                 return;
@@ -555,6 +564,13 @@ namespace rp {
 
     bool Game::canAdvanceDaring() const {
         return !daringLocked() && daringTotal > 0 && daringRemaining == 0;
+    }
+
+    std::optional<sfs::Message> Game::advanceDaring() {
+        if (!ready || !canAdvanceDaring() || daringAdvancePending)
+            return {};
+        daringAdvancePending = true;
+        return request("daring_advance");
     }
 
     double Game::daringProgress() const {

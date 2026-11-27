@@ -32,6 +32,16 @@ int main() {
     check(game.login("10", "session").payload.getSFSObj("p")->getString("client_version") ==
           "1.0.4");
     game.ready = true;
+    auto safe = game.GotMsgSetAutoSafeMode(true);
+    check(safe && safe->payload.getString("c") == "set_auto_safe_enabled");
+    check(safe->payload.getSFSObj("p")->getBool("is_enabled"));
+    game.safe = false;
+    game.daringTotal = 120;
+    game.daringRemaining = 0;
+    check(game.gotMsgDaringMeterAdvance().has_value());
+    check(!game.gotMsgDaringMeterAdvance());
+    game.gotMsgOnExtensionResponse("daring_advanceresult", {});
+    check(game.gotMsgDaringMeterAdvance().has_value());
     sfs::SFSObjectWrapper packet;
     packet.put("bad", int32_t(1));
     game.gotMsgEnableNetworkProcessing(false);

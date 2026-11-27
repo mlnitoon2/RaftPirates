@@ -1,4 +1,5 @@
 #include "rp/RaftPirates.h"
+#include "rp/RPMenuHandler.h"
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
@@ -24,6 +25,8 @@ namespace rp {
         processing_ = true;
         queued_.clear();
         adminMessage_.clear();
+        serverName_.clear();
+        debugMessage_.clear();
         load_ = 0;
         libraryPackets_ = {};
         libraryFile_.clear();
@@ -47,7 +50,7 @@ namespace rp {
         pendingDiscovery.reset();
         token.clear();
         onlineBattle.reset();
-        sonarPending = readyForBattle = false;
+        sonarPending = readyForBattle = daringAdvancePending = false;
         sonarShips.clear();
         bossData.reset();
         queued_.clear();
@@ -105,12 +108,139 @@ namespace rp {
             queued_.push_back(Game::request(command, data));
             return;
         }
-        processExtension(command, data);
+        gotMsgOnExtensionResponse2(command, data);
+    }
+
+    void RaftPirates::serverName(const std::string& host) {
+        serverName_ = host;
+    }
+
+    const std::string& RaftPirates::serverName() const {
+        return serverName_;
+    }
+
+    void RaftPirates::gotMsgOnExtensionResponse2(const std::string& command,
+                                                 const sfs::SFSObjectWrapper& data) {
+        if (connected_ && processing_)
+            processExtension(command, data);
+    }
+
+    void RaftPirates::gotMsgOnRoomJoin2() {
+        gotMsgOnRoomJoin();
+    }
+
+    bool RaftPirates::GotMsgAutoSafeModeRequest() const {
+        return autoSafe;
+    }
+
+    std::optional<sfs::Message> RaftPirates::GotMsgSetAutoSafeMode(bool enabled) const {
+        if (!ready || enabled == autoSafe)
+            return {};
+        sfs::SFSObjectWrapper p;
+        p.put("is_enabled", enabled);
+        return request("set_auto_safe_enabled", p);
+    }
+
+    std::optional<sfs::Message> RaftPirates::gotMsgDaringMeterAdvance() {
+        return advanceDaring();
+    }
+
+    std::optional<sfs::Message> RaftPirates::gotMsgRequestPingSonar() {
+        return ready ? pingSonar() : std::nullopt;
+    }
+
+    void RaftPirates::gotMsgReenablePingSonar() {
+        sonarPending = false;
+    }
+
+    std::optional<sfs::Message> RaftPirates::gotMsgMenuBattleAccept(bool accept) {
+        return ready ? onlineBattle.encounterResponse(accept) : std::nullopt;
+    }
+
+    std::optional<sfs::Message> RaftPirates::gotMsgPurchaseItemRequest(int item) const {
+        if (!ready || !RPMenuHandler(*this).canPurchase(item))
+            return {};
+        return buyStoreItem(item);
+    }
+
+    std::optional<sfs::Message> RaftPirates::gotMsgConfirmZoneMovement(int id, bool confirmed) {
+        if (!ready || !confirmed || !zones.count(id) || pendingZone)
+            return {};
+        return travel(id);
+    }
+
+    std::optional<sfs::Message> RaftPirates::HandleGoingToDiscovery(int id) {
+        if (!ready || !discoveries.count(id) || pendingDiscovery)
+            return {};
+        return discover(id);
+    }
+
+    std::optional<sfs::Message> RaftPirates::gotMsgMapMarkerMoved(int x, int y, bool safe,
+                                                                  int enemy, bool sonar) {
+        if (!ready || pendingMap || x < -100 || x > 100 || y < -100 || y > 100)
+            return {};
+        return moveMap(x, y, safe, enemy, sonar);
+    }
+
+    std::pair<std::string, std::string> RaftPirates::gotMsgQuickTravelGetAllKnownRequest() const {
+        return {knownZones, knownDiscoveries};
+    }
+
+    std::vector<int> RaftPirates::GotMsgCheckForNewDailyQuest() const {
+        std::vector<int> out;
+        for (auto& [id, q] : quests)
+            if (q.visible && q.unread)
+                out.push_back(id);
+        return out;
+    }
+
+    std::optional<sfs::Message> RaftPirates::GotMsgShowNewDailyQuest(int id) {
+        auto q = quests.find(id);
+        if (!ready || q == quests.end() || !q->second.visible || !q->second.unread)
+            return {};
+        return openQuest(id);
+    }
+
+    void RaftPirates::gotMsgAuthComplete(const std::string& host) {
+        DoConnect();
+        serverName(host);
+    }
+
+    void RaftPirates::gotMsgAuthFailed() {
+        DoLostConnection(true);
+        status = "Login failed";
+    }
+
+    void RaftPirates::gotMsgAuthenticationFailed() {
+        gotMsgAuthFailed();
+    }
+
+    void RaftPirates::gotMsgOnDebugMessage(const std::string& message) {
+        debugMessage_ = message.substr(0, 4096);
+    }
+
+    const std::string& RaftPirates::debugMessage() const {
+        return debugMessage_;
+    }
+
+    void RaftPirates::gotMsgBoughtItem(const sfs::SFSObjectWrapper& packet) {
+        if (connected_)
+            extension("purchase_response", packet);
+    }
+
+    void RaftPirates::gotMsgUpdateCurrency(const sfs::SFSObjectWrapper& packet) {
+        if (connected_)
+            extension("gs_materials_changed", packet);
     }
 
     void RaftPirates::processExtension(const std::string& command,
                                        const sfs::SFSObjectWrapper& data) {
-        extension(command, data);
+        if (command == "purchase_response")
+            gotMsgBoughtItem(data);
+        else if (command == "gs_materials_changed")
+            gotMsgUpdateCurrency(data);
+        else
+            extension(command, data);
         if (std::find(libraryCommands.begin(), libraryCommands.end(), command) !=
             libraryCommands.end())
             libraryPackets_.put(command, std::make_shared<sfs::SFSObjectWrapper>(data));

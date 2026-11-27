@@ -1,6 +1,6 @@
 # Remaining reconstruction
 
-Pass 32: 482/1191 original qualified method names matched (40.4702%). 709 names remain absent. Target: 50%.
+Pass 33: 503/1191 original qualified method names matched (42.2334%). 688 names remain absent. Target: 50%.
 
 The comparison uses the original ARM32 ELF and the corresponding compiled host static archive. Matching a name does not prove signature, ABI or functional equivalence. Methods with existing names may still be partial. The list below is a symbol inventory, not a list of verified missing player-facing features.
 
@@ -15,13 +15,13 @@ The comparison uses the original ARM32 ELF and the corresponding compiled host s
 
 ## Missing method names by class
 
-### `rp::RaftPirates` (53)
-
-`GotMsgAutoSafeModeRequest`, `GotMsgCheckForNewDailyQuest`, `GotMsgDoingFacebookAuth`, `GotMsgOnMenuLoadGlobal`, `GotMsgSetAutoSafeMode`, `GotMsgShowNewDailyQuest`, `GotMsgShowStore`, `GotMsgStartTransition`, `GotTransitionMsgDone`, `HandleGoingToDiscovery`, `QuestRewards`, `checkTutorialCompletion`, `checkTutorialStart`, `gotMsgAuthComplete`, `gotMsgAuthFailed`, `gotMsgAuthenticationChanged`, `gotMsgAuthenticationFailed`, `gotMsgBoughtCurrency`, `gotMsgBoughtItem`, `gotMsgCheat`, `gotMsgCheatDuplicatePlayer`, `gotMsgCheatStartBattle`, `gotMsgConfirmBlueprintMaterialsPurchase`, `gotMsgConfirmMaterialPurchase`, `gotMsgConfirmRepairGridObjectWithGold`, `gotMsgConfirmZoneMovement`, `gotMsgDaringMeterAdvance`, `gotMsgDebugGatherAllUsers`, `gotMsgDiscoveryGetAllKnownRequest`, `gotMsgGameCenterAuthChanged`, `gotMsgGameCenterError`, `gotMsgKeyboardEntryResult`, `gotMsgMapMarkerMoved`, `gotMsgMenuBattleAccept`, `gotMsgNameShip`, `gotMsgOnDebugMessage`, `gotMsgOnExtensionResponse2`, `gotMsgOnRoomJoin2`, `gotMsgPopupTextResult`, `gotMsgPurchaseItemRequest`, `gotMsgQuickTravelGetAllKnownRequest`, `gotMsgReconnect`, `gotMsgReenablePingSonar`, `gotMsgRequestPingSonar`, `gotMsgStartBattleMode`, `gotMsgStartBuildMode`, `gotMsgTouchDown`, `gotMsgTouchDrag`, `gotMsgTouchUp`, `gotMsgUpdateCurrency`, `gotMsgZoneGetAllKnownRequest`, `preloadMenus`, `serverName`
-
 ### `rp::OceanView` (37)
 
 `AddAnimSlack`, `AddGrid`, `AddSprite`, `AddToTick`, `CheckForBucket`, `FillPrioritySorter`, `FocalPoint`, `GetPriority`, `GetSpritePriority`, `Init`, `Layer`, `OceanView`, `PlayRaftAttackAnims`, `RemoveFromTick`, `RemoveGrid`, `RemoveSprite`, `SetAxiseseses`, `SetBossOcean`, `SetOcean`, `SetOrdering`, `SetRaftMute`, `SetRaftTransparent`, `SetTempPriorities`, `ShowWaterBuckets`, `UpdateAnimations`, `UpdateSprite`, `getGridSprite`, `gotMsgAnimateGridSprite`, `gotMsgDiveUnitLoadChange`, `gotMsgGfxLayerPickResult`, `gotMsgGridObjectEvent`, `gotMsgSparseGridObjectAdded`, `gotMsgSparseGridObjectRemoved`, `gotMsgUpdateOceanView`, `removeAllHealthBars`, `showHealthBars`, `tick`
+
+### `rp::RaftPirates` (32)
+
+`GotMsgDoingFacebookAuth`, `GotMsgOnMenuLoadGlobal`, `GotMsgShowStore`, `GotMsgStartTransition`, `GotTransitionMsgDone`, `QuestRewards`, `checkTutorialCompletion`, `checkTutorialStart`, `gotMsgAuthenticationChanged`, `gotMsgBoughtCurrency`, `gotMsgCheat`, `gotMsgCheatDuplicatePlayer`, `gotMsgCheatStartBattle`, `gotMsgConfirmBlueprintMaterialsPurchase`, `gotMsgConfirmMaterialPurchase`, `gotMsgConfirmRepairGridObjectWithGold`, `gotMsgDebugGatherAllUsers`, `gotMsgDiscoveryGetAllKnownRequest`, `gotMsgGameCenterAuthChanged`, `gotMsgGameCenterError`, `gotMsgKeyboardEntryResult`, `gotMsgNameShip`, `gotMsgPopupTextResult`, `gotMsgQuickTravelGetAllKnownRequest`, `gotMsgReconnect`, `gotMsgStartBattleMode`, `gotMsgStartBuildMode`, `gotMsgTouchDown`, `gotMsgTouchDrag`, `gotMsgTouchUp`, `gotMsgZoneGetAllKnownRequest`, `preloadMenus`
 
 ### `rp::BuildModeState` (29)
 

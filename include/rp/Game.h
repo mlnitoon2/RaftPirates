@@ -34,7 +34,7 @@ namespace rp {
         std::map<int, std::string> discoveries;
         std::map<int, Zone> zoneData;
         std::map<int, Discovery> discoveryData;
-        bool badZone = false;
+        bool badZone = false, autoSafe = false;
         int questCount = 0;
         std::map<int, Quest> quests;
         sfs::Message openQuest(int id);
@@ -85,6 +85,8 @@ namespace rp {
                              bool usedSonar = false);
         bool daringLocked() const;
         bool canAdvanceDaring() const;
+        bool daringAdvancePending = false;
+        std::optional<sfs::Message> advanceDaring();
         double daringProgress() const;
         void tick(float dt);
         std::string summary() const;

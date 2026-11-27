@@ -4,7 +4,7 @@ Generated from defined function symbols. Name coverage is unique qualified metho
 
 | Original build | Names matched | Coverage | Names with signature overlap | Binary match |
 |---|---:|---:|---:|---|
-| Raft Pirates 2013 | 482/1191 | 40.4702% | 224 | Not compared |
+| Raft Pirates 2013 | 503/1191 | 42.2334% | 225 | Not compared |
 
 ## Raft Pirates 2013
 
@@ -269,7 +269,7 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::RaftFactory` | 0/2 | 0.00% | 0 |
 | `rp::RaftGridSprite` | 0/6 | 0.00% | 0 |
 | `rp::RaftInfo` | 0/1 | 0.00% | 0 |
-| `rp::RaftPirates` | 33/86 | 38.37% | 10 |
+| `rp::RaftPirates` | 54/86 | 62.79% | 11 |
 | `rp::RaftPiratesGameState` | 0/6 | 0.00% | 0 |
 | `rp::SelectedWallSprite` | 0/7 | 0.00% | 0 |
 | `rp::ShipPlacementSprite` | 0/11 | 0.00% | 0 |
@@ -669,33 +669,54 @@ Matched names:
 - `rp::RaftComponent::~RaftComponent`
 - `rp::RaftPirates::DoConnect`
 - `rp::RaftPirates::DoLostConnection`
+- `rp::RaftPirates::GotMsgAutoSafeModeRequest`
 - `rp::RaftPirates::GotMsgBadZoneStatusRequest`
+- `rp::RaftPirates::GotMsgCheckForNewDailyQuest`
 - `rp::RaftPirates::GotMsgGetMapActionState`
+- `rp::RaftPirates::GotMsgSetAutoSafeMode`
+- `rp::RaftPirates::GotMsgShowNewDailyQuest`
+- `rp::RaftPirates::HandleGoingToDiscovery`
 - `rp::RaftPirates::Pause`
 - `rp::RaftPirates::RaftPirates`
 - `rp::RaftPirates::checkKeepAlive`
+- `rp::RaftPirates::gotMsgAuthComplete`
+- `rp::RaftPirates::gotMsgAuthFailed`
+- `rp::RaftPirates::gotMsgAuthenticationFailed`
+- `rp::RaftPirates::gotMsgBoughtItem`
+- `rp::RaftPirates::gotMsgConfirmZoneMovement`
+- `rp::RaftPirates::gotMsgDaringMeterAdvance`
 - `rp::RaftPirates::gotMsgDaringMeterInfo`
 - `rp::RaftPirates::gotMsgDiscoveryMoveTo`
 - `rp::RaftPirates::gotMsgEnableNetworkProcessing`
 - `rp::RaftPirates::gotMsgLoadFinished`
 - `rp::RaftPirates::gotMsgLoadPercentage`
 - `rp::RaftPirates::gotMsgLoadStart`
+- `rp::RaftPirates::gotMsgMapMarkerMoved`
+- `rp::RaftPirates::gotMsgMenuBattleAccept`
 - `rp::RaftPirates::gotMsgMenuLogoutRequest`
 - `rp::RaftPirates::gotMsgOnAdminMessage`
 - `rp::RaftPirates::gotMsgOnConnection`
 - `rp::RaftPirates::gotMsgOnConnectionLost`
+- `rp::RaftPirates::gotMsgOnDebugMessage`
 - `rp::RaftPirates::gotMsgOnExtensionResponse`
+- `rp::RaftPirates::gotMsgOnExtensionResponse2`
 - `rp::RaftPirates::gotMsgOnLogin`
 - `rp::RaftPirates::gotMsgOnLoginError`
 - `rp::RaftPirates::gotMsgOnLogout`
 - `rp::RaftPirates::gotMsgOnRoomJoin`
+- `rp::RaftPirates::gotMsgOnRoomJoin2`
+- `rp::RaftPirates::gotMsgPurchaseItemRequest`
 - `rp::RaftPirates::gotMsgQuestEvent`
 - `rp::RaftPirates::gotMsgQuestOpened`
+- `rp::RaftPirates::gotMsgReenablePingSonar`
+- `rp::RaftPirates::gotMsgRequestPingSonar`
+- `rp::RaftPirates::gotMsgUpdateCurrency`
 - `rp::RaftPirates::gotMsgZoneMoveTo`
 - `rp::RaftPirates::handleLogOut`
 - `rp::RaftPirates::initialize`
 - `rp::RaftPirates::isDaringZoneLimited`
 - `rp::RaftPirates::performLogout`
+- `rp::RaftPirates::serverName`
 - `rp::RaftPirates::setNetworkMsgProcessingEnabled`
 - `rp::RaftPirates::tick`
 - `rp::RaftPirates::tickNoSkip`

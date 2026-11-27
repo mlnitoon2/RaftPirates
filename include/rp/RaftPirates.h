@@ -23,6 +23,31 @@ namespace rp {
         }
 
         void gotMsgOnConnectionLost();
+        void serverName(const std::string& host);
+        const std::string& serverName() const;
+        void gotMsgOnExtensionResponse2(const std::string&, const sfs::SFSObjectWrapper&);
+        void gotMsgOnRoomJoin2();
+        bool GotMsgAutoSafeModeRequest() const;
+        std::optional<sfs::Message> GotMsgSetAutoSafeMode(bool enabled) const;
+        std::optional<sfs::Message> gotMsgDaringMeterAdvance();
+        std::optional<sfs::Message> gotMsgRequestPingSonar();
+        void gotMsgReenablePingSonar();
+        std::optional<sfs::Message> gotMsgMenuBattleAccept(bool accept);
+        std::optional<sfs::Message> gotMsgPurchaseItemRequest(int item) const;
+        std::optional<sfs::Message> gotMsgConfirmZoneMovement(int id, bool confirmed);
+        std::optional<sfs::Message> HandleGoingToDiscovery(int id);
+        std::optional<sfs::Message> gotMsgMapMarkerMoved(int x, int y, bool safe, int enemy,
+                                                         bool sonar);
+        std::pair<std::string, std::string> gotMsgQuickTravelGetAllKnownRequest() const;
+        std::vector<int> GotMsgCheckForNewDailyQuest() const;
+        std::optional<sfs::Message> GotMsgShowNewDailyQuest(int id);
+        void gotMsgAuthComplete(const std::string& host);
+        void gotMsgAuthFailed();
+        void gotMsgAuthenticationFailed();
+        void gotMsgOnDebugMessage(const std::string& message);
+        const std::string& debugMessage() const;
+        void gotMsgBoughtItem(const sfs::SFSObjectWrapper& packet);
+        void gotMsgUpdateCurrency(const sfs::SFSObjectWrapper& packet);
         void gotMsgOnExtensionResponse(const std::string& command,
                                        const sfs::SFSObjectWrapper& data);
         void setNetworkMsgProcessingEnabled(bool enabled);
@@ -67,7 +92,7 @@ namespace rp {
         bool processing_ = true, paused_ = false;
         float load_ = 0;
         std::deque<sfs::Message> queued_;
-        std::string adminMessage_;
+        std::string adminMessage_, serverName_, debugMessage_;
         std::filesystem::path libraryFile_;
         std::string librarySource_;
         sfs::SFSObjectWrapper libraryPackets_;

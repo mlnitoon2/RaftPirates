@@ -172,9 +172,13 @@ namespace {
             if (!rt.connected || !rt.game.ready)
                 throw std::runtime_error("Login is required");
             platform.send(msg);
+            if (msg.payload.getString("c") == "set_auto_safe_enabled")
+                if (auto args = msg.payload.getSFSObj("p"))
+                    rt.game.autoSafe = args->getBool("is_enabled", rt.game.autoSafe);
         } catch (...) {
             rt.game.onlineBattle.sendFailed();
-            rt.game.sonarPending = false;
+            rt.game.gotMsgReenablePingSonar();
+            rt.game.daringAdvancePending = false;
             rt.game.pending.reset();
             rt.game.pendingMove.reset();
             rt.game.pendingMap.reset();
@@ -298,7 +302,7 @@ namespace {
         rt.resumeAttempt = false;
         rt.connecting = true;
         rt.loginSent = false;
-        rt.game.DoConnect();
+        rt.game.gotMsgAuthComplete(rt.host);
         rt.connectStarted = Clock::now();
         try {
             platform.connect(rt.host, rt.port);
@@ -870,7 +874,7 @@ namespace sys::platform::game {
         guarded(platform, [&] {
             if (!rt.connected && !rt.connecting)
                 return;
-            rt.game.gotMsgOnRoomJoin();
+            rt.game.gotMsgOnRoomJoin2();
             rt.status = "ROOM JOINED";
         });
     }

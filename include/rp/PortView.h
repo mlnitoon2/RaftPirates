@@ -38,6 +38,7 @@ namespace rp {
         bool grid = false, map = false;
 
       private:
+        friend struct PortViewTestAccess;
         std::filesystem::path root_;
         OceanView ocean_, opponentOcean_;
         Cell attackPosition_{0, 0};
@@ -56,6 +57,8 @@ namespace rp {
         bool hudEnabled(const Game& game) const;
         MapView mapView_;
         int selectedQuest_ = 0;
+        std::string requestedStoreItem_;
+        std::optional<int> mapInfoEnemy_;
         float worldTime_ = 0;
         bool scrollVertical_ = false;
         std::map<std::string, std::shared_ptr<sys::gfx::Image>> tiles_;
@@ -82,7 +85,8 @@ namespace rp {
         bool moving_ = false;
         std::optional<Cell> placement_;
         int placementParent_ = 0;
-        int selectedStore_ = 0;
+        int selectedStore_ = 0, shopSelection_ = 0;
+        void updateShopFrame(const Game&);
         std::string confirmAction_;
         unsigned swipe_ = 0;
         std::map<unsigned, double> scrollOrigins_;
