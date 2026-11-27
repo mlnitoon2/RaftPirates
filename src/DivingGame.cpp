@@ -309,11 +309,25 @@ namespace rp::diving_game {
         const int dx = int(std::round(x)), dy = int(std::round(y));
         for (int row = std::max(0, -dy); row < std::min(400, 400 - dy); ++row)
             for (int col = std::max(0, -dx); col < std::min(640, 640 - dx); ++col)
-                target.at(col + dx, row + dy) = contents.at(col, row);
+                {
+                    const auto src = contents.at(col, row);
+                    if (!src.a)
+                        continue;
+                    auto& dst = target.at(col + dx, row + dy);
+                    const unsigned a = src.a, inv = 255 - a;
+                    const unsigned out = a * 255 + dst.a * inv;
+                    if (!out)
+                        continue;
+                    auto blend = [&](unsigned s, unsigned d) {
+                        return uint8_t((s * a * 255 + d * dst.a * inv + out / 2) / out);
+                    };
+                    dst = {blend(src.r, dst.r), blend(src.g, dst.g),
+                           blend(src.b, dst.b), uint8_t((out + 127) / 255)};
+                }
     }
 
     void DivingGame::renderContents(Image& target) {
-        target = Image(640, 400, {9, 36, 60, 255});
+        target = Image(640, 400, {0, 0, 0, 0});
         sprite(target, "diving_bg", 210, 22, 1);
         {
             GfxManager background;
@@ -387,6 +401,9 @@ namespace rp::diving_game {
         label_.changeText(std::to_string(gears_));
         AutoScaleText(&label_);
         label_.SetPos(298, 31);
+        label_.Render(target);
+        label_.changeText(std::to_string(int(std::ceil(std::max(0.f, remaining_)))));
+        label_.SetPos(365, 31);
         label_.Render(target);
     }
 } // namespace rp::diving_game

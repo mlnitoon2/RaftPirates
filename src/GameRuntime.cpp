@@ -1034,6 +1034,10 @@ namespace sys::platform::game {
                 return;
             }
             rt.status = rt.game.status;
+            if (command == "purchase_response" && !data.getBool("result")) {
+                platform.log("Server rejected purchase_item");
+                platform.showPopup("Purchase failed.");
+            }
             if (command == "gs_ocean") {
                 rt.oceanReceived = true;
                 if (!rt.game.ready)

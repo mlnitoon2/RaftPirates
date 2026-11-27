@@ -159,6 +159,13 @@ int main(int argc, char** argv) {
                 ++changed;
         }
         CHECK(changed > 100);
+        // Transparent diving panel must preserve the raft/ocean outside its bounds.
+        rp::diving_game::DivingGame minigame(argv[1]);
+        sys::gfx::Image background(640, 400, {23, 51, 77, 255});
+        minigame.render(background);
+        const auto corner = background.at(0, 0);
+        CHECK(corner.r == 23 && corner.g == 51 && corner.b == 77 && corner.a == 255);
+        CHECK(background.at(639, 399).r == 23);
         // Exercise more than one catalogue page, including selection without a full
         // generic touch/layout traversal.
         rp::Game catalogue;

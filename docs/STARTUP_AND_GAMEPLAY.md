@@ -67,3 +67,7 @@ The legacy SDK expects `rl` in a successful login response to be an array of roo
 ## Desktop application
 
 The optional `raftpirates_desktop` target runs the same portable GameRuntime lifecycle as Android, with SDL2 presentation and text input. The desktop host now authenticates using native HTTP and connects through Hydra's native TCP SmartFox client. Actual server interoperability and full multiplayer remain unverified. DEX files and Java classes are not needed for this executable. See [Desktop](DESKTOP.md).
+
+## Device-feedback fixes
+
+The original diving atlas contains a 220x288 panel, not a full-screen opaque background. Its host now alpha-composites onto the ocean frame and renders remaining time. The original inventory anchors its material amounts 50 pixels from the bottom; the compatibility multi-row layout now bottom-aligns above the rarity captions. The blueprint purchase button reserves a separate price and currency icon region, matching TabbedBlueprintFrame.xml's resize script. The quest panel uses the original 288x384 atlas dimensions, independent unread/progress anchors and content-length scroll sizing. These changes still need original-asset device validation. Server purchase failures are shown rather than silently dismissed. An empty gs_quest result means the server supplied no quests.

@@ -1106,9 +1106,8 @@ namespace rp {
             } else if (name == "quest_log") {
                 if (auto dialog = m.find(1, "DialogPopup", true)) {
                     // SlideInDialog's LEFT end position reveals one quarter of the viewport.
-                    const float dialogWidth = std::max(160.f, m.node(dialog).bounds.w);
-                    const float dialogHeight =
-                        std::min(m.height(), std::max(300.f, m.node(dialog).bounds.h));
+                    const float dialogWidth = 288.f;
+                    const float dialogHeight = std::min(m.height(), 384.f);
                     // Keep the visible quest-book page and its buttons inside the viewport.
                     m.node(dialog).set("absoluteX", double(m.width() * .25f - dialogWidth));
                     m.node(dialog).set("width", double(dialogWidth));
@@ -1179,12 +1178,27 @@ namespace rp {
                                 m.node(icon).set("useOffsets", false);
                             }
                             if (auto badge = m.find(el, "NewQuest")) {
-                                m.node(badge).set("priority", -28.0);
-                                m.node(badge).set("width", 20.0);
-                                m.node(badge).set("height", 20.0);
+                                auto& n = m.node(badge);
+                                n.set("priority", -28.0);
+                                n.set("relativeAnchorX", 0.0);
+                                n.set("relativeAnchorY", 0.0);
+                                n.set("orientationAnchorX", 0.0);
+                                n.set("orientationAnchorY", 0.0);
+                                n.set("width", 20.0);
+                                n.set("height", 20.0);
                             }
-                            if (auto text = m.find(el, "ProgressText"))
-                                m.node(text).set("priority", -29.0);
+                            if (auto text = m.find(el, "ProgressText")) {
+                                auto& n = m.node(text);
+                                n.set("priority", -29.0);
+                                n.set("positionDependency", double(el));
+                                n.set("relativeAnchorX", .5);
+                                n.set("relativeAnchorY", 1.0);
+                                n.set("orientationAnchorX", .5);
+                                n.set("orientationAnchorY", 1.0);
+                                n.set("width", 64.0);
+                                n.set("height", 16.0);
+                                n.set("alignment", 1.0);
+                            }
                             m.node(el).set("layer", std::string("HUD"));
                             y += 68;
                         }
@@ -1203,7 +1217,7 @@ namespace rp {
                             m.node(swipe_).set("mode", 1.0);
                             m.listenToTouches(swipe_, dialog);
                             m.setWindowSize(swipe_, m.node(dialog).bounds.h);
-                            m.setScrollSize(swipe_, std::max(0.f, y - m.node(dialog).bounds.h));
+                            m.setScrollSize(swipe_, std::max(0.f, y));
                             for (auto& [key, item] : xmlItems_)
                                 if (auto el = m.find(children, key, true))
                                     scrollOrigins_[el] = m.node(el).number("yOffset", 48);
@@ -1508,6 +1522,9 @@ namespace rp {
                 const size_t rows = (ids.size() + cols - 1) / cols;
                 const float step = m.width() / float(cols);
                 const float cellH = std::min(50.f, 100.f / float(std::max<size_t>(1, rows)));
+                // The original inventory anchors amounts 50 pixels above the bottom.
+                // Bottom-align the complete rows above the rarity captions.
+                const float rowTop = m.height() - 20.f - float(rows) * cellH;
                 if (auto bg = m.find(1, "bgInventory", true)) {
                     auto& n = m.node(bg);
                     n.set("absoluteX", 0.0);
@@ -1528,7 +1545,7 @@ namespace rp {
                     if (!el)
                         continue;
                     const float x = (float(i % cols) + .5f) * step,
-                                y = m.height() - 115 + float(i / cols) * cellH;
+                                y = rowTop + float(i / cols) * cellH;
                     auto place = [&](unsigned node, float px, float py, float w, float h) {
                         if (!node)
                             return;
@@ -1950,13 +1967,6 @@ namespace rp {
             place(btn, b.x + (b.w - bw) * .5f, b.y + b.h - bh - 5, bw, bh);
             if (auto touch = m.find(btn, "Touch"))
                 place(touch, b.x + (b.w - bw) * .5f, b.y + b.h - bh - 5, bw, bh);
-            if (auto text = m.find(btn, "Text")) {
-                auto& n = m.node(text);
-                n.set("relativeAnchorX", .5);
-                n.set("orientationAnchorX", .5);
-                n.set("xOffset", 0.0);
-                n.set("yOffset", 0.0);
-            }
             m.solve();
         } else if (local && btn) {
             const auto b = m.node(frame).bounds;
@@ -1985,6 +1995,37 @@ namespace rp {
                 place(sprite, b.x + (b.w - 180) * .5f, b.y + b.h - 42, 180, 36);
             prop(frame, "itemDesc", "clipText", true);
             m.solve();
+        }
+        // Original TabbedBlueprintFrame divides the button into a label half
+        // and a price half, reserving currencySprite width + padding.
+        if (btn && !local) {
+            const auto b = m.node(btn).bounds;
+            const bool priced = store && !(blueprint && g.owned.count(shopSelection_));
+            auto place = [&](unsigned id, float x, float y, float w, float h) {
+                if (!id)
+                    return;
+                auto& n = m.node(id);
+                n.set("absoluteX", double(x));
+                n.set("absoluteY", double(y));
+                n.set("width", double(std::max(1.f, w)));
+                n.set("height", double(std::max(1.f, h)));
+                n.set("autoScale", true);
+                n.set("clipText", true);
+                n.set("alignment", 1.0);
+            };
+            if (b.w > 30 && b.h > 8) {
+                const float side = std::min(18.f, b.h - 6);
+                const float iconX = b.x + b.w - side - 6;
+                place(m.find(btn, "Text"), b.x + 6, b.y,
+                      priced ? b.w * .5f - 6 : b.w - 12, b.h);
+                if (priced) {
+                    place(m.find(btn, "PriceText"), b.x + b.w * .5f, b.y,
+                          iconX - (b.x + b.w * .5f) - 5, b.h);
+                    place(m.find(btn, "currencySprite"), iconX,
+                          b.y + (b.h - side) * .5f, side, side);
+                }
+                m.solve();
+            }
         }
     }
 

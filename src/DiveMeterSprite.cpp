@@ -11,9 +11,9 @@ namespace rp {
     DiveMeterSprite::DiveMeterSprite(const OceanView* o, GridSprite* p)
         : OverlayAccessory(o, p, 2) {
         loadSheet("xml_resources/rp_menu.xml");
-        if (appendCell("dive_game_meter_frame", {0, -64}, 1, .03f))
+        if (appendImage("gfx/HUD/dive_game_meter_frame.png", {0, -64}, 1, .03f))
             frame_ = int(overlays_.size()) - 1;
-        if (appendImage("gfx/HUD/dive_game_meter", {0, -64}, 1, .04f))
+        if (appendImage("gfx/HUD/dive_game_meter.png", {0, -64}, 1, .04f))
             fill_ = int(overlays_.size()) - 1;
         if (appendCell("dive_game_button", {0, -10}, .5f, .05f))
             button_ = int(overlays_.size()) - 1;
