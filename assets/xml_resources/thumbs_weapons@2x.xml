@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:1a18448158c1516f6b636d35073fad5e$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/menu/thumbs_weapons@2x.png" width="1024" height="1024">
+    <sprite n="thumb_barnacle_boiler_green" x="1" y="347" w="140" h="110" oX="9" oY="12" oW="152" oH="136"/>
+    <sprite n="thumb_barracks_green" x="769" y="1" w="148" h="108" oX="1" oY="14" oW="152" oH="136"/>
+    <sprite n="thumb_bilge_rat_green" x="1" y="459" w="134" h="106" oX="8" oY="12" oW="152" oH="136"/>
+    <sprite n="thumb_blimey_bang_bang_green" x="755" y="317" w="142" h="112" oX="5" oY="15" oW="152" oH="136"/>
+    <sprite n="thumb_boom_buddha_green" x="615" y="131" w="148" h="78" oX="2" oY="34" oW="152" oH="136"/>
+    <sprite n="thumb_boss_green" x="1" y="1" w="152" h="120" oX="0" oY="8" oW="152" oH="136"/>
+    <sprite n="thumb_bounty_collector_green" x="1" y="235" w="142" h="110" oX="4" oY="17" oW="152" oH="136"/>
+    <sprite n="thumb_buccaneer_bazooka_green" x="1" y="687" w="108" h="124" oX="19" oY="5" oW="152" oH="136"/>
+    <sprite n="thumb_buckshot_billy_green" x="117" y="601" w="110" h="94" oX="22" oY="18" oW="152" oH="136"/>
+    <sprite n="thumb_captains_hook_green" x="919" y="1" w="96" h="122" oX="28" oY="7" oW="152" oH="136"/>
+    <sprite n="thumb_cauldron_cannon_green" x="155" y="111" w="148" h="122" oX="2" oY="7" oW="152" oH="136"/>
+    <sprite n="thumb_chainshot_green" x="155" y="1" w="152" h="108" oX="0" oY="16" oW="152" oH="136"/>
+    <sprite n="thumb_cutlass_launcher_green" x="617" y="1" w="150" h="128" oX="1" oY="2" oW="152" oH="136"/>
+    <sprite n="thumb_dead_mans_tale_green" x="899" y="349" w="124" h="110" oX="19" oY="17" oW="152" oH="136"/>
+    <sprite n="thumb_dragon_blaster_green" x="403" y="421" w="114" h="102" oX="17" oY="17" oW="152" oH="136"/>
+    <sprite n="thumb_firestorm_festival_green" x="1" y="567" w="114" h="118" oX="20" oY="13" oW="152" oH="136"/>
+    <sprite n="thumb_flogging_finnigan_green" x="609" y="211" w="144" h="116" oX="4" oY="9" oW="152" oH="136"/>
+    <sprite n="thumb_gong_show_green" x="145" y="235" w="140" h="116" oX="5" oY="11" oW="152" oH="136"/>
+    <sprite n="thumb_gunwall_green" x="309" y="1" w="152" h="100" oX="0" oY="16" oW="152" oH="136"/>
+    <sprite n="thumb_handcannon_holly_green" x="1" y="813" w="108" h="108" oX="23" oY="14" oW="152" oH="136"/>
+    <sprite n="thumb_jade_twins_green" x="143" y="353" w="136" h="122" oX="10" oY="7" oW="152" oH="136"/>
+    <sprite n="thumb_jolly_codger_green" x="557" y="329" w="114" h="110" oX="22" oY="14" oW="152" oH="136"/>
+    <sprite n="thumb_landlubber_lobber_green" x="755" y="219" w="144" h="96" oX="4" oY="21" oW="152" oH="136"/>
+    <sprite n="thumb_little_lady_green" x="919" y="211" w="84" h="136" oX="33" oY="0" oW="152" oH="136"/>
+    <sprite n="thumb_mcbarnacle_green" x="463" y="79" w="150" h="104" oX="1" oY="16" oW="152" oH="136"/>
+    <sprite n="thumb_mcdagger_green" x="1" y="123" w="148" h="110" oX="1" oY="17" oW="152" oH="136"/>
+    <sprite n="thumb_monster_musket_green" x="309" y="103" w="150" h="90" oX="1" oY="26" oW="152" oH="136"/>
+    <sprite n="thumb_mortar_mutineers_green" x="257" y="501" w="110" h="118" oX="22" oY="6" oW="152" oH="136"/>
+    <sprite n="thumb_mow_the_man_down_green" x="305" y="195" w="146" h="88" oX="2" oY="32" oW="152" oH="136"/>
+    <sprite n="thumb_pain_sprinkler_green" x="769" y="111" w="148" h="106" oX="2" oY="15" oW="152" oH="136"/>
+    <sprite n="thumb_raft_wood_green" x="287" y="285" w="138" h="86" oX="6" oY="28" oW="152" oH="136"/>
+    <sprite n="thumb_robot_pirate_01_green" x="919" y="125" w="94" h="84" oX="23" oY="29" oW="152" oH="136"/>
+    <sprite n="thumb_serpent_saws_green" x="137" y="477" w="118" h="122" oX="17" oY="8" oW="152" oH="136"/>
+    <sprite n="thumb_siamese_cannons_green" x="281" y="373" w="120" h="126" oX="21" oY="4" oW="152" oH="136"/>
+    <sprite n="thumb_skyward_dragon_fist_green" x="1" y="923" w="84" h="78" oX="37" oY="30" oW="152" oH="136"/>
+    <sprite n="thumb_thunder_clap_green" x="463" y="1" w="152" h="76" oX="0" oY="34" oW="152" oH="136"/>
+    <sprite n="thumb_tight_squeeze_green" x="427" y="317" w="128" h="102" oX="14" oY="13" oW="152" oH="136"/>
+    <sprite n="thumb_zen_gaarrrden_green" x="461" y="185" w="146" h="130" oX="3" oY="3" oW="152" oH="136"/>
+</TextureAtlas>
