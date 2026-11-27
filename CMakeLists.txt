@@ -137,6 +137,19 @@ if(RAFT_DESKTOP AND NOT ANDROID AND NOT CMAKE_CROSSCOMPILING)
   endif()
   target_link_libraries(raftpirates_desktop PRIVATE raftpirates_game hydra_native_host
       sfs_native hydra_http SDL2_mixer::SDL2_mixer nlohmann_json::nlohmann_json)
+  if(CMAKE_CONFIGURATION_TYPES)
+    set(RAFT_DESKTOP_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>")
+  else()
+    set(RAFT_DESKTOP_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}")
+  endif()
+  set_target_properties(raftpirates_desktop PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${RAFT_DESKTOP_OUTPUT}")
+  add_custom_target(raftpirates_desktop_assets
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory
+          "${CMAKE_CURRENT_SOURCE_DIR}/assets" "${RAFT_DESKTOP_OUTPUT}/assets"
+      COMMENT "Staging Raft Pirates runtime assets"
+      VERBATIM)
+  add_dependencies(raftpirates_desktop raftpirates_desktop_assets)
 endif()
 
 if(NOT ANDROID)

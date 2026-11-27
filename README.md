@@ -1,6 +1,6 @@
 # Raft Pirates
 
-An unofficial C++ reconstruction of Raft Pirates for game preservation, built on [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy). Java code is not distributed here. Authorized original assets may be placed in the root `assets/` directory for packaging.
+An unofficial C++ reconstruction of Raft Pirates for game preservation, built on [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy). Java code is not distributed here. The root `assets/` directory is staged automatically next to the desktop executable and bundled in Windows CI artifacts; the available collection remains incomplete.
 
 ## Build
 

@@ -1,6 +1,6 @@
 # Local original assets
 
-The original assets are not redistributed by this repository. To prepare a local copy for a future APK build or the desktop preview, use an original Raft Pirates APK you are authorized to use:
+The repository's `assets/` directory contains a partial original asset collection. The desktop target copies this directory beside its executable on every build, and Windows CI checks the staged and packaged asset hashes against the original inventory. An incomplete collection is reported in BUILD.txt and may still require local files before the game can run. To prepare a complete local copy, use an original Raft Pirates APK you are authorized to use:
 
 ```powershell
 python tools/prepare_assets.py "C:\path\to\RaftPirates.apk"
