@@ -320,7 +320,7 @@ namespace rp {
                     if (!comp || comp->width <= 0 || comp->height <= 0)
                         continue;
                     float time = comp->duration() > 0 ? std::fmod(time_, comp->duration()) : 0;
-                    float scale = raft ? scale_ : scale_ * .5f;
+                    float scale = raft ? scale_ * ocean_.Unit() / 192.f : scale_ * .5f;
                     auto point = p.appearance.pos;
                     if (!raft) {
                         point.x -= definition_.offsetX * scale_;
@@ -343,8 +343,14 @@ namespace rp {
                     sprite.image = im;
                     sprite.cell = {path, 0, 0,         im->width,  im->height,
                                    0,    0, im->width, im->height, false};
-                    sprite.SetPos(p.appearance.pos.x, p.appearance.pos.y);
-                    sprite.SetScale(scale_, scale_);
+                    const float artScale = raft ? scale_ * ocean_.Unit() / 192.f : scale_;
+                    auto pos = p.appearance.pos;
+                    if (raft) {
+                        pos.x += p.definition.offsetX * (artScale - scale_);
+                        pos.y += p.definition.offsetY * (artScale - scale_);
+                    }
+                    sprite.SetPos(pos.x, pos.y);
+                    sprite.SetScale(artScale, artScale);
                     sprite.SetColor(colour_.r, colour_.g, colour_.b, colour_.a);
                     sprite.SetPriority(p.priority);
                     manager.submit(std::move(sprite));

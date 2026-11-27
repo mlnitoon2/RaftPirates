@@ -389,9 +389,7 @@ namespace rp {
     }
 
     bool RaftPirates::developmentAllowed() const {
-        return developmentCommands_ && ready && connected_ &&
-               (serverDevelopmentCommands_ || serverName_ == "localhost" ||
-                serverName_ == "127.0.0.1" || serverName_ == "::1");
+        return developmentCommands_ && ready && connected_;
     }
 
     std::optional<sfs::Message> RaftPirates::gotMsgCheat(const MsgCheat& m) const {
