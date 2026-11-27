@@ -1,0 +1,160 @@
+<menu>
+
+	<event name="onPostInit" params="element">
+		local recv = game.engineReceiver();
+		element:SetupGenericListener( recv, "rp::MsgQuestInformationResponse", "gotQuestInfo" )
+		element:SetupGenericListener( recv, "rp::MsgToggleBlockHudItem", "toggleBlockHudItem")
+		element:SetupGenericListener( recv, "rp::MsgBattlePlacementState", "placementState")
+		
+		game.engineReceiver():Send( game.MsgSimpleRequest(element:GetReceiver(), game.MsgSimpleRequest_QUEST_INFO));
+		game.engineReceiver():Send( game.MsgRequestBattlePlacementState( ) )
+	</event>
+	
+	<event name="gotQuestInfo" params="element, msg">
+		for i = 0, msg.quests:size()-1, 1 do
+			if msg.quests[i]:getBlockInterfaceElements():size() &gt; 0 or msg.quests[i]:getUnblockInterfaceElements():size() &gt; 0 then
+				game.engineReceiver():Send( game.MsgToggleBlockHudItem( msg.quests[i]:getBlockInterfaceElements(), msg.quests[i]:getUnblockInterfaceElements()) )
+			end
+		end
+	</event>			
+	
+	<event name="toggleBlockHudItem" params="element, msg">
+		local blockedItems = msg.blockItems;
+		local unblockItems = msg.unblockItems;
+		for i=0, unblockItems:size()-1, 1 do
+			if unblockItems[i]=="retreat_button" then
+				element["RetreatButton"]:DoStoredScript("show")
+				break;
+			end
+		end
+		for i=0, blockedItems:size()-1, 1 do
+			if blockedItems[i]=="retreat_button" then
+				element["RetreatButton"]:DoStoredScript("hide")
+				break;
+			end
+		end
+	</event>
+	
+	<event name="placementState" params="element, msg">
+		if msg.state_ == 0
+		then
+			element["InstructionText"]["Text"]("text"):SetString("BATTLE_INSTRUCTION_PLACEMENT")
+		elseif msg.state_ == 1
+		then
+			element["InstructionText"]["Text"]("text"):SetString("BATTLE_INSTRUCTION_CHOOSE_ATTACK")
+		elseif msg.state_ == 2
+		then
+			element["InstructionText"]["Text"]("text"):SetString("BATTLE_INSTRUCTION_CHOOSE_DEFEND")
+		elseif msg.state_ == 3
+		then
+			element["InstructionText"]["Text"]("text"):SetString("BATTLE_INSTRUCTION_BAD_PLACEMENT")
+		else
+			element["InstructionText"]["Text"]("text"):SetString("ERROR_ERROR")
+		end
+		
+		local w = element["InstructionText"]:GetComponent("Text"):size().x
+		element["InstructionText"]["Sprite"]("width"):SetFloat(w)
+		
+	</event>
+	
+	<element name="InstructionText">
+		<position relativeTo="SCREEN" vAnchor="TOP" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="30" priority="10" />
+		<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+		
+		<textComponent name="Text" >
+			<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="4" priority="-1" />
+			<event name="onInit" params="component, element" >
+				
+				component("font"):Set("rp_font_title")
+				component("size"):Set(1.0)
+				component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+				
+				component("red"):SetFloat(1.0)
+				component("green"):SetFloat(1.0)
+				component("blue"):SetFloat(1.0)
+				
+				component("text"):SetString("BATTLE_INSTRUCTION_PLACEMENT")
+				component("layer"):SetString("HUD");
+			</event>
+		</textComponent>
+
+		<ninesliceComponent name="Sprite">
+			<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+			
+			<event name="onPostInit" params="component, element">				
+				component("topHeight"):SetFloat( 25 );
+				component("bottomHeight"):SetFloat( 25 );
+				component("leftWidth"):SetFloat( 25 );
+				component("rightWidth"):SetFloat( 25 );
+				
+				component("height"):SetFloat( 0 )
+				local w = element:GetComponent("Text"):size().x
+				component("width"):SetFloat( w )
+				component("spriteName"):Set("gfx/menu/scroll_frame")				
+				component("layer"):SetString("HUD")
+			</event>
+			
+		</ninesliceComponent>
+		
+	</element>
+
+
+	<template type="HudButton" name="RetreatButton">
+	
+		<templateVar name="$image" equals="btn_red" />
+		<templateVar name="$sheet" equals="rp_menu" />
+		<position relativeTo="SCREEN" vAnchor="BOTTOM" hAnchor="RIGHT" />
+		<orientation vAnchor="BOTTOM" hAnchor="RIGHT" xOffset="0" yOffset="0" priority="20" />
+		
+		<event name="hide" params="element">
+			hide(element)
+			element["Sprite"]("visible"):SetInt(0)
+			element["Touch"]("enabled"):SetInt(0)
+		</event>
+		<event name="show" params="element">
+				show(element)
+				element["Sprite"]("visible"):SetInt(1)
+				element["Touch"]("enabled"):SetInt(1)
+		</event>
+		<event name="greyOut" params="element">
+			element["Sprite"]("alpha"):SetFloat(0.5)
+			element["UpSprite"]("alpha"):SetFloat(0.5)
+			element["DownSprite"]("alpha"):SetFloat(0.5)
+			element["Touch"]("enabled"):SetInt(0)
+		</event>
+		<event name="ungreyOut" params="element">			
+			element["Sprite"]("alpha"):SetFloat(1.0)
+			element["UpSprite"]("alpha"):SetFloat(1.0)
+			element["DownSprite"]("alpha"):SetFloat(1.0)
+			element["Touch"]("enabled"):SetInt(1)
+		</event>
+		
+		<spriteSheetComponent name="Sprite">
+			<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+			<event name="onInit" params="component, element" >
+				component("spriteName"):Set("btn_retreat")
+				component("sheetName"):Set("xml_resources/rp_menu.xml")
+				component("layer"):SetString("HUD");
+			</event>
+		</spriteSheetComponent>
+		<touchComponent name="Touch">
+			<size dependentOnElement="element:name()"/>
+			<event name="onTouchUp" params="component, element">
+				
+				onTouchUp(component, element)
+				
+				menu:pushPopUp("retreat_confirm")
+				
+				--[[game.exitBattle()--]]
+				
+			</event>
+		</touchComponent>
+	</template>	
+
+
+
+</menu>

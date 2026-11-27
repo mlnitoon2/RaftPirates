@@ -1,0 +1,153 @@
+<template>
+	<size dependentOnElement="element:name()" dependentOnComponent="bg"/>
+	
+	<event name="onInit" params="element">
+		element("buttonId"):SetInt(-1)
+		element("newMenu"):SetInt(0)
+		element("is_new"):SetInt(0)
+		
+		element("quest_id"):SetInt( -1 )
+		element("quest_name"):SetString( "" )
+		element("quest_description"):SetString( "" )
+		element("quest_highlight"):SetString( "" )
+		element("quest_sheetId"):SetString("")
+		element("quest_imageId"):SetString("")
+		element("quest_sheetIdLeft"):SetString("")
+		element("quest_imageIdLeft"):SetString("")
+		element("quest_sheetIdBottom"):SetString("")
+		element("quest_imageIdBottom"):SetString("")
+		
+		element("quest_progress"):SetInt(0)
+		
+		--[[element("block_interface"):SetVectorStr()
+		element("unblock_interface"):SetVectorStr()]]
+		
+	</event>
+	
+	<event name="onPostInit" params="element">
+		element:SetupGenericListener( element:GetReceiver(), "rp::MsgQuestTypeInformationResponse", "gotQuestTypeInfo" )
+	
+	</event>
+	
+	<event name="setQuestTypeId" params="element">
+		game.engineReceiver():Send( game.MsgQuestTypeInformationRequest(element:GetReceiver(), element("quest_type_id"):GetInt()));
+	</event>
+	
+	<event name="gotQuestTypeInfo" params="element, msg">
+		if element("quest_type_id"):GetInt()==msg.typeId then
+			
+			if msg.spriteSheetID~="" and msg.imageID~="" then
+				element["ItemImage"]("spriteName"):Set(msg.imageID)
+				element["ItemImage"]("sheetName"):Set("xml_resources/"..msg.spriteSheetID)
+			end
+		end
+	</event>
+
+	<event name="disable" params="element">
+		element["bg"]("visible"):SetInt(0)
+		element["ItemImage"]("visible"):SetInt(0)
+		element["NewQuest"]("visible"):SetInt(0)
+		element["Touch"]("enabled"):SetInt(0)		
+		element["ProgressText"]("visible"):SetInt(0)
+	</event>
+	
+	<event name="enable" params="element">
+		element["bg"]("visible"):SetInt(1)
+		element["ItemImage"]("visible"):SetInt(1)
+		element["NewQuest"]("visible"):SetInt( element("is_new"):GetInt() )
+		element["Touch"]("enabled"):SetInt(1)
+		
+		local progress = element("quest_progress"):GetInt()
+		if progress ~=0 and progress ~= 100 then
+			element["ProgressText"]("visible"):SetInt(1)
+			element["ProgressText"]("text"):SetString(progress.."%")
+		else
+			element["ProgressText"]("visible"):SetInt(0)
+		end
+		
+	</event>
+	
+	<spriteSheetComponent name="bg">
+		<event name="onInit" params="component, element" >
+			component("useOffsets"):SetInt(1)
+			component("spriteName"):Set("btn_yellow")
+			component("sheetName"):Set("xml_resources/rp_menu.xml")
+			component("layer"):SetString("HUD");
+		</event>
+	</spriteSheetComponent>
+	<spriteSheetComponent name = "ItemImage">
+		<position relativeTo="element[&quot;bg&quot;]" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+		<event name="onInit" params="component, element" >
+			component("useOffsets"):SetInt(1)
+			component("spriteName"):Set("btn_challenge")
+			component("sheetName"):Set("xml_resources/rp_menu.xml")
+			component("layer"):SetString("HUD");
+		</event>
+	</spriteSheetComponent>
+	<spriteSheetComponent name = "NewQuest">
+		<position relativeTo="element[&quot;bg&quot;]" vAnchor="TOP" hAnchor="LEFT" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="0" priority="-2" />
+		<event name="onInit" params="component, element" >
+			component("useOffsets"):SetInt(1)
+			component("spriteName"):Set("notification_new")
+			component("sheetName"):Set("xml_resources/rp_menu.xml")
+			component("layer"):SetString("HUD");
+		</event>
+	</spriteSheetComponent>	
+	<touchComponent name="Touch">
+		<size dependentOnElement="element:name()" />
+		<event name="onTouchUp" params="component, element">
+			if element:parent()("scrolling"):GetInt() == 0 then
+				playSoundFx("audio/sfx/menu_button_down.wav")	
+				
+				if element("quest_id"):GetInt()~=-1 then
+					
+					--[[A hack for this one tutorial so the tutorial ends when you select it from the log instead of opening the log]]
+					if element("quest_name"):GetString() == "TUT_CHALLENGE"
+					then
+						game.sendQuestEvent( game.MsgQuestEvent():addEvent( "open_quest", 1 ) )
+					else
+						menu:popPopUp()
+						
+						game.engineReceiver():Send(game.MsgStartDialog( element("quest_id"):GetInt(), element("quest_name"):GetString(), 
+							element("quest_description"):GetString(),
+							element("quest_highlight"):GetString(),
+							element("block_interface"):GetVectorStr(),
+							element("unblock_interface"):GetVectorStr(),
+							element("quest_sheetId"):GetString(),
+							element("quest_imageId"):GetString(),
+							element("quest_sheetIdLeft"):GetString(),
+							element("quest_imageIdLeft"):GetString(),
+							element("quest_sheetIdBottom"):GetString(),
+							element("quest_imageIdBottom"):GetString()
+							
+							))
+					end
+				end
+			end
+		</event>
+	</touchComponent>
+	
+	<textComponent name="ProgressText" >
+		<position relativeTo="element" vAnchor="BOTTOM" hAnchor="HCENTER" />
+		<orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-2" />
+		
+		<event name="onInit" params="component, element" >
+			component("font"):Set("rp_font_title")
+			component("size"):Set(0.7)
+			component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+			
+			component("red"):SetFloat(1.0)
+			component("green"):SetFloat(1.0)
+			component("blue"):SetFloat(1.0)
+			
+			component("layer"):SetString("HUD");
+			
+			--[[component("text"):SetString("100%")]]
+			
+		</event>
+	</textComponent>
+	
+</template>
+

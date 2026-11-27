@@ -1,0 +1,155 @@
+<template name="buyMenuTopElement">
+
+	<size dependentOnElement="element:name()" dependentOnComponent="bg" />
+  
+	<event name="onInit" params="element">
+	
+	  print "onInit"
+		element("tipNum"):SetInt(1)
+		--[[initialize the lua random number generator]]
+		math.randomseed( os.time() )
+		--[[since Windows/OS are a big buggy, pop a few random numbers before using]]
+		math.random(); math.random(); math.random()
+		
+		element:DoStoredScript("newTip")
+    
+	</event>
+	
+	<event name="onShow" params="element">
+		element:DoStoredScript("newTip")
+	</event>
+	
+	<event name="newTip" params="element">
+
+		--[[add 1 since the tips are 1-indexed]]
+		element("tipNum"):SetInt((math.random()*7)+1)
+
+		element["itemTitle"]("text"):SetString("MATERIAL_TIPS_"..element("tipNum"):GetInt())
+
+		local bgWidth = element:GetComponent("bg"):size().x
+		local titleY = element:GetComponent("itemTitle")("absY"):GetInt()
+		local buttonY = element:GetElement("buyBtn")("absY"):GetInt()
+		local buttonHeight = element:GetElement("buyBtn")["UpSprite"]("height"):GetInt()
+		local descHeight =  (buttonY - titleY) - buttonHeight
+		
+		element:GetComponent("itemDesc"):setSize(Vector2(bgWidth, descHeight))
+		
+		element["itemDesc"]("text"):SetString("MATERIAL_TIPS_"..element("tipNum"):GetInt().."_D")
+		element["itemDesc"]("size"):Set(1.0)
+	</event>
+
+	<spriteSheetComponent name="BackSprite">
+		<position relativeTo="element[&quot;bg&quot;]" vAnchor="TOP" hAnchor="LEFT" />
+		<orientation vAnchor="BOTTOM" hAnchor="RIGHT" xOffset="0" yOffset="0" priority="-1" />
+		<event name="onInit" params="component, element">
+			component("spriteName"):SetString("btn_return")
+			component("sheetName"):SetString("xml_resources/rp_menu.xml")
+			component("layer"):SetString("HUD")
+		</event>
+		<event name="onPostSolve" params="component, element">
+		</event>
+	</spriteSheetComponent>
+	
+	<ninesliceComponent name="bg">
+		<event name="onInit" params="component, element" >
+			component("height"):SetFloat( screenHeight() * 0.3167   )
+			component("width"):SetFloat( component("height"):GetFloat()*3.35 )
+			
+			component("topHeight"):SetFloat( 16 );
+			component("bottomHeight"):SetFloat( 16 );
+			component("leftWidth"):SetFloat( 16 );
+			component("rightWidth"):SetFloat( 16);
+			
+			component("spriteName"):Set("gfx/menu/popup_bg")
+			component("layer"):SetString("HUD");
+		</event>
+	</ninesliceComponent>
+
+	<template type="HudButton" name="buyBtn">
+		<templateVar name="$image" equals="btn_long_blue" />
+		<templateVar name="$sheet" equals="rp_menu" />
+		<size dependentOnElement="element:name()" dependentOnComponent="UpSprite" />
+	    <position relativeTo="element:parent()" vAnchor="BOTTOM" hAnchor="HCENTER" />
+		<orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+		<touchComponent name="Touch">
+			<event name="onTouchUp" params="component, element">
+				onTouchUp(component,element)
+				menu:showPopUp( false )
+				game.engineReceiver():Send( game.MsgShowStore("materials") )
+			</event>
+		</touchComponent>
+		<textComponent name="Text">
+			<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+
+			<event name="onInit" params="component, element" >
+				component("multiline"):SetInt(0)
+				component("font"):Set("rp_font_title")
+				component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+
+				component("red"):SetFloat(1.0)
+				component("green"):SetFloat(1.0)
+				component("blue"):SetFloat(1.0)
+
+				component("text"):SetString("BUY_MATERIALS")
+				component("size"):Set(1.0)
+
+				component("layer"):SetString("HUD")
+				component("autoScale"):SetInt(1)
+			</event>
+		<event name="onPostSolve" params="component, element" >
+			component:setSize(Vector2(element["UpSprite"]("width"):GetInt()-4*deviceScaleX(), 0))
+      	</event>
+		</textComponent>
+
+	</template>
+
+
+	<textComponent name="itemTitle">
+		<position relativeTo="element[&quot;bg&quot;]" vAnchor="TOP" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="-9" priority="-1" />
+		<event name="onPostInit" params="component, element">
+			component("multiline"):SetInt(0)
+			component("font"):Set("rp_font_title")
+			component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+
+			component("red"):SetFloat(1.0)
+			component("green"):SetFloat(1.0)
+			component("blue"):SetFloat(1.0)
+			component("autoScale"):SetInt(1)
+
+		    local bgWidth = element:GetComponent("bg"):size().x
+			local bgHeight = element:GetComponent("bg"):size().y
+			local buttonHeight = element:GetElement("buyBtn"):GetComponent("UpSprite"):size().y
+			local titleHeight = 0.33 * ( bgHeight - buttonHeight)
+      		component:setSize(Vector2(bgWidth, titleHeight))
+
+			--[[component("text"):SetString("MATERIAL_TIPS_"..element("tipNum"):GetInt())]]
+			component("size"):Set(1.0)
+
+			component("layer"):SetString("HUD")
+		</event>
+	</textComponent>
+	
+	<textComponent name="itemDesc">
+		<position relativeTo="element:name()" component="itemTitle" vAnchor="BOTTOM" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+		<event name="onPostInit" params="component, element">
+			component("font"):Set("blue_highway")
+			component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+
+			component("red"):SetFloat(1.0)
+			component("green"):SetFloat(1.0)
+			component("blue"):SetFloat(1.0)
+
+			component("autoScale"):SetInt(1)
+			component("autoScaleFactor"):SetFloat(0.01)
+			component("multiline"):SetInt(1)
+
+			component("text"):SetString("MATERIAL_TIPS_"..element("tipNum"):GetInt().."_D")
+			component("size"):Set(1.0)
+
+			component("layer"):SetString("HUD")
+		</event>
+	</textComponent>
+</template>
