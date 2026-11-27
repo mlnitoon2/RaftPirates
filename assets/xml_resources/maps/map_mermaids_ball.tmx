@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="34" height="24" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="rp_map" tilewidth="16" tileheight="16">
+  <image source="gfx/map/rp_map.png" width="512" height="256"/>
+ </tileset>
+ <layer name="BG" width="34" height="24">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC+3QsQEAIAwCQVaPuojGQWUDS5ovvqDkStJw0y1Xob3dce1ucKf+44EHHnjggQceeOCBBx7//QASMLJpwAwAAA==
+  </data>
+ </layer>
+ <layer name="Safe Water" width="34" height="24">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC+2VSw6AIAxEu1FUvIZfLskBOAqHdIxxYwyBUnad5IVdOzOLQqRSyciAEUyJtyPyrfZjNvVgzmSAFyPoxzwzs/d/gXdf04+lsvw5/ViGnyDo4SUwfMQGPqL2oX0k4PThwCroYYcHV3FHtmcGez+y+EXwri5U1s+df2v4z9z9HOBMvJL5VSrVvy4JjCiIwAwAAA==
+  </data>
+ </layer>
+ <layer name="Islands" width="34" height="24">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC+2UWwrCMBBFZ0Huw/rYh89F5EdbLS5D/XKPnmILQ5hoTVMQyYFLPwZu7kwyFclk/ospKlAp4qzaAi3RzKinAF+ZoxXacsbdO6dsa5NWG+pW1li6/vGVI74HdDb8ySVrlcPKGovf4w3fK5oG/Cu0Q3tkZY3lojJokc1xR26sN+DzCOTQb6B4M59UhObRZz56d4bm/DSP0Hy6vdI5h+yOvwOxSrE7zQ6cXl5fn08Prg7seSx4SS395tP0T3ZXjfh+9T8i9E3ZfyaT+W2e84nto8AMAAA=
+  </data>
+ </layer>
+ <layer name="Islands 2" width="34" height="24">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC+2TyQ3CMBQFbWpgpw12jlBC2I/QAFKA668BmqANlkZYCmGCE8lCQsohDhc/aQ6xE+vFHivl4+Pzj1zh5mDdIpSgDJUU7z/h5aBHE1rQho6D9dMmgDFMYAqnP/UIYQs72Ctz/kOt1Ei78eBXznCxnqPzX9FhrY0HG6Ukjx530Np0qUIN6tCI53FXcFhwWXBa7Pvy/Q9ZdHlAF3rQh0E8h7uCw4LLgtOS3JeoQ0Gb77LODOawgGU8hruCw4LLElj7kXR3nQMc1cddwWHBZQmt/fDx8fHJM2/G6P7AwAwAAA==
+  </data>
+ </layer>
+</map>
