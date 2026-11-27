@@ -205,7 +205,7 @@ namespace rp {
         try {
             diving_ = std::make_unique<diving_game::DivingGame>(
                 ocean_->assetRoot(), unsigned(std::max(1, game_.diveState.depth + 1)));
-            diving_->setDuration(float(std::max(8, game_.diveState.totalSeconds)));
+            diving_->setDuration(std::max(8.f, game_.diveState.totalSeconds));
             diving_->setPos(ocean_->Width() + 210, 22);
             diving_->moveTo(210, 22, 1.f);
         } catch (const std::exception&) {

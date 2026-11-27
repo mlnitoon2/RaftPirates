@@ -369,7 +369,7 @@ namespace rp {
             try {
                 diving_ = std::make_unique<diving_game::DivingGame>(
                     root_, unsigned(g.diveState.depth + 1));
-                diving_->setDuration(float(std::max(8, g.diveState.totalSeconds)));
+                diving_->setDuration(float(std::max(8.f, g.diveState.totalSeconds)));
                 divingUnit_ = {g.diveState.parent, g.diveState.object};
                 diveClosing_ = false;
                 diving_->setPos(850, 22);
