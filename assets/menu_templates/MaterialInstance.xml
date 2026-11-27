@@ -1,0 +1,59 @@
+<template name="template_materialinstance">
+	
+	<size dependentOnElement="element:name()" dependentOnComponent="Amount" />
+	
+	<spriteSheetComponent name="Icon">
+		<position relativeTo="element:name()" vAnchor="BOTTOM" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priorityOffset="-10" />
+		<event name="onInit" params="component, element">
+			component("spriteName"):SetString(game.getMaterialInfoSheetImage(element("MatId"):GetInt()))
+			if(component("spriteName"):GetString() ~= "") then
+				component("sheetName"):SetString("xml_resources/"..game.getMaterialInfoSheet(element("MatId"):GetInt()))
+			end
+			component("size"):SetFloat(0.8)
+			component("layer"):SetString("HUD")
+		</event>
+	</spriteSheetComponent>
+	
+	<textComponent name="Amount">
+		<size w="40" />
+		<event name="onInit" params="component, element">
+			component("multiline"):SetInt(0)
+			component("font"):Set("blue_highway")	
+			component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+			
+			component("text"):SetString(element("MatAmount"):GetInt())
+			
+			component("size"):SetFloat(0.9)
+			
+			component("red"):SetFloat(1.0)
+			component("green"):SetFloat(1.0)
+			component("blue"):SetFloat(1.0)
+			component("autoScale"):SetInt(1)
+			component("layer"):SetString("HUD")
+		</event>
+	</textComponent>
+	
+	<event name="onPostInit" params="element">
+		if(element("MatAmount"):GetInt() == 0) then
+			element["Amount"]("blue"):SetFloat(0.0)
+			element["Amount"]("green"):SetFloat(0.0)
+			element["Icon"]("alpha"):SetFloat(0.5)
+		end
+	</event>
+	
+	<event name="refresh" params="element">
+		element["Amount"]("text"):SetString(element("MatAmount"):GetInt())
+		if(element("MatAmount"):GetInt() == 0) then
+			element["Amount"]("blue"):SetFloat(0.0)
+			element["Amount"]("green"):SetFloat(0.0)
+			element["Icon"]("alpha"):SetFloat(0.5)
+		else
+			element["Amount"]("blue"):SetFloat(1.0)
+			element["Amount"]("green"):SetFloat(1.0)
+			element["Icon"]("alpha"):SetFloat(1.0)
+		end
+	</event>
+	
+	
+</template>
