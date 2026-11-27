@@ -22,7 +22,7 @@ void PerimeterWallSprite::AddBalloons(){
     if(!ocean_||celebrating_)return;
     celebrating_=true;elapsed_=0;balloons_.clear();
     try{
-        balloonResource_=std::make_shared<sys::res::ResourceAEAnim>(sys::res::ResourceAEAnim::Create(ocean_->assetRoot()/"xml_bin/anim_build_complete.bin",sys::res::AEFormat::RaftPirates2013));
+        balloonResource_=std::make_shared<sys::res::ResourceAEAnim>(sys::res::ResourceAEAnim::Create(ocean_->assetRoot()/"xml_bin/anim_build_complete.bin",sys::res::AEFormat::Rev1_5));
         for(const std::string color:{"red","blue","green","yellow"}){
             if(!balloonResource_->find(color+"_intro"))continue;
             auto a=std::make_unique<AEAnim>(balloonResource_);a->setLoop(false);a->setAnimation(color+"_intro");

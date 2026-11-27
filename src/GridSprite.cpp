@@ -249,7 +249,7 @@ namespace rp {
                     auto a = bins.find(path);
                     if (a == bins.end())
                         a = bins.emplace(path, ResourceAEAnim::Create(root / path,
-                                                                      AEFormat::RaftPirates2013))
+                                                                      AEFormat::Rev1_5))
                                 .first;
                     const auto& bin = a->second;
                     const AEComp* comp = nullptr;
