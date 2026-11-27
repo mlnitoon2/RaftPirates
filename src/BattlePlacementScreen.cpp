@@ -12,15 +12,18 @@ namespace rp {
     }
 
     void BattlePlacementScreen::Update(const Player& own, const Player& enemy) {
-        own_.Update(own);
-        enemy_.Update(enemy);
-        own_.HighlightRaftsNextTo(enemy_);
-        enemy_.HighlightRaftsNextTo(own_);
+        own_.SetToObject(own);
+        enemy_.SetToObject(enemy);
+        own_.HighlightAttackRafts(enemy_);
+        enemy_.HighlightAttackRafts(own_);
     }
 
     void BattlePlacementScreen::SetPosition(Cell position) {
-        if (attacker_)
-            own_.SetObjectPosition(position);
+        if (attacker_) {
+            own_.SetPosition(position);
+            own_.HighlightAttackRafts(enemy_);
+            enemy_.HighlightAttackRafts(own_);
+        }
     }
 
     void BattlePlacementScreen::SetToObject() {
@@ -42,8 +45,7 @@ namespace rp {
 
     bool BattlePlacementScreen::Select(bool own, int id) {
         auto& ship = own ? own_ : enemy_;
-        ship.SelectRaft(id);
-        return ship.selected() != 0;
+        return ship.Select(id);
     }
 
     size_t BattlePlacementScreen::Pieces() const {

@@ -30,6 +30,8 @@ add_library(raftpirates_game STATIC
     src/Blueprint.cpp
     src/DivingGame.cpp
     src/RaftComponent.cpp
+    src/Wreckage.cpp
+    src/Barracks.cpp
     src/RaftFactory.cpp
     src/RaftInfo.cpp
     src/RaftComponentFactory.cpp

@@ -24,6 +24,15 @@ namespace rp {
         }
     }
 
+    void BattleShipPlacementSprite::SetToObject(const Player& player) { Update(player); }
+    void BattleShipPlacementSprite::SetPosition(Cell position) { SetObjectPosition(position); }
+    bool BattleShipPlacementSprite::Select(int id) { SelectRaft(id); return selected_ != 0; }
+    void BattleShipPlacementSprite::HighlightAttackRafts(const BattleShipPlacementSprite& other) {
+        HighlightRaftsNextTo(other);
+    }
+    // Original ARM implementation is a return-only weak hook.
+    void BattleShipPlacementSprite::UpdateParticles() {}
+
     void BattleShipPlacementSprite::SetObjectPosition(Cell position) {
         offset_ = position;
     }

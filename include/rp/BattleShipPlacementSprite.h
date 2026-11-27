@@ -7,6 +7,11 @@ namespace rp {
         BattleShipPlacementSprite();
         ~BattleShipPlacementSprite();
         void Update(const Player& player);
+        void SetToObject(const Player& player);
+        void SetPosition(Cell position);
+        bool Select(int id);
+        void HighlightAttackRafts(const BattleShipPlacementSprite& other);
+        void UpdateParticles();
         void SetObjectPosition(Cell position);
         void SetPositionOfSprites(Cell position);
         void Revert();
