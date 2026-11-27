@@ -1,0 +1,41 @@
+<menu>
+	<element name="splash">
+		<size dependentOnElement="element:name()" dependentOnComponent="blackout" />
+		<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="100" />
+		
+		<event name="onInit" params="element">
+			element("splashFinished"):SetFloat(0)
+		</event>
+
+		<spriteComponent name="blackout">
+			<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="50" />
+		
+			<event name="onInit" params="component, element">
+				component("spriteName"):Set("gfx/black_bg")
+				component("size"):SetFloat( 3.2 )
+			</event>
+		</spriteComponent>
+		
+		<aeComponent name="bbb_logo">
+			<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="0" priority="0" />
+			<event name="onInit" params="component, element">
+				component("animationName"):Set("xml_bin/bbb_splash.bin")
+			</event>
+			
+			<event name="onAnimationFinished" params="component, element">
+				element("splashFinished"):SetFloat(1)
+				game.startGame();
+			</event>
+			
+		</aeComponent>
+		<touchComponent name="Touch">
+			<size dependentOnElement="element:name()"/>
+			<event name="onTouchUp" params="component, element">
+				game.startGame();
+			</event>
+		</touchComponent>				
+	</element>
+</menu>

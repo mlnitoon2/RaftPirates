@@ -1,0 +1,43 @@
+<template>
+	<size dependentOnElement="element:name()" dependentOnComponent="ItemImage" />
+	<event name="onInit" params="element">
+		
+		element("blueprintImg"):SetString("")
+		element("blueprintSheet"):SetString("")
+	</event>
+	
+	<event name="setBlueprintInfo" params="element">
+	
+		if element("blueprintImg"):GetString() ~= "" then
+
+			element["ItemImage"]["Sprite"]("spriteName"):SetString(""..element("blueprintImg"):GetString())
+			element["ItemImage"]["Sprite"]("sheetName"):SetString("xml_resources/" .. element("blueprintSheet"):GetString())
+			element["ItemImage"]["Sprite"]("layer"):SetString("PIRATE_MAP_HUD");
+			
+			element("yOffset"):SetInt(element("yOffset"):GetInt()+element["ItemImage"]["Sprite"]("height"):GetInt()/3)
+		else
+			print("blueprintImg is nothing")
+		end
+	</event>
+
+	
+	<event name="enableMe" params="element">
+		element["ItemImage"]["Sprite"]("visible"):SetInt(1)
+	</event>
+	
+	<event name="disableMe" params="element">
+		element["ItemImage"]["Sprite"]("visible"):SetInt(0)
+	</event>
+
+	<element name="ItemImage">
+		<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+		<position relativeTo="element:parent()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+		<spriteSheetComponent name = "Sprite">
+			<event name="onInit" params="component, element" >
+				component("useOffsets"):SetInt(1)
+				component("layer"):SetString("PIRATE_MAP_HUD");
+			</event>
+		</spriteSheetComponent>
+	</element>
+</template>

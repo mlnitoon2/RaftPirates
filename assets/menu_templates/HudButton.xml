@@ -1,0 +1,81 @@
+<template>
+	<defaultTemplateVar name="$layer" equals="HUD"/>
+	<size dependentOnElement="element:name()" dependentOnComponent="UpSprite" />
+
+	<spriteSheetComponent name="UpSprite">
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("$image")	
+			component:GetVar("sheetName"):SetString("xml_resources/$sheet.xml")
+			component:GetVar("visible"):SetInt(1)
+			component:GetVar("layer"):Set("$layer")					
+		</event>
+	</spriteSheetComponent>
+	
+	<spriteSheetComponent name="DownSprite">
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("$image_over")	
+			component:GetVar("sheetName"):SetString("xml_resources/$sheet.xml")
+			component:GetVar("visible"):SetInt(0)
+			component:GetVar("layer"):Set("$layer")					
+		</event>
+	</spriteSheetComponent>
+	
+	<touchComponent name="Touch">
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />		
+		<size dependentOnElement="element:name()" dependentOnComponent="UpSprite" />
+		<event name="onInit" params="component, element">
+			component("singleTouch"):SetInt(1)
+		</event>
+		<event name="onTouchDown" params="component, element">
+			element:GetComponent("UpSprite"):GetVar("visible"):SetInt(0)				
+			element:GetComponent("DownSprite"):GetVar("visible"):SetInt(1)				
+		</event>
+		<event name="onTouchUp" params="component, element">
+			element:GetComponent("UpSprite"):GetVar("visible"):SetInt(1)				
+			element:GetComponent("DownSprite"):GetVar("visible"):SetInt(0)	
+			playSoundFx("audio/sfx/menu_button_down.wav")	
+		</event>			
+		<event name="onTouchRelease" params="component, element">
+			element:GetComponent("UpSprite"):GetVar("visible"):SetInt(1)				
+			element:GetComponent("DownSprite"):GetVar("visible"):SetInt(0)	
+		</event>					
+	</touchComponent>
+	
+	<function name="hide" params="element">
+		element:GetComponent("UpSprite"):GetVar("visible"):SetInt(0)				
+		element:GetComponent("DownSprite"):GetVar("visible"):SetInt(0)
+		element:GetComponent("Touch"):GetVar("enabled"):SetInt(0)
+	</function>
+	
+	<function name="show" params="element">
+		element:GetComponent("UpSprite"):GetVar("visible"):SetInt(1)				
+		element:GetComponent("DownSprite"):GetVar("visible"):SetInt(0)
+		element:GetComponent("Touch"):GetVar("enabled"):SetInt(1)
+	</function>
+	
+	<function name="greyOut" params="element">
+		element:GetComponent("UpSprite"):GetVar("red"):SetFloat(0.5)	
+		element:GetComponent("UpSprite"):GetVar("green"):SetFloat(0.5)	
+		element:GetComponent("UpSprite"):GetVar("blue"):SetFloat(0.5)		
+		
+		element:GetComponent("DownSprite"):GetVar("red"):SetFloat(0.5)
+		element:GetComponent("DownSprite"):GetVar("green"):SetFloat(0.5)
+		element:GetComponent("DownSprite"):GetVar("blue"):SetFloat(0.5)
+		
+		element:GetComponent("Touch"):GetVar("enabled"):SetInt(0)
+	</function>
+	
+	<function name="ungreyOut" params="element">
+		element:GetComponent("UpSprite"):GetVar("red"):SetFloat(1)	
+		element:GetComponent("UpSprite"):GetVar("green"):SetFloat(1)	
+		element:GetComponent("UpSprite"):GetVar("blue"):SetFloat(1)		
+		
+		element:GetComponent("DownSprite"):GetVar("red"):SetFloat(1)
+		element:GetComponent("DownSprite"):GetVar("green"):SetFloat(1)
+		element:GetComponent("DownSprite"):GetVar("blue"):SetFloat(1)
+		
+		element:GetComponent("Touch"):GetVar("enabled"):SetInt(1)
+	</function>
+	
+</template>

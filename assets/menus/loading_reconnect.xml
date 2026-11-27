@@ -1,0 +1,74 @@
+ <menu>
+	
+	<element name="LoadGraphic">
+	
+		<size dependentOnElement="element:name()" dependentOnComponent="Anim" />
+		<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="100" />
+	
+		<event name="onInit" params="element">			
+			element:SetupGenericListener(game.engineReceiver(),  "rp::MsgLoadStart", "onLoadStart")
+			element:SetupGenericListener(game.engineReceiver(),  "rp::MsgLoadPercentage", "onLoadPercentChanged")
+			element:SetupGenericListener(game.engineReceiver(),  "rp::MsgLoadFinished", "onLoadFinished")
+			menu:pushPopUp("reconnect")			
+		</event>
+	
+		<event name="onLoadStart" params="element, msg">
+			print("OnLoadStart")	
+		</event>
+	
+		<event name="onLoadPercentChanged" params="element, msg">
+			print("onLoadPercentChanged")		
+		</event>
+	
+		<event name="onLoadFinished" params="element, msg">
+				print("onLoadFinished")	
+				element["Anim"]("animation"):SetString("outro")
+		</event>
+	
+	
+		<aeComponent name="Anim">
+			<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="0" priority="0" />
+			<event name="onInit" params="component, element">
+				component("animationName"):Set("xml_bin/anim_loading_screens.bin")
+				component("animation"):SetString("intro")
+				component("layer"):SetString("LOADING")				
+			</event>
+			
+			<event name="onAnimationFinished" params="component, element">
+				print("anim finished")
+				local anim = component("animation"):GetString()
+				if ( anim == "intro" ) then					
+					component("animation"):SetString("idle")
+				elseif ( anim == "outro" ) then
+					game.engineReceiver():Send( game.MsgLoadingAnimFinished() )
+				end
+			</event>
+			
+		</aeComponent>
+		
+		<element name="inputBlocker">
+			<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="5" />
+			<size w="screenWidth()" h="screenHeight()" />
+			
+			
+			<event name="onInit" params="element">
+			</event>
+
+			<touchComponent name="Touch">
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">	
+					print("inputBlocker")
+				</event>
+			</touchComponent>
+		</element>
+			
+	
+	
+	
+	</element>
+ 
+ 
+ </menu>

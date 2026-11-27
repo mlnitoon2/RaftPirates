@@ -1,0 +1,108 @@
+<template>
+	<defaultTemplateVar name="$pickupMode" equals="0"/>	
+	<size dependentOnElement="element:name()" dependentOnComponent="bg"/>
+	
+	<event name="onInit" params="element">
+		element("materialId"):SetInt(-1)
+		element("number"):SetInt(0)
+		element:SetupGenericListener(element:GetReceiver(), "rp::MsgMaterialInformationResponse", "gotMaterialInfo")
+	</event>
+	
+	<event name="enable" params="element">
+		element["bg"]("visible"):SetInt(1)
+		element["ItemImage"]("visible"):SetInt(1)
+		element["Title"]("visible"):SetInt(1)
+		element["Number"]("visible"):SetInt(1)
+	</event>
+	<event name="disable" params="element">
+		element["bg"]("visible"):SetInt(0)
+		element["ItemImage"]("visible"):SetInt(0)
+		element["Title"]("visible"):SetInt(0)
+		element["Number"]("visible"):SetInt(0)
+	</event>
+	
+	<event name="setMaterialId" params="element">
+		game.engineReceiver():Send( game.MsgMaterialInformationRequest(element:GetReceiver(), element("materialId"):GetInt()) )
+	</event>
+	<event name = "setMaterialAmt" params="element">
+		if $pickupMode==0 then
+			element["Number"]("text"):SetString(element("number"):GetInt())
+		else
+			element["Number"]("text"):SetString("+"..element("number"):GetInt())
+		end
+	</event>
+	
+	
+	<event name="gotMaterialInfo" params="element, msg">
+	
+		local materialId = msg.materialId;
+		if materialId == element("materialId"):GetInt() then
+		
+			element["Title"]("text"):SetString("MATERIAL_"..msg.materialName)
+			if msg.imageID =="" or msg.spriteSheetID=="" then
+				element["ItemImage"]("visible"):SetInt(0)
+			else
+				element["ItemImage"]("spriteName"):SetString(msg.imageID .. "")
+				element["ItemImage"]("sheetName"):SetString("xml_resources/" .. msg.spriteSheetID)
+				element["ItemImage"]("visible"):SetInt(1)
+			end
+		else
+			--[[ignore this message]]
+		end
+
+	</event>	
+	
+	<spriteSheetComponent name="bg">
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+		<event name="onInit" params="component, element" >
+			component("spriteName"):Set("menu_overlay_tab_thin")
+			component("sheetName"):Set("xml_resources/rp_menu.xml")
+			component("layer"):SetString("HUD");
+		</event>
+	</spriteSheetComponent>
+	<spriteSheetComponent name = "ItemImage">
+		<position relativeTo="element[&quot;bg&quot;]" vAnchor="VCENTER" hAnchor="LEFT" />
+		<orientation vAnchor="VCENTER" hAnchor="LEFT" xOffset="screenWidth()/32" yOffset="0" priority="-1" />
+		<event name="onInit" params="component, element" >
+			component("layer"):SetString("HUD");
+		</event>
+	</spriteSheetComponent>
+	<textComponent name="Title" >
+		<position relativeTo="element[&quot;ItemImage&quot;]" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="screenWidth()/6" yOffset="0" priority="0" />
+		
+		<event name="onInit" params="component, element" >
+			component("font"):Set("rp_font_title")
+			component("size"):Set(1.0)
+			component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+			
+			component("red"):SetFloat(1.0)
+			component("green"):SetFloat(1.0)
+			component("blue"):SetFloat(1.0)
+			
+			component("layer"):SetString("HUD");
+		</event>
+	</textComponent>
+	<textComponent name="Number" >
+		<position relativeTo="element[&quot;Title&quot;]" vAnchor="BOTTOM" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+		
+		<event name="onInit" params="component, element" >
+			component("font"):Set("blue_highway")
+			component("size"):Set(1.0)
+			component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+			
+			if $pickupMode==0 then
+				component("red"):SetFloat(1.0)
+				component("green"):SetFloat(1.0)
+				component("blue"):SetFloat(1.0)
+			else
+				component("red"):SetFloat(0.0)
+				component("green"):SetFloat(1.0)
+				component("blue"):SetFloat(0.0)
+			end			
+			component("layer"):SetString("HUD");
+		</event>
+	</textComponent>
+</template>
