@@ -32,13 +32,63 @@ jobs:
             mingw-w64-ucrt-x86_64-zlib
             mingw-w64-ucrt-x86_64-freetype
             mingw-w64-ucrt-x86_64-SDL2
+            mingw-w64-ucrt-x86_64-SDL2_mixer
+            mingw-w64-ucrt-x86_64-asio
+            mingw-w64-ucrt-x86_64-openssl
+            mingw-w64-ucrt-x86_64-curl
+            mingw-w64-ucrt-x86_64-nlohmann-json
+            mingw-w64-ucrt-x86_64-python
+            mingw-w64-ucrt-x86_64-ca-certificates
       - name: Configure and build
         shell: msys2 {0}
         run: |
-          cmake -S RaftPirates -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DRAFT_DESKTOP=ON -DHYDRA_FETCH_LUA=ON -DBUILD_TESTING=OFF
-          cmake --build build --target raftpirates_desktop --parallel 2
-      - name: Upload executable (requires UCRT64 dependencies)
+          cmake -S RaftPirates -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DRAFT_DESKTOP=ON -DHYDRA_FETCH_LUA=ON -DBUILD_TESTING=ON
+          cmake --build build --target raftpirates_desktop sfs_native_tests --parallel 2
+          ctest --test-dir build -R '^sfs_native_session$' --output-on-failure
+      - name: Authenticode signing (optional authorized certificate)
+        id: sign
+        shell: pwsh
+        env:
+          SIGNING_PFX: ${{ secrets.WINDOWS_SIGNING_PFX_BASE64 }}
+          SIGNING_PASSWORD: ${{ secrets.WINDOWS_SIGNING_PFX_PASSWORD }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (-not $env:SIGNING_PFX) {
+            if ($env:SIGNING_PASSWORD) { throw 'Signing PFX missing' }
+            'status=unsigned' >> $env:GITHUB_OUTPUT
+            Write-Warning 'No trusted code-signing certificate configured. Artifact will be labeled unsigned.'
+            exit 0
+          }
+          $tool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\signtool.exe" |
+            Sort-Object FullName -Descending | Select-Object -First 1
+          if (-not $tool) { throw 'Windows SDK SignTool not found' }
+          $pfx = Join-Path $env:RUNNER_TEMP 'raftpirates-signing.pfx'
+          try {
+            [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:SIGNING_PFX))
+            & $tool.FullName sign /fd SHA256 /f $pfx /p $env:SIGNING_PASSWORD /tr http://timestamp.digicert.com /td SHA256 build/raftpirates_desktop.exe
+            if ($LASTEXITCODE -ne 0) { throw 'Authenticode signing failed' }
+            & $tool.FullName verify /pa /v build/raftpirates_desktop.exe
+            if ($LASTEXITCODE -ne 0) { throw 'Authenticode verification failed' }
+            if ((Get-AuthenticodeSignature build/raftpirates_desktop.exe).Status -ne 'Valid') { throw 'Untrusted signature' }
+            'status=signed' >> $env:GITHUB_OUTPUT
+          } finally {
+            Remove-Item $pfx -Force -ErrorAction SilentlyContinue
+          }
+      - name: Package portable Windows ZIP
+        shell: msys2 {0}
+        env:
+          SIGNING_STATUS: ${{ steps.sign.outputs.status }}
+        run: |
+          mkdir -p dist
+          python RaftPirates/tools/package_windows.py --exe build/raftpirates_desktop.exe \
+            --prefix "$(cygpath -m /ucrt64)" \
+            --output "dist/RaftPirates-Windows-x64-$SIGNING_STATUS.zip" \
+            --status "$SIGNING_STATUS" --revision "$(git -C RaftPirates rev-parse HEAD)" \
+            --hydra-revision "$(git -C HydraLegacy rev-parse HEAD)"
+      - name: Upload portable ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: raftpirates-windows
-          path: build/raftpirates_desktop.exe
+          name: RaftPirates-Windows-x64-${{ steps.sign.outputs.status }}
+          path: dist/*.zip
+          if-no-files-found: error
+          compression-level: 0

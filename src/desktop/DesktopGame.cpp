@@ -273,6 +273,10 @@ namespace {
 
 int main(int argc, char** argv) {
     SDL_SetMainReady();
+    if (argc == 2 && std::string(argv[1]) == "--version") {
+        std::cout << "Raft Pirates desktop reconstruction\n";
+        return 0;
+    }
     try {
         fs::path root;
         bool allowHttp = false;
