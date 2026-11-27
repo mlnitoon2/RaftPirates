@@ -149,6 +149,7 @@ namespace rp {
         std::optional<bool> popupResult_;
         std::deque<QuestRewardNotice> rewardNotices_;
         bool developmentCommands_ = false;
+        bool serverDevelopmentCommands_ = false;
         bool developmentAllowed() const;
         void acceptQuestReward(const sfs::SFSObjectWrapper&);
         std::set<int> startedTutorials_, completedTutorials_;

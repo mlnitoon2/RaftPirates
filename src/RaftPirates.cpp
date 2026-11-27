@@ -59,6 +59,7 @@ namespace rp {
         popupResult_.reset();
         rewardNotices_.clear();
         developmentCommands_ = false;
+        serverDevelopmentCommands_ = false;
         processing_ = true;
         pending.reset();
         pendingMove.reset();
@@ -388,7 +389,8 @@ namespace rp {
 
     bool RaftPirates::developmentAllowed() const {
         return developmentCommands_ && ready && connected_ &&
-               (serverName_ == "localhost" || serverName_ == "127.0.0.1" || serverName_ == "::1");
+               (serverDevelopmentCommands_ || serverName_ == "localhost" ||
+                serverName_ == "127.0.0.1" || serverName_ == "::1");
     }
 
     std::optional<sfs::Message> RaftPirates::gotMsgCheat(const MsgCheat& m) const {
@@ -625,6 +627,8 @@ namespace rp {
 
     void RaftPirates::processExtension(const std::string& command,
                                        const sfs::SFSObjectWrapper& data) {
+        if (command == "gs_player")
+            serverDevelopmentCommands_ = data.getBool("dev_admin", false);
         if (command == "gs_quest_reward") {
             checkTutorialCompletion(data.getInt("questid"));
             acceptQuestReward(data);

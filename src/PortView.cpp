@@ -528,10 +528,15 @@ namespace rp {
                 auto index = size_t((y - 78) / 75);
                 if (index < 3 && y - 78 - index * 75 < 60) {
                     const std::string command = cheatCommands[(cheatPage_ + index) % cheatCount];
-                    // Local debug interface only; do not bypass server authorization.
-                    if (command == "ping_sonar") return g.pingSonar();
-                    notice_ = "Debug command " + command + " requires an authorized development server handler.";
-                    return {};
+                    // Runtime dispatches these through the original MsgCheat handlers.
+                    // Client admin flag controls visibility; the server authorizes mutations.
+                    panel_ = Panel::None;
+                    xmlMenu_.reset();
+                    if (command == "ping_sonar")
+                        return g.pingSonar();
+                    sfs::SFSObjectWrapper args;
+                    args.put("type", command);
+                    return Game::request("cheat", args);
                 }
             }
             if (x < 340) { panel_ = Panel::None; xmlMenu_.reset(); }

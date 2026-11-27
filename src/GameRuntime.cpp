@@ -43,6 +43,7 @@ namespace {
         int width = 640, height = 400, port = 9933;
         bool initialized = false, paused = false, connected = false, connecting = false;
         bool admin = false;
+        std::string adminEntry;
         bool rewardPopupPending = false;
         std::string host, user, session, status, music, authEndpoint;
         bool loginSent = false, snapshotReceived = false, loggedTransportWait = false;
@@ -210,6 +211,7 @@ namespace {
         rt.endingLoading = false;
         rt.savedSession.clear();
         rt.pendingAdminNotice.clear();
+        rt.adminEntry.clear();
         rt.rewardPopupPending = false;
         rt.oceanReceived = false;
     }
@@ -239,8 +241,15 @@ namespace {
                 return;
             rt.login = std::make_unique<rp::LoginScreen>(rt.assets);
         }
-        rt.login->clearPassword();
-        rt.login->error(message);
+        if (message.empty()) {
+            // A new login screen discards stale loading, input and modal state.
+            rt.login = std::make_unique<rp::LoginScreen>(rt.assets);
+            rt.entry = rp::LoginScreen::Action::None;
+            rt.status.clear();
+        } else {
+            rt.login->clearPassword();
+            rt.login->error(message);
+        }
     }
 
     void acceptGameSession(Services& platform) {
@@ -840,6 +849,32 @@ namespace sys::platform::game {
             auto notice = rt.view->takeNotice();
             if (!notice.empty())
                 platform.showPopup(notice);
+            if (result && result->payload.getString("c") == "cheat") {
+                if (!rt.admin)
+                    return;
+                auto args = result->payload.getSFSObj("p");
+                if (!args)
+                    return;
+                const auto type = args->getString("type");
+                if (type == "log_out") {
+                    forgetSession();
+                    loginError(platform, "");
+                    return;
+                }
+                rt.game.enableDevelopmentCommands(rt.admin);
+                if (type == "start_battle" || type == "player_dup") {
+                    rt.adminEntry = type;
+                    rt.engine.ShowKeyboardEntryEx(platform,
+                        type == "start_battle" ? "Opponent name" : "Player name",
+                        "", false, 0, 75, false);
+                    return;
+                }
+                rp::MsgCheat cheat;
+                cheat.type = type;
+                if (auto request = rt.game.gotMsgCheat(cheat))
+                    send(platform, *request);
+                return;
+            }
             if (result) {
                 if (!rt.view->isDiving())
                     effect(platform, "audio/sfx/menu_button_down.wav");
@@ -939,6 +974,25 @@ namespace sys::platform::game {
                     rt.login->setInput(entry, value);
                 return;
             }
+            if (!rt.adminEntry.empty()) {
+                auto type = std::move(rt.adminEntry);
+                rt.adminEntry.clear();
+                rt.engine.ShowKeyboardResult(value, cancelled, false);
+                if (!cancelled && rt.admin && rt.connected && !value.empty()) {
+                    if (type == "start_battle") {
+                        rp::MsgCheatStartBattle msg;
+                        msg.username = value;
+                        if (auto request = rt.game.gotMsgCheatStartBattle(msg))
+                            send(platform, *request);
+                    } else if (type == "player_dup") {
+                        rp::MsgCheatDuplicatePlayer msg;
+                        msg.username = value;
+                        if (auto request = rt.game.gotMsgCheatDuplicatePlayer(msg))
+                            send(platform, *request);
+                    }
+                }
+                return;
+            }
             rt.engine.ShowKeyboardResult(value, cancelled);
             if (auto request = rt.game.gotMsgKeyboardEntryResult(value, cancelled))
                 send(platform, *request);
@@ -1008,7 +1062,7 @@ namespace sys::platform::game {
     void onConnectionLost(Services& platform) {
         guarded(platform, [&] {
             if (rt.connected || rt.connecting)
-                loginError(platform, "Disconnected from game server.");
+                loginError(platform, "");
         });
     }
 
@@ -1023,7 +1077,7 @@ namespace sys::platform::game {
         guarded(platform, [&] {
             if (rt.connected || rt.connecting) {
                 forgetSession();
-                loginError(platform, "Disconnected from game server.");
+                loginError(platform, "");
             }
         });
     }
@@ -1054,6 +1108,8 @@ namespace sys::platform::game {
                 return;
             }
             rt.status = rt.game.status;
+            if (command == "cheat_result" && !data.getBool("result"))
+                platform.showPopup(data.getString("message", "Command failed."));
             if (command == "gs_error" && rt.view)
                 rt.view->purchaseCompleted(rt.game, false, 0);
             if (command == "lib_go_data") {

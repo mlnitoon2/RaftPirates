@@ -72,6 +72,7 @@ int main() {
     game.enableDevelopmentCommands(true);
     check(game.gotMsgCheat(cheat).has_value());
     game.enableDevelopmentCommands(false);
+    check(!game.gotMsgCheat(cheat));
     game.materialNames[2] = "Wood";
     auto materialRequest = game.gotMsgConfirmMaterialPurchase(2, 10, 5);
     check(materialRequest && materialRequest->payload.getString("c") == "purchase_item");
