@@ -402,12 +402,16 @@ extern "C" JNIEXPORT void JNICALL HY(init)(JNIEnv*, jobject) {
 }
 
 extern "C" JNIEXPORT void JNICALL HY(sendMsgMusicFinished)(JNIEnv* e, jobject obj) {
+#ifdef HYDRA_HAS_JAVA_AUDIO
     sys::android::queueMusicFinished();
+#endif
     dispatch(e, obj, [&](auto& p) { game::musicFinished(p); });
 }
 
 extern "C" JNIEXPORT void JNICALL HY(sendMsgSoundFinished)(JNIEnv* e, jobject obj, jint id) {
+#ifdef HYDRA_HAS_JAVA_AUDIO
     sys::android::queueSoundFinished(id);
+#endif
     dispatch(e, obj, [&](auto& p) { game::soundFinished(p, id); });
 }
 
