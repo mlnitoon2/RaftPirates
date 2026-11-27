@@ -10,6 +10,7 @@ namespace rp {
         explicit RPMenuHandler(const Game& game) : game_(game) {}
 
         std::vector<int> gotMsgGetAvailStoreItemRequest() const;
+        std::vector<int> storeItemsForTab(const std::string& menu) const;
         std::vector<int> gotMsgGetAllBlueprintsRequest() const;
         std::vector<int> gotMsgGetAvailBlueprintsRequest() const;
         std::vector<int> gotMsgGetAvailMaterialsRequest() const;

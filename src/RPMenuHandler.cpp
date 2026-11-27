@@ -20,6 +20,18 @@ namespace rp {
         return result;
     }
 
+    std::vector<int> RPMenuHandler::storeItemsForTab(const std::string& menu)const{
+        if(menu.rfind("tabbed_menu_",0)!=0)return {};
+        const auto category=menu.substr(12);
+        auto ids=gotMsgGetAvailStoreItemRequest();
+        ids.erase(std::remove_if(ids.begin(),ids.end(),[&](int id){
+            const auto& group=game_.storeItems.at(id).group;
+            if(category=="diamonds")return group!="diamonds"&&group!="diamond";
+            if(category=="gold")return group!="gold"&&group!="offerwall";
+            return group!=category;
+        }),ids.end());
+        return ids;
+    }
     std::vector<int> RPMenuHandler::gotMsgGetAllBlueprintsRequest() const {
         std::vector<int> result;
         for (auto& [id, b] : game_.blueprints)

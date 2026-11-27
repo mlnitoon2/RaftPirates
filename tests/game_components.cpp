@@ -22,6 +22,16 @@ int main() {
         Game game;
         loadPlayerFixture(game);
         {
+            Game shop;
+            StoreItem gold;gold.id=1;gold.name="gold_test";gold.group="gold";
+            StoreItem diamond;diamond.id=2;diamond.name="diamond_test";diamond.group="diamond";
+            StoreItem offer;offer.id=3;offer.name="offer_test";offer.group="offerwall";
+            shop.storeItems={{1,gold},{2,diamond},{3,offer}};
+            RPMenuHandler menu(shop);
+            CHECK(menu.storeItemsForTab("tabbed_menu_diamonds")==std::vector<int>({2}));
+            CHECK(menu.storeItemsForTab("tabbed_menu_gold")==std::vector<int>({1,3}));
+        }
+        {
             std::string tokens="alpha;;omega";
             CHECK(Tokenize(tokens,";")=="alpha");
             CHECK(Tokenize(tokens,";").empty());

@@ -698,15 +698,16 @@ namespace rp {
                         for (auto& [id, v] : g.zones)
                             ids.push_back(id);
                     else {
-                        for (int id : RPMenuHandler(g).gotMsgGetAvailStoreItemRequest())
-                            if (g.storeItems.at(id).group == name.substr(12))
-                                ids.push_back(id);
+                        ids=RPMenuHandler(g).storeItemsForTab(name);
                     }
                     for (size_t i = 0; i < ids.size(); ++i) {
                         auto key = "tabbedItem" + std::to_string(i);
                         xmlItems_[key] = ids[i];
                         add(*list, "TabbedMenuItem", key, int(i) * 128, 0, listName, "BOTTOM",
                             "LEFT");
+                        auto& orientation=list->children.back().children.back();
+                        orientation.attributes["xOffset"]="screenWidth()*0.2*"+std::to_string(i);
+                        orientation.attributes["priority"]="-1";
                     }
                 }
             } else if (name == "quest_log") {
@@ -865,7 +866,7 @@ namespace rp {
                             if (auto el = m.find(list, key, true)) {
                                 auto index = std::stoi(key.substr(10));
                                 scrollOrigins_[el] =
-                                    std::max(0.f, -m.node(list).bounds.x) + index * m.width() * .2;
+                                    index * m.width() * .2;
                             }
                     }
             }
@@ -933,12 +934,19 @@ namespace rp {
                         const auto& item = g.storeItems.at(id);
                         set(element, "itemImage", "spriteName", item.image);
                         set(element, "itemImage", "sheetName", item.sheet);
-                        set(element, "itemCost", "text", std::to_string(item.price));
+                        const bool cashTab=name=="tabbed_menu_gold"||name=="tabbed_menu_diamonds";
+                        const bool freeTab=name=="tabbed_menu_free";
+                        const bool offer=item.group=="offerwall";
+                        set(element, "itemCost", "text", offer?strings_.getText("OFFERS"):std::to_string(item.price));
                         set(element, "itemName", "text",
                             strings_.getText(item.title.empty() ? item.name : item.title));
+                        set(element,"itemName","visible",false);
+                        set(element,"itemImageSecondaryCentered","visible",false);
                         set(element, "itemImage", "visible", true);
                         set(element, "selectionOverlay", "visible", false);
-                        set(element, "itemCost", "visible", true);
+                        set(element, "itemCost", "visible", !freeTab);
+                        set(element, "currencyIcon", "visible", !cashTab&&!freeTab&&!offer);
+                        if(cashTab||offer)set(element,"itemCost","xOffset",0.0);
                         set(element, "currencyIcon", "spriteName",
                             std::string(item.currency == 11 ? "shop_diamond_mini"
                                                             : "shop_gold_mini"));
@@ -1026,6 +1034,19 @@ namespace rp {
                 }
             refresh = refresh || count != xmlItems_.size();
         }
+        if(xmlMenu_&&xmlName_==name&&name.rfind("tabbed_menu_",0)==0){
+            std::vector<int> expected;
+            if(name=="tabbed_menu_inventory")expected=RPMenuHandler(g).gotMsgGetAvailMaterialsRequest();
+            else if(name=="tabbed_menu_blueprints")expected=RPMenuHandler(g).gotMsgGetAllBlueprintsRequest();
+            else if(name=="tabbed_menu_maps"){for(const auto& entry:g.zones)expected.push_back(entry.first);}
+            else expected=RPMenuHandler(g).storeItemsForTab(name);
+            if(expected.size()!=xmlItems_.size())refresh=true;
+            for(size_t i=0;!refresh&&i<expected.size();++i){
+                const auto key=name=="tabbed_menu_inventory"?"material_"+std::to_string(expected[i]):"tabbedItem"+std::to_string(i);
+                auto it=xmlItems_.find(key);
+                if(it==xmlItems_.end()||it->second!=expected[i])refresh=true;
+            }
+        }
         if (!xmlMenu_ || xmlName_ != name || refresh)
             openXml(g, name);
         if (!xmlMenu_)
@@ -1048,6 +1069,17 @@ namespace rp {
             if (auto sonar = xmlMenu_->find(1, "PingSonar", true))
                 if (auto label = xmlMenu_->find(sonar, "Text"))
                     xmlMenu_->node(label).set("text", std::to_string(g.numOfMaterialPossessed(12)));
+        }
+        if(name.rfind("tabbed_menu_",0)==0){
+            for(int tab=5;tab<=7;++tab)
+                if(auto id=xmlMenu_->find(1,"Tab"+std::to_string(tab),true))
+                    if(auto label=xmlMenu_->find(id,"Text"))
+                        xmlMenu_->node(label).set("text",std::to_string(g.numOfMaterialPossessed(tab==5?4:11)));
+            if(name=="tabbed_menu_inventory")
+                for(const auto& [key,id]:xmlItems_)
+                    if(auto entry=xmlMenu_->find(1,key,true))
+                        if(auto amount=xmlMenu_->find(entry,"Amount"))
+                            xmlMenu_->node(amount).set("text",std::to_string(g.numOfMaterialPossessed(unsigned(id))));
         }
         xmlMenu_->solve();
         GfxManager renderer;
