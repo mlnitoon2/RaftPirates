@@ -55,11 +55,10 @@ def package(exe, prefix, output, status, revision, hydra_revision):
     missing = [path for path in required_assets if not (asset_source / path).is_file()]
     bundled_assets = not missing and len(verified) == len(inventory)
     asset_status = (
-        f"Included {len(asset_files)} asset files. "
-        + ("Startup asset checks passed; additional original resources may still be needed.\n"
-           if bundled_assets else "Incomplete asset bundle. Merge the remaining original APK assets before launching.\n"
-           + ("Missing startup assets: " + ", ".join(missing) + "\n" if missing else "")
-           + f"Original APK contains {len(inventory)} asset files.\n")
+        f"Included {len(asset_files)} of {len(inventory)} original asset files.\n"
+        + ("Original asset inventory complete.\n" if bundled_assets else
+           "Incomplete asset bundle. Merge the remaining original APK assets before launching.\n")
+        + ("Missing startup assets: " + ", ".join(missing) + "\n" if missing else "")
     )
     shutil.copy2(exe, staging / exe.name)
 
@@ -128,12 +127,23 @@ def package(exe, prefix, output, status, revision, hydra_revision):
     env["PATH"] = str(system) + os.pathsep + os.environ["SystemRoot"]
     subprocess.run([str((staging / exe.name).resolve()), "--version"],
                    cwd=staging, env=env, check=True, timeout=30)
-    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+    # Publish only after verifying the complete portable package.
+    temporary = output.with_suffix(".zip.tmp")
+    with zipfile.ZipFile(temporary, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.writestr("assets/", "")
         for p in sorted(staging.rglob("*")):
             if p.is_file():
                 archive.write(p, p.relative_to(staging).as_posix())
-    with zipfile.ZipFile(output) as archive:
+    with zipfile.ZipFile(temporary) as archive:
+        if archive.testzip() is not None:
+            raise RuntimeError("Corrupt ZIP member")
+        expected_members = {p.relative_to(staging).as_posix() for p in staging.rglob("*") if p.is_file()}
+        actual_members = [name for name in archive.namelist() if not name.endswith("/")]
+        if set(actual_members) != expected_members or len(actual_members) != len(expected_members):
+            raise RuntimeError("Portable ZIP contents differ from staging")
+        for name in expected_members:
+            if hashlib.sha256(archive.read(name)).hexdigest() != hashlib.sha256((staging / name).read_bytes()).hexdigest():
+                raise RuntimeError(f"Packaged runtime file hash mismatch: {name}")
         packaged = {name[len("assets/"):] for name in archive.namelist()
                     if name.startswith("assets/") and not name.endswith("/")}
         if packaged != set(verified):
@@ -141,6 +151,7 @@ def package(exe, prefix, output, status, revision, hydra_revision):
         for relative, digest in verified.items():
             if hashlib.sha256(archive.read("assets/" + relative)).hexdigest() != digest:
                 raise RuntimeError(f"Packaged asset hash mismatch: {relative}")
+    temporary.replace(output)
     print(f"Packaged {len(copied)} DLLs and {len(verified)} verified original assets in {output}")
 
 

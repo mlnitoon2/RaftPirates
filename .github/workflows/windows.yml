@@ -5,6 +5,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: windows-autobuild-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   windows:
     if: github.ref == 'refs/heads/main'
@@ -82,13 +85,45 @@ jobs:
           mkdir -p dist
           python RaftPirates/tools/package_windows.py --exe build/raftpirates_desktop.exe \
             --prefix "$(cygpath -m /ucrt64)" \
-            --output "dist/RaftPirates-Windows-x64-$SIGNING_STATUS.zip" \
+            --output "dist/WindowsRaftPirates.zip" \
             --status "$SIGNING_STATUS" --revision "$(git -C RaftPirates rev-parse HEAD)" \
             --hydra-revision "$(git -C HydraLegacy rev-parse HEAD)"
       - name: Upload portable ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: RaftPirates-Windows-x64-${{ steps.sign.outputs.status }}
-          path: dist/*.zip
+          name: WindowsRaftPirates
+          path: dist/WindowsRaftPirates.zip
           if-no-files-found: error
           compression-level: 0
+
+  publish:
+    needs: windows
+    if: github.ref == 'refs/heads/main' && success()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: WindowsRaftPirates
+          path: dist
+      - name: Publish latest Windows autobuild
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          current="$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')"
+          if [ "$current" != "$GITHUB_SHA" ]; then
+            echo "A newer main revision exists; skip publishing this older build."
+            exit 0
+          fi
+          test -s dist/WindowsRaftPirates.zip
+          unzip -tq dist/WindowsRaftPirates.zip
+          notes="Automated Windows x64 build from $GITHUB_SHA. Extract the ZIP before running raftpirates_desktop.exe. See BUILD.txt for exact source revisions, signing status and asset completeness. A compatible server and any missing original assets are required."
+          if ! gh release view windows-autobuild >/dev/null 2>&1; then
+            gh release create windows-autobuild --target "$GITHUB_SHA" --title "Windows autobuild" --notes "$notes" --prerelease --latest=false
+          fi
+          gh release upload windows-autobuild dist/WindowsRaftPirates.zip --clobber
+          gh release edit windows-autobuild --title "Windows autobuild" --notes "$notes" --prerelease --latest=false
+          echo "[Download WindowsRaftPirates.zip](https://github.com/$GH_REPO/releases/download/windows-autobuild/WindowsRaftPirates.zip)" >> "$GITHUB_STEP_SUMMARY"

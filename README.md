@@ -10,11 +10,11 @@ Build and expand your raft, dive for materials and blueprints, explore the ocean
 
 ## Try the Windows build
 
-1. Open the [Windows build page](https://github.com/mlnitoon2/RaftPirates/actions/workflows/windows.yml) and select a successful build.
-2. Download the ZIP from its artifacts and extract it.
-3. Run `raftpirates_desktop.exe`.
+[**Download WindowsRaftPirates.zip**](https://github.com/mlnitoon2/RaftPirates/releases/download/windows-autobuild/WindowsRaftPirates.zip)
 
-A GitHub account may be needed to download build artifacts. Available original assets are included automatically in Windows packages. The asset collection is still incomplete, so additional files from your own original APK may be needed. A compatible game server is required for online gameplay.
+Extract the ZIP and run `raftpirates_desktop.exe`. The download is updated after a successful main-branch Windows build. If the first autobuild has not finished, check the [Windows build page](https://github.com/mlnitoon2/RaftPirates/actions/workflows/windows.yml).
+
+The ZIP includes the executable, runtime DLLs, certificate bundle, build details and all currently committed original assets. Signing status is recorded in BUILD.txt. Available original assets are included automatically in Windows packages. The asset collection is still incomplete, so additional files from your own original APK may be needed. A compatible game server is required for online gameplay.
 
 [Full Windows instructions](docs/BUILDING.md)
 
