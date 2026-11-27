@@ -18,6 +18,18 @@ namespace rp {
 
     GridSprite::~GridSprite() = default;
 
+    bool GridSprite::AttachAccessory(std::unique_ptr<AccessorySprite> accessory) {
+        if (!accessory || accessories_.count(accessory->GetID())) return false;
+        accessory->Init();
+        accessory->SetScale(scale_);
+        accessory->Update();
+        accessory->AddToTick();
+        const int id = accessory->GetID();
+        accessories_.emplace(id, std::move(accessory));
+        return true;
+    }
+    bool GridSprite::DetachAccessory(int id) { return accessories_.erase(id) != 0; }
+
     void GridSprite::Init() {
         pieces_.clear();
         auto definitions = definition_.pieces;
@@ -57,11 +69,13 @@ namespace rp {
             piece.appearance.SetColor(colour_.r, colour_.g, colour_.b, colour_.a);
             piece.appearance.SetPriority(piece.priority);
         }
+        for (auto& entry : accessories_) entry.second->Update();
     }
 
     void GridSprite::SetGeometry(Vec2 world, float scale) {
         world_ = world;
         scale_ = scale;
+        for (auto& entry : accessories_) entry.second->SetScale(scale);
         Update();
         SetPriorities();
     }
@@ -158,6 +172,7 @@ namespace rp {
             float used = std::min(dt, slack_);
             slack_ -= used;
             time_ += dt - used;
+            for (auto& entry : accessories_) if (entry.second->ticking()) entry.second->tick(dt);
         }
     }
 

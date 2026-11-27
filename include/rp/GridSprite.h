@@ -1,5 +1,6 @@
 #pragma once
 #include "rp/Game.h"
+#include "rp/AccessorySprite.h"
 
 namespace rp {
     // Reconstructed per-object visual state. No original graphics-pointer ABI is assumed.
@@ -17,6 +18,8 @@ namespace rp {
                    const GridObjectInfo& definition, sys::gfx::Vec2 world, float scale);
         ~GridSprite();
         void Init();
+        bool AttachAccessory(std::unique_ptr<AccessorySprite> accessory);
+        bool DetachAccessory(int id);
         void Update();
         void SetGeometry(sys::gfx::Vec2 world, float scale);
         void SetTime(float time);
@@ -53,6 +56,7 @@ namespace rp {
         bool visible_ = true, selected_ = false, hasAttack_ = false;
         sys::gfx::Color colour_{};
         std::vector<SpritePiece> pieces_;
+        std::map<int, std::unique_ptr<AccessorySprite>> accessories_;
         std::vector<std::string> animations_;
     };
 } // namespace rp
