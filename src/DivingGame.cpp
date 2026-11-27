@@ -4,6 +4,11 @@
 #include <cmath>
 
 namespace rp::diving_game {
+    DivingGame::ItemFloater::ItemFloater(CollectableType type,float x,float y):DivingCollectable(type,x,y){}
+    DivingGame::ItemFloater::~ItemFloater()=default;
+    void DivingGame::ItemFloater::tick(float dt,float speed){
+        if(std::isfinite(dt)&&dt>0&&std::isfinite(speed))y+=speed*dt;
+    }
     using namespace sys::gfx;
 
     DivingCollectable::DivingCollectable(CollectableType kind, float px, float py)
@@ -210,7 +215,7 @@ namespace rp::diving_game {
             spawn_ += .65f;
         }
         for (auto i = items_.begin(); i != items_.end();) {
-            i->y += speed_ * dt;
+            i->tick(dt,speed_);
             if (robotCollidesWithItem(*i)) {
                 if (i->type == DivingCollectable::CollectableType::Mine) {
                     SaveYourself();

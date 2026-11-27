@@ -58,6 +58,12 @@ Names newly implemented in source are listed here and removed from the provision
 - Pass 39 follow-up ARM64 build passed and published (45929263936).
 - Pass 40 is engine-focused: no new Raft Pirates method names are claimed. Hydra adds resource/animation XML descriptors, compressed PVR decoding, optional JPEG, touch tracking and menu controls. New ARM64 workflow records the Hydra source revision before building; the Pass 40 library is not yet verified.
 
+## Pass 41 source review
+
+- RaftFactory/RaftComponentFactory use named default builders and are called by Player/Raft snapshot parsing. Only the generic Raft and RaftComponent classes are registered; original specialized factories and their signatures remain unknown.
+- EnemyShipPoints explicit construction and lifetime; ItemFloater owns movement inside the existing diving game. No original minigame mechanics or graphics parity is claimed.
+- Pass 40 ARM64 build passed; Pass 41 uses the updated Hydra source.
+
 ## Priority gaps
 
 - Original menu scripts: complete game/SWIG bindings, message dispatch, dynamic templates, tutorial and quest flows, all popups and transitions.
@@ -69,7 +75,7 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-332 names from the Pass 33 inventory now have named source implementations through Pass 39 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+341 names from the Pass 33 inventory now have named source implementations through Pass 41 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (29)
 
@@ -267,10 +273,6 @@ Names newly implemented in source are listed here and removed from the provision
 
 `WaterBucketSprite`, `tick`, `~WaterBucketSprite`
 
-### `rp::diving_game::DivingGame::ItemFloater` (3)
-
-`ItemFloater`, `tick`, `~ItemFloater`
-
 ### `rp::BattleModeState::BattleDice` (2)
 
 `BattleDice`, `~BattleDice`
@@ -282,10 +284,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::DiveUnitReadoutSprite::ReadoutLight` (2)
 
 `ReadoutLight`, `~ReadoutLight`
-
-### `rp::MapView::EnemyShipPoints` (2)
-
-`EnemyShipPoints`, `~EnemyShipPoints`
 
 ### `rp::MsgConfirmMaterialPurchaseInfo` (2)
 
@@ -318,14 +316,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::RaftComponent` (1)
 
 `AddedToOcean`
-
-### `rp::RaftComponentFactory` (2)
-
-`Build`, `RegistryAllClasses`
-
-### `rp::RaftFactory` (2)
-
-`Build`, `RegistryAllClasses`
 
 ### `rp::BlueprintInfo` (1)
 

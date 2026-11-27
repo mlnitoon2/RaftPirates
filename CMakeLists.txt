@@ -30,6 +30,8 @@ add_library(raftpirates_game STATIC
     src/Blueprint.cpp
     src/DivingGame.cpp
     src/RaftComponent.cpp
+    src/RaftFactory.cpp
+    src/RaftComponentFactory.cpp
     src/Raft.cpp
     src/OceanView.cpp
     src/GfxOceanGradient.cpp

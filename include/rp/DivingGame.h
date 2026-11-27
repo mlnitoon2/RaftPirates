@@ -78,7 +78,12 @@ namespace rp::diving_game {
         sys::res::ResourceAEAnim robot_;
         std::mt19937 rng_;
         sys::gfx::GfxText label_;
-        std::vector<DivingCollectable> items_;
+        struct ItemFloater : DivingCollectable {
+            ItemFloater(CollectableType,float x,float y);
+            ~ItemFloater();
+            void tick(float dt,float speed);
+        };
+        std::vector<ItemFloater> items_;
         float x_ = 320, y_ = 270, targetX_ = 320, speed_ = 120, duration_ = 20, remaining_ = 20,
               elapsed_ = 0, spawn_ = 0;
         int level_ = 1, gears_ = 0, shape_ = 0, direction_ = 0;

@@ -1,4 +1,6 @@
 #include "rp/Player.h"
+#include "rp/RaftFactory.h"
+#include "rp/RaftComponentFactory.h"
 #include "rp/GridObjectHelpers.h"
 #include "rp/Material.h"
 #include <algorithm>
@@ -56,9 +58,8 @@ namespace rp {
         bonusBattlePoints = 0;
         components.clear();
         each(data, "components", [&](const O& item) {
-            Component component;
-            component.initWithSFSObject(item);
-            components.push_back(std::move(component));
+            static const RaftComponentFactory factory;
+            components.push_back(factory.Build(item));
         });
     }
 
@@ -80,9 +81,8 @@ namespace rp {
         std::map<int, int> nextMaterials;
         std::set<int> nextOwned;
         each(data, "rafts", [&](const O& x) {
-            Raft raft;
-            raft.initWithSFSObject(x);
-            nextRafts.push_back(std::move(raft));
+            static const RaftFactory factory;
+            nextRafts.push_back(factory.Build(x));
         });
         each(data, "materials", [&](const O& x) {
             Material m;
