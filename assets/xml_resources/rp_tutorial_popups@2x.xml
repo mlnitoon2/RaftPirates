@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:8ba5e31fa09f80b79abcd73b99da8a18$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/menu/rp_tutorial_popups@2x.png" width="1024" height="1024">
+    <sprite n="tut_lg_01" x="1" y="647" w="466" h="340" oX="25" oY="2" oW="576" oH="352"/>
+    <sprite n="tut_lg_02" x="526" y="324" w="480" h="322" oX="94" oY="15" oW="576" oH="352"/>
+    <sprite n="tut_lg_03" x="1" y="1" w="576" h="320" oX="0" oY="15" oW="576" oH="352"/>
+    <sprite n="tut_lg_04" x="1" y="322" w="524" h="318" oX="22" oY="21" oW="576" oH="352"/>
+    <sprite n="tut_lg_05" x="578" y="1" w="388" h="322" oX="93" oY="14" oW="576" oH="352"/>
+</TextureAtlas>
