@@ -1,4 +1,7 @@
 #include "rp/LoadingManager.h"
+#include "rp/LoaderImage.h"
+#include "rp/LoaderMenu.h"
+#include "rp/LoaderManifest.h"
 #include "sys/gfx/AssetImage.h"
 #include <algorithm>
 #include <cmath>
@@ -96,8 +99,14 @@ namespace rp {
         }
         if (pos != bytes.size())
             throw std::runtime_error("Unexpected manifest trailing data");
-        for (const auto& job : parsed)
-            enqueue(job.kind, job.path);
+        auto nextSeen=seen_;
+        auto nextJobs=jobs_;
+        for(const auto& job:parsed)if(nextSeen.emplace(job.kind,job.path).second){
+            if(nextJobs.size()>=10000)throw std::runtime_error("Manifest queue limit");
+            nextJobs.push_back(job);
+        }
+        jobs_.swap(nextJobs);
+        seen_.swap(nextSeen);
     }
 
     std::shared_ptr<sys::gfx::Image> LoadingManager::sprite(const std::string& path) {
@@ -122,6 +131,14 @@ namespace rp {
             full.string(), [&] { return sys::gfx::ResourceSpriteSheet::Create(full); });
     }
 
+    void LoadingManager::loadImageJob(const std::string& path){
+        if(path=="gfx/font/blue_highway"&&std::filesystem::is_regular_file(root_/"font/blue_highway.ttf"))
+            cache_.acquire<std::vector<uint8_t>>(path,[&]{return sys::File::readAll(root_/"font/blue_highway.ttf");});
+        else sprite(path);
+    }
+    void LoadingManager::loadMenuJob(const std::string& path){
+        cache_.acquire<sys::res::XmlNode>(path,[&]{return sys::res::loadXML(checked(path));});
+    }
     void LoadingManager::setPercentage(float value) {
         if (std::isfinite(value))
             progress_ = std::clamp(value, 0.f, 100.f);
@@ -152,14 +169,7 @@ namespace rp {
         try {
             switch (job.kind) {
             case Kind::Sprite:
-                if (job.path == "gfx/font/blue_highway" &&
-                    std::filesystem::is_regular_file(root_ / "font/blue_highway.ttf")) {
-                    // Original manifest refers to a platform-font resource.
-                    cache_.acquire<std::vector<uint8_t>>(job.path, [&] {
-                        return sys::File::readAll(root_ / "font/blue_highway.ttf");
-                    });
-                } else
-                    sprite(job.path);
+                LoaderImage(job.path).load(*this);
                 break;
             case Kind::Animation:
                 cache_.acquire<sys::res::ResourceAEAnim>(
@@ -169,12 +179,14 @@ namespace rp {
                 sheet(job.path);
                 break;
             case Kind::Menu:
+                LoaderMenu(job.path).prepare(this);
+                break;
             case Kind::Xml:
                 cache_.acquire<sys::res::XmlNode>(
                     job.path, [&] { return sys::res::loadXML(checked(job.path)); });
                 break;
             case Kind::Manifest:
-                prepareManifest(job.path);
+                LoaderManifest(job.path).prepare(this);
                 break;
             }
         } catch (const std::exception& e) {

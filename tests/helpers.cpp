@@ -1,3 +1,6 @@
+#include "rp/LoaderImage.h"
+#include "rp/LoaderMenu.h"
+#include "rp/LoaderManifest.h"
 #include "rp/Game.h"
 #include "rp/GridSprite.h"
 #include "rp/LoadingManager.h"
@@ -121,6 +124,14 @@ int main(int argc, char** argv) {
         CHECK(part.GetRemainingTime() == 2.75f);
         part.UseClock(9);
         CHECK(part.GetRemainingTime() == 0 && part.Building());
+        {
+            rp::LoaderImage image("gfx/rafts/raft_core");
+            rp::LoaderMenu menu("menus/test.xml");
+            rp::LoaderManifest manifest("xml_bin/game_manifest.bin");
+            CHECK(std::string(image.getType())=="SPR" && image.getId()=="gfx/rafts/raft_core");
+            CHECK(std::string(menu.getType())=="MENU" && !menu.prepare(nullptr));
+            CHECK(std::string(manifest.getType())=="MANI" && !manifest.prepare(nullptr));
+        }
         if (argc == 2) {
             rp::LoadingManager loading(argv[1]);
             loading.addManifest("xml_bin/game_manifest.bin");

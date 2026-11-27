@@ -45,6 +45,11 @@ namespace rp {
         std::shared_ptr<sys::gfx::ResourceSpriteSheet> sheet(const std::string& path);
 
       private:
+        friend class LoaderImage;
+        friend class LoaderMenu;
+        friend class LoaderManifest;
+        void loadImageJob(const std::string&);
+        void loadMenuJob(const std::string&);
         enum class Kind { Sprite, Animation, Sheet, Menu, Manifest, Xml };
 
         struct Job {

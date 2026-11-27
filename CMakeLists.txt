@@ -63,6 +63,10 @@ add_library(raftpirates_game STATIC
     src/DivingUnit.cpp
     src/TouchControls.cpp
     src/LoadingManager.cpp
+    src/Loader.cpp
+    src/LoaderImage.cpp
+    src/LoaderMenu.cpp
+    src/LoaderManifest.cpp
 )
 target_include_directories(raftpirates_game PUBLIC include)
 target_link_libraries(raftpirates_game PUBLIC hydra sfs_legacy)
