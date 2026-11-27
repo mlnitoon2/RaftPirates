@@ -53,6 +53,11 @@ Names newly implemented in source are listed here and removed from the provision
 - GridObjectHelpers: ARM32 0x41bed0–0x41bf58 compares native type 0/1/2; 0x41c150–0x41c28c compares exact names boss, boss01–boss05, barracks, DivingUnit. Portable helpers take an explicit catalogue instead of an intrusive object data pointer. SortGridObjPredicate uses original x-then-y comparison at 0x3aa8b8; Tokenize consumes the input and one delimiter byte (single-byte separators used in existing grid data parser). Multi-byte delimiter semantics remain unverified.
 - FootprintSprite and nested SpriteFootprint now own and render placement sprites from the original construction_footprints_junk.xml atlas, integrated in PortView. UnitHealthBarSprite uses original gfx/HUD/health_meter.png and health_meter_green.pvr, replacing synthetic bars in OceanView; scale, offset and fill clipping are portable approximations. Original tick at 0x62f8b4 returns immediately. Tests added for tokenization, classification and comparison; not yet executed.
 
+## Pass 40 engine dependency update
+
+- Pass 39 follow-up ARM64 build passed and published (45929263936).
+- Pass 40 is engine-focused: no new Raft Pirates method names are claimed. Hydra adds resource/animation XML descriptors, compressed PVR decoding, optional JPEG, touch tracking and menu controls. New ARM64 workflow records the Hydra source revision before building; the Pass 40 library is not yet verified.
+
 ## Priority gaps
 
 - Original menu scripts: complete game/SWIG bindings, message dispatch, dynamic templates, tutorial and quest flows, all popups and transitions.

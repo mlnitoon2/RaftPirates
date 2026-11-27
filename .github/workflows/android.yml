@@ -35,6 +35,8 @@ jobs:
           ref: main
           path: HydraLegacy
           persist-credentials: false
+      - name: Record exact Hydra source revision
+        run: git -C HydraLegacy rev-parse HEAD
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
