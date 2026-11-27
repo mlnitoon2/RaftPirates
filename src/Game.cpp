@@ -582,6 +582,7 @@ namespace rp {
     void Game::tick(float dt) {
         if (!std::isfinite(dt) || dt <= 0)
             return;
+        onlineBattle.tick(dt);
         // The server remains authoritative; only the local countdown advances here.
         if (!daringPaused && daringRemaining > 0) {
             double elapsed = double(daringFraction) + dt;

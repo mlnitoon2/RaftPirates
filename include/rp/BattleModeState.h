@@ -10,7 +10,20 @@ namespace rp {
     // Original battle state name; online actions remain server-authoritative.
     class BattleModeState {
       public:
-        BattleModeState() = default;
+        BattleModeState();
+        const char* name()const;
+        void Pause();
+        void HideDropdown();
+        void StartWaiting(float seconds);
+        void StopWaiting();
+        void tick(float dt);
+        float waitRemaining()const{return waitRemaining_;}
+        void gotMsgBattleConfirmSwapStance();
+        void gotMsgToPositioningView();
+        std::optional<sfs::Message> RaftSelect(int own,int enemy,const Player&);
+        std::optional<sfs::Message> endBattleAndPlunder();
+        std::optional<sfs::Message> gotMsgBattleOverConfirm();
+        std::optional<sfs::Message> gotMsgExitBattleModeRequest();
         ~BattleModeState();
         const char* GetStateName() const;
         std::optional<sfs::Message> gotMsgAttackRequest(int dice);
@@ -98,6 +111,8 @@ namespace rp {
         int ownRaft_ = 0, enemyRaft_ = 0;
         int sync_ = 0, opponentTime_ = 0;
         std::string pending_, message_;
+        float waitRemaining_=0;
+        bool dropdownVisible_=false,confirmSwap_=false;
         sfs::SFSObjectWrapper lastResult_;
         std::optional<sfs::Message> action(const std::string& command,
                                            sfs::SFSObjectWrapper data = {}, bool withSync = true);

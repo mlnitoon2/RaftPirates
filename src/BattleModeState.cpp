@@ -6,7 +6,33 @@
 #include <limits>
 
 namespace rp {
+    BattleModeState::BattleModeState()=default;
     BattleModeState::~BattleModeState() = default;
+    const char* BattleModeState::name()const{return "rp::BattleMode";}
+    void BattleModeState::Pause(){}
+    void BattleModeState::HideDropdown(){dropdownVisible_=false;}
+    void BattleModeState::StartWaiting(float seconds){
+        if(std::isfinite(seconds))waitRemaining_=std::max(0.f,seconds);
+    }
+    void BattleModeState::StopWaiting(){waitRemaining_=0;HideDropdown();}
+    void BattleModeState::tick(float dt){
+        if(std::isfinite(dt)&&dt>0&&waitRemaining_>0){
+            waitRemaining_=std::max(0.f,waitRemaining_-dt);
+            if(waitRemaining_==0)StopWaiting();
+        }
+    }
+    void BattleModeState::gotMsgBattleConfirmSwapStance(){confirmSwap_=true;}
+    void BattleModeState::gotMsgToPositioningView(){}
+    std::optional<sfs::Message> BattleModeState::RaftSelect(int own,int enemy,const Player& p){
+        return SendRaftSelection(own,enemy,p);
+    }
+    std::optional<sfs::Message> BattleModeState::endBattleAndPlunder(){return plunder();}
+    std::optional<sfs::Message> BattleModeState::gotMsgBattleOverConfirm(){return endBattleAndPlunder();}
+    std::optional<sfs::Message> BattleModeState::gotMsgExitBattleModeRequest(){
+        if(phase_==Phase::Over)return endBattleAndPlunder();
+        if(phase_==Phase::Encounter)return encounterResponse(false);
+        return retreat();
+    }
 
     const char* BattleModeState::GetStateName() const {
         return "BattleModeState";
@@ -78,7 +104,7 @@ namespace rp {
         if (phase_ != Phase::Fighting || !needReady_)
             return {};
         O p;
-        p.put("confirm_swap_stance", confirmSwap || swap_);
+        p.put("confirm_swap_stance", confirmSwap || swap_ || confirmSwap_);
         return action("gs_battle_client_ready", p);
     }
 
@@ -270,6 +296,7 @@ namespace rp {
                 return true;
             needReady_ = false;
             swap_ = false;
+            confirmSwap_=false;
         } else if (c == "gs_swap_stance") {
             if (p.get("sync_counter")) {
                 attacker_ = p.getBool("attacker", !attacker_);

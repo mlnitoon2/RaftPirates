@@ -7,6 +7,14 @@ namespace rp {
       public:
         explicit BuildModeState(Game& game);
         ~BuildModeState();
+        const char* name()const;
+        void Pause();
+        void gotMsgSparseGridObjectAdded();
+        void SetCheckForHoles(const std::string&);
+        bool gotMsgCheckForHoles(int);
+        void gotMsgWreckageSelected(int parent,int id);
+        std::optional<sfs::Message> doPlaceObject(int blueprint,int parent,Cell position);
+        std::optional<sfs::Message> repairObject(bool all)const;
         void selectObject(int parent, int userObjectID);
         void deselectObject();
         std::optional<sfs::Message> repairSelected(bool all) const;
@@ -52,6 +60,7 @@ namespace rp {
         int parent_ = 0, id_ = 0;
         size_t wreckedRaft_ = 0, wreckedComponent_ = 0;
         std::string waiting_;
+        bool checkHoles_=false;
         std::vector<std::pair<int, int>> wrecked(bool components) const;
     };
 } // namespace rp

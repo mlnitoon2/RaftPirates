@@ -5,6 +5,17 @@ namespace rp {
     BuildModeState::BuildModeState(Game& game) : game_(game) {}
 
     BuildModeState::~BuildModeState() = default;
+    const char* BuildModeState::name()const{return "rp::BuildMode";}
+    void BuildModeState::Pause(){} // Original ARM single return.
+    void BuildModeState::gotMsgSparseGridObjectAdded(){} // Original ARM single return.
+    void BuildModeState::SetCheckForHoles(const std::string&){checkHoles_=true;}
+    bool BuildModeState::gotMsgCheckForHoles(int id){
+        SetCheckForHoles("check");checkHoles_=false;return CheckForHoles(id);
+    }
+    void BuildModeState::gotMsgWreckageSelected(int parent,int id){
+        gotMsgGridObjectSelected(parent,id);
+        if(!selected()||!selected()->Destroyed())deselectObject();
+    }
 
     void BuildModeState::selectObject(int parent, int userObjectID) {
         parent_ = parent;
@@ -28,7 +39,8 @@ namespace rp {
         return component == raft->components.end() ? nullptr : &*component;
     }
 
-    std::optional<sfs::Message> BuildModeState::repairSelected(bool all) const {
+    std::optional<sfs::Message> BuildModeState::repairSelected(bool all) const {return repairObject(all);}
+    std::optional<sfs::Message> BuildModeState::repairObject(bool all) const {
         auto object = selected();
         if (!game_.ready || !object)
             return {};
@@ -97,6 +109,9 @@ namespace rp {
 
     std::optional<sfs::Message> BuildModeState::gotMsgBuildConfirm(int blueprint, int parent,
                                                                    Cell pos) {
+        return doPlaceObject(blueprint,parent,pos);
+    }
+    std::optional<sfs::Message> BuildModeState::doPlaceObject(int blueprint,int parent,Cell pos){
         if (!waiting_.empty() || !gotMsgStartBuildRequest(blueprint))
             return {};
         auto b = game_.blueprints.find(blueprint);
