@@ -26,8 +26,9 @@ namespace rp {
         if (!std::isfinite(dt) || dt < 0)
             return;
         transition_ = std::clamp(transition_ + (exiting_ ? -1.f : 1.f) * dt * 4, 0.f, 1.f);
+        arrow_.tick(dt);
         for (auto& hit : damage_)
-            hit.remaining -= dt;
+            hit.tick(dt);
         damage_.erase(std::remove_if(damage_.begin(), damage_.end(),
                                      [](const auto& hit) { return hit.remaining <= 0; }),
                       damage_.end());
@@ -52,7 +53,7 @@ namespace rp {
                 next[raft.id] = bp;
                 auto it = previous.find(raft.id);
                 if (it != previous.end() && bp < it->second)
-                    damage_.push_back({own, raft.id, it->second - bp, 1.2f});
+                    damage_.emplace_back(own,raft.id,it->second-bp);
             }
             previous = std::move(next);
         };
@@ -132,7 +133,7 @@ namespace rp {
         if (auto raft = player.GetRaftByID(selected)) {
             auto p = view.WorldToScreen({float(raft->x) + .5f, float(raft->y) + .5f});
             GfxManager gfx;
-            submitSprite(gfx, "rp_battle_arrow", left + p.x - 160 - 15, p.y - 66, 30, 34);
+            submitSprite(gfx, "rp_battle_arrow", left + p.x - 160 - 15, p.y + arrow_.yOffset()-34, 30, 34);
             gfx.RenderScreen(out);
         }
     }
@@ -199,7 +200,7 @@ namespace rp {
             for (const auto& raft : game.rafts) {
                 auto p = ownView_.WorldToScreen(
                     {float(raft.x + offset.x) + .5f, float(raft.y + offset.y) + .5f});
-                submitSprite(marker, "rp_battle_arrow", p.x - 15, p.y - 66, 30, 34);
+                submitSprite(marker, "rp_battle_arrow", p.x - 15, p.y + arrow_.yOffset()-34, 30, 34);
             }
             marker.RenderScreen(out);
         } else {
@@ -229,7 +230,7 @@ namespace rp {
                 point.x += hit.own ? -160 : 160;
                 if (explosion_ && !explosion_->comps.empty()) {
                     const auto& comp = explosion_->comps.front();
-                    float elapsed = 1.2f - hit.remaining;
+                    float elapsed = DamageIndicatorSprite::FLOAT_TIME - hit.remaining;
                     if (comp.duration() > 0 && elapsed < comp.duration())
                         effects_.submit(gfx, *explosion_, comp, elapsed,
                                         Matrix::translation(point.x - comp.width * .35f,
@@ -238,7 +239,7 @@ namespace rp {
                                         3);
                 }
                 submitText(gfx, "-" + std::to_string(hit.amount), point.x,
-                           point.y - 25 - 35 * (1.2f - hit.remaining), .85f, 130);
+                           point.y + hit.yOffset(), .85f, 130);
             }
         gfx.RenderScreen(out);
         loadMenu(game);

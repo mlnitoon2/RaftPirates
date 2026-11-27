@@ -1,3 +1,5 @@
+#include "rp/ScrollingLayer.h"
+#include "rp/DamageIndicatorSprite.h"
 #include "rp/OverlapTree.h"
 #include "rp/PerimeterTree.h"
 #include "rp/GridObjectDataRes.h"
@@ -143,6 +145,15 @@ int main(int argc, char** argv) {
             CHECK(std::string(image.getType())=="SPR" && image.getId()=="gfx/rafts/raft_core");
             CHECK(std::string(menu.getType())=="MENU" && !menu.prepare(nullptr));
             CHECK(std::string(manifest.getType())=="MANI" && !manifest.prepare(nullptr));
+        }
+        {
+            rp::DamageIndicatorSprite damage(true,1,5);
+            damage.tick(.5f);
+            CHECK(damage.remaining==1.f&&damage.yOffset()==-20.f);
+            damage.tick(2);CHECK(damage.remaining==0);
+            rp::diving_game::ScrollingLayer layer({"a","b"},128,.5f,288);
+            layer.SetSpeed(100);layer.tick(.5f);
+            CHECK(layer.tiles().front().y==-25.f);
         }
         if (argc == 2) {
             rp::LoadingManager loading(argv[1]);

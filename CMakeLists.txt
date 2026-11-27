@@ -34,6 +34,9 @@ add_library(raftpirates_game STATIC
     src/Material.cpp
     src/Blueprint.cpp
     src/DivingGame.cpp
+    src/ScrollingLayer.cpp
+    src/BattleArrowSprite.cpp
+    src/DamageIndicatorSprite.cpp
     src/RaftComponent.cpp
     src/Wreckage.cpp
     src/Barracks.cpp

@@ -1,5 +1,6 @@
 #pragma once
 #include "sys/gfx/Gfx.h"
+#include "rp/ScrollingLayer.h"
 #include "sys/gfx/GfxText.h"
 #include "sys/msg/MsgReceiver.h"
 #include "sys/gfx/AnimationRenderer.h"
@@ -84,6 +85,7 @@ namespace rp::diving_game {
             void tick(float dt,float speed);
         };
         std::vector<ItemFloater> items_;
+        std::vector<ScrollingLayer> scrolling_;
         float x_ = 320, y_ = 270, targetX_ = 320, speed_ = 120, duration_ = 20, remaining_ = 20,
               elapsed_ = 0, spawn_ = 0;
         int level_ = 1, gears_ = 0, shape_ = 0, direction_ = 0;

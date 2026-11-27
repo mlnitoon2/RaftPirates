@@ -31,6 +31,10 @@ namespace rp::diving_game {
 
     void DivingGame::Reset() {
         items_.clear();
+        scrolling_.clear();
+        scrolling_.emplace_back(std::vector<std::string>{"diving_layer003_01","diving_layer003_02"},128,.25f,288);
+        scrolling_.emplace_back(std::vector<std::string>{"diving_layer002_01","diving_layer002_02"},128,.5f,288);
+        scrolling_.emplace_back(std::vector<std::string>{"diving_layer001_01","diving_layer001_02"},128,1.f,288);
         setPos(320,270);
         gears_ = 0;
         level_ = 1;
@@ -49,6 +53,7 @@ namespace rp::diving_game {
 
     void DivingGame::InitLevel() {
         speed_ = 95 + 25 * level_;
+        for(auto& layer:scrolling_)layer.SetSpeed(speed_);
         spawn_ = 0.3f;
     }
 
@@ -203,6 +208,7 @@ namespace rp::diving_game {
             return;
         dt = std::min(dt, .1f);
         elapsed_ += dt;
+        for(auto& layer:scrolling_)layer.tick(dt);
         remaining_ = std::max(0.f, remaining_ - dt);
         if (direction_)
             moveDiver(direction_ < 0 ? DiverMoveDirection::Left : DiverMoveDirection::Right, dt);
@@ -249,6 +255,15 @@ namespace rp::diving_game {
     void DivingGame::render(Image& target) {
         target = Image(640, 400, {9, 36, 60, 255});
         sprite(target, "diving_bg", 210, 22, 1);
+        {
+            GfxManager background;
+            background.setScreenClip(std::array<float,4>{210,22,430,310});
+            for(const auto& layer:scrolling_)for(const auto& tile:layer.tiles())
+                if(auto c=atlas_->findSpriteByName(tile.name)){
+                    GfxSprite s;s.cell=*c;s.image=image_;s.SetPos(210,22+tile.y);background.submit(s);
+                }
+            background.RenderScreen(target);
+        }
         for (auto& i : items_)
             sprite(target,
                    i.type == DivingCollectable::CollectableType::Mine ? "diving_mine"

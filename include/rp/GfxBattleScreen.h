@@ -1,5 +1,7 @@
 #pragma once
 #include "rp/BattlePlacementScreen.h"
+#include "rp/DamageIndicatorSprite.h"
+#include "rp/BattleArrowSprite.h"
 #include "sys/gfx/ResourceSpriteFont.h"
 #include "sys/menu_redux/MenuRuntime.h"
 #include "sys/localization/LocalizationManager.h"
@@ -42,13 +44,8 @@ namespace rp {
         int dice_ = 1;
         std::map<int, int> ownBP_, enemyBP_;
 
-        struct Damage {
-            bool own;
-            int raft, amount;
-            float remaining;
-        };
-
-        std::vector<Damage> damage_;
+        std::vector<DamageIndicatorSprite> damage_;
+        BattleArrowSprite arrow_;
         std::optional<sys::res::ResourceAEAnim> explosion_;
         sys::gfx::AnimationRenderer effects_;
         float lastTime_ = -1, transition_ = 0;
