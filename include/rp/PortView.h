@@ -46,6 +46,8 @@ namespace rp {
 
         bool grid = false, map = false;
 
+        bool takeMenuSound(){bool result=menuSound_;menuSound_=false;return result;}
+
         bool soundEnabled() const {
             return soundEnabled_;
         }
@@ -128,6 +130,7 @@ namespace rp {
         std::map<std::string, sys::res::ResourceAEAnim> previewBins_;
         std::unique_ptr<sys::gfx::AnimationRenderer> previewRenderer_;
         bool soundEnabled_ = true;
+        bool menuSound_=false;
         bool admin_ = false;
         size_t cheatPage_ = 0;
         std::string confirmAction_;

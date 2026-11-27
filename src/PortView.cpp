@@ -600,6 +600,7 @@ namespace rp {
     }
 
     std::optional<sfs::Message> PortView::touch(Game& g, float x, float y) {
+        menuSound_=false;
         if (panel_ == Panel::Admin) {
             if (!admin_) { panel_ = Panel::None; xmlMenu_.reset(); return {}; }
             if (y >= 320 && y <= 368 && x >= 414 && x <= 548) {
@@ -699,6 +700,7 @@ namespace rp {
             updateScroll();
             if (!inside || !old || xmlMenu_->node(old).number("suppressClick", 0))
                 return {};
+            menuSound_=true;
             return xmlTouch(g, x, y, old);
         }
         if (oceanGesture_) {
@@ -748,6 +750,7 @@ namespace rp {
         if (hudEnabled(g)) {
             updateHud(g);
             auto action = hud_->touch(x, y);
+            if(action!=Hud::Action::None) menuSound_=true;
             switch (action) {
             case Hud::Action::Admin:
                 if (!admin_) return {};

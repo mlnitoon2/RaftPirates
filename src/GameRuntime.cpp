@@ -874,11 +874,10 @@ namespace sys::platform::game {
                     send(platform, *request);
                 return;
             }
-            if (result) {
-                if (!rt.view->isDiving())
-                    effect(platform, "audio/sfx/menu_button_down.wav");
+            if (rt.view->takeMenuSound() || (result && !rt.view->isDiving()))
+                effect(platform, "audio/sfx/menu_button_down.wav");
+            if (result)
                 send(platform, *result);
-            }
         });
     }
 
