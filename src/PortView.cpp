@@ -1206,6 +1206,20 @@ namespace rp {
             }
             if (name == "quest_dialog" && g.quests.count(selectedQuest_)) {
                 const auto& q = g.quests.at(selectedQuest_);
+                // Original quest_dialog.xml binds three optional illustration slots independently.
+                auto bindImage = [&](const char* name, const std::string& sheet, const std::string& image) {
+                    if(auto el=m.find(1,name,true)){
+                        m.node(el).set("visible",!sheet.empty()&&!image.empty());
+                        if(!sheet.empty()&&!image.empty()){
+                            set(el,"Sprite","sheetName",sheet);
+                            set(el,"Sprite","spriteName",image);
+                            set(el,"Sprite","visible",true);
+                        }
+                    }
+                };
+                bindImage("ImageRight",q.sheet,q.image);
+                bindImage("ImageLeft",q.sheetLeft,q.imageLeft);
+                bindImage("ImageBottom",q.sheetBottom,q.imageBottom);
                 if (auto id = m.find(1, "TitleText", true))
                     set(id, "Text", "text", strings_.getText(q.name));
                 if (auto id = m.find(1, "DescriptionText", true))

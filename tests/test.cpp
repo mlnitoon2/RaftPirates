@@ -293,6 +293,24 @@ int main() {
         quests.put("result", discoveryArray);
         g.extension("gs_quest", quests);
         CHECK(g.questCount == 1);
+        O questState, questDefinition;
+        questState.put("id",int32_t(21));
+        questDefinition.put("visible",int32_t(1));
+        questDefinition.put("highlight_feature",std::string("map"));
+        questDefinition.put("popup_immediately",int32_t(1));
+        questDefinition.put("group",int32_t(4));
+        questDefinition.put("sheet_id_left",std::string("rp_menu.xml"));
+        questDefinition.put("image_id_left",std::string("btn_challenge"));
+        rp::Quest nativeQuest;
+        nativeQuest.initWithSFSObject(questState,questDefinition);
+        CHECK(nativeQuest.id==21 && nativeQuest.group==4 && nativeQuest.popupImmediately);
+        CHECK(nativeQuest.highlightFeature=="map" && nativeQuest.imageLeft=="btn_challenge");
+        g.quests[21]=nativeQuest;
+        O questUpdate;
+        questUpdate.put("quest_logid",int32_t(21));
+        questUpdate.put("percent",int32_t(75));
+        g.extension("quest_progress",questUpdate);
+        CHECK(g.quests.at(21).progress==75);
         std::cout << "Raft model and SFS framing tests passed\n";
         return 0;
     } catch (const std::exception& e) {

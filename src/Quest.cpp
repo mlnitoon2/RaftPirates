@@ -15,6 +15,13 @@ namespace rp {
         visible = definition.getBool("visible", definition.getInt("visible", 1) != 0);
         sheet = definition.getString("sheet_id");
         image = definition.getString("image_id");
+        highlightFeature = definition.getString("highlight_feature");
+        popupImmediately = definition.getBool("popup_immediately", definition.getInt("popup_immediately") != 0);
+        group = definition.getInt("group");
+        sheetLeft = definition.getString("sheet_id_left");
+        imageLeft = definition.getString("image_id_left");
+        sheetBottom = definition.getString("sheet_id_bottom");
+        imageBottom = definition.getString("image_id_bottom");
         setProgressPercentage(state.getInt("progress", state.getInt("percentage")));
         opened = false;
     }

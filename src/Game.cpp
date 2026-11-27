@@ -245,7 +245,7 @@ namespace rp {
         } else if (cmd == "quest_progress") {
             auto q = quests.find(num(p, "quest_logid"));
             if (q != quests.end())
-                q->second.setProgressPercentage(num(p, "progress", q->second.progress));
+                q->second.setProgressPercentage(num(p, "percent", num(p, "progress", q->second.progress)));
         } else if (cmd == "gs_ocean") {
             setSafe(num(p, "safe_water", safe) != 0);
             hideMap = p.getBool("hidemap", false);
