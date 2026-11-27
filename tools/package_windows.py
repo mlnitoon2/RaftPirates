@@ -57,6 +57,7 @@ def package(exe, prefix, output, status, revision, hydra_revision):
 
     ca_candidates = [prefix / "ssl/certs/ca-bundle.crt",
                      prefix / "etc/ssl/certs/ca-bundle.crt",
+                     prefix / "etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem",
                      prefix / "bin/curl-ca-bundle.crt",
                      prefix / "share/curl/ca-bundle.crt"]
     ca = next((p for p in ca_candidates if p.is_file()), None)
