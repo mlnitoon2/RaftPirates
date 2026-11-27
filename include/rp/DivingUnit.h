@@ -15,9 +15,8 @@ namespace rp {
         bool RequestDive() const;
         void UseClock(float seconds);
         std::pair<std::vector<std::string>, float> PlayAnimations() const;
-        int parent = 0, object = 0, state = 0, lootLevel = 0, depth = 0, maxDepth = 0, richZone = 0,
-            totalSeconds = 0;
-        float remaining = 0;
+        int parent = 0, object = 0, state = 0, lootLevel = 0, depth = 0, maxDepth = 0, richZone = 0;
+        float totalSeconds = 0, remaining = 0;
         int load = 0;
         std::map<int, int> bonus, collected;
         bool Diving() const;

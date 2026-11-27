@@ -2,6 +2,7 @@
 #include "rp/SparseGrid.h"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace rp {
     RaftComponent::RaftComponent(int user, int object, int px, int py, int points, int objectState,
@@ -22,9 +23,13 @@ namespace rp {
         return static_cast<float>(std::max(0.0, remaining - remainingFraction));
     }
 
-    void RaftComponent::SetRemainingTime(int seconds) {
-        remaining = std::max(0, seconds);
-        remainingFraction = 0;
+    void RaftComponent::SetRemainingTime(float seconds) {
+        if (!std::isfinite(seconds))
+            return;
+        const double value = std::clamp(double(seconds), 0.0,
+                                        double(std::numeric_limits<int>::max()));
+        remaining = static_cast<int>(std::ceil(value));
+        remainingFraction = remaining - value;
     }
 
     void RaftComponent::AddedToOcean(SparseGrid& grid) {

@@ -167,6 +167,14 @@ int main() {
         CHECK(game.diveSeconds == 15 && std::abs(game.diveState.GetDiveTime() - .25f) < .001f);
         game.diveState.SetLoadValue(300);
         CHECK(game.diveState.GetLoadValue() == 200);
+        rp::DivingUnit timer;
+        timer.StartDive(10.5f, 9.f);
+        CHECK(timer.Diving() && timer.totalSeconds == 10.5f && timer.remaining == 10.5f);
+        timer.StartDive(10.5f, 7.f);
+        CHECK(timer.remaining == 7.f);
+        timer.SetState(0);
+        CHECK(!timer.Diving() && timer.totalSeconds == 0 && timer.remaining == 0);
+        CHECK(timer.GetDiveTime() == 0);
         game.diveState.bonus[2] = 3;
         game.diveState.collected[2] = 2;
         CHECK(game.diveState.numAvailableBonusMaterials() == 3 &&

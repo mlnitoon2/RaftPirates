@@ -105,6 +105,10 @@ namespace rp {
     }
 
     void DivingUnit::SetState(int value) {
+        if (Diving() && value == 0) {
+            totalSeconds = 0;
+            remaining = 0;
+        }
         state = value;
     }
 
@@ -115,9 +119,11 @@ namespace rp {
     void DivingUnit::StartDive(float seconds, float left) {
         if (!std::isfinite(seconds) || !std::isfinite(left) || seconds < 0 || seconds > 86400)
             return;
-        totalSeconds = int(seconds);
-        remaining = std::clamp(left, 0.f, seconds);
-        state = 3;
+        totalSeconds = seconds;
+        // Native StartDive tolerates up to two seconds of difference before
+        // using the server's remaining countdown.
+        remaining = std::max(0.f, seconds > left + 2.f ? left : seconds);
+        SetState(3);
     }
 
     void DivingUnit::FinishDive() {

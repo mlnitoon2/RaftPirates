@@ -15,7 +15,7 @@ namespace rp {
         bool PostBuild() const;
         bool Building() const;
         float GetRemainingTime() const;
-        void SetRemainingTime(int seconds);
+        void SetRemainingTime(float seconds);
         void UseClock(float seconds);
         void AddedToOcean(SparseGrid& grid) override;
         void SetState(int value) override;

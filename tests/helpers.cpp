@@ -138,6 +138,8 @@ int main(int argc, char** argv) {
         CHECK(game.EastMostPoint().x == 2 && game.WestMostPoint().x == -1);
         rp::RaftComponent part;
         part.state = 1;
+        part.SetRemainingTime(5.25f);
+        CHECK(part.GetRemainingTime() == 5.25f);
         part.SetRemainingTime(5);
         part.UseClock(2.25f);
         CHECK(part.GetRemainingTime() == 2.75f);
