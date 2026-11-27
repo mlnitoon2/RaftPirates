@@ -1,0 +1,127 @@
+<template>
+
+	<size dependentOnElement="element:name()" dependentOnComponent="DialogSprite" />
+	<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+	<orientation vAnchor="VCENTER" hAnchor="LEFT" xOffset="0" yOffset="0" priority="15" />
+
+	<!-- Kailey you broke my reusability so I'm putting this back, 
+	the dialog sprite's width is used to place dialogs sliding in from the left... -->
+	<spriteSheetComponent name="DialogSprite">
+		<event name="onInit" params="component, element" >
+			component("layer"):SetString("HUD");
+		</event>
+	</spriteSheetComponent>
+	
+	<event name="onInit" params="element">
+		
+		element("startX"):SetInt(0)
+		element("endX"):SetInt(0)
+		
+		element("fromDirection"):SetString("RIGHT")
+		
+		element("isSliding"):Set( 0 )
+		
+		element("curDir"):Set(0)
+		element("curT"):Set(0)
+		
+		element("slideOutWidth"):Set(-1)
+		
+		element("numSlideSteps"):SetInt(10)
+		
+	</event>
+	<event name="onPostInit" params="element">
+	
+		if element("slideOutWidth"):GetInt() == -1 then
+			element("slideOutWidth"):SetInt(element["DialogSprite"]("height"):GetInt())
+		end
+		
+		local dirStr = element("fromDirection"):GetString();
+		if dirStr == "RIGHT" then
+			--[[print ("popup ".. element:name() .. " startDirection from the RIGHT");]]
+			element("startX"):SetInt( lua_sys.screenHeight()/2 + element("yOffset"):GetInt())
+			element("endX"):SetInt(lua_sys.screenHeight()/2-element("slideOutWidth"):GetInt())
+		elseif dirStr == "LEFT" then
+			--[[print ("popup ".. element:name() .. " startDirection from the LEFT");]]
+			element("startX"):SetInt(-lua_sys.screenHeight()/2 - element["DialogSprite"]("height"):GetInt()+ element("yOffset"):GetInt())
+			element("endX"):SetInt(-lua_sys.screenHeight()/2-element["DialogSprite"]("height"):GetInt() + element("slideOutWidth"):GetInt())
+		else
+			--[[print ("popup ".. element:name() .. " startDirection from the SOMEWHERE ELSE");]]
+			element("startX"):SetInt( element("yOffset"):GetInt() )
+		end
+		
+		element:setOrientationPosition( lua_sys.Vector2( element("xOffset"):GetInt(), element("startX"):GetInt() ) )
+		
+	</event>
+	
+	<event name="trigger" params="element">
+		
+		local atStartPos = (element("yOffset"):GetInt() ==  element("startX"):GetInt())
+		local movingOut = (element("curDir")==1)
+		
+		if atStartPos then
+			element:DoStoredScript("startSlideIn")
+		elseif  movingOut then
+			element:DoStoredScript("startSlideIn")
+		else
+			element:DoStoredScript("startSlideOut")
+		end
+	</event>
+	
+	<event name="startSlideIn" params="element">
+		element("isSliding"):SetInt(1)
+		element("curDir"):Set(1)
+	</event>
+
+	<event name="startSlideOut" params="element">
+		element("isSliding"):SetInt(1)
+		element("curDir"):Set(-1)
+	</event>
+	<event name="stopSlide" params="element">
+		element("isSliding"):SetInt(0)
+		element("curDir"):Set(0)
+	</event>
+	
+	
+	<event name="onTick" params="element, dt">
+	
+		if element("isSliding"):GetInt() == 1 then
+			local t = element("curT"):GetFloat()
+			local steps = element("numSlideSteps"):GetFloat()
+			
+			if t &lt;= steps then
+			
+			
+			
+				element("curT"):SetFloat( element("curT"):GetFloat() + 50*dt);
+				if element("curT"):GetFloat() &gt; element("numSlideSteps"):GetFloat() then
+					element:DoStoredScript("stopSlide");
+					element("curT"):SetFloat(0)
+				else
+					local value1=0
+					local value2=0
+					if element("curDir"):GetInt() == 1 then
+						value1=element("startX"):GetInt()
+						value2=element("endX"):GetInt()
+					else
+						value1=element("endX"):GetInt()
+						value2=element("startX"):GetInt()
+					end
+					local amount=element("curT"):GetFloat() / element("numSlideSteps"):GetFloat()
+					
+					local scrollOffset = lua_sys.Math_SmoothStep(value1, value2, amount);
+					--[[
+					print ("scrollOffset: "..scrollOffset.."")
+					]]
+					
+					--[[
+					print ("xOffset + (scrollOffset*curDir): "..element("xOffset"):GetInt().." + ("..scrollOffset.."*"..element("curDir"):GetInt()..")")
+					]]
+					local newPos = (element("xOffset"):GetInt())+scrollOffset;
+					--[[print ("newPos: "..newPos.."")]]
+					
+					element:setOrientationPosition(lua_sys.Vector2(element("xOffset"):GetInt(), scrollOffset ))
+				end
+			end
+		end
+	</event>
+</template>
