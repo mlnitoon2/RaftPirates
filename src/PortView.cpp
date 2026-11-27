@@ -222,14 +222,19 @@ namespace rp {
             return;
         }
         blueprintGesture_.reset();
-        shopButtonArmed_ = shopButtonAt(x, y) != 0;
-        if (shopButtonArmed_) {
+        if (xmlMenu_ && panel_ == Panel::Shop && swipe_ &&
+            xmlName_.rfind("tabbed_menu_", 0) == 0 &&
+            xmlName_ != "tabbed_menu_inventory" && y >= blueprintListTop_ &&
+            y < 400 && x >= 0 && x < 640) {
+            blueprintGesture_ = Vec2{x, y};
+            gestureOffset_ = xmlName_ == "tabbed_menu_blueprints" ? blueprintOffset_ :
+                             -xmlMenu_->scrollOffset(swipe_);
+            shopButtonArmed_ = false;
             oceanGesture_ = false;
             return;
         }
-        if (xmlMenu_ && panel_ == Panel::Shop && xmlName_ == "tabbed_menu_blueprints" &&
-            y >= blueprintListTop_ && y < 400 && x >= 0 && x < 640) {
-            blueprintGesture_ = Vec2{x, y};
+        shopButtonArmed_ = shopButtonAt(x, y) != 0;
+        if (shopButtonArmed_) {
             oceanGesture_ = false;
             return;
         }
@@ -248,8 +253,17 @@ namespace rp {
     }
 
     void PortView::touchDrag(float x, float y) {
-        if (blueprintGesture_)
+        if (blueprintGesture_ && xmlMenu_ && swipe_) {
+            const float offset = gestureOffset_ + blueprintGesture_->x - x;
+            if (xmlName_ == "tabbed_menu_blueprints") {
+                const auto count = blueprintIds_.size();
+                const float limit = float(count > BlueprintPageSize ? count - BlueprintPageSize : 0) * 128.f;
+                blueprintOffset_ = std::clamp(offset, 0.f, limit);
+            } else {
+                xmlMenu_->setScrollOffset(swipe_, -offset);
+            }
             return;
+        }
         if (xmlCaptured_ && xmlMenu_) {
             xmlMenu_->touchDrag(x, y);
             updateScroll();
@@ -298,6 +312,17 @@ namespace rp {
         worldTime_ = time;
         mapNameBounds_.reset();
         Image out(640, 400, {36, 133, 168, 255});
+        // The shop is an overlay. Limit costly software ocean rendering behind it;
+        // the menu, currency labels, input and network tick still update normally.
+        if (panel_ == Panel::Shop && !map && !g.discovery && !diving_ &&
+            g.onlineBattle.phase() == BattleModeState::Phase::Idle && shopBackdrop_ &&
+            time >= shopBackdropTime_ && time - shopBackdropTime_ < .2f) {
+            out = *shopBackdrop_;
+            renderPanel(out, g);
+            return out;
+        }
+        if (panel_ != Panel::Shop)
+            shopBackdrop_.reset();
         using Phase = BattleModeState::Phase;
         const auto& net = g.onlineBattle;
         onlineBattleActive_ = net.phase() != Phase::Idle;
@@ -538,6 +563,10 @@ namespace rp {
             questLogUnderlay_->submit(renderer);
             renderer.RenderScreen(out);
         }
+        if (panel_ == Panel::Shop && !map) {
+            shopBackdrop_ = out;
+            shopBackdropTime_ = time;
+        }
         if (panel_ != Panel::None)
             renderPanel(out, g);
         else if (map)
@@ -619,15 +648,28 @@ namespace rp {
         }
         if (blueprintGesture_) {
             const auto start = *blueprintGesture_;
+            const bool dragged = std::abs(x - start.x) > 4.f;
+            if (dragged)
+                touchDrag(x, y);
             blueprintGesture_.reset();
-            if (xmlName_ != "tabbed_menu_blueprints" || !xmlMenu_)
+            if (!xmlMenu_ || !swipe_)
                 return {};
-            const float dx = x - start.x;
-            if (std::abs(dx) >= 24.f) {
-                const int steps = std::max(1, int(std::round(std::abs(dx) / 128.f)));
-                blueprintPageMove(g, dx < 0 ? steps : -steps);
-            } else if (std::abs(y - start.y) < 20.f && y >= blueprintListTop_)
+            if (xmlName_ == "tabbed_menu_blueprints")
+                refreshBlueprintSlots(g);
+            else
+                updateScroll();
+            if (dragged || std::abs(y - start.y) >= 20.f || y < blueprintListTop_)
+                return {};
+            if (xmlName_ == "tabbed_menu_blueprints")
                 selectBlueprintSlot(g, x);
+            else {
+                const float offset = xmlMenu_->scrollOffset(swipe_);
+                const int slot = int(std::floor((x - offset - 12.f) / 128.f));
+                if (slot >= 0)
+                    if (auto el = xmlMenu_->find(1, "tabbedItem" + std::to_string(slot), true))
+                        if (auto touch = xmlMenu_->find(el, "Touch"))
+                            return xmlTouch(g, x, y, touch);
+            }
             return {};
         }
         if (shopButtonArmed_) {
@@ -988,7 +1030,7 @@ namespace rp {
         if (name == "tabbed_menu_blueprints") {
             auto ids = handler.gotMsgGetAllBlueprintsRequest();
             auto first = std::min(page_, ids.size());
-            auto last = std::min(first + BlueprintPageSize, ids.size());
+            auto last = std::min(first + BlueprintWindowSize, ids.size());
             return std::vector<int>(ids.begin() + first, ids.begin() + last);
         }
         if (name == "tabbed_menu_maps") {
@@ -1032,14 +1074,75 @@ namespace rp {
         const auto count = RPMenuHandler(g).gotMsgGetAllBlueprintsRequest().size();
         if (!count)
             return false;
-        auto next = std::clamp<long long>(static_cast<long long>(page_) + delta, 0,
-                                          static_cast<long long>(count > BlueprintPageSize ? count - BlueprintPageSize : 0));
-        if (size_t(next) == page_)
+        const float limit = float(count > BlueprintPageSize ? count - BlueprintPageSize : 0) * 128.f;
+        const float next = std::clamp(blueprintOffset_ + delta * 128.f, 0.f, limit);
+        if (next == blueprintOffset_)
             return false;
-        page_ = size_t(next);
-        shopSelection_ = 0;
-        openXml(g, "tabbed_menu_blueprints");
+        blueprintOffset_ = next;
+        refreshBlueprintSlots(g);
         return true;
+    }
+
+    // Five visible slots plus one look-ahead slot. Rebind the existing nodes at a
+    // cell boundary instead of parsing XML and decoding textures during each swipe.
+    void PortView::refreshBlueprintSlots(const Game& g) {
+        if (!xmlMenu_ || xmlName_ != "tabbed_menu_blueprints" || !swipe_)
+            return;
+        auto& m = *xmlMenu_;
+        const size_t count = blueprintIds_.size();
+        const float limit = float(count > BlueprintPageSize ? count - BlueprintPageSize : 0) * 128.f;
+        blueprintOffset_ = std::clamp(blueprintOffset_, 0.f, limit);
+        const size_t first = std::min(size_t(blueprintOffset_ / 128.f),
+            count > BlueprintWindowSize ? count - BlueprintWindowSize : size_t(0));
+        if (first != page_) {
+            page_ = first;
+            for (size_t i = 0; i < std::min(count, BlueprintWindowSize); ++i) {
+                const auto key = "tabbedItem" + std::to_string(i);
+                auto el = m.find(1, key, true);
+                if (!el)
+                    continue;
+                const int id = blueprintIds_.at(first + i);
+                xmlItems_[key] = id;
+                const auto& b = g.blueprints.at(id);
+                const bool owned = g.owned.count(id) != 0;
+                auto set = [&](const char* part, const char* key, sys::menu_redux::Property value) {
+                    if (auto child = m.find(el, part))
+                        m.node(child).set(key, std::move(value));
+                };
+                const auto icon = blueprintIcon(b.sheet, b.image);
+                set("itemImage", "spriteName", icon);
+                set("itemImage", "sheetName", b.sheet);
+                set("itemImage", "visible", true);
+                set("itemImage", "alpha", owned && !RPMenuHandler(g).gotMsgHaveMaterialsRequest(id) ? .4 : 1.);
+                for (auto channel : {"red", "green", "blue"})
+                    set("itemImage", channel, owned ? 1. : .55);
+                set("itemName", "text", strings_.getText(b.name()));
+                set("itemName", "visible", !owned);
+                set("selectionOverlay", "visible", id == shopSelection_);
+                try {
+                    auto path = std::filesystem::path(b.sheet);
+                    if (!path.has_extension())
+                        path.replace_extension(".xml");
+                    if (path.parent_path().empty())
+                        path = "xml_resources" / path;
+                    auto sheet = blueprintSheets_.find(path.generic_string());
+                    if (sheet != blueprintSheets_.end())
+                        if (auto cell = sheet->second->findSpriteByName(icon))
+                            if (cell->ow > 0 && cell->oh > 0)
+                                set("itemImage", "size", std::min(115.2 / cell->ow,
+                                    (400. - blueprintListTop_) * .72 / cell->oh));
+                } catch (const std::exception&) {
+                }
+            }
+            lastScrollOffset_.reset();
+        }
+        m.setScrollOffset(swipe_, -(blueprintOffset_ - float(page_) * 128.f));
+        updateScroll();
+        for (auto name : {"ScrollArrow-Left", "ScrollArrow-Right"})
+            if (auto arrow = m.find(1, name, true))
+                if (auto sprite = m.find(arrow, "Sprite"))
+                    m.node(sprite).set("alpha", (std::string(name) == "ScrollArrow-Left" ?
+                        blueprintOffset_ <= .5f : blueprintOffset_ >= limit - .5f) ? .1 : 1.);
     }
 
     void PortView::selectBlueprintSlot(const Game& g, float x) {
@@ -1059,6 +1162,12 @@ namespace rp {
         if (xmlName_ != name) {
             shopSelection_ = 0;
             page_ = 0;
+        }
+        if (name == "tabbed_menu_blueprints") {
+            blueprintIds_ = RPMenuHandler(g).gotMsgGetAllBlueprintsRequest();
+            const auto count = blueprintIds_.size();
+            blueprintOffset_ = float(std::min(page_, count > BlueprintPageSize ? count - BlueprintPageSize : size_t(0))) * 128.f;
+            page_ = std::min(page_, count > BlueprintWindowSize ? count - BlueprintWindowSize : size_t(0));
         }
         blueprintGesture_.reset();
         xmlMenu_ = std::make_unique<MenuRuntime>(root_);
@@ -1590,8 +1699,7 @@ namespace rp {
                 if (auto background = m.find(1, "bgBluePrint", true))
                     listTop = m.node(background).bounds.y;
                 listTop = std::clamp(listTop, m.height() * .65f, m.height() * .8f);
-                if (name == "tabbed_menu_blueprints")
-                    blueprintListTop_ = listTop;
+                blueprintListTop_ = listTop;
                 float left = 8;
                 for (int i = 1; i <= 7; ++i) {
                     auto id = m.find(1, "Tab" + std::to_string(i), true);
@@ -2073,16 +2181,8 @@ namespace rp {
                 m.solve();
             }
             updateScroll();
-            if (name == "tabbed_menu_blueprints") {
-                const auto count = RPMenuHandler(g).gotMsgGetAllBlueprintsRequest().size();
-                for (auto arrowName : {"ScrollArrow-Left", "ScrollArrow-Right"})
-                    if (auto arrow = m.find(1, arrowName, true))
-                        if (auto sprite = m.find(arrow, "Sprite")) {
-                            const bool left = std::string(arrowName) == "ScrollArrow-Left";
-                            m.node(sprite).set("alpha", (left ? page_ == 0 :
-                                page_ + BlueprintPageSize >= count) ? .1 : 1.);
-                        }
-            }
+            if (name == "tabbed_menu_blueprints")
+                refreshBlueprintSlots(g);
         } catch (const std::exception&) {
             xmlMenu_.reset();
         }
@@ -2100,7 +2200,9 @@ namespace rp {
                 }
             refresh = refresh || count != xmlItems_.size();
         }
-        if (xmlMenu_ && xmlName_ == name && name.rfind("tabbed_menu_", 0) == 0) {
+        if (xmlMenu_ && xmlName_ == name && name == "tabbed_menu_blueprints") {
+            refresh = blueprintIds_ != RPMenuHandler(g).gotMsgGetAllBlueprintsRequest();
+        } else if (xmlMenu_ && xmlName_ == name && name.rfind("tabbed_menu_", 0) == 0) {
             auto expected = menuItemIds(g, name);
             if (expected.size() != xmlItems_.size())
                 refresh = true;
@@ -2117,6 +2219,8 @@ namespace rp {
             openXml(g, name);
         if (!xmlMenu_)
             return;
+        if (name == "tabbed_menu_blueprints")
+            refreshBlueprintSlots(g);
         if (name == "piratemap_menu") {
             if (auto icon = xmlMenu_->find(1, "MapActionsIcon", true)) {
                 xmlMenu_->node(icon).set("visible", g.mapActionMax > 0);
@@ -2530,6 +2634,16 @@ namespace rp {
                 m.node(icon).set("spriteName",
                                  std::string(soundEnabled_ ? "btn_green" : "btn_red"));
             updateShopFrame(g);
+            return {};
+        }
+        if (name == "ScrollArrow-Left" || name == "ScrollArrow-Right") {
+            const int direction = name == "ScrollArrow-Left" ? -1 : 1;
+            if (xmlName_ == "tabbed_menu_blueprints")
+                blueprintPageMove(g, direction);
+            else if (swipe_) {
+                m.setScrollOffset(swipe_, m.scrollOffset(swipe_) - direction * 128.f);
+                updateScroll();
+            }
             return {};
         }
         if (name == "buyBtn" && xmlName_ == "tabbed_menu_free" && shopSelection_ < 0) {

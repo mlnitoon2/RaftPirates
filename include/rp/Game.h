@@ -204,8 +204,8 @@ namespace rp {
         float animationClock_ = 0, lastRenderTime_ = -1;
         void sync(const Player&);
         void appearance(VisualEntry&, int raft);
-        sys::gfx::Vec2 position_{320, 86}, offset_{}, axisX_{96, 48}, axisY_{-96, 48};
-        float width_ = 640, height_ = 400, priority_ = 0, unit_ = 96, zoom_ = 1;
+        sys::gfx::Vec2 position_{320, 86}, offset_{}, axisX_{48, 24}, axisY_{-48, 24};
+        float width_ = 640, height_ = 400, priority_ = 0, unit_ = 48, zoom_ = 1;
         std::filesystem::path root_;
         int lastDiveParent_ = 0, lastDiveObject_ = 0;
         bool lastDiving_ = false;

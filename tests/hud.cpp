@@ -242,17 +242,22 @@ int main(int argc, char** argv) {
         }
         rp::PortView browser(argv[1]);
         rp::PortViewTestAccess::openShop(browser, catalogue, "tabbed_menu_blueprints");
-        CHECK(rp::PortViewTestAccess::itemCount(browser) == 5);
+        CHECK(rp::PortViewTestAccess::itemCount(browser) == 6);
         const float listY = rp::PortViewTestAccess::listTop(browser) + 12;
         int first = rp::PortViewTestAccess::selection(browser);
         browser.touchDown(190, listY);
         browser.touch(catalogue, 190, listY);
         CHECK(rp::PortViewTestAccess::selection(browser) != first);
+        auto* originalMenu = &rp::PortViewTestAccess::menu(browser);
         browser.touchDown(450, listY);
         browser.touchDrag(100, listY);
+        browser.render(catalogue, .1f, "");
+        CHECK(&rp::PortViewTestAccess::menu(browser) == originalMenu);
+        CHECK(rp::PortViewTestAccess::page(browser) == 2);
         browser.touch(catalogue, 100, listY);
-        CHECK(rp::PortViewTestAccess::itemCount(browser) == 5);
-        CHECK(rp::PortViewTestAccess::page(browser) == 3);
+        CHECK(rp::PortViewTestAccess::itemCount(browser) == 6);
+        CHECK(rp::PortViewTestAccess::page(browser) == 2);
+        CHECK(&rp::PortViewTestAccess::menu(browser) == originalMenu);
         std::cout << "Original HUD asset, action, and protocol checks passed\n";
         return 0;
     } catch (const std::exception& e) {

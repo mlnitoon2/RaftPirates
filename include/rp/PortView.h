@@ -103,6 +103,12 @@ namespace rp {
         Panel panel_ = Panel::None;
         size_t page_ = 0;
         static constexpr size_t BlueprintPageSize = 5;
+        static constexpr size_t BlueprintWindowSize = BlueprintPageSize + 1;
+        std::vector<int> blueprintIds_;
+        float blueprintOffset_ = 0, gestureOffset_ = 0;
+        void refreshBlueprintSlots(const Game&);
+        std::optional<sys::gfx::Image> shopBackdrop_;
+        float shopBackdropTime_ = -1;
         float blueprintListTop_ = 300;
         std::optional<sys::gfx::Vec2> blueprintGesture_;
         bool blueprintPageMove(const Game&, int);
