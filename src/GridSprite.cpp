@@ -48,6 +48,17 @@ namespace rp {
         }
     }
 
+    void GridSprite::SetGeometry(Vec2 world, float scale) {
+        world_ = world;
+        scale_ = scale;
+        Update();
+        SetPriorities();
+    }
+
+    void GridSprite::SetTime(float time) {
+        time_ = std::isfinite(time) ? std::max(0.f, time) : 0;
+    }
+
     void GridSprite::SetVisible(bool v) {
         visible_ = v;
         for (auto& p : pieces_)
@@ -80,7 +91,7 @@ namespace rp {
     void GridSprite::SetPriorities() {
         auto base = ocean_.WorldToScreen(world_);
         for (unsigned i = 0; i < pieces_.size(); ++i)
-            SetPriority(i, base.y + pieces_[i].order * .01f + pieces_[i].suborder * .0001f);
+            SetPriority(i, ocean_.Priority() + base.y + pieces_[i].order * .01f + pieces_[i].suborder * .0001f);
     }
 
     void GridSprite::SetOrder(unsigned i, unsigned order, unsigned sub) {

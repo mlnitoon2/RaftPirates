@@ -17,6 +17,8 @@ namespace rp {
         ~GridSprite();
         void Init();
         void Update();
+        void SetGeometry(sys::gfx::Vec2 world, float scale);
+        void SetTime(float time);
         void SetVisible(bool);
         bool GetVisible() const;
         void SetColour(uint8_t, uint8_t, uint8_t, uint8_t);

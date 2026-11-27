@@ -93,10 +93,48 @@ namespace rp {
         std::string catalog() const;
     };
 
+    class GridSprite;
     class OceanView {
       public:
-        explicit OceanView(std::filesystem::path root)
-            : root_(std::move(root)), animations_(root_) {}
+        using SpriteKey = std::pair<int, int>; // parent raft, object ID (parent=0 for raft)
+        explicit OceanView(std::filesystem::path root);
+        ~OceanView();
+        OceanView(const OceanView&) = delete;
+        OceanView& operator=(const OceanView&) = delete;
+        void Init();
+        void SetOcean(const Player&);
+        void AddGrid(const Raft&, const std::map<int, GridObjectInfo>&);
+        void RemoveGrid(int raft);
+        void AddSprite(int parent, const GridObject&, const GridObjectInfo&, sys::gfx::Vec2 world);
+        void RemoveSprite(int parent, int id);
+        void UpdateSprite(int parent, const GridObject&, const GridObjectInfo&, sys::gfx::Vec2 world);
+        GridSprite* getGridSprite(int parent, int id) const;
+        void SetRaftTransparent(int raft, float alpha);
+        void AddAnimSlack(int parent, int id, float seconds);
+        void UpdateAnimations(int parent, int id, float seconds);
+        void gotMsgAnimateGridSprite(int parent, int id, std::vector<std::string> names);
+        void gotMsgSparseGridObjectAdded(int parent, const GridObject&, const GridObjectInfo&,
+                                         sys::gfx::Vec2 world);
+        void gotMsgSparseGridObjectRemoved(int parent, int id);
+        void gotMsgGridObjectEvent(int parent, const GridObject&, const GridObjectInfo&,
+                                  sys::gfx::Vec2 world);
+        void gotMsgUpdateOceanView(const Player&);
+        void PlayRaftAttackAnims(int raft, float delay);
+        void SetOrdering();
+        void SetTempPriorities(GridSprite&);
+        bool GetPriority(const GridSprite*, unsigned piece, float& result) const;
+        float GetSpritePriority(const GridSprite*, unsigned piece) const;
+        std::vector<SpriteKey> FillPrioritySorter() const;
+        sys::gfx::Vec2 FocalPoint() const;
+        void SetAxiseseses(sys::gfx::Vec2 x, sys::gfx::Vec2 y);
+        void showHealthBars(bool show);
+        void removeAllHealthBars();
+        void ShowWaterBuckets(bool show);
+        bool CheckForBucket(int parent, int id) const;
+        void tick(float dt);
+        size_t spriteCount() const;
+        bool gotMsgGfxLayerPickResult(int parent, int id);
+        std::optional<SpriteKey> pickedSprite() const;
 
         sys::gfx::Image render(const Player&, float time, bool grid,
                                const DiveState* dive = nullptr);
@@ -126,6 +164,14 @@ namespace rp {
         void Update();
 
       private:
+        struct VisualEntry;
+        std::map<SpriteKey, std::unique_ptr<VisualEntry>> sprites_;
+        std::map<int, float> raftOpacity_;
+        std::optional<SpriteKey> picked_;
+        bool healthBars_ = false, waterBuckets_ = false, customAxes_ = false;
+        float animationClock_ = 0, lastRenderTime_ = -1;
+        void sync(const Player&);
+        void appearance(VisualEntry&, int raft);
         sys::gfx::Vec2 position_{320, 86}, offset_{}, axisX_{192, 96}, axisY_{-192, 96};
         float width_ = 640, height_ = 400, priority_ = 0, unit_ = 192, zoom_ = 1;
         std::filesystem::path root_;

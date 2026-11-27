@@ -1,4 +1,5 @@
 #include "rp/BuildModeState.h"
+#include "rp/GridSprite.h"
 #include "rp/TouchControls.h"
 #include "rp/RPMenuHandler.h"
 #include "PlayerFixture.h"
@@ -108,6 +109,21 @@ int main() {
         if (c.Destroyed())
             CHECK(build.selection().second == c.id);
         OceanView ocean({});
+        ocean.SetOcean(game);
+        const auto firstRaft = game.mainRaft()->id;
+        auto originalSprite = ocean.getGridSprite(0, firstRaft);
+        CHECK(originalSprite && ocean.spriteCount() >= game.rafts.size());
+        ocean.gotMsgUpdateOceanView(game);
+        CHECK(ocean.getGridSprite(0, firstRaft) == originalSprite);
+        ocean.SetRaftTransparent(firstRaft, .5f);
+        CHECK(originalSprite->Alpha() <= 128);
+        CHECK(ocean.gotMsgGfxLayerPickResult(0, firstRaft));
+        ocean.RemoveGrid(firstRaft);
+        CHECK(!ocean.getGridSprite(0, firstRaft) && !ocean.pickedSprite());
+        ocean.SetAxiseseses({100, 20}, {-80, 60});
+        auto inverse = ocean.ScreenToWorld(ocean.WorldToScreen({2, 3}));
+        CHECK(std::abs(inverse.x - 2) < .001f && std::abs(inverse.y - 3) < .001f);
+        ocean.SetUnitSize(192);
         TouchControls touch(&ocean);
         touch.SetZoomLimits(.5f, 2.f, true);
         touch.touchDown({100, 100});
