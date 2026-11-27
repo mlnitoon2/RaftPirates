@@ -99,6 +99,11 @@ int main(int argc, char** argv) {
         auto multi = rp::GridObjectInfo::parse("0;one.png 0 0 0,0;two.png 30 0 1,0;", 800);
         rp::GridSprite visual(ocean, a, multi, {0, 0}, 1);
         CHECK(visual.Pieces() == 2 && visual.GetMaxOrder() == 1);
+        auto accessory=std::make_unique<rp::AccessorySprite>(&ocean,&visual,12);
+        CHECK(accessory->GetTimeString(3661)=="01:01:01");
+        CHECK(visual.AddAccessorySprite(std::move(accessory)));
+        CHECK(visual.HasAccessorySprite(12)&&visual.GetAccessorySprite(12)->ticking());
+        CHECK(visual.RemoveAccessorySprite(12)&&!visual.HasAccessorySprite(12));
         visual.SetOrder(0, 4, 1);
         CHECK(visual.GetOrder(0) == 4 && visual.GetPriority(0) > visual.GetPriority(1));
         CHECK(visual.Select(&visual[0].appearance));

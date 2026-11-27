@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 namespace rp {
     class OceanView;
     class GridSprite;
@@ -9,11 +10,16 @@ namespace rp {
         void AddToTick();
         void RemoveFromTick();
         int GetID() const;
+        std::string GetTimeString(int seconds) const;
         virtual void Init();
         virtual void Update();
         virtual void tick(float dt);
         virtual void SetScale(float scale);
         virtual bool ListenForAnimation();
+        virtual void AnimationStarted() {}
+        virtual void SetMute(bool) {}
+        virtual void UpdateParticles() {}
+        const GridSprite* parent()const{return parent_;}
         bool ticking() const { return ticking_; }
       protected:
         const OceanView* ocean_;

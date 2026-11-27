@@ -90,6 +90,7 @@ namespace rp {
         e->world = world;
         e->sprite = std::make_unique<GridSprite>(*this, e->object, e->definition, world, zoom_);
         appearance(*e, parent ? parent : object.id);
+        e->sprite->SetMute(RaftMuted(parent?parent:object.id));
         sprites_[key] = std::move(e);
         AddToTick(parent, object.id);
     }
@@ -323,6 +324,7 @@ namespace rp {
         if (raft <= 0) return;
         if (mute) mutedRafts_.insert(raft);
         else mutedRafts_.erase(raft);
+        for(auto& item:sprites_)if(item.first.first==raft||(!item.first.first&&item.first.second==raft))item.second->sprite->SetMute(mute);
     }
 
     bool OceanView::RaftMuted(int raft) const { return mutedRafts_.count(raft) != 0; }
@@ -346,6 +348,7 @@ namespace rp {
         for (const auto& key : ticking_) {
             auto& e = *sprites_.at(key);
             e.slack = std::max(0.f, e.slack - dt);
+            e.sprite->UpdateAnimations(dt);
             e.bucket.tick(dt);
             e.indicator.tick(dt);
         }

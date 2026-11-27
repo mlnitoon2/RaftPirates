@@ -19,6 +19,17 @@ namespace rp {
         ~GridSprite();
         void Init();
         bool AttachAccessory(std::unique_ptr<AccessorySprite> accessory);
+        bool AddAccessorySprite(std::unique_ptr<AccessorySprite>);
+        AccessorySprite* GetAccessorySprite(int id)const;
+        bool HasAccessorySprite(int id)const;
+        bool RemoveAccessorySprite(int id);
+        bool ListenForAnimation() const;
+        void gotMsgAnimationStarted();
+        void SetMute(bool mute);
+        bool muted()const{return muted_;}
+        void UpdateParticles();
+        void BuildPiece(const GridPiece&);
+        void UpdatePiece(unsigned index);
         bool DetachAccessory(int id);
         void Update();
         void SetGeometry(sys::gfx::Vec2 world, float scale);
@@ -53,7 +64,7 @@ namespace rp {
         const GridObjectInfo& definition_;
         sys::gfx::Vec2 world_;
         float scale_ = 1, time_ = 0, slack_ = 0;
-        bool visible_ = true, selected_ = false, hasAttack_ = false;
+        bool visible_ = true, selected_ = false, hasAttack_ = false, muted_=false;
         sys::gfx::Color colour_{};
         std::vector<SpritePiece> pieces_;
         std::map<int, std::unique_ptr<AccessorySprite>> accessories_;

@@ -19,16 +19,54 @@ namespace rp {
     GridSprite::~GridSprite() = default;
 
     bool GridSprite::AttachAccessory(std::unique_ptr<AccessorySprite> accessory) {
-        if (!accessory || accessories_.count(accessory->GetID())) return false;
+        return AddAccessorySprite(std::move(accessory));
+    }
+    bool GridSprite::AddAccessorySprite(std::unique_ptr<AccessorySprite> accessory) {
+        if (!accessory || accessory->parent()!=this || accessories_.count(accessory->GetID())) return false;
         accessory->Init();
         accessory->SetScale(scale_);
+        accessory->SetMute(muted_);
         accessory->Update();
         accessory->AddToTick();
         const int id = accessory->GetID();
         accessories_.emplace(id, std::move(accessory));
         return true;
     }
-    bool GridSprite::DetachAccessory(int id) { return accessories_.erase(id) != 0; }
+    bool GridSprite::DetachAccessory(int id) { return RemoveAccessorySprite(id); }
+    AccessorySprite* GridSprite::GetAccessorySprite(int id)const{
+        auto it=accessories_.find(id);return it==accessories_.end()?nullptr:it->second.get();
+    }
+    bool GridSprite::HasAccessorySprite(int id)const{return GetAccessorySprite(id)!=nullptr;}
+    bool GridSprite::RemoveAccessorySprite(int id){
+        auto it=accessories_.find(id);if(it==accessories_.end())return false;
+        it->second->RemoveFromTick();accessories_.erase(it);return true;
+    }
+    bool GridSprite::ListenForAnimation()const{return true;}
+    void GridSprite::gotMsgAnimationStarted(){
+        for(auto& item:accessories_)if(item.second->ListenForAnimation())item.second->AnimationStarted();
+    }
+    void GridSprite::SetMute(bool mute){
+        // Native exempts the diving unit.
+        if(definition_.name=="DivingUnit")return;
+        muted_=mute;
+        for(auto& item:accessories_)item.second->SetMute(mute);
+    }
+    void GridSprite::UpdateParticles(){
+        for(auto& item:accessories_)item.second->UpdateParticles();
+    }
+    void GridSprite::BuildPiece(const GridPiece& def){
+        SpritePiece piece;piece.definition=def;piece.order=unsigned(pieces_.size());
+        pieces_.push_back(std::move(piece));
+    }
+    void GridSprite::UpdatePiece(unsigned index){
+        auto base=ocean_.WorldToScreen(world_);
+        auto& piece=pieces_.at(index);
+        piece.appearance.SetPos(base.x+piece.definition.offsetX*scale_,base.y+piece.definition.offsetY*scale_);
+        piece.appearance.SetScale(scale_,scale_);
+        piece.appearance.SetVisible(visible_);
+        piece.appearance.SetColor(colour_.r,colour_.g,colour_.b,colour_.a);
+        piece.appearance.SetPriority(piece.priority);
+    }
 
     void GridSprite::Init() {
         pieces_.clear();
@@ -41,12 +79,7 @@ namespace rp {
             piece.cells = definition_.cells;
             definitions.push_back(std::move(piece));
         }
-        for (auto& def : definitions) {
-            SpritePiece piece;
-            piece.definition = std::move(def);
-            piece.order = unsigned(pieces_.size());
-            pieces_.push_back(std::move(piece));
-        }
+        for(const auto& def:definitions)BuildPiece(def);
         if(pieces_.size()>1&&pieces_.size()<=4096){
             std::vector<GridObject::GridShapePiece> shapes;
             for(unsigned i=0;i<pieces_.size();++i)
@@ -60,15 +93,7 @@ namespace rp {
     }
 
     void GridSprite::Update() {
-        auto base = ocean_.WorldToScreen(world_);
-        for (auto& piece : pieces_) {
-            piece.appearance.SetPos(base.x + piece.definition.offsetX * scale_,
-                                    base.y + piece.definition.offsetY * scale_);
-            piece.appearance.SetScale(scale_, scale_);
-            piece.appearance.SetVisible(visible_);
-            piece.appearance.SetColor(colour_.r, colour_.g, colour_.b, colour_.a);
-            piece.appearance.SetPriority(piece.priority);
-        }
+        for(unsigned i=0;i<pieces_.size();++i)UpdatePiece(i);
         for (auto& entry : accessories_) entry.second->Update();
     }
 
@@ -169,16 +194,19 @@ namespace rp {
 
     void GridSprite::UpdateAnimations(float dt) {
         if (std::isfinite(dt) && dt >= 0) {
-            float used = std::min(dt, slack_);
-            slack_ -= used;
-            time_ += dt - used;
+            // ARM UpdateAnimations consumes all slack as additional elapsed time.
+            time_ += dt + slack_;
+            slack_ = 0;
             for (auto& entry : accessories_) if (entry.second->ticking()) entry.second->tick(dt);
+            UpdateParticles();
         }
     }
 
     void GridSprite::SetAnimation(std::vector<std::string> names) {
+        if(animations_==names)return;
         animations_ = std::move(names);
         time_ = 0;
+        gotMsgAnimationStarted();
     }
 
     bool GridSprite::HasAttack() const {
