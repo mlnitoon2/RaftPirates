@@ -69,7 +69,7 @@ namespace {
         }
     }
 
-    template <class F> void audio(Services& platform, F callback) {
+    template <class F> void callAudio(Services& platform, F callback) {
         if (rt.audioFailed)
             return;
         try {
@@ -84,13 +84,13 @@ namespace {
         const auto desired = rt.view && !rt.view->soundEnabled() ? std::string{} : path;
         if (rt.music == desired)
             return;
-        audio(platform, [&] { platform.music(desired); });
+        callAudio(platform, [&] { platform.music(desired); });
         rt.music = desired;
     }
 
     void effect(Services& platform, const char* path) {
         if (!rt.view || rt.view->soundEnabled())
-            audio(platform, [&] { platform.effect(path); });
+            callAudio(platform, [&] { platform.effect(path); });
     }
 
     void prompt(Services& platform, const char* title, const std::string& value) {
@@ -424,7 +424,7 @@ namespace sys::platform::game {
             if (!value)
                 rt.engine.Resume();
             if (!rt.music.empty())
-                audio(platform, [&] { platform.pauseMusic(value); });
+                callAudio(platform, [&] { platform.pauseMusic(value); });
             rt.last = Clock::now();
         });
     }
