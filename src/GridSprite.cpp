@@ -1,4 +1,5 @@
 #include "rp/GridSprite.h"
+#include "rp/GridObjectHelpers.h"
 #include "sys/gfx/AssetImage.h"
 #include <algorithm>
 #include <cmath>
@@ -33,6 +34,14 @@ namespace rp {
             piece.definition = std::move(def);
             piece.order = unsigned(pieces_.size());
             pieces_.push_back(std::move(piece));
+        }
+        if(pieces_.size()>1&&pieces_.size()<=4096){
+            std::vector<GridObject::GridShapePiece> shapes;
+            for(unsigned i=0;i<pieces_.size();++i)
+                shapes.emplace_back(object_,pieces_[i].definition,i);
+            std::vector<GridObject::GridShapePiece*> order;
+            performaIsoSort(shapes,order);
+            for(unsigned i=0;i<order.size();++i)pieces_[order[i]->index()].order=i;
         }
         Update();
         SetPriorities();

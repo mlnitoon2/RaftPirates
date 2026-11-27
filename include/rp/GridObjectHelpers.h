@@ -12,4 +12,16 @@ namespace rp {
     bool IsDivingUnit(const GridObject*,const std::map<int,GridObjectInfo>&);
     bool SortGridObjPredicate(const GridObject& a,const GridObject& b);
     std::string Tokenize(std::string& source,std::string delimiter);
+    struct DoStuffExtraData {
+        DoStuffExtraData();
+        bool visited=false;
+        int order=-1;
+        GridObject::GridShapePiece* piece=nullptr;
+        std::vector<GridObject::GridShapePiece*> predecessors;
+    };
+    bool MyDataSortPredicate(const DoStuffExtraData* a,const DoStuffExtraData* b);
+    void Dostuff_place(std::map<GridObject::GridShapePiece*,DoStuffExtraData>& graph,
+                       GridObject::GridShapePiece* piece,int& order);
+    void performaIsoSort(std::vector<GridObject::GridShapePiece>& pieces,
+                         std::vector<GridObject::GridShapePiece*>& sorted);
 }

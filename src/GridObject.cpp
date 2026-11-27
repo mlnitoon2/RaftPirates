@@ -10,6 +10,36 @@ namespace rp {
 
     GridObject::~GridObject() = default;
 
+    GridObject::GridShapePiece::GridShapePiece(const GridObject& object,const GridObjectPiece& piece,
+        unsigned index,Cell parent,bool component,bool transpose)
+        :filename_(piece.asset),cells_(piece.cells),base_(object.GetWorldPosition(parent,component)),
+         offsetX_(piece.offsetX),offsetY_(piece.offsetY),index_(index),component_(component) {
+        if(cells_.empty())cells_.push_back({0,0});
+        if(transpose)for(auto& c:cells_)std::swap(c.x,c.y);
+    }
+    const std::string& GridObject::GridShapePiece::Filename()const{return filename_;}
+    Cell GridObject::GridShapePiece::GetGridSpace(unsigned index)const{return cells_.at(index);}
+    std::pair<float,float> GridObject::GridShapePiece::GetWorldSpace(unsigned index)const{
+        auto c=GetGridSpace(index);
+        const float step=component_?1.f/6:1.f;
+        return {base_.first+c.x*step,base_.second+c.y*step};
+    }
+    std::pair<float,float> GridObject::GridShapePiece::TextureOffset()const{
+        return {float(offsetX_),float(offsetY_)};
+    }
+    bool GridObject::GridShapePiece::precedes(const GridShapePiece& other)const{
+        // Pairwise footprint dominance (not a strict weak ordering). The caller
+        // must handle contradictory/cyclic relations instead of std::sort on this.
+        for(unsigned a=0;a<cells_.size();++a){
+            const auto p=GetWorldSpace(a);
+            for(unsigned b=0;b<other.cells_.size();++b){
+                const auto q=other.GetWorldSpace(b);
+                if(p.first<=q.first&&p.second<=q.second&&p!=q)return true;
+            }
+        }
+        return false;
+    }
+
     Cell GridObject::GetGridPosition() const {
         return {x, y};
     }

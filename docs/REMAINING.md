@@ -47,6 +47,9 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Pass 39 source review
 
+- GridShapePiece: decoded original Filename/TextureOffset and local cell access, optional x/y transpose and parent-relative world positions. Reconstructed dependency sorting uses pairwise occupied-cell dominance and visited-before-recursion ordering (Dostuff_place at 0x475208, MyDataSortPredicate at 0x46e718); original complete bounding-box comparator and tie-breaking are not verified. Applied to piece order within GridSprite, not global cross-raft sorting.
+- ItemPlacementSprite integrates live Game placement validation into the original footprint overlay, using footprint_1x1_red for invalid positions. Native Sprite ownership, selection/touch integration and full animation ABI remain open. Tests extend the source fixture for shape sorting and metadata.
+
 - GridObjectHelpers: ARM32 0x41bed0–0x41bf58 compares native type 0/1/2; 0x41c150–0x41c28c compares exact names boss, boss01–boss05, barracks, DivingUnit. Portable helpers take an explicit catalogue instead of an intrusive object data pointer. SortGridObjPredicate uses original x-then-y comparison at 0x3aa8b8; Tokenize consumes the input and one delimiter byte (single-byte separators used in existing grid data parser). Multi-byte delimiter semantics remain unverified.
 - FootprintSprite and nested SpriteFootprint now own and render placement sprites from the original construction_footprints_junk.xml atlas, integrated in PortView. UnitHealthBarSprite uses original gfx/HUD/health_meter.png and health_meter_green.pvr, replacing synthetic bars in OceanView; scale, offset and fill clipping are portable approximations. Original tick at 0x62f8b4 returns immediately. Tests added for tokenization, classification and comparison; not yet executed.
 
@@ -61,7 +64,7 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-316 names from the Pass 33 inventory now have named source implementations through Pass 39 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+332 names from the Pass 33 inventory now have named source implementations through Pass 39 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (29)
 
@@ -74,10 +77,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::Wreckage` (14)
 
 `Duplicate`, `GetTotalBattlePoints`, `GetUserObjectID`, `GetWreckageObject`, `Pieces`, `RegisterAllClasses`, `Repair`, `Salvage`, `SetState`, `SetWreckageObject`, `Wreckage`, `getAvailableActions`, `initWithSFSObject`, `~Wreckage`
-
-### `rp` (3)
-
-`Dostuff_place`, `MyDataSortPredicate`, `performaIsoSort`
 
 ### `rp::AccessorySprite` (11)
 
@@ -122,10 +121,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::DivingUnit` (1)
 
 `AddedToOcean`
-
-### `rp::ItemPlacementSprite` (7)
-
-`ItemPlacementSprite`, `OkayToPlace`, `SetPosition`, `SetPriority`, `SetToObject`, `Update`, `~ItemPlacementSprite`
 
 ### `rp::SelectedWallSprite` (7)
 
@@ -178,10 +173,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::GfxBattleScreen` (5)
 
 `AddAccessory`, `SetObjectMute`, `SetObjectVisible`, `SetPlayerRaft`, `SetPlayerRaftsVisible`
-
-### `rp::GridObject::GridShapePiece` (5)
-
-`Filename`, `GetGridSpace`, `GetWorldSpace`, `GridShapePiece`, `TextureOffset`
 
 ### `rp::LoaderAEAnim` (5)
 
@@ -334,10 +325,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::BlueprintInfo` (1)
 
 `~BlueprintInfo`
-
-### `rp::DoStuffExtraData` (1)
-
-`DoStuffExtraData`
 
 ### `rp::Ocean` (1)
 

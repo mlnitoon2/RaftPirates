@@ -10,10 +10,29 @@ namespace rp {
         int x = 0, y = 0;
     };
     struct GridObjectInfo;
+    struct GridObjectPiece;
 
     // User-owned object instance, distinct from the static GridObjectInfo library.
     // Explicit catalogue lookup avoids dangling pointers after a library refresh.
     struct GridObject {
+        // Snapshot of one occupied shape, independent of the catalogue lifetime.
+        struct GridShapePiece {
+            GridShapePiece(const GridObject& object,const GridObjectPiece& piece,
+                           unsigned index,Cell parent={},bool component=false,bool transpose=false);
+            const std::string& Filename()const;
+            Cell GetGridSpace(unsigned index)const;
+            std::pair<float,float> GetWorldSpace(unsigned index)const;
+            std::pair<float,float> TextureOffset()const;
+            bool precedes(const GridShapePiece& other)const;
+            unsigned index()const{return index_;}
+          private:
+            std::string filename_;
+            std::vector<Cell> cells_;
+            std::pair<float,float> base_;
+            int offsetX_=0,offsetY_=0;
+            unsigned index_=0;
+            bool component_=false;
+        };
         GridObject() = default;
         GridObject(int user, int object, int px, int py, int points, int objectState);
         virtual ~GridObject();

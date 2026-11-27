@@ -1,5 +1,5 @@
 #include "rp/PortView.h"
-#include "rp/FootprintSprite.h"
+#include "rp/ItemPlacementSprite.h"
 #include "rp/RaftPirates.h"
 #include "rp/RPMenuHandler.h"
 #include "rp/BuildModeState.h"
@@ -299,22 +299,17 @@ namespace rp {
                 const auto* cell = atlas->findSpriteByName("footprint_1x1");
                 if (cell) {
                     auto image = loader_.sprite(atlas->imagePath);
-                    const auto* parent = g.GetRaftByID(placementParent_);
-                    std::vector<Cell> footprint{{0, 0}};
-                    if (parent) {
-                        int object = 0;
-                        if (auto bp = g.blueprints.find(selectedBlueprint_);
-                            bp != g.blueprints.end())
-                            object = bp->second.object;
-                        else if (auto source = g.GetRaftByID(selectedParent_))
-                            for (const auto& c : source->components)
-                                if (c.id == selectedComponent_)
-                                    object = c.type;
-                        if (auto def = g.objects.find(object); def != g.objects.end())
-                            footprint = def->second.cells;
-                    }
-                    FootprintSprite overlay(ocean_,image,*cell);
-                    overlay.Update(*placement_,footprint,parent);
+                    int object=0;
+                    if(auto bp=g.blueprints.find(selectedBlueprint_);bp!=g.blueprints.end())
+                        object=bp->second.object;
+                    else if(auto source=g.GetRaftByID(selectedParent_))
+                        for(const auto& c:source->components)
+                            if(c.id==selectedComponent_)object=c.type;
+                    const auto* red=atlas->findSpriteByName("footprint_1x1_red");
+                    ItemPlacementSprite overlay(g,ocean_,image,*cell,red?*red:*cell);
+                    overlay.SetToObject(object,placementParent_,moving_?selectedParent_:0,
+                                        moving_?selectedComponent_:0);
+                    overlay.SetPosition(*placement_);
                     overlay.Render(out);
                 }
             } catch (const std::exception&) { /* No substitute for missing original assets. */

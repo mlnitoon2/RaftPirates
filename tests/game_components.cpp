@@ -37,6 +37,15 @@ int main() {
             CHECK(IsBossWeapon(&x,definitions) && !IsBarracks(&x,definitions));
             definitions[7].name="barracks";
             CHECK(IsBarracks(&x,definitions) && !IsBossWeapon(&x,definitions));
+            GridObjectPiece shape("a.png 5 7 0,0");
+            std::vector<GridObject::GridShapePiece> pieces;
+            pieces.emplace_back(y,shape,0);
+            pieces.emplace_back(x,shape,1);
+            CHECK(pieces[1].Filename()=="a.png");
+            CHECK(pieces[1].GetWorldSpace(0).second==2);
+            std::vector<GridObject::GridShapePiece*> order;
+            performaIsoSort(pieces,order);
+            CHECK(order.size()==2 && order.front()==&pieces[1]);
         }
         game.storeItems[1] = {1, 4, 100, 1, "pack", "misc", "Pack", "rp_menu.xml", ""};
         game.objects[5] = {5, 0, 1000, "WoodRaft", "gfx/rafts/raft_wood.png", -192, 0, {{0, 0}}};

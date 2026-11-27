@@ -21,6 +21,7 @@ add_library(raftpirates_game STATIC
     src/GridObject.cpp
     src/GridObjectHelpers.cpp
     src/FootprintSprite.cpp
+    src/ItemPlacementSprite.cpp
     src/UnitHealthBarSprite.cpp
     src/GridObjectInfo.cpp
     src/GridSprite.cpp
