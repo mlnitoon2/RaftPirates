@@ -1355,6 +1355,22 @@ namespace rp {
                 if (auto label = xmlMenu_->find(sonar, "Text"))
                     xmlMenu_->node(label).set("text", std::to_string(g.numOfMaterialPossessed(12)));
         }
+        if(name=="quest_log"){
+            // Existing entries must update when quest_progress changes without a
+            // catalogue-size change. Do not recreate the menu or reset scroll.
+            for(const auto& [key,id]:xmlItems_){
+                auto quest=g.quests.find(id);
+                if(quest==g.quests.end())continue;
+                auto entry=xmlMenu_->find(1,key,true);
+                if(!entry)continue;
+                if(auto text=xmlMenu_->find(entry,"ProgressText")){
+                    auto& n=xmlMenu_->node(text);
+                    n.set("text",std::to_string(quest->second.progress)+"%");
+                    n.set("visible",quest->second.progress>0&&quest->second.progress<100);
+                }
+                if(auto badge=xmlMenu_->find(entry,"NewQuest"))xmlMenu_->node(badge).set("visible",quest->second.unread);
+            }
+        }
         if(name.rfind("tabbed_menu_",0)==0){
             for(int tab=5;tab<=7;++tab)
                 if(auto id=xmlMenu_->find(1,"Tab"+std::to_string(tab),true))

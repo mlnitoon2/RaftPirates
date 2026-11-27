@@ -23,5 +23,6 @@ namespace rp {
         bool unread = false, visible = true, opened = false, popupImmediately = false;
         std::string name, description, sheet, image, highlightFeature;
         std::string sheetLeft, imageLeft, sheetBottom, imageBottom;
+        std::vector<std::string> goals, blockInterface, unblockInterface;
     };
 } // namespace rp

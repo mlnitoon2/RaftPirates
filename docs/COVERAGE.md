@@ -21,3 +21,5 @@ Device feedback after the subsequent build confirmed splash centering, map layou
 ## Live verification dashboard
 
 The host workflow generates `verification-dashboard` (HTML and JSON) on every main push. Enable **Settings → Pages → Source: GitHub Actions** to deploy it at the project Pages URL. The live report measures the retained historical symbol subset, a conservative lower bound, and compiled name count. To calculate full symbol-name overlap, run `tools/progress_page.py` with the locally held original ELF via `--reference`. Instruction and byte matching are explicitly unmeasured.
+
+Quest model regressions now cover initial percent, goals, interface toggle fields, progress updates and absent versus empty result arrays. Original device assets and game-server traces remain necessary for full quest validation.

@@ -215,11 +215,12 @@ namespace rp {
         } else if (cmd == "zonestatus" || cmd == "zone_status") {
             badZone = num(p, "bad") != 0;
         } else if (cmd == "gs_quest") {
+            auto result = p.getSFSArray("result");
+            // An error/ack without a result is not an authoritative empty quest snapshot.
+            if(!result)return;
             questCount = 0;
             quests.clear();
-            auto result = p.getSFSArray("result");
-            if (result)
-                for (const auto& entry : result->values) {
+            for (const auto& entry : result->values) {
                     const O* state = nullptr;
                     const O* definition = nullptr;
                     if (auto item = std::get_if<std::shared_ptr<O>>(&entry); item && *item) {

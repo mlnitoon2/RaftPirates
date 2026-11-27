@@ -301,8 +301,23 @@ int main() {
         questDefinition.put("group",int32_t(4));
         questDefinition.put("sheet_id_left",std::string("rp_menu.xml"));
         questDefinition.put("image_id_left",std::string("btn_challenge"));
+        O goal, block, unblock;
+        goal.put("open_quest",int32_t(1));
+        block.put("element","MainMenu");block.put("toggle",int32_t(0));
+        unblock.put("element","PirateMap");unblock.put("toggle",int32_t(1));
+        auto goals=std::make_shared<sfs::SFSArrayWrapper>();
+        goals->add(std::make_shared<O>(goal));
+        auto toggles=std::make_shared<sfs::SFSArrayWrapper>();
+        toggles->add(std::make_shared<O>(block));toggles->add(std::make_shared<O>(unblock));
+        questDefinition.put("goals",goals);
+        questDefinition.put("block_interface",toggles);
+        questState.put("percent",int32_t(25));
         rp::Quest nativeQuest;
         nativeQuest.initWithSFSObject(questState,questDefinition);
+        CHECK(nativeQuest.progress==25);
+        CHECK(nativeQuest.goals.size()==1&&nativeQuest.goals[0]=="open_quest");
+        CHECK(nativeQuest.blockInterface.size()==1&&nativeQuest.blockInterface[0]=="MainMenu");
+        CHECK(nativeQuest.unblockInterface.size()==1&&nativeQuest.unblockInterface[0]=="PirateMap");
         CHECK(nativeQuest.id==21 && nativeQuest.group==4 && nativeQuest.popupImmediately);
         CHECK(nativeQuest.highlightFeature=="map" && nativeQuest.imageLeft=="btn_challenge");
         g.quests[21]=nativeQuest;
@@ -311,6 +326,12 @@ int main() {
         questUpdate.put("percent",int32_t(75));
         g.extension("quest_progress",questUpdate);
         CHECK(g.quests.at(21).progress==75);
+        g.extension("gs_quest",O{});
+        CHECK(g.quests.at(21).progress==75);
+        O cleared;
+        cleared.put("result",std::make_shared<sfs::SFSArrayWrapper>());
+        g.extension("gs_quest",cleared);
+        CHECK(g.quests.empty()&&g.questCount==0);
         std::cout << "Raft model and SFS framing tests passed\n";
         return 0;
     } catch (const std::exception& e) {
