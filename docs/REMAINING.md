@@ -6,13 +6,13 @@ The comparison uses the original ARM32 ELF and the corresponding compiled host s
 
 ## Pass 35 source-level updates (awaiting compiled measurement)
 
-The Pass 33 symbol inventory below is preserved as the last measured baseline. Pass 34's ARM64 CI build succeeded. Source changes since that baseline include:
+The Pass 33 symbol inventory is the last measured baseline; the list below is provisionally adjusted for source-level additions. Pass 34's ARM64 CI build succeeded. Source changes since that baseline include:
 
 - `rp::RaftPirates::GotMsgShowStore` and `gotMsgBoughtCurrency` (Pass 34): portable catalog and purchase-response adapters, not original popup or billing implementations.
 - `rp::RaftPirates::GotMsgStartTransition` and `GotTransitionMsgDone` (Pass 35): original network queue pause/resume behavior recovered at ARM addresses 0x4a180c and 0x4a1840. Native transition graphics and completion-event broadcast still need reconstruction; the new handlers are not yet attached to the actual loading/menu animation events.
 - Next priorities: connect transition graphics and menu events, ship naming keyboard lifecycle, purchase/repair confirmation protocol, tutorial state, and original battle/build mode transitions. Do not infer new server commands from method names alone.
 
-Names newly implemented in source are listed here rather than removed from the historical measured inventory. Recompute that inventory from a compiled host archive before changing the counts.
+Names newly implemented in source are listed here and removed from the provisional list below. Recompute the compiled inventory from a host archive before changing measured counts.
 
 ## Priority gaps
 
@@ -23,15 +23,17 @@ Names newly implemented in source are listed here rather than removed from the h
 - Account/social/store: original saved login migration, account management, Facebook/social integration, currency purchases, notifications.
 - Server: validation, full multiplayer and boss extensions and persistence require a compatible backend. No live Android or multiplayer validation has been performed.
 
-## Missing method names by class
+## Remaining method names by class (provisional source review)
+
+4 names from the Pass 33 inventory now have named source implementations in Passes 34–35 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::OceanView` (37)
 
 `AddAnimSlack`, `AddGrid`, `AddSprite`, `AddToTick`, `CheckForBucket`, `FillPrioritySorter`, `FocalPoint`, `GetPriority`, `GetSpritePriority`, `Init`, `Layer`, `OceanView`, `PlayRaftAttackAnims`, `RemoveFromTick`, `RemoveGrid`, `RemoveSprite`, `SetAxiseseses`, `SetBossOcean`, `SetOcean`, `SetOrdering`, `SetRaftMute`, `SetRaftTransparent`, `SetTempPriorities`, `ShowWaterBuckets`, `UpdateAnimations`, `UpdateSprite`, `getGridSprite`, `gotMsgAnimateGridSprite`, `gotMsgDiveUnitLoadChange`, `gotMsgGfxLayerPickResult`, `gotMsgGridObjectEvent`, `gotMsgSparseGridObjectAdded`, `gotMsgSparseGridObjectRemoved`, `gotMsgUpdateOceanView`, `removeAllHealthBars`, `showHealthBars`, `tick`
 
-### `rp::RaftPirates` (32)
+### `rp::RaftPirates` (28)
 
-`GotMsgDoingFacebookAuth`, `GotMsgOnMenuLoadGlobal`, `GotMsgShowStore`, `GotMsgStartTransition`, `GotTransitionMsgDone`, `QuestRewards`, `checkTutorialCompletion`, `checkTutorialStart`, `gotMsgAuthenticationChanged`, `gotMsgBoughtCurrency`, `gotMsgCheat`, `gotMsgCheatDuplicatePlayer`, `gotMsgCheatStartBattle`, `gotMsgConfirmBlueprintMaterialsPurchase`, `gotMsgConfirmMaterialPurchase`, `gotMsgConfirmRepairGridObjectWithGold`, `gotMsgDebugGatherAllUsers`, `gotMsgDiscoveryGetAllKnownRequest`, `gotMsgGameCenterAuthChanged`, `gotMsgGameCenterError`, `gotMsgKeyboardEntryResult`, `gotMsgNameShip`, `gotMsgPopupTextResult`, `gotMsgQuickTravelGetAllKnownRequest`, `gotMsgReconnect`, `gotMsgStartBattleMode`, `gotMsgStartBuildMode`, `gotMsgTouchDown`, `gotMsgTouchDrag`, `gotMsgTouchUp`, `gotMsgZoneGetAllKnownRequest`, `preloadMenus`
+`GotMsgDoingFacebookAuth`, `GotMsgOnMenuLoadGlobal`, `QuestRewards`, `checkTutorialCompletion`, `checkTutorialStart`, `gotMsgAuthenticationChanged`, `gotMsgCheat`, `gotMsgCheatDuplicatePlayer`, `gotMsgCheatStartBattle`, `gotMsgConfirmBlueprintMaterialsPurchase`, `gotMsgConfirmMaterialPurchase`, `gotMsgConfirmRepairGridObjectWithGold`, `gotMsgDebugGatherAllUsers`, `gotMsgDiscoveryGetAllKnownRequest`, `gotMsgGameCenterAuthChanged`, `gotMsgGameCenterError`, `gotMsgKeyboardEntryResult`, `gotMsgNameShip`, `gotMsgPopupTextResult`, `gotMsgQuickTravelGetAllKnownRequest`, `gotMsgReconnect`, `gotMsgStartBattleMode`, `gotMsgStartBuildMode`, `gotMsgTouchDown`, `gotMsgTouchDrag`, `gotMsgTouchUp`, `gotMsgZoneGetAllKnownRequest`, `preloadMenus`
 
 ### `rp::BuildModeState` (29)
 

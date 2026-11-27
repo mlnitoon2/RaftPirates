@@ -92,7 +92,9 @@ int main() {
     }
     check(rejected && game.ready && game.mapX == 3 && game.mapY == 4);
     game.pendingMap = rp::Cell{1, 1};
+    game.GotMsgStartTransition(true);
     game.gotMsgOnConnectionLost();
+    check(!game.transitionVisible());
     check(!game.ready && !game.connected() && !game.pendingMap);
     check(game.adminMessage().empty());
     game.gotMsgOnExtensionResponse("zonestatus", packet);
