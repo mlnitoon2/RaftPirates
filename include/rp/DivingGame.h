@@ -7,6 +7,15 @@
 #include <random>
 
 namespace rp::diving_game {
+    struct DivingMaterial {
+        DivingMaterial(int x, int y, sys::gfx::Gfx* parent);
+        // Caller supplies the original rp_diving atlas and selected cell.
+        void configure(std::shared_ptr<const sys::res::ResourceSpriteSheet> atlas,
+                       std::shared_ptr<const sys::gfx::Image> image, const std::string& cell);
+        sys::gfx::GfxSpriteSheet sprite;
+        float x, y;
+    };
+
     struct DivingCollectable {
         enum class CollectableType { Gear, Mine };
         CollectableType type;

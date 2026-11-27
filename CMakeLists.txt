@@ -16,6 +16,7 @@ add_library(raftpirates_game STATIC
     src/Ocean.cpp
     src/RaftPirates.cpp
     src/Messages.cpp
+    src/Pass47Types.cpp
     src/Game.cpp
     src/BuildModeState.cpp
     src/GridObject.cpp

@@ -3,6 +3,13 @@
 #include <string>
 
 namespace rp {
+    struct QuestTypeInfo {
+        int id = 0;
+        std::string name, sheet, image;
+        explicit QuestTypeInfo(const sfs::SFSObjectWrapper& data);
+        ~QuestTypeInfo();
+    };
+
     class Quest {
       public:
         Quest();

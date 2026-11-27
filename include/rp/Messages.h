@@ -4,6 +4,7 @@
 #include "rp/Quest.h"
 #include "rp/StoreDB.h"
 #include <map>
+#include <array>
 
 namespace rp {
     // Portable message lifetimes, NOT the original ARM/SWIG object layout.
@@ -41,6 +42,20 @@ namespace rp {
         explicit MsgTabbedItemScrollTo(const std::string&);
         ~MsgTabbedItemScrollTo() override;
         std::string item;
+    };
+
+    // Constructor argument order follows the exported ARM symbol. The exact
+    // meaning of all nine strings has not been established.
+    struct MsgStartDialog : MsgBase {
+        MsgStartDialog(int, const std::string&, const std::string&, const std::string&,
+                       const std::vector<std::string>&, const std::vector<std::string>&,
+                       const std::string&, const std::string&, const std::string&,
+                       const std::string&, const std::string&, const std::string&);
+        ~MsgStartDialog() override;
+        int id;
+        std::array<std::string, 3> leading;
+        std::vector<std::string> first, second;
+        std::array<std::string, 6> trailing;
     };
 
     struct MsgAnimateGridSprite : MsgBase {

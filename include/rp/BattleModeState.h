@@ -3,6 +3,9 @@
 #include "rp/Ocean.h"
 #include "sfs/SFSWire.h"
 #include <optional>
+#include <array>
+
+namespace sys::gfx { class AEAnim; class Gfx; }
 
 namespace rp {
     class Game;
@@ -10,6 +13,19 @@ namespace rp {
     // Original battle state name; online actions remain server-authoritative.
     class BattleModeState {
       public:
+        // Native copy constructor owns a string and two graphics references.
+        // Unidentified scalar slots are preserved without assigning gameplay semantics.
+        struct BattleDice {
+            BattleDice() = default;
+            BattleDice(const BattleDice&);
+            BattleDice& operator=(const BattleDice&) = default;
+            ~BattleDice();
+            std::array<uint32_t, 3> leading{};
+            std::string label;
+            std::array<uint32_t, 8> trailing{};
+            std::shared_ptr<sys::gfx::AEAnim> animation;
+            std::shared_ptr<sys::gfx::Gfx> graphics;
+        };
         BattleModeState();
         const char* name()const;
         void Pause();

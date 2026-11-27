@@ -135,9 +135,11 @@ Names newly implemented in source are listed here and removed from the provision
 - Cannon accessory: original ID 15, two nonlooping front/back compositions, core/raft selection and completion removal (0x5ffe7c, 0x5fff3c); original asset xml_bin/raft_cannons_anim.bin. Wired into OceanView::PlayRaftAttackAnims. Native per-cannon offsets, layer ordering and packet triggers remain incomplete.
 - Movement arrow: inverse zoom, centered alignment and -34 offset from 0x5e70bc; portable graphics must be configured by caller. Battle points: override -1 uses current BP, zoom opacity 0.3–0.4, inverse zoom capped at 8, return-only SetColour (0x57bdcc/0x57c5bc); caller provides font and scene placement. Twelve additional provisional names; exact original layout and UI wiring not claimed.
 
+- Ten further names: BattleDice copy/destruction (0x382740/0x384f04), ReadoutLight zero initialization/ref destruction (0x5a8c24/0x5a90a0), MsgStartDialog constructor argument order and owned message data (0x342720/0x33a670), BlueprintInfo three strings (0x36bdf4), SpriteBalloon derived SpritePiece/string cleanup (0x5f0fe0), QuestTypeInfo three strings (0x497fb8), DivingMaterial centered sprite at priority 50 (0x529ff8). These are portable lifetime/data adapters. Dialog dispatch, dice/readout/balloon scene assembly and automatic atlas acquisition are not restored; the enclosing readout and perimeter classes remain incomplete.
+
 ## Remaining method names by class (provisional source review)
 
-546 names from the Pass 33 inventory now have named source implementations through Pass 47 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+556 names from the Pass 33 inventory now have named source implementations through Pass 47 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (20)
 
@@ -222,32 +224,4 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::GfxBattleInfoDropDown` (5)
 
 `GfxBattleInfoDropDown`, `Hide`, `Show`, `aTickMethodThatsNotCalledTick`, `~GfxBattleInfoDropDown`
-
-### `rp::BattleModeState::BattleDice` (2)
-
-`BattleDice`, `~BattleDice`
-
-### `rp::DiveUnitReadoutSprite::ReadoutLight` (2)
-
-`ReadoutLight`, `~ReadoutLight`
-
-### `rp::MsgStartDialog` (2)
-
-`MsgStartDialog`, `~MsgStartDialog`
-
-### `rp::BlueprintInfo` (1)
-
-`~BlueprintInfo`
-
-### `rp::PerimeterWallSprite::SpriteBalloon` (1)
-
-`~SpriteBalloon`
-
-### `rp::QuestTypeInfo` (1)
-
-`~QuestTypeInfo`
-
-### `rp::diving_game::DivingMaterial` (1)
-
-`DivingMaterial`
 
