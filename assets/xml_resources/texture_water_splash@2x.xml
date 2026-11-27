@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:b32cf1bd6bd188ec5393a140ac0a7e4d$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/fx/texture_water_splash@2x.png" width="512" height="512">
+    <sprite n="c_dive_sign" x="2" y="262" w="160" h="84"/>
+    <sprite n="sign_light_green" x="478" y="312" w="24" h="26" oX="0" oY="0" oW="24" oH="28"/>
+    <sprite n="sign_light_off" x="478" y="352" w="16" h="22" oX="4" oY="4" oW="24" oH="28"/>
+    <sprite n="sign_light_red" x="478" y="284" w="24" h="26" oX="0" oY="0" oW="24" oH="28"/>
+    <sprite n="sign_long_light_green" x="2" y="348" w="46" h="16" oX="8" oY="0" oW="64" oH="16"/>
+    <sprite n="sign_long_light_off" x="50" y="348" w="52" h="14" oX="6" oY="0" oW="64" oH="16"/>
+    <sprite n="sign_long_light_red" x="2" y="366" w="46" h="16" oX="8" oY="0" oW="64" oH="16"/>
+    <sprite n="water_splash_01" x="126" y="384" w="114" h="70" oX="39" oY="55" oW="192" oH="128"/>
+    <sprite n="water_splash_02" x="126" y="456" w="92" h="54" oX="50" oY="58" oW="192" oH="128"/>
+    <sprite n="water_splash_03" x="352" y="284" w="124" h="98" oX="34" oY="28" oW="192" oH="128"/>
+    <sprite n="water_splash_04" x="2" y="384" w="122" h="82" oX="36" oY="37" oW="192" oH="128"/>
+    <sprite n="water_splash_05" x="368" y="84" w="132" h="110" oX="29" oY="18" oW="192" oH="128"/>
+    <sprite n="water_splash_06" x="358" y="196" w="152" h="86" oX="23" oY="36" oW="192" oH="128"/>
+    <sprite n="water_splash_07" x="368" y="2" w="142" h="80" oX="26" oY="16" oW="192" oH="128"/>
+    <sprite n="water_splash_08" x="180" y="250" w="170" h="92" oX="11" oY="32" oW="192" oH="128"/>
+    <sprite n="water_splash_09" x="188" y="2" w="178" h="90" oX="4" oY="34" oW="192" oH="128"/>
+    <sprite n="water_splash_10" x="2" y="2" w="184" h="72" oX="0" oY="45" oW="192" oH="128"/>
+    <sprite n="water_splash_11" x="180" y="94" w="176" h="90" oX="4" oY="32" oW="192" oH="128"/>
+    <sprite n="water_splash_12" x="2" y="76" w="176" h="94" oX="4" oY="28" oW="192" oH="128"/>
+    <sprite n="water_splash_13" x="2" y="172" w="176" h="88" oX="5" oY="34" oW="192" oH="128"/>
+    <sprite n="water_splash_14" x="180" y="186" w="176" h="62" oX="5" oY="47" oW="192" oH="128"/>
+    <sprite n="water_splash_15" x="478" y="340" w="18" h="10" oX="87" oY="89" oW="192" oH="128"/>
+</TextureAtlas>
