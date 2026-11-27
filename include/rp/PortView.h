@@ -96,6 +96,7 @@ namespace rp {
         std::optional<sfs::Message> panelTouch(Game&, float x, float y);
         std::unique_ptr<sys::menu_redux::MenuRuntime> xmlMenu_;
         std::string xmlName_;
+        std::map<std::string, sys::res::XmlNode> preloadedMenus_;
         std::map<std::string, int> xmlItems_;
         sys::localization::LocalizationManager strings_;
         void openXml(const Game&, const std::string&);

@@ -1,5 +1,7 @@
 #include "rp/RaftPirates.h"
 #include "rp/RPMenuHandler.h"
+#include "rp/BuildModeState.h"
+#include <limits>
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
@@ -24,6 +26,9 @@ namespace rp {
         connected_ = connecting_ = roomJoined_ = paused_ = false;
         processing_ = true;
         transitionVisible_ = false;
+        namingShip_ = battleMode_ = false;
+        startedTutorials_.clear();
+        completedTutorials_.clear();
         queued_.clear();
         adminMessage_.clear();
         serverName_.clear();
@@ -45,6 +50,7 @@ namespace rp {
             initialize();
         connected_ = connecting_ = roomJoined_ = ready = false;
         transitionVisible_ = false;
+        namingShip_ = battleMode_ = false;
         processing_ = true;
         pending.reset();
         pendingMove.reset();
@@ -231,6 +237,157 @@ namespace rp {
                      : std::vector<int>{};
     }
 
+    bool RaftPirates::gotMsgNameShip() {
+        if (!connected_ || !ready || namingShip_)
+            return false;
+        namingShip_ = true;
+        return true;
+    }
+
+    std::optional<sfs::Message> RaftPirates::gotMsgKeyboardEntryResult(const std::string& name,
+                                                                         bool cancelled) {
+        if (!namingShip_)
+            return {};
+        namingShip_ = false;
+        if (!connected_ || !ready || cancelled || name.empty() || name.size() > 75 ||
+            name.find_first_of("\r\n\t") != std::string::npos ||
+            name.find('\0') != std::string::npos ||
+            name.find_first_not_of(' ') == std::string::npos)
+            return {};
+        sfs::SFSObjectWrapper packet;
+        packet.put("newName", name);
+        return request("set_display_name", packet);
+    }
+
+    std::optional<sfs::Message> RaftPirates::gotMsgConfirmMaterialPurchase(int material, int amount,
+                                                                             int goldCost) const {
+        if (!connected_ || !ready || material <= 0 || amount <= 0 || goldCost < 0 ||
+            !materialNames.count(material))
+            return {};
+        sfs::SFSObjectWrapper packet;
+        packet.put("material", int32_t(material));
+        packet.put("amount", int32_t(amount));
+        packet.put("gold_cost", int32_t(goldCost));
+        return request("purchase_item", packet);
+    }
+
+    std::vector<sfs::Message> RaftPirates::gotMsgConfirmBlueprintMaterialsPurchase(int blueprint) const {
+        std::vector<sfs::Message> requests;
+        const auto entry = blueprints.find(blueprint);
+        if (!ready || !connected_ || entry == blueprints.end() || !owned.count(blueprint))
+            return requests;
+        for (const auto& [id, amount] : entry->second.recipe) {
+            const auto missing = std::max(0, amount - numOfMaterialPossessed(unsigned(id)));
+            if (!missing)
+                continue;
+            auto price = materialGoldCosts.find(id);
+            if (price == materialGoldCosts.end() || !std::isfinite(price->second) || price->second < 0)
+                return {};
+            const double cost = std::ceil(price->second * missing);
+            if (cost > std::numeric_limits<int>::max())
+                return {};
+            auto message = gotMsgConfirmMaterialPurchase(id, missing, int(cost));
+            if (!message)
+                return {};
+            requests.push_back(std::move(*message));
+        }
+        return requests;
+    }
+
+    std::optional<sfs::Message> RaftPirates::gotMsgConfirmRepairGridObjectWithGold(
+        int parent, int object, int goldCost, bool all) const {
+        if (!ready || !connected_ || object <= 0 || parent < 0 || goldCost < 0 || battleMode_)
+            return {};
+        const GridObject* target = nullptr;
+        if (!parent)
+            target = GetRaftByID(object);
+        else if (auto raft = GetRaftByID(parent))
+            for (const auto& component : raft->components)
+                if (component.id == object && !component.Building()) {
+                    target = &component;
+                    break;
+                }
+        if (!target)
+            return {};
+        auto def = target->getResourceData(objects);
+        if (!def || (!all && target->bp >= def->bp))
+            return {};
+        sfs::SFSObjectWrapper packet;
+        packet.put("repair_grid_object_id", int32_t(object));
+        packet.put("gold_cost", int32_t(goldCost));
+        packet.put("repair_all", int32_t(all));
+        packet.put("object_id", int32_t(object));
+        packet.put("object_type", int32_t(parent ? 1 : 0));
+        if (parent)
+            packet.put("parent_id", int32_t(parent));
+        return request("purchase_repair", packet);
+    }
+
+    bool RaftPirates::gotMsgTouchDown(float elapsed) { return checkKeepAlive(elapsed); }
+    bool RaftPirates::gotMsgTouchDrag(float elapsed) { return checkKeepAlive(elapsed); }
+    bool RaftPirates::gotMsgTouchUp(float elapsed) { return checkKeepAlive(elapsed); }
+
+    bool RaftPirates::gotMsgStartBattleMode() {
+        if (!ready || !connected_ || onlineBattle.phase() == BattleModeState::Phase::Idle)
+            return false;
+        battleMode_ = true;
+        return true;
+    }
+
+    bool RaftPirates::gotMsgStartBuildMode() {
+        if (!ready || !connected_ || onlineBattle.phase() != BattleModeState::Phase::Idle)
+            return false;
+        battleMode_ = false;
+        return true;
+    }
+
+    bool RaftPirates::inBattleMode() const { return battleMode_; }
+
+    std::map<std::string, sys::res::XmlNode> RaftPirates::preloadMenus(
+        const std::filesystem::path& root) {
+        std::map<std::string, sys::res::XmlNode> result;
+        for (const char* name : {"tabbed_menu_blueprints", "tabbed_menu_free",
+                                 "tabbed_menu_inventory", "tabbed_menu_misc"}) {
+            try {
+                result.emplace(name, sys::res::loadXML(root / "menus" / (std::string(name) + ".xml")));
+            } catch (const std::exception&) {
+                // A missing optional menu is handled by the existing UI fallback.
+            }
+        }
+        return result;
+    }
+
+    void RaftPirates::GotMsgDoingFacebookAuth() {
+        // The Android preservation client has no Facebook authentication provider.
+        if (!connected_ && !connecting_)
+            status = "Facebook login is not available.";
+    }
+
+    void RaftPirates::gotMsgAuthenticationChanged() { handleLogOut(); }
+
+    void RaftPirates::gotMsgGameCenterAuthChanged(bool usingGameCenter) {
+        if (usingGameCenter)
+            handleLogOut();
+    }
+
+    void RaftPirates::gotMsgGameCenterError(bool usingGameCenter) {
+        if (usingGameCenter)
+            handleLogOut();
+    }
+
+    void RaftPirates::checkTutorialStart(int id) {
+        if (id > 0)
+            startedTutorials_.insert(id);
+    }
+
+    void RaftPirates::checkTutorialCompletion(int id) {
+        if (id > 0 && startedTutorials_.count(id))
+            completedTutorials_.insert(id);
+    }
+
+    bool RaftPirates::tutorialStarted(int id) const { return startedTutorials_.count(id) != 0; }
+    bool RaftPirates::tutorialCompleted(int id) const { return completedTutorials_.count(id) != 0; }
+
     void RaftPirates::gotMsgBoughtCurrency(const sfs::SFSObjectWrapper& packet) {
         if (connected_)
             extension("purchase_response", packet);
@@ -254,6 +411,12 @@ namespace rp {
             gotMsgUpdateCurrency(data);
         else
             extension(command, data);
+        if (ready && connected_) {
+            if (onlineBattle.phase() == BattleModeState::Phase::Idle)
+                gotMsgStartBuildMode();
+            else
+                gotMsgStartBattleMode();
+        }
         if (std::find(libraryCommands.begin(), libraryCommands.end(), command) !=
             libraryCommands.end())
             libraryPackets_.put(command, std::make_shared<sfs::SFSObjectWrapper>(data));

@@ -4,7 +4,7 @@
 #include "sys/platform/Services.h"
 #include "rp/SplashScreen.h"
 #include "rp/TitleScreen.h"
-#include "sys/EngineBase.h"
+#include "sys/EngineAndroid.h"
 #include "sys/EngineConfig.h"
 #include "sys/res/Archive.h"
 #include <mutex>
@@ -25,7 +25,7 @@ namespace {
         rp::LoginScreen::Action entry = rp::LoginScreen::Action::None;
         Clock::time_point connectStarted{};
         bool endingLoading = false;
-        sys::EngineBase engine;
+        sys::EngineAndroid engine;
         std::unique_ptr<rp::PortView> view;
         std::unique_ptr<rp::SplashScreen> splash;
         std::unique_ptr<rp::TitleScreen> title;
@@ -86,9 +86,9 @@ namespace {
     }
 
     void prompt(Services& platform, const char* title, const std::string& value) {
-        platform.keyboard(title, value,
-                          rt.entry == rp::LoginScreen::Action::Password ||
-                              rt.entry == rp::LoginScreen::Action::ConfirmPassword);
+        const bool password = rt.entry == rp::LoginScreen::Action::Password ||
+                              rt.entry == rp::LoginScreen::Action::ConfirmPassword;
+        rt.engine.ShowKeyboardEntryEx(platform, title, value, password, 6, password ? 14 : 75, false);
     }
 
     std::string endpoint(std::string s) {
@@ -377,6 +377,8 @@ namespace sys::platform::game {
             rt.authEndpoint = endpoint(properties.GetProperty("SERVER_IP"));
             rt.admin = properties.GetPropertyAsBool("admin", false);
             rt.game.initialize();
+            rt.engine.InitEngine(0);
+            rt.engine.SetupOpenGl(rt.width, rt.height, 640, 400);
             rt.user.clear();
             rt.entry = rp::LoginScreen::Action::None;
             rt.endingLoading = false;
@@ -414,6 +416,8 @@ namespace sys::platform::game {
             if (rt.title)
                 rt.title->cancelTouch();
             rt.game.Pause(value);
+            if (!value)
+                rt.engine.Resume();
             if (!rt.music.empty())
                 audio(platform, [&] { platform.pauseMusic(value); });
             rt.last = Clock::now();
@@ -439,6 +443,7 @@ namespace sys::platform::game {
             rt.initialized = false;
             rt.startupResources.reset();
             rt.startupFinished = false;
+            rt.engine.ShutDown();
             rt.admin = false;
             rt.entry = rp::LoginScreen::Action::None;
         });
@@ -513,7 +518,7 @@ namespace sys::platform::game {
                 auto notice = std::move(rt.pendingAdminNotice);
                 rt.pendingAdminNotice.clear();
                 try {
-                    platform.showPopup(notice);
+                    rt.engine.PopupText(platform, notice);
                 } catch (...) {
                     platform.log("Admin popup unavailable");
                 }
@@ -636,6 +641,11 @@ namespace sys::platform::game {
             }
             if (rt.view && rt.game.ready)
                 rt.view->touchDown(x * 640 / rt.width, y * 400 / rt.height);
+            const auto now = Clock::now();
+            if (rt.connected && rt.game.gotMsgTouchDown(std::chrono::duration<float>(now - rt.lastPing).count())) {
+                rt.lastPing = now;
+                platform.keepAlive();
+            }
             sys::msg::MsgTouchDown m;
             m.x = x * 640 / rt.width;
             m.y = y * 400 / rt.height;
@@ -719,7 +729,7 @@ namespace sys::platform::game {
                         if (rt.authEndpoint == "https://w1.raftpirates.6waves.com/auth.php")
                             page = "https://raftpirates.6waves.com/lost_password.php";
                         try {
-                            platform.openWebPage(page);
+                            rt.engine.GotoWebSite(platform, page);
                         } catch (const std::exception& ex) {
                             platform.log(std::string("Password recovery: ") + ex.what());
                             rt.login->error("Unable to open password recovery.");
@@ -730,6 +740,11 @@ namespace sys::platform::game {
             }
             if (!rt.connected || !rt.game.ready || !rt.view)
                 return;
+            const auto now = Clock::now();
+            if (rt.connected && rt.game.gotMsgTouchUp(std::chrono::duration<float>(now - rt.lastPing).count())) {
+                rt.lastPing = now;
+                platform.keepAlive();
+            }
             sys::msg::MsgTouchUp m;
             m.x = px;
             m.y = py;
@@ -757,6 +772,11 @@ namespace sys::platform::game {
             }
             if (rt.view && rt.game.ready)
                 rt.view->touchDrag(x * 640 / rt.width, y * 400 / rt.height);
+            const auto now = Clock::now();
+            if (rt.connected && rt.game.gotMsgTouchDrag(std::chrono::duration<float>(now - rt.lastPing).count())) {
+                rt.lastPing = now;
+                platform.keepAlive();
+            }
             sys::msg::MsgTouchDrag m;
             m.x = x * 640 / rt.width;
             m.y = y * 400 / rt.height;
@@ -808,14 +828,14 @@ namespace sys::platform::game {
             auto entry = rt.entry;
             rt.entry = rp::LoginScreen::Action::None;
             if (entry != rp::LoginScreen::Action::None) {
+                rt.engine.ShowKeyboardResult(value, cancelled, false);
                 if (rt.login && !cancelled)
                     rt.login->setInput(entry, value);
                 return;
             }
-            sys::msg::MsgKeyboardEntryResult event;
-            event.text = value;
-            event.cancelled = cancelled;
-            rt.engine.engineReceiver().SendGeneric(event);
+            rt.engine.ShowKeyboardResult(value, cancelled);
+            if (auto request = rt.game.gotMsgKeyboardEntryResult(value, cancelled))
+                send(platform, *request);
         });
     }
 

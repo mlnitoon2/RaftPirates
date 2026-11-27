@@ -47,6 +47,29 @@ namespace rp {
         void gotMsgOnDebugMessage(const std::string& message);
         const std::string& debugMessage() const;
         void gotMsgBoughtCurrency(const sfs::SFSObjectWrapper& packet);
+        bool gotMsgNameShip();
+        std::optional<sfs::Message> gotMsgKeyboardEntryResult(const std::string& name,
+                                                              bool cancelled);
+        std::optional<sfs::Message> gotMsgConfirmMaterialPurchase(int material, int amount,
+                                                                  int goldCost) const;
+        std::vector<sfs::Message> gotMsgConfirmBlueprintMaterialsPurchase(int blueprint) const;
+        std::optional<sfs::Message> gotMsgConfirmRepairGridObjectWithGold(int parent, int object,
+                                                                           int goldCost, bool all) const;
+        bool gotMsgTouchDown(float elapsed);
+        bool gotMsgTouchDrag(float elapsed);
+        bool gotMsgTouchUp(float elapsed);
+        bool gotMsgStartBattleMode();
+        bool gotMsgStartBuildMode();
+        bool inBattleMode() const;
+        static std::map<std::string, sys::res::XmlNode> preloadMenus(const std::filesystem::path& root);
+        void GotMsgDoingFacebookAuth();
+        void gotMsgAuthenticationChanged();
+        void gotMsgGameCenterAuthChanged(bool usingGameCenter);
+        void gotMsgGameCenterError(bool usingGameCenter);
+        void checkTutorialStart(int id);
+        void checkTutorialCompletion(int id);
+        bool tutorialStarted(int id) const;
+        bool tutorialCompleted(int id) const;
         std::vector<int> GotMsgShowStore() const;
         void gotMsgBoughtItem(const sfs::SFSObjectWrapper& packet);
         void gotMsgUpdateCurrency(const sfs::SFSObjectWrapper& packet);
@@ -96,6 +119,8 @@ namespace rp {
         bool connected_ = false, connecting_ = false, roomJoined_ = false;
         bool processing_ = true, paused_ = false, transitionVisible_ = false;
         float load_ = 0;
+        bool namingShip_ = false, battleMode_ = false;
+        std::set<int> startedTutorials_, completedTutorials_;
         std::deque<sfs::Message> queued_;
         std::string adminMessage_, serverName_, debugMessage_;
         std::filesystem::path libraryFile_;

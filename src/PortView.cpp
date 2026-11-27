@@ -1,4 +1,5 @@
 #include "rp/PortView.h"
+#include "rp/RaftPirates.h"
 #include "rp/RPMenuHandler.h"
 #include "rp/BuildModeState.h"
 #include "sys/gfx/AssetImage.h"
@@ -32,6 +33,7 @@ namespace rp {
     PortView::PortView(std::filesystem::path root)
         : root_(std::move(root)), ocean_(root_), opponentOcean_(root_), touchControls_(&ocean_),
           loader_(root_) {
+        preloadedMenus_ = RaftPirates::preloadMenus(root_);
         if (std::filesystem::exists(root_ / "text/en.utf8"))
             strings_.loadFile(root_ / "text/en.utf8");
         if (loader_.resourceExists("xml_bin/game_manifest.bin", "")) {
@@ -648,7 +650,9 @@ namespace rp {
                                              [this](const auto& s) { return strings_.getText(s); });
                 return true;
             };
-            auto xml = sys::res::loadXML(root_ / "menus" / (name + ".xml"));
+            auto cached = preloadedMenus_.find(name);
+            auto xml = cached == preloadedMenus_.end()
+                ? sys::res::loadXML(root_ / "menus" / (name + ".xml")) : cached->second;
             auto find = [](auto& self, sys::res::XmlNode& n,
                            const std::string& name) -> sys::res::XmlNode* {
                 if (n.attr("name") == name)

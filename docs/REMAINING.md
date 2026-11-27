@@ -14,6 +14,12 @@ The Pass 33 symbol inventory is the last measured baseline; the list below is pr
 
 Names newly implemented in source are listed here and removed from the provisional list below. Recompute the compiled inventory from a host archive before changing measured counts.
 
+## Pass 36 source-level updates
+
+- OceanView: retained sprites keyed by raft/object ID with owned visual snapshots, geometry/priority updates, animation overrides, picking, opacity, health overlays and water-bucket eligibility. These are portable approximations; the original accessory sprite visuals, sound muting, named layers and boss gradient still need work. Explicit attack animations are not yet wired to battle packets. Existing render calls synchronize from authoritative player snapshots.
+- RaftPirates: confirmed material purchase, blueprint-material request generation, gold repair, display-name keyboard result, tutorial bookkeeping (no external analytics), mode tracking, social account-change cleanup, touch keep-alive, four-menu preloading. Purchase/repair and name requests are available as typed methods, but original menu triggers and all server responses are still incomplete. No debug/cheat requests or new privileged behavior were inferred.
+- Android game runtime now uses Hydra's EngineAndroid for keyboard, popup, resume, exit and URL callbacks. Pass 35 ARM64 CI succeeded; Pass 36 verification is pending.
+
 ## Priority gaps
 
 - Original menu scripts: complete game/SWIG bindings, message dispatch, dynamic templates, tutorial and quest flows, all popups and transitions.
@@ -25,15 +31,15 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-4 names from the Pass 33 inventory now have named source implementations in Passes 34–35 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+52 names from the Pass 33 inventory now have named source implementations in Passes 34–36 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
-### `rp::OceanView` (37)
+### `rp::OceanView` (6)
 
-`AddAnimSlack`, `AddGrid`, `AddSprite`, `AddToTick`, `CheckForBucket`, `FillPrioritySorter`, `FocalPoint`, `GetPriority`, `GetSpritePriority`, `Init`, `Layer`, `OceanView`, `PlayRaftAttackAnims`, `RemoveFromTick`, `RemoveGrid`, `RemoveSprite`, `SetAxiseseses`, `SetBossOcean`, `SetOcean`, `SetOrdering`, `SetRaftMute`, `SetRaftTransparent`, `SetTempPriorities`, `ShowWaterBuckets`, `UpdateAnimations`, `UpdateSprite`, `getGridSprite`, `gotMsgAnimateGridSprite`, `gotMsgDiveUnitLoadChange`, `gotMsgGfxLayerPickResult`, `gotMsgGridObjectEvent`, `gotMsgSparseGridObjectAdded`, `gotMsgSparseGridObjectRemoved`, `gotMsgUpdateOceanView`, `removeAllHealthBars`, `showHealthBars`, `tick`
+`AddToTick`, `Layer`, `RemoveFromTick`, `SetBossOcean`, `SetRaftMute`, `gotMsgDiveUnitLoadChange`
 
-### `rp::RaftPirates` (28)
+### `rp::RaftPirates` (11)
 
-`GotMsgDoingFacebookAuth`, `GotMsgOnMenuLoadGlobal`, `QuestRewards`, `checkTutorialCompletion`, `checkTutorialStart`, `gotMsgAuthenticationChanged`, `gotMsgCheat`, `gotMsgCheatDuplicatePlayer`, `gotMsgCheatStartBattle`, `gotMsgConfirmBlueprintMaterialsPurchase`, `gotMsgConfirmMaterialPurchase`, `gotMsgConfirmRepairGridObjectWithGold`, `gotMsgDebugGatherAllUsers`, `gotMsgDiscoveryGetAllKnownRequest`, `gotMsgGameCenterAuthChanged`, `gotMsgGameCenterError`, `gotMsgKeyboardEntryResult`, `gotMsgNameShip`, `gotMsgPopupTextResult`, `gotMsgQuickTravelGetAllKnownRequest`, `gotMsgReconnect`, `gotMsgStartBattleMode`, `gotMsgStartBuildMode`, `gotMsgTouchDown`, `gotMsgTouchDrag`, `gotMsgTouchUp`, `gotMsgZoneGetAllKnownRequest`, `preloadMenus`
+`GotMsgOnMenuLoadGlobal`, `QuestRewards`, `gotMsgCheat`, `gotMsgCheatDuplicatePlayer`, `gotMsgCheatStartBattle`, `gotMsgDebugGatherAllUsers`, `gotMsgDiscoveryGetAllKnownRequest`, `gotMsgPopupTextResult`, `gotMsgQuickTravelGetAllKnownRequest`, `gotMsgReconnect`, `gotMsgZoneGetAllKnownRequest`
 
 ### `rp::BuildModeState` (29)
 
