@@ -5,7 +5,9 @@
 namespace rp {
     BattlePointsViewSprite::BattlePointsViewSprite(const OceanView* ocean, GridSprite* parent,
                                                    std::string prefix, int overridePoints)
-        : AccessorySprite(ocean, parent, 6), prefix_(std::move(prefix)), override_(overridePoints) {}
+        : AccessorySprite(ocean, parent, 6), prefix_(std::move(prefix)), override_(overridePoints) {
+        if(ocean)try{auto font=std::make_shared<sys::gfx::ResourceSpriteFont>(sys::gfx::ResourceSpriteFont::Create(ocean->assetRoot(),"rp_font_title"));text_.init(font,"",{});}catch(const std::exception&){}
+    }
     BattlePointsViewSprite::~BattlePointsViewSprite() = default;
     // Native ignores externally supplied color; tick controls label opacity.
     void BattlePointsViewSprite::SetColour(uint8_t, uint8_t, uint8_t, uint8_t) {}
@@ -29,5 +31,11 @@ namespace rp {
             const auto& piece = (*parent_)[0].appearance;
             text_.SetPos(piece.pos.x, piece.pos.y - 34.f);
         }
+    }
+    int BattlePointsViewSprite::submit(sys::gfx::GfxManager& manager,sys::gfx::AnimationRenderer&)const{
+        if(!text_.visible||!parent_||!parent_->GetVisible())return 0;
+        auto image=text_.renderedTexture();if(!image||image->width<=0||image->height<=0)return 0;
+        sys::gfx::GfxSprite s;s.init(image);s.SetPos(text_.pos.x,text_.pos.y);s.SetScale(text_.scale.x,text_.scale.y);s.SetAlpha(text_.Alpha());
+        s.SetPriority(parent_->Pieces()?parent_->GetPriority(0)+.07f:0);manager.submit(s);return 1;
     }
 }

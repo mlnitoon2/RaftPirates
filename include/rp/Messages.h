@@ -369,6 +369,7 @@ namespace rp {
     };
 
     struct MsgGridObjectEvent : OpaqueGameMessage {
+        int parent=0, id=0, event=0;
         ~MsgGridObjectEvent() override;
     };
 
@@ -782,6 +783,7 @@ namespace rp {
     };
 
     struct MsgTransitionDone : MsgBase {
+        bool shown=false;
         ~MsgTransitionDone() override;
     };
 

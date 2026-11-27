@@ -157,13 +157,15 @@ Pass 48 diving: native IDs 2/8; recovered frame/button, bare PNG meter, title fo
 
 Pass 48 final effect batch: original fire/smoke PSI and texture IDs, splash animation and return-only Update/RemoveFromTick, wreckage edgewhite and three scrap cells, dropdown numeric jump table at 0x3e8680 (0 auto, 1 switching, 2 unsupported, 3 attacked, 4 retaliation, 5 waiting), and half-second slide interpolation. Host particle simulation, splash distribution, wreckage offsets and dropdown art/layout are approximate; native nine-slice, countdown/audio, automatic effect triggers and exact ownership remain unconnected. Corrected salvage's absent-object success bug. All 101 requested names have source implementations/adapters; no new compiled measurement.
 
+## Pass 49 state-machine reconstruction
+
+Original ELF SHA-256 29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f6fdd26c13. Rechecked the ARM symbol spelling and disassembly of the twenty BuildModeState methods. Native addresses and specific evidence: ApplyFootprintToRaft 0x3ade10 and CleanupFootprints 0x3c2a54 add/remove accessory IDs 16 and 6; ChangeView 0x3c2b94 and toggle 0x3c3084 select modes 0/2; CreateGridObject 0x3af6f0 loads named GridObjectDataRes and chooses factory. HandleExtensionResponse 0x3c34f0 handles existing build/repair/materials/dive commands; Game reducer is called once, not duplicated. SendBonusMaterials 0x3c1a24 builds bonus_items array of id/amt rows and sends dive_collect, waits for gs_materials_changed; only server-known collection data is used. Notification names at 0x3c17dc/0x3b0620 are COMPONENT_COMPLETE, DIVE_COMPLETE and NOTIFICATION_ITEM_COMPLETE/NOTIFICATION_DIVE_COMPLETE. Original notification service replaced by optional host callbacks. Dive show/done/move 0x3c1668/0x3ac28c/0x3c2398, event jump table 0x3c0094 (1 build complete, 4 dive start, 5 dive quest, 6 dive info/bottom, 7 dive finished), highlight 0x3b0824 (diving_game/dive_unit), load 0x3b0714, offerwall 0x3bff14 (amount), HUD block 0x3ac7dc (diving/diveFinish), transition 0x3ac1a8 (ambient music), gold repair 0x3c1288 (purchase_repair, gs_build_repair wait), tick 0x3c682c.
+
+Portable state adapters are not original signatures/ownership. Original salvage/group move reducer, full native quest dispatch, platform notification registration, exact view transitions, persistent global state and minigame bonus assignment still need work. Some UI callbacks require host wiring; no new measured build or gameplay result. Source filenames follow class names, not recovered compiler translation-unit names (ELF does not expose those).
+
 ## Remaining method names by class (provisional source review)
 
-657 names from the Pass 33 inventory now have named source implementations through Pass 48 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
-
-### `rp::BuildModeState` (20)
-
-`ApplyFootprintToRaft`, `ChangeView`, `CleanupFootprints`, `CreateGridObject`, `HandleExtensionResponse`, `SendBonusMaterials`, `cancelNotificationForRaftComponent`, `gotMsgBuildModeToggleView`, `gotMsgDivingGameDone`, `gotMsgDivingGameDoneMoving`, `gotMsgDivingGameShow`, `gotMsgGridObjectEvent`, `gotMsgHighlightHudItem`, `gotMsgLoadingAnimFinished`, `gotMsgOfferWallReward`, `gotMsgToggleBlockHudItem`, `gotMsgTransitionDone`, `sendSelectedObjectRepairDataWithGold`, `setupNotificationForRaftComponent`, `tick`
+677 names from the Pass 33 inventory now have named source implementations through Pass 49 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BattleModeState` (11)
 

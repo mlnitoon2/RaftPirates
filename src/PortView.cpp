@@ -365,8 +365,10 @@ namespace rp {
         if (diving_) {
             diving_->touchUp({x, y});
             if (diving_->confirmed()) {
-                diving_.reset();
-                return g.dive("dive_collect");
+                BuildModeState build(g);
+                auto request=build.SendBonusMaterials();
+                if(request)diving_.reset();
+                return request;
             }
             return {};
         }
@@ -396,9 +398,14 @@ namespace rp {
                 panel_ = Panel::Daring;
                 return {};
             }
-            case Hud::Action::ToggleView:
-                grid = !grid;
+            case Hud::Action::ToggleView: {
+                BuildModeState build(g);
+                build.BindView(&ocean_,&touchControls_);
+                build.ChangeView(ocean_.Offset(),grid?BuildModeState::ViewMode::Footprints:BuildModeState::ViewMode::Normal,true);
+                MsgBuildModeToggleView msg;build.gotMsgBuildModeToggleView(msg);
+                grid=build.viewMode()==BuildModeState::ViewMode::Footprints;
                 return {};
+            }
             case Hud::Action::Shop:
                 panel_ = Panel::Shop;
                 page_ = 0;

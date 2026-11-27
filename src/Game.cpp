@@ -1,4 +1,5 @@
 #include "rp/Game.h"
+#include "rp/BuildModeState.h"
 #include "rp/SparseGrid.h"
 #include "rp/GridObjectHelpers.h"
 #include <algorithm>
@@ -100,6 +101,11 @@ namespace rp {
     }
 
     void Game::extension(const std::string& cmd, const O& p) {
+        BuildModeState build(*this);
+        if(!build.HandleExtensionResponse(cmd,p))applyExtension(cmd,p);
+    }
+
+    void Game::applyExtension(const std::string& cmd, const O& p) {
         status = cmd;
         if (p.get("boss_data")) {
             auto boss = p.getSFSObj("boss_data");

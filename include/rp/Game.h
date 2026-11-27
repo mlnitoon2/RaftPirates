@@ -68,6 +68,10 @@ namespace rp {
         float daringFraction = 0;
         void accept(const sfs::Message&);
         void extension(const std::string&, const sfs::SFSObjectWrapper&);
+      private:
+        friend class BuildModeState;
+        void applyExtension(const std::string&, const sfs::SFSObjectWrapper&);
+      public:
         sfs::Message handshake() const;
         sfs::Message login(const std::string& id, const std::string& hash) const;
         static sfs::Message request(const std::string&, sfs::SFSObjectWrapper = {});
