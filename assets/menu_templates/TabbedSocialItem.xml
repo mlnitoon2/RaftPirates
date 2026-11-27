@@ -1,0 +1,126 @@
+<template name="template_tabbedsocialitem">
+	
+	<size w="screenWidth()*0.2" h="screenHeight()*0.23" />
+	
+	<spriteSheetComponent name="Icon">
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priorityOffset="0" />
+		<event name="onInit" params="component, element">
+			component("spriteName"):SetString(element("ItemSprite"):GetString())
+			component("sheetName"):SetString(element("ItemSheet"):GetString())
+			component("layer"):SetString("HUD")
+		</event>
+	</spriteSheetComponent>
+	
+	<spriteComponent name="selectionOverlay">
+		<position relativeTo="element:name()" vAnchor="TOP" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="-5" priorityOffset="1" />
+		<event name="onInit" params="component, element">
+			component("spriteName"):SetString("gfx/menu/tab_selection")
+			component("layer"):SetString("HUD")
+			
+			component("visible"):SetInt(0)
+		</event>
+	</spriteComponent>
+	
+	<touchComponent name="Touch">
+		<size dependentOnElement="element:name()" />
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priorityOffset="-1" />
+		<event name="onTouchDown" params="component, element">
+			component("dragging"):SetInt(0)
+		</event>
+		<event name="onTouchDrag" params="component, element, x, y, relX, relY">
+      <![CDATA[
+			local dist = math.floor(relX)
+			--print("Dist: "..dist)
+			component("dragging"):SetInt(component("dragging"):GetInt() + math.floor(math.sqrt(dist)))
+			--print("Drag: "..component("dragging"):GetInt())
+			]]>
+		</event>
+		<event name="onTouchUp" params="component, element">
+      <![CDATA[
+      if(math.sqrt(component("dragging"):GetInt()*component("dragging"):GetInt()) < 10) then
+				print("selecting...")
+				element:DoStoredScript("select")
+			end
+      component("dragging"):SetInt(0)
+      ]]>
+		</event>
+    <event name="onTouchRelease" params="component, element">
+      component("dragging"):SetInt(0)
+    </event>
+    
+	</touchComponent>
+	
+	<event name="onInit" params="element">
+		element:SetupGenericListener(game.engineReceiver(), "game::msg::MsgDeselectItems", "deselect");
+	</event>
+	
+	<event name="enable" params="element">
+		element["Icon"]("visible"):SetInt(1)
+		element["selectionOverlay"]("visible"):SetInt(1)
+		element["Touch"]("enabled"):SetInt(1)
+	</event>
+	<event name="disable" params="element">
+		element["Icon"]("visible"):SetInt(0)
+		element["selectionOverlay"]("visible"):SetInt(0)
+		element["Touch"]("enabled"):SetInt(0)
+	</event>
+	
+	<event name="refresh" params="element">
+		element["Icon"]("spriteName"):SetString(element("ItemSprite"):GetString())
+		element["Icon"]("sheetName"):SetString(element("ItemSheet"):GetString())
+	</event>
+	
+	<event name="select" params="element">
+		
+		if(element:name() == "leaderboard") then
+			element:root():GetElement("Frame"):DoStoredScript("show")
+			print("LEADERBOARDS SELECTED")
+			element:root():GetElement("Frame"):DoStoredScript("displayLeaderboardInfo")
+			game.engineReceiver():Send( game.MsgDeselectItems() )
+			element["selectionOverlay"]("visible"):SetInt(1)
+		elseif(element:name() == "help") then
+			element:root():GetElement("Frame"):DoStoredScript("show")
+			element:root():GetElement("Frame"):DoStoredScript("displayHelpInfo")
+			game.engineReceiver():Send( game.MsgDeselectItems() )
+			element["selectionOverlay"]("visible"):SetInt(1)
+			--[[game.startHelpMenu()]]
+		elseif(element:name() == "sound") then
+			element:root():GetElement("Frame"):DoStoredScript("show")
+			element:root():GetElement("Frame"):DoStoredScript("displaySoundInfo")
+			game.engineReceiver():Send( game.MsgDeselectItems() )
+			element["selectionOverlay"]("visible"):SetInt(1)
+			
+			--[[
+			game.setSoundEnabled( not game.isSoundEnabled() )
+			playSoundFx("audio/sfx/menu_button_down.wav")
+			]]
+		elseif(element:name() == "logout") then
+			element:root():GetElement("Frame"):DoStoredScript("show")
+			element:root():GetElement("Frame"):DoStoredScript("displayLogoutInfo")
+			game.engineReceiver():Send( game.MsgDeselectItems() )
+			element["selectionOverlay"]("visible"):SetInt(1)
+		else
+			element:root():GetElement("Frame"):DoStoredScript("show")
+			game.engineReceiver():Send( game.MsgDeselectItems() )
+			element["selectionOverlay"]("visible"):SetInt(1)
+			game.engineReceiver():Send( game.MsgSetStoreItemSelected(element("ItemId"):GetInt()) )
+			game.engineReceiver():Send( game.MsgItemSelected( false ) )
+		end
+	</event>
+	
+	<event name="deselect" params="element">
+		element["selectionOverlay"]("visible"):SetInt(0)
+	</event>
+	
+	<!--<spriteSheetComponent name="Check">
+		<event name="onInit" params="component, element">
+			component("spriteName"):SetString(element("ItemSprite"):GetString())
+			component("sheetName"):SetString("xml_resources/rp_menu.xml")
+			component("layer"):SetString("HUD")
+		</event>
+	</spriteSheetComponent>-->
+	
+</template>

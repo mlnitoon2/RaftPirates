@@ -1,0 +1,165 @@
+<template>
+	<position relativeTo="SCREEN" vAnchor="TOP" hAnchor="LEFT" />
+	<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+	<size dependentOnElement="element:name()" dependentOnComponent="bg"/>
+
+	<!--
+		state_1 - fading in
+		state_2 - static on
+		state_3 - fading out
+	-->
+	<event name="onInit" params="element" >
+		element("state"):SetInt( 0 )
+		
+		element("state_1"):SetFloat( 0.75 )  
+		element("state_2"):SetFloat( 3.5 )
+		element("state_3"):SetFloat( 0.75 )
+				
+		element("timer"):SetFloat( 0.0 )
+		
+		element("startY"):SetFloat( element("yOffset"):GetFloat() )
+		
+		element("moving_state"):SetInt( 0 )
+		element("moving_state_1"):SetFloat( 0.25 )
+		element("movingTimer"):SetFloat( 0.0 )
+	</event>
+	
+	<event name="onTick" params="element, time" >
+		local function clamp( value, max, min )
+			if ( value &lt; min ) then
+				return min
+			end
+			if ( value &gt; max ) then
+				return max
+			end
+			
+			return value
+		end
+		
+		local state = element("state"):GetInt()
+		
+		if ( state &lt; 1 ) then
+			return
+		end
+		
+		local moving = element("moving_state"):GetInt()
+		if ( moving == 1) then
+			local currentMovingTimer = element( "moving_state_" .. moving ):GetFloat()
+			local movingTimer = clamp( element( "movingTimer" ):GetFloat() + time, currentMovingTimer, 0 )
+			element( "movingTimer" ):SetFloat( movingTimer )
+			
+			local y = lua_sys.cubicInterpolate( element("startY"):GetFloat(), element("startY"):GetFloat(), 0, 0, movingTimer / currentMovingTimer )
+			element("yOffset"):SetFloat( y )
+			
+			if( movingTimer == currentMovingTimer ) then
+				element("moving_state"):SetInt( 2 )
+				element("movingTimer"):SetFloat( 0.0 )
+			end
+			
+			return
+		end
+		
+		local currentTimer = element( "state_" .. state ):GetFloat()
+		local timer = clamp( element( "timer" ):GetFloat() + time, currentTimer, 0 )
+		element( "timer" ):SetFloat( timer )
+		
+		if( state == 1 ) then
+			local alpha = lua_sys.cubicInterpolate( 0, 0, 1.0, 1.0, timer / currentTimer ) 
+			
+			element:GetComponent("bg")("alpha"):SetFloat( alpha )
+			element:GetComponent("title")("alpha"):SetFloat( alpha )
+			element:GetComponent("achievementImage")("alpha"):SetFloat( alpha )
+		end
+		if (state == 3) then
+			local alpha = lua_sys.cubicInterpolate( 1.0, 1.0, 0, 0, timer / currentTimer ) 
+
+			element:GetComponent("bg")("alpha"):SetFloat( alpha )
+			element:GetComponent("title")("alpha"):SetFloat( alpha )
+			element:GetComponent("achievementImage")("alpha"):SetFloat( alpha )
+		end
+		
+		if ( timer == currentTimer ) then
+			
+			if (state == 1) then
+				element("state"):SetInt( 2 )
+			end
+			
+			if (state == 2) then
+				element("state"):SetInt( 3 )
+			end
+			
+			if (state == 3) then
+				element("state"):SetInt( 0 )
+			end
+			
+			element( "timer" ):SetFloat( 0.0 )
+		end
+	</event>
+	
+	<spriteComponent name="bg" >
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="0" priority="5" />
+		
+		<event name="onInit" params="component, element" >
+			component("spriteName"):Set( "gfx/menu/Achievement_holder" )
+			component("size"):SetFloat( 1.5 )
+			
+			component("alpha"):SetFloat( 0.0 )
+		</event>
+	</spriteComponent>
+	
+	<spriteComponent name="achievementImage" >
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="50" yOffset="10" priority="4" />
+		
+		<event name="onInit" params="component, element" >
+			component("alpha"):SetFloat( 0.0 )
+		</event>
+	</spriteComponent>
+	
+	<textComponent name="title" >
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="60" yOffset="26" priority="0" />
+		<size w="400" h="400" />
+		
+		<event name="onInit" params="component, element" >
+			component("font"):Set("font_calibri_20")
+			component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+								
+			component("red"):SetFloat(0.31)
+			component("green"):SetFloat(0.80)
+			component("blue"):SetFloat(0.93)
+			
+			component("alpha"):SetFloat( 0.0 )
+		</event>
+	</textComponent>
+	
+	<!--<textComponent name="description" >
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="25" priority="0" />
+		<size w="400" h="400" />
+		
+		<event name="onInit" params="component, element" >
+			component("font"):Set("font_calibri_20")
+			component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+								
+			component("red"):SetFloat(0.31)
+			component("green"):SetFloat(0.80)
+			component("blue"):SetFloat(0.93)
+			
+			component("alpha"):SetFloat( 0.0 )
+		</event>
+	</textComponent>-->
+	
+	<touchComponent>
+		<size dependentOnElement="element:name()" dependentOnComponent="bg" />
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priorityOffset="0" />
+		<event name="onTouchUp" params="component, element">
+			local state = element("state"):GetInt()
+			if ( state == 2 ) then
+				element("state"):SetInt( 3 )
+			end
+		</event>
+	</touchComponent>
+</template>
