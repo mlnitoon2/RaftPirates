@@ -8,6 +8,8 @@ The Android ARM64 library builds and is published by CI. This is a working recon
 
 ## Build for Android
 
+**Private engine checkout:** HydraLegacy may be private during development. Local builds require authorized access. For the main-branch CI workflows, create a fine-grained token scoped only to HydraLegacy with read-only Contents permission, then add it to RaftPirates as the Actions repository secret `HYDRA_REPO_TOKEN`. The token is used only for checkout and is not persisted. Builds of untrusted pull requests are intentionally not run with this credential. Without the secret, CI can only access a public engine repository.
+
 Requires an Android SDK, NDK r28c (28.2.13676358), CMake 3.22.1, Python 3 and a JDK for SDK tooling. Clone the two repositories side by side:
 
 ```sh
