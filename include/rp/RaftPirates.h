@@ -46,6 +46,8 @@ namespace rp {
         void gotMsgAuthenticationFailed();
         void gotMsgOnDebugMessage(const std::string& message);
         const std::string& debugMessage() const;
+        void gotMsgBoughtCurrency(const sfs::SFSObjectWrapper& packet);
+        std::vector<int> GotMsgShowStore() const;
         void gotMsgBoughtItem(const sfs::SFSObjectWrapper& packet);
         void gotMsgUpdateCurrency(const sfs::SFSObjectWrapper& packet);
         void gotMsgOnExtensionResponse(const std::string& command,

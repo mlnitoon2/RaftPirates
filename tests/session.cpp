@@ -31,7 +31,13 @@ int main() {
     check(!game.checkKeepAlive(29) && game.checkKeepAlive(30));
     check(game.login("10", "session").payload.getSFSObj("p")->getString("client_version") ==
           "1.0.4");
+    check(game.GotMsgShowStore().empty());
     game.ready = true;
+    check(game.GotMsgShowStore().empty());
+    sfs::SFSObjectWrapper failedPurchase;
+    failedPurchase.put("result", false);
+    game.gotMsgBoughtCurrency(failedPurchase);
+    check(game.status == "Purchase failed");
     auto safe = game.GotMsgSetAutoSafeMode(true);
     check(safe && safe->payload.getString("c") == "set_auto_safe_enabled");
     check(safe->payload.getSFSObj("p")->getBool("is_enabled"));

@@ -223,6 +223,16 @@ namespace rp {
         return debugMessage_;
     }
 
+    std::vector<int> RaftPirates::GotMsgShowStore() const {
+        return ready ? RPMenuHandler(*this).gotMsgGetAvailStoreItemRequest()
+                     : std::vector<int>{};
+    }
+
+    void RaftPirates::gotMsgBoughtCurrency(const sfs::SFSObjectWrapper& packet) {
+        if (connected_)
+            extension("purchase_response", packet);
+    }
+
     void RaftPirates::gotMsgBoughtItem(const sfs::SFSObjectWrapper& packet) {
         if (connected_)
             extension("purchase_response", packet);
