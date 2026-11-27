@@ -10,33 +10,44 @@ namespace rp {
 
     SplashFXSprite::SplashFXSprite(const OceanView* o, GridSprite* p, float seconds)
         : AccessorySprite(o, p, 11),
-          seconds_(std::isfinite(seconds) ? std::clamp(seconds, 0.f, 60.f) : 0) {}
+          burstCount_(std::isfinite(seconds) ?
+                          unsigned(std::clamp(seconds, 0.f, 60.f) * 24.f) : 0) {}
 
     SplashFXSprite::~SplashFXSprite() = default;
 
     void SplashFXSprite::Init() {
         splashes_.clear();
-        elapsed_ = 0;
+        remaining_ = burstCount_;
+        countdown_ = 0;
         finished_ = true;
-        if (!ocean_ || !parent_ || seconds_ <= 0)
+        if (!ocean_ || !parent_ || !remaining_)
             return;
         try {
             resource_ = std::make_shared<sys::res::ResourceAEAnim>(sys::res::ResourceAEAnim::Create(
                 ocean_->assetRoot() / "xml_bin/anim_water_splash.bin", sys::res::AEFormat::Rev1_5));
             if (!resource_->find("splash"))
                 return;
-            // Native iterates raft piece cells. Host uses each reconstructed visual piece's world
-            // position.
-            for (unsigned i = 0; i < parent_->Pieces(); ++i) {
-                auto a = std::make_unique<AEAnim>(resource_);
-                a->setLoop(false);
-                a->setAnimation("splash");
-                splashes_.push_back({std::move(a), parent_->GetWorldPosition(int(i))});
-            }
+            spawnBurst();
             finished_ = splashes_.empty();
         } catch (const std::exception&) {
             splashes_.clear();
             resource_.reset();
+            remaining_ = 0;
+        }
+    }
+
+    void SplashFXSprite::spawnBurst() {
+        if (!remaining_ || !resource_)
+            return;
+        // ARM32 Init schedules the next burst before decrementing the count.
+        countdown_ = 1.5f / float(remaining_);
+        --remaining_;
+        // Native iterates raft cells. This view still uses reconstructed visual pieces.
+        for (unsigned i = 0; i < parent_->Pieces(); ++i) {
+            auto a = std::make_unique<AEAnim>(resource_);
+            a->setLoop(false);
+            a->setAnimation("splash");
+            splashes_.push_back({std::move(a), parent_->GetWorldPosition(int(i))});
         }
     }
 
@@ -48,13 +59,17 @@ namespace rp {
     void SplashFXSprite::tick(float dt) {
         if (finished_ || !std::isfinite(dt) || dt < 0)
             return;
-        elapsed_ += dt;
         for (auto& s : splashes_)
             s.animation->tick(dt);
         splashes_.erase(std::remove_if(splashes_.begin(), splashes_.end(),
                                        [](const auto& s) { return !s.animation->playing(); }),
                         splashes_.end());
-        if (splashes_.empty()) {
+        if (remaining_ && countdown_ > 0) {
+            countdown_ -= dt;
+            if (countdown_ <= 0)
+                spawnBurst();
+        }
+        if (splashes_.empty() && !remaining_) {
             finished_ = true;
             AccessorySprite::RemoveFromTick();
         }

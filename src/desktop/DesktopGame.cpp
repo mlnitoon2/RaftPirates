@@ -1,5 +1,6 @@
 #include "sys/platform/NativeHost.h"
 #include "sys/platform/Services.h"
+#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <algorithm>
 #include <iostream>
@@ -177,6 +178,7 @@ namespace {
 } // namespace
 
 int main(int argc, char** argv) {
+    SDL_SetMainReady();
     try {
         if (argc != 2) {
             std::cerr << "Usage: raftpirates_desktop ASSET_ROOT\n";

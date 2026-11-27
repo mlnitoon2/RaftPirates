@@ -25,7 +25,9 @@ namespace rp {
 
         std::vector<Splash> splashes_;
         std::shared_ptr<const sys::res::ResourceAEAnim> resource_;
-        float seconds_ = 0, elapsed_ = 0;
+        void spawnBurst();
+        unsigned burstCount_ = 0, remaining_ = 0;
+        float countdown_ = 0;
         bool finished_ = false;
     };
 } // namespace rp

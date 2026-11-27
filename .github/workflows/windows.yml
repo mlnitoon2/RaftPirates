@@ -1,0 +1,44 @@
+name: Windows desktop build
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: RaftPirates
+      - uses: actions/checkout@v4
+        with:
+          repository: mlnitoon2/HydraLegacy
+          token: ${{ secrets.HYDRA_REPO_TOKEN || github.token }}
+          path: HydraLegacy
+          persist-credentials: false
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-expat
+            mingw-w64-ucrt-x86_64-libpng
+            mingw-w64-ucrt-x86_64-zlib
+            mingw-w64-ucrt-x86_64-freetype
+            mingw-w64-ucrt-x86_64-SDL2
+      - name: Configure and build
+        shell: msys2 {0}
+        run: |
+          cmake -S RaftPirates -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DRAFT_DESKTOP=ON -DHYDRA_FETCH_LUA=ON -DBUILD_TESTING=OFF
+          cmake --build build --target raftpirates_desktop --parallel 2
+      - name: Upload executable (requires UCRT64 dependencies)
+        uses: actions/upload-artifact@v4
+        with:
+          name: raftpirates-windows
+          path: build/raftpirates_desktop.exe
