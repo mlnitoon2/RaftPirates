@@ -1,0 +1,25 @@
+<menu>
+  <template type="BattleConfirmPopup" name="aoeu">
+    <size dependentOnElement="element:name()" dependentOnComponent="Dialog" />
+    <position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+    <orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="10" />
+
+    <templateVar name="$PopupText" equals="'MOVE_SHIP_CONFIRM'"/>
+
+    <event name="OnConfirm" params="element">
+      OnConfirm(element)
+
+      game.engineReceiver():Send( game.MsgConfirmMapMovement( 1 ))
+
+    </event>
+
+    <event name="OnDenied" params="element">
+      OnDenied(element)
+
+      game.engineReceiver():Send( game.MsgConfirmMapMovement( 0 ))
+
+    </event>
+  </template>
+</menu>
+
+

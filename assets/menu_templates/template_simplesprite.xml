@@ -1,0 +1,8 @@
+<template>
+	<size w="element:GetComponent([[Sprite]]):GetVar([[width]]):GetInt()" h="element:GetComponent([[Sprite]]):GetVar([[height]]):GetInt()" />
+	<spriteComponent name="Sprite">
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("$image")
+		</event>
+	</spriteComponent>	
+</template>

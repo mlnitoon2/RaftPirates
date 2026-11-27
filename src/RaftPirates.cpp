@@ -350,7 +350,8 @@ namespace rp {
             return row ? std::max(0, row->getInt(field)) : 0;
         };
         if (int count = amount("fastclocks_added", "num_fastclocks"); count > 0) {
-            giveMaterial(10, count);
+            if (const int clock = fastClockMaterialId(); clock > 0)
+                giveMaterial(unsigned(clock), count);
             auto event = std::make_shared<MsgCollectedFastclocks>();
             event->popupTitle = title;
             event->numFastclocks = count;

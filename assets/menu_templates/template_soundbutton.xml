@@ -1,0 +1,16 @@
+<template>
+	<template type="template_button" name="button2"  >
+		<templateVar name="$imageUp" equals="$imageUp" />
+		<templateVar name="$imageDown" equals="$imageDown" />
+		<touchComponent name="Touch">
+			<event name="onTouchUp" params="component, element">
+				element:GetComponent("Sound"):DoFunction("Play")
+			</event>					
+		</touchComponent>
+		<soundComponent name="Sound">
+			<event name="onInit" params="component, element">
+				component:GetVar("soundName"):Set("$sfx")
+			</event>
+		</soundComponent>
+	</template>	
+</template>

@@ -48,6 +48,7 @@ namespace rp {
         std::vector<sfs::SFSObjectWrapper> sonarShips;
         bool sonarPending = false, readyForBattle = false;
         std::optional<sfs::Message> pingSonar();
+        int fastClockMaterialId() const;
         int daringRemaining = 0, daringTotal = 0;
         bool daringPaused = false;
         int zone = 1, mapX = 0, mapY = 0, daring = 0, buildLimit = 0, diveSeconds = 0;

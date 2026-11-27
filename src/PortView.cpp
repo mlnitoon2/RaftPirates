@@ -114,7 +114,8 @@ namespace rp {
                 }
             }
         }
-        hud_->setSelectedActions(actions, game.numOfMaterialPossessed(9));
+        const int clock = game.fastClockMaterialId();
+        hud_->setSelectedActions(actions, clock > 0 ? game.numOfMaterialPossessed(unsigned(clock)) : 0);
     }
 
     void PortView::updateScroll() {
@@ -1404,11 +1405,13 @@ namespace rp {
                     m.node(dialog).set("layer", std::string("HUD"));
                     if (auto sprite = m.find(dialog, "DialogSprite")) {
                         auto& n = m.node(sprite);
-                        n.set("hFlip", 0.0);
+                        // Original quest_log.xml explicitly flips the half-frame
+                        // in onPostInit. Keep the flip, but anchor the entire sprite.
+                        n.set("hFlip", 1.0);
                         n.set("layer", std::string("QuestFrame"));
                         n.set("useOffsets", false);
                         n.set("visible", true);
-                        n.set("absoluteX", 12.0);
+                        n.set("absoluteX", 0.0);
                         n.set("absoluteY",
                               double(std::max(0.f, (m.height() - dialogHeight) * .5f)));
                         n.set("width", double(dialogWidth));

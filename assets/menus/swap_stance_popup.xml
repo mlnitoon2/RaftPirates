@@ -1,0 +1,23 @@
+<menu>
+	<template type="BattleConfirmPopup" name="aoeu">
+		<size dependentOnElement="element:name()" dependentOnComponent="Dialog" />
+		<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="10" />
+		
+		<templateVar name="$PopupText" equals="'BATTLE_SWAP_STANCE_POPUP'"/>
+		
+		<event name="OnConfirm" params="element">
+			OnConfirm(element)
+			
+			--[[Attack]]
+			game.engineReceiver():Send(game.MsgBattleConfirmSwapStance())
+		</event>
+	
+		<event name="OnDenied" params="element">
+			OnDenied(element)
+			
+			--[[Retreat]]
+			game.exitBattle()
+		</event>
+	</template>
+</menu>

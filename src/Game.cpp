@@ -1,3 +1,4 @@
+#include <cctype>
 #include "rp/Game.h"
 #include "rp/BuildModeState.h"
 #include "rp/SparseGrid.h"
@@ -52,6 +53,23 @@ namespace rp {
         g.id = num(o, "object_id");
         g.name = o.getString("name");
         return g;
+    }
+
+    int Game::fastClockMaterialId() const {
+        // Native ObjectActionButton.xml uses 10; development catalogues may
+        // explicitly assign the time-piece material another ID (e.g. 9).
+        for (const auto& [id, name] : materialNames) {
+            std::string key;
+            for (unsigned char c : name)
+                if (std::isalnum(c))
+                    key += char(std::tolower(c));
+            if (key == "clock" || key == "fastclock" || key == "fastclocks" ||
+                key == "timepiece" || key == "timepieces" || key == "hourglass")
+                return id;
+        }
+        // Never spend material 10 if the catalogue explicitly identifies it
+        // as a different resource. With no catalogue, use the native ID.
+        return materialNames.count(10) ? 0 : 10;
     }
 
     Message Game::request(const std::string& cmd, O params) {

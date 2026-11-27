@@ -23,10 +23,24 @@ def package(exe, prefix, output, status, revision, hydra_revision):
     staging.mkdir(parents=True)
     (staging / "assets").mkdir()
     asset_source = Path(__file__).resolve().parents[1] / "assets"
-    bundled_assets = (asset_source / "menus").is_dir() and (
-        asset_source / "xml_resources/properties.xml").is_file()
-    if bundled_assets:
+    asset_files = list(p for p in asset_source.rglob("*") if p.is_file())
+    # Importing assets in batches must not throw away files already committed.
+    if asset_files:
         shutil.copytree(asset_source, staging / "assets", dirs_exist_ok=True)
+    required_assets = (
+        "menus/loading_intro.xml", "menus/hud.xml", "menus/title.xml",
+        "xml_resources/properties.xml", "xml_resources/rp_menu.xml",
+        "xml_bin/game_manifest.bin", "gfx/menu/menu_overlay.png",
+        "font/rp_font_title.font", "text/en.utf8",
+    )
+    missing = [path for path in required_assets if not (asset_source / path).is_file()]
+    bundled_assets = not missing
+    asset_status = (
+        f"Included {len(asset_files)} asset files. "
+        + ("Startup asset checks passed; additional original resources may still be needed.\n"
+           if bundled_assets else "Incomplete asset bundle. Merge the remaining original APK assets before launching.\n"
+           + "Missing startup assets: " + ", ".join(missing) + "\n")
+    )
     shutil.copy2(exe, staging / exe.name)
 
     bin_dir = prefix / "bin"
@@ -78,8 +92,7 @@ def package(exe, prefix, output, status, revision, hydra_revision):
         f"Authenticode: {status}\n"
         "Copy original APK asset contents into assets/ and launch raftpirates_desktop.exe.\n"
         "Compatible server configuration is in assets/xml_resources/properties.xml.\n" +
-        ("Original assets are included. No account data is included.\n" if bundled_assets
-         else "No original assets or account data are included.\n") +
+        asset_status +
         "If antivirus reports a detection, stop and investigate. Do not disable protection.\n",
         encoding="utf-8")
     digest_lines = []

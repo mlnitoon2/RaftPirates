@@ -73,6 +73,15 @@ int main() {
     check(game.gotMsgCheat(cheat).has_value());
     game.enableDevelopmentCommands(false);
     check(!game.gotMsgCheat(cheat));
+    check(game.fastClockMaterialId() == 10);
+    game.materialNames[10] = "raftparts";
+    check(game.fastClockMaterialId() == 0);
+    game.materialNames[9] = "clock";
+    check(game.fastClockMaterialId() == 9);
+    game.materialNames.erase(9);
+    game.materialNames[10] = "Fast Clocks";
+    check(game.fastClockMaterialId() == 10);
+    game.materialNames.erase(10);
     game.materialNames[2] = "Wood";
     auto materialRequest = game.gotMsgConfirmMaterialPurchase(2, 10, 5);
     check(materialRequest && materialRequest->payload.getString("c") == "purchase_item");

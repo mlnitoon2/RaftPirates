@@ -1,0 +1,22 @@
+<menu>
+  <template type="BattleConfirmPopup" name="aoeu">
+    <size dependentOnElement="element:name()" dependentOnComponent="Dialog" />
+    <position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+    <orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="10" />
+
+    <templateVar name="$PopupText" equals="'BATTLE_RETREAT_CONFIRM'"/>
+
+    <event name="OnConfirm" params="element">
+      OnConfirm(element)
+
+      game.exitBattle()
+    </event>
+
+    <event name="OnDenied" params="element">
+      OnDenied(element)
+
+
+    </event>
+  </template>
+</menu>
+
