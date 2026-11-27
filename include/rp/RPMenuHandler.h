@@ -33,6 +33,7 @@ namespace rp {
         void gotMsgPopPopUpGlobal();
         std::optional<sfs::Message> gotMsgQuestRead(Game&,const MsgQuestRead&);
         void gotMsgStartDialog(const std::string&);
+        std::string gotMsgRequestLocalizedChristeningText(const std::string& localized, const Player* player) const;
         std::vector<int> gotSimpleRequest(const std::string&)const;
         const StoreItem* gotMsgStoreItemSelectedRequest() const;
         std::map<int, int> gotMsgRecipeSelectedRequest() const;

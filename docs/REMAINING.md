@@ -137,9 +137,18 @@ Names newly implemented in source are listed here and removed from the provision
 
 - Ten further names: BattleDice copy/destruction (0x382740/0x384f04), ReadoutLight zero initialization/ref destruction (0x5a8c24/0x5a90a0), MsgStartDialog constructor argument order and owned message data (0x342720/0x33a670), BlueprintInfo three strings (0x36bdf4), SpriteBalloon derived SpritePiece/string cleanup (0x5f0fe0), QuestTypeInfo three strings (0x497fb8), DivingMaterial centered sprite at priority 50 (0x529ff8). These are portable lifetime/data adapters. Dialog dispatch, dice/readout/balloon scene assembly and automatic atlas acquisition are not restored; the enclosing readout and perimeter classes remain incomplete.
 
+## Pass 48 object lifecycle and localization
+
+- Original APK ARMv7 ELF SHA-256 29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f6fdd26c13. Read with readelf/c++filt and llvm-objdump --demangle.
+- GridObject AddedToOcean (0x41e118) sends event 10; host observer replaces global dispatcher. Salvage (0x41dc18) removes from parent grid; portable occupancy removal only. setGridObjectData (0x41e18c) resolves a named resource; host stores a shared snapshot.
+- Barracks 0x539ab8 calls base and registers itself when Constructing; overload now does that. Existing by-value component storage still prevents native factory polymorphism.
+- Wreckage 0x50f6e0 delegates piece count for wrapped components; 0x51124c registers OtherWreckage, EnemyParts, EnemyWreckage, Wreckage; 0x50fba4 removes wrapper, repairs original and reinserts at original position. Host returns a repaired owned snapshot for the caller to replace, not original grid ownership. 0x50f71c delegates salvage then removes wrapper; 0x510a1c returns wrapped actions or empty. No server-authoritative state is fabricated.
+- RPMenuHandler 0x4d5798 loads TUT_CHRISTEN_D (0xa636e8), finds first two percent delimiters, replaces with player name, sends localized message. Portable formatter returns the text; native message hookup still pending.
+- Ten new provisional names, not verified build/runtime coverage.
+
 ## Remaining method names by class (provisional source review)
 
-556 names from the Pass 33 inventory now have named source implementations through Pass 47 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+566 names from the Pass 33 inventory now have named source implementations through Pass 48 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (20)
 
@@ -148,14 +157,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::BattleModeState` (11)
 
 `PlayBattleAnimations`, `SwapPopup`, `SwapStance`, `ToBattleView`, `ToPositioningView`, `gotMsgBattleInfoDropdown`, `gotMsgBattleInfoRequest`, `gotMsgHighlightHudItem`, `gotMsgQuestRead`, `gotMsgToggleBlockHudItem`, `gotMsgTransitionDone`
-
-### `rp::Wreckage` (5)
-
-`Pieces`, `RegisterAllClasses`, `Repair`, `Salvage`, `getAvailableActions`
-
-### `rp::Barracks` (1)
-
-`AddedToOcean`
 
 ### `rp::BattleShipPlacementSprite` (4)
 
@@ -168,10 +169,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::PerimeterWallSprite` (10)
 
 `AddBalloons`, `Init`, `PerimeterWallSprite`, `RemoveFromTick`, `SetPriorities`, `SetPriority`, `SetVisible`, `Update`, `tick`, `~PerimeterWallSprite`
-
-### `rp::RPMenuHandler` (1)
-
-`gotMsgRequestLocalizedChristeningText`
 
 ### `rp::DivingUnit` (1)
 
@@ -196,10 +193,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::GfxOceanCheckerBoard` (6)
 
 `FloatMod`, `GfxOceanCheckerBoard`, `Render`, `SetPosition`, `SetUnitSize`, `~GfxOceanCheckerBoard`
-
-### `rp::GridObject` (3)
-
-`AddedToOcean`, `Salvage`, `setGridObjectData`
 
 ### `rp::RaftGridSprite` (6)
 

@@ -1,4 +1,6 @@
 #include "rp/Player.h"
+#include "rp/SparseGrid.h"
+#include "rp/GridObjectDataRes.h"
 #include <algorithm>
 #include <cstdint>
 #include <stdexcept>
@@ -9,6 +11,23 @@ namespace rp {
         : id(user), type(object), x(px), y(py), bp(points), state(objectState) {}
 
     GridObject::~GridObject() = default;
+
+    void GridObject::AddedToOcean(SparseGrid&) {
+        // Native broadcasts event code 10. The host explicitly supplies the observer.
+        if (addedObserver_) addedObserver_(*this);
+    }
+
+    bool GridObject::Salvage(SparseGrid& grid) {
+        // The portable grid owns footprints, so removal does not destroy this object.
+        grid.RemoveFromTempTick(this);
+        return grid.removeObject(GetUserObjectID());
+    }
+
+    bool GridObject::setGridObjectData(const std::string& name,
+                                       const std::map<int, GridObjectInfo>& catalogue) {
+        resource_ = GridObjectDataRes::Get(name, catalogue);
+        return bool(resource_);
+    }
 
     GridObject::GridShapePiece::GridShapePiece(const GridObject& object,const GridObjectPiece& piece,
         unsigned index,Cell parent,bool component,bool transpose)
@@ -130,6 +149,7 @@ namespace rp {
 
     const GridObjectInfo*
     GridObject::getResourceData(const std::map<int, GridObjectInfo>& catalogue) const {
+        if (resource_) return &resource_->data();
         auto i = catalogue.find(type);
         return i == catalogue.end() ? nullptr : &i->second;
     }

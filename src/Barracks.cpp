@@ -1,4 +1,5 @@
 #include "rp/Barracks.h"
+#include "rp/SparseGrid.h"
 #include <cmath>
 #include <limits>
 namespace rp {
@@ -6,6 +7,11 @@ namespace rp {
     Barracks::~Barracks() = default;
     bool Barracks::Constructing() const { return state == 4; }
     void Barracks::AddedToOcean(){attached_=true;}
+    void Barracks::AddedToOcean(SparseGrid& grid) {
+        RaftComponent::AddedToOcean(grid);
+        attached_ = true;
+        if (Constructing()) grid.AddToTempTick(this);
+    }
     void Barracks::SetConstructionInfo(float seconds,int objectType){
         if(!std::isfinite(seconds)||seconds<0||double(seconds)>std::numeric_limits<int>::max())return;
         const auto whole=int(std::ceil(double(seconds)));

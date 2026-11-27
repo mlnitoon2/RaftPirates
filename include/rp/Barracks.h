@@ -8,6 +8,7 @@ namespace rp {
         ~Barracks() override;
         bool Constructing() const;
         void AddedToOcean();
+        void AddedToOcean(SparseGrid& grid) override;
         void SetConstructionInfo(float seconds,int objectType);
         int constructionType()const{return constructionType_;}
         std::unique_ptr<GridObject> Duplicate() const override;

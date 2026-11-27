@@ -43,6 +43,18 @@ namespace rp {
         return game.openQuest(msg.id);
     }
     void RPMenuHandler::gotMsgStartDialog(const std::string& name){displayPopUpImmediately(name);}
+
+    std::string RPMenuHandler::gotMsgRequestLocalizedChristeningText(
+            const std::string& localized, const Player* player) const {
+        // Native reads TUT_CHRISTEN_D, replaces the first percent-delimited
+        // segment with the requested player's name and sends localized insert text.
+        if (!player) return {};
+        const auto first = localized.find('%');
+        if (first == std::string::npos) return localized;
+        const auto last = localized.find('%', first + 1);
+        if (last == std::string::npos) return localized;
+        return localized.substr(0, first) + player->playerName + localized.substr(last + 1);
+    }
     std::vector<int> RPMenuHandler::gotSimpleRequest(const std::string& kind)const{
         if(kind=="AVAIL_STOREITEMS")return category_.empty()?gotMsgGetAvailStoreItemRequest():storeItemsForTab("tabbed_menu_"+category_);
         if(kind=="AVAIL_BLUEPRINTS")return gotMsgGetAvailBlueprintsRequest();

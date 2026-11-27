@@ -28,6 +28,7 @@ namespace rp {
     }
 
     void RaftComponent::AddedToOcean(SparseGrid& grid) {
+        GridObject::AddedToOcean(grid);
         if (Building()) grid.AddToTempTick(this);
     }
 

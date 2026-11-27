@@ -16,7 +16,7 @@ namespace rp {
         float GetRemainingTime() const;
         void SetRemainingTime(int seconds);
         void UseClock(float seconds);
-        void AddedToOcean(SparseGrid& grid);
+        void AddedToOcean(SparseGrid& grid) override;
         void SetState(int value) override;
         int GetBattlePoints() const override;
         void Repair(int battlePoints, int maxBattlePoints);

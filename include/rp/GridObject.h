@@ -4,12 +4,15 @@
 #include <vector>
 #include <utility>
 #include <memory>
+#include <functional>
 
 namespace rp {
     struct Cell {
         int x = 0, y = 0;
     };
     struct GridObjectInfo;
+    class GridObjectDataRes;
+    class SparseGrid;
     struct GridObjectPiece;
 
     // User-owned object instance, distinct from the static GridObjectInfo library.
@@ -38,7 +41,12 @@ namespace rp {
         virtual ~GridObject();
         int id = 0, type = 0, x = 0, y = 0, bp = 0, state = 0;
         Cell GetGridPosition() const;
-        size_t Pieces(const GridObjectInfo* definition) const;
+        virtual size_t Pieces(const GridObjectInfo* definition) const;
+        virtual void AddedToOcean(SparseGrid& grid);
+        bool Salvage(SparseGrid& grid);
+        bool setGridObjectData(const std::string& name, const std::map<int, GridObjectInfo>& catalogue);
+        // Optional observer for native object-added notification; supplied by the host.
+        void setAddedObserver(std::function<void(const GridObject&)> observer) { addedObserver_ = std::move(observer); }
         std::vector<Cell> occupiedCells(const GridObjectInfo* definition) const;
         std::pair<float, float> Middleish(const GridObjectInfo* definition) const;
         bool Overlap(const GridObject& other, const GridObjectInfo* definition,
@@ -63,5 +71,8 @@ namespace rp {
         getAvailableActions(const GridObjectInfo* definition) const;
         virtual std::unique_ptr<GridObject> Duplicate() const;
         std::pair<float, float> GetWorldPosition(Cell raftPosition, bool component) const;
+      private:
+        std::shared_ptr<const GridObjectDataRes> resource_;
+        std::function<void(const GridObject&)> addedObserver_;
     };
 } // namespace rp
