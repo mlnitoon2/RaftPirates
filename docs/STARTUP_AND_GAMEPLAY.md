@@ -77,3 +77,7 @@ The supplied development server sends extension responses with controller 1/acti
 ## Follow-up device feedback
 
 The Android publisher strips nonessential symbols from the distribution copy and validates JNI exports afterward. Loading outro and title render over the player's raft. Quest log intentionally reveals screenWidth()/4 per original XML; quest details use explicit foreground layers and centered bounds. Blueprint purchases unlock the plan; after success the catalogue reopens on it so Build is the next action. Material possession alone does not grant a blueprint. Countdown placement is provisional until original device/native geometry is verified.
+
+## Map and quest regression pass
+
+The full 288x384 quest backing is placed at the left screen edge, not at a negative X coordinate. The zone picker renders the original map icons (using the atlas keys rather than the server map filenames), has independent hit testing, and sends zone_goto. The bottom-right travel button and bottom-left sonar button have distinct sprite and touch rectangles. Unhandled map touches reach world-map movement instead of the generic full-screen overlay. The optional original-asset HUD test checks the full quest frame, zone picker, travel acknowledgement and water-tile movement. The reconstructed server must maintain the current zone and use it to gate blueprint purchases.

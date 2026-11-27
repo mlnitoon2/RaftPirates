@@ -23,6 +23,20 @@ namespace rp {
                     i.at(xx, yy) = c;
         }
 
+        std::string zoneIconKey(const std::string& zone) {
+            if (zone == "sailers_sea" || zone == "Sailor's Sea")
+                return "SAILORS_SEA";
+            if (zone == "big_blue")
+                return "THE_BIG_BLUE";
+            if (zone == "davey_jones_doorstep")
+                return "DAVEY_JONES_DOORSTEP";
+            if (zone == "mermaids_ball")
+                return "MERMAIDS_BALL";
+            if (zone == "nessies_palace")
+                return "NESSIES_PALACE";
+            return zone;
+        }
+
         struct MapRect {
             int x, y, w, h;
         };
@@ -1108,8 +1122,9 @@ namespace rp {
                             try {
                                 const auto atlas = ResourceSpriteSheet::Create(
                                     root_ / "xml_resources/rp_menu.xml");
-                                if (atlas.findSpriteByName(zone->second))
-                                    xmlMenu_->node(sprite).set("spriteName", zone->second);
+                                const auto key = zoneIconKey(zone->second);
+                                if (atlas.findSpriteByName(key))
+                                    xmlMenu_->node(sprite).set("spriteName", key);
                             } catch (const std::exception&) {
                             }
                         }
@@ -1509,12 +1524,7 @@ namespace rp {
                         set(element, "NewQuest", "visible", q.unread);
                     } else if (name == "tabbed_menu_maps") {
                         const auto& zone = g.zones.at(id);
-                        std::string key = zone;
-                        if (zone == "sailers_sea") key = "SAILORS_SEA";
-                        else if (zone == "big_blue") key = "THE_BIG_BLUE";
-                        else if (zone == "davey_jones_doorstep") key = "DAVEY_JONES_DOORSTEP";
-                        else if (zone == "mermaids_ball") key = "MERMAIDS_BALL";
-                        else if (zone == "nessies_palace") key = "NESSIES_PALACE";
+                        const auto key = zoneIconKey(zone);
                         set(element, "itemImage", "sheetName", std::string("xml_resources/rp_menu.xml"));
                         set(element, "itemImage", "spriteName", key);
                         set(element, "itemImage", "visible", true);
@@ -2305,7 +2315,7 @@ namespace rp {
                     auto needed = g.blueprints.at(item).purchaseZone;
                     auto zone = g.zones.find(needed);
                     notice_ = "Travel to " + (zone == g.zones.end() ? std::string("zone ") + std::to_string(needed) :
-                        strings_.getText(zone->second)) + " to unlock this blueprint.";
+                        strings_.getText(zoneIconKey(zone->second))) + " to unlock this blueprint.";
                     return {};
                 }
                 if (g.owned.count(item)) {

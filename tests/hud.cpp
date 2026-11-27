@@ -127,6 +127,17 @@ int main(int argc, char** argv) {
         bounds = hud.bounds("QuestMenu");
         req = view.touch(g, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
         CHECK(req && req->payload.getString("c") == "gs_quest");
+        view.render(g, 0, "");
+        {
+            auto& menu = rp::PortViewTestAccess::menu(view);
+            auto dialog = menu.find(1, "DialogPopup", true);
+            CHECK(dialog);
+            auto sprite = menu.find(dialog, "DialogSprite");
+            CHECK(sprite);
+            auto b = menu.node(sprite).bounds;
+            CHECK(b.x >= 0 && b.y >= 0 && b.w >= 287 && b.x + b.w <= 640 &&
+                  b.y + b.h <= 400);
+        }
         view.touch(g, 500, 310);
         bounds = hud.bounds("EventNotification");
         view.touch(g, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
@@ -134,6 +145,61 @@ int main(int argc, char** argv) {
         bounds = hud.bounds("PirateMap");
         view.touch(g, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
         CHECK(view.map);
+        // The quick-travel button belongs on the bottom right and must not open sonar/store.
+        g.zones[1] = "sailers_sea";
+        g.zones[2] = "big_blue";
+        g.zoneMaps[2] = "xml_resources/maps/map_big_blue.tmx";
+        view.render(g, 0, "");
+        {
+            auto& menu = rp::PortViewTestAccess::menu(view);
+            auto control = menu.find(1, "QuickTravel", true);
+            CHECK(control);
+            auto b = menu.node(control).bounds;
+            CHECK(b.x > 500 && b.y > 300);
+            view.touchDown(b.x + b.w / 2, b.y + b.h / 2);
+            view.touch(g, b.x + b.w / 2, b.y + b.h / 2);
+        }
+        CHECK(rp::PortViewTestAccess::name(view) == "tabbed_menu_maps");
+        {
+            auto& menu = rp::PortViewTestAccess::menu(view);
+            auto choice = menu.find(1, "tabbedItem1", true);
+            CHECK(choice);
+            auto b = menu.node(choice).bounds;
+            CHECK(b.w > 0 && b.h > 0 && b.x >= 0 && b.x + b.w <= 640);
+            view.touchDown(b.x + b.w / 2, b.y + b.h / 2);
+            auto travel = view.touch(g, b.x + b.w / 2, b.y + b.h / 2);
+            CHECK(travel && travel->payload.getString("c") == "zone_goto");
+            CHECK(travel->payload.getSFSObj("p")->getInt("zoneid") == 2);
+        }
+        sfs::SFSObjectWrapper arrived;
+        arrived.put("zoneid", int32_t(2));
+        arrived.put("success", int32_t(1));
+        arrived.put("map_x", int32_t(3));
+        arrived.put("map_y", int32_t(12));
+        g.extension("zone_goto_result", arrived);
+        CHECK(g.zone == 2 && g.mapX == 3 && g.mapY == 12 && !g.pendingZone);
+        view.render(g, 0, "");
+        // Choose a real navigable tile away from the map HUD and exercise the touch fall-through.
+        rp::MapView mapCheck;
+        mapCheck.setMapFile(argv[1], g.zoneMaps.at(2));
+        std::vector<rp::Cell> water;
+        mapCheck.getSafeSquares(water);
+        bool sentMove = false;
+        for (auto cell : water) {
+            const auto& data = *mapCheck.data();
+            const float x = (cell.x + .5f) * 640.f / data.width;
+            const float y = (cell.y + .5f) * 400.f / data.height;
+            if (x < 130 || x > 510 || y < 100 || y > 280)
+                continue;
+            view.touchDown(x, y);
+            auto move = view.touch(g, x, y);
+            if (move && move->payload.getString("c") == "gs_map_move") {
+                sentMove = true;
+                break;
+            }
+        }
+        CHECK(sentMove);
+        g.requestSendFailed("gs_map_move");
         rp::OceanView ocean(argv[1]);
         g.objects.at(3).name = "Diving structure";
         const auto unit = g.GetDiveUnit();
