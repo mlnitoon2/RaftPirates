@@ -97,6 +97,11 @@ namespace {
             check(e_, "music");
         }
 
+        void setAudioEnabled(bool value) override {
+            e_->CallVoidMethod(obj_, method(e_,obj_,"setMusicVolume","(F)V"),jfloat(value?1.f:0.f));
+            check(e_,"setMusicVolume");
+        }
+
         void pauseMusic(bool value) override {
             e_->CallVoidMethod(obj_, method(e_, obj_, value ? "pauseMusic" : "resumeMusic", "()V"));
             check(e_, "pause music");

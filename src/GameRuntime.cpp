@@ -35,7 +35,8 @@ namespace {
         std::unique_ptr<rp::TitleScreen> title;
         std::unique_ptr<rp::LoadingManager> startupResources;
         bool startupFinished = false;
-        std::filesystem::path archivePath, assets, savedPath;
+        std::filesystem::path archivePath, assets, savedPath, soundPath;
+        bool soundEnabled=true;
         std::string savedSession, pendingAdminNotice;
         bool resumeAttempt = false, titlePresented = false, oceanReceived = false;
         Clock::time_point outroStarted{};
@@ -82,7 +83,8 @@ namespace {
     }
 
     void music(Services& platform, const std::string& path) {
-        const auto desired = rt.view && !rt.view->soundEnabled() ? std::string{} : path;
+        // Original PersistentData::setSoundEnabled changes master volumes, not the track.
+        const auto& desired=path;
         if (rt.music == desired)
             return;
         const auto now=Clock::now();
@@ -99,7 +101,7 @@ namespace {
     }
 
     void effect(Services& platform, const char* path) {
-        if (!rt.view || rt.view->soundEnabled())
+        if (rt.soundEnabled)
             callAudio(platform, [&] { platform.effect(path); });
     }
 
@@ -370,14 +372,22 @@ namespace sys::platform::game {
             rt.lastDiveFinished = false;
             auto root = platform.assets(apk);
             rt.savedPath.clear();
+            rt.soundPath.clear();
+            rt.soundEnabled=true;
             try {
                 auto dir = platform.saveDirectory();
                 sys::File::setSaveDir(dir.string());
-                if (!dir.empty())
+                if (!dir.empty()) {
                     rt.savedPath = dir / "raftpirates-session.dat";
+                    rt.soundPath=dir/"raftpirates-sound.dat";
+                    std::ifstream setting(rt.soundPath);
+                    char value='1';
+                    if(setting>>value && (value=='0'||value=='1'))rt.soundEnabled=value=='1';
+                }
             } catch (...) {
                 platform.log("Persistent login storage unavailable");
             }
+            callAudio(platform,[&]{platform.setAudioEnabled(rt.soundEnabled);});
             rt.assets = root;
             sys::EngineConfig properties;
             try {
@@ -620,6 +630,7 @@ namespace sys::platform::game {
                     (!rt.startupResources || !rt.startupResources->running())) {
                     try {
                         rt.view = std::make_unique<rp::PortView>(rt.assets);
+                        rt.view->setSoundEnabled(rt.soundEnabled);
                         rt.lastImage = rt.view->renderTitleBackground(rt.game, rt.time);
                     } catch (...) {
                         loginError(platform, "Unable to load the game. Please try again.");
@@ -844,6 +855,15 @@ namespace sys::platform::game {
             m.y = py;
             rt.engine.engineReceiver().SendGeneric(m);
             auto result = rt.view->touch(rt.game, px, py);
+            if(rt.soundEnabled!=rt.view->soundEnabled()){
+                rt.soundEnabled=rt.view->soundEnabled();
+                callAudio(platform,[&]{platform.setAudioEnabled(rt.soundEnabled);});
+                if(!rt.soundPath.empty()) {
+                    std::ofstream setting(rt.soundPath,std::ios::trunc);
+                    if(setting)setting<<(rt.soundEnabled?'1':'0')<<'\n';
+                    else platform.log("Could not save sound setting");
+                }
+            }
             auto notice = rt.view->takeNotice();
             if (!notice.empty())
                 platform.showPopup(notice);

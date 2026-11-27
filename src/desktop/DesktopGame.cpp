@@ -102,6 +102,12 @@ namespace {
             log("Playing music: "+path);
         }
 
+        void setAudioEnabled(bool value) override {
+            if(!audioOpen_)return;
+            Mix_VolumeMusic(value?MIX_MAX_VOLUME:0);
+            Mix_Volume(-1,value?MIX_MAX_VOLUME:0);
+        }
+
         void pauseMusic(bool paused) override {
             if (!audioOpen_)
                 return;

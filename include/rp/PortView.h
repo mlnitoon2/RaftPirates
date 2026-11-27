@@ -48,6 +48,7 @@ namespace rp {
 
         bool takeMenuSound(){bool result=menuSound_;menuSound_=false;return result;}
 
+        void setSoundEnabled(bool value){soundEnabled_=value;}
         bool soundEnabled() const {
             return soundEnabled_;
         }

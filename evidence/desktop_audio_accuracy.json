@@ -1,0 +1,18 @@
+{
+  "source": "Original ARM32 libraftpirates.so; title.xml, login_registration.xml, HudButton.xml",
+  "addresses": {
+    "setSoundEnabled": "0x0036d48c",
+    "persistentSetSoundEnabled": "0x002346d8",
+    "setMasterVolume": "0x0080106c",
+    "playMp3": "0x008010c0"
+  },
+  "observations": [
+    "PersistentData flag +0x24, SFX +0x1c, music +0x20",
+    "SetSoundEnabled writes both volumes to 0 or 1, then public wrapper saves",
+    "Title calls lua_sys.playMP3 with extensionless basename",
+    "Registration invalid-input effect Sound31_deadmans_tale.wav",
+    "HUD touch-up sound menu_button_down.wav"
+  ],
+  "adapter": "Desktop uses SDL_mixer master volumes; Android uses Java music volume and suppresses new effects while muted. Saved sound flag uses a new one-byte settings file; not original save ABI. Retry/PCM diagnostic are portable debugging functionality.",
+  "limitations": "Exact per-menu scripts and battle track transitions incomplete; native Windows playback not verified."
+}
