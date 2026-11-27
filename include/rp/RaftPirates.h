@@ -54,6 +54,9 @@ namespace rp {
                                        const sfs::SFSObjectWrapper& data);
         void setNetworkMsgProcessingEnabled(bool enabled);
         void gotMsgEnableNetworkProcessing(bool enabled);
+        void GotMsgStartTransition(bool show);
+        void GotTransitionMsgDone();
+        bool transitionVisible() const;
         void loadStaticLibraries(const std::filesystem::path& file, const std::string& source);
         void saveStaticLibraries() const;
         void Pause(bool value);
@@ -91,7 +94,7 @@ namespace rp {
 
       private:
         bool connected_ = false, connecting_ = false, roomJoined_ = false;
-        bool processing_ = true, paused_ = false;
+        bool processing_ = true, paused_ = false, transitionVisible_ = false;
         float load_ = 0;
         std::deque<sfs::Message> queued_;
         std::string adminMessage_, serverName_, debugMessage_;

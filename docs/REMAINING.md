@@ -4,6 +4,16 @@ Pass 33: 503/1191 original qualified method names matched (42.2334%). 688 names 
 
 The comparison uses the original ARM32 ELF and the corresponding compiled host static archive. Matching a name does not prove signature, ABI or functional equivalence. Methods with existing names may still be partial. The list below is a symbol inventory, not a list of verified missing player-facing features.
 
+## Pass 35 source-level updates (awaiting compiled measurement)
+
+The Pass 33 symbol inventory below is preserved as the last measured baseline. Pass 34's ARM64 CI build succeeded. Source changes since that baseline include:
+
+- `rp::RaftPirates::GotMsgShowStore` and `gotMsgBoughtCurrency` (Pass 34): portable catalog and purchase-response adapters, not original popup or billing implementations.
+- `rp::RaftPirates::GotMsgStartTransition` and `GotTransitionMsgDone` (Pass 35): original network queue pause/resume behavior recovered at ARM addresses 0x4a180c and 0x4a1840. Native transition graphics and completion-event broadcast still need reconstruction; the new handlers are not yet attached to the actual loading/menu animation events.
+- Next priorities: connect transition graphics and menu events, ship naming keyboard lifecycle, purchase/repair confirmation protocol, tutorial state, and original battle/build mode transitions. Do not infer new server commands from method names alone.
+
+Names newly implemented in source are listed here rather than removed from the historical measured inventory. Recompute that inventory from a compiled host archive before changing the counts.
+
 ## Priority gaps
 
 - Original menu scripts: complete game/SWIG bindings, message dispatch, dynamic templates, tutorial and quest flows, all popups and transitions.

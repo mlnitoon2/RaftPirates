@@ -23,6 +23,7 @@ namespace rp {
         static_cast<Game&>(*this) = Game{};
         connected_ = connecting_ = roomJoined_ = paused_ = false;
         processing_ = true;
+        transitionVisible_ = false;
         queued_.clear();
         adminMessage_.clear();
         serverName_.clear();
@@ -43,6 +44,8 @@ namespace rp {
         if (clearPlayer)
             initialize();
         connected_ = connecting_ = roomJoined_ = ready = false;
+        transitionVisible_ = false;
+        processing_ = true;
         pending.reset();
         pendingMove.reset();
         pendingZone.reset();
@@ -335,6 +338,20 @@ namespace rp {
 
     void RaftPirates::gotMsgEnableNetworkProcessing(bool enabled) {
         setNetworkMsgProcessingEnabled(enabled);
+    }
+
+    void RaftPirates::GotMsgStartTransition(bool show) {
+        transitionVisible_ = show;
+        if (show)
+            setNetworkMsgProcessingEnabled(false);
+    }
+
+    void RaftPirates::GotTransitionMsgDone() {
+        setNetworkMsgProcessingEnabled(true);
+    }
+
+    bool RaftPirates::transitionVisible() const {
+        return transitionVisible_;
     }
 
     void RaftPirates::Pause(bool value) {

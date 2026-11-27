@@ -55,6 +55,15 @@ int main() {
     check(!game.GotMsgBadZoneStatusRequest());
     game.gotMsgEnableNetworkProcessing(true);
     check(game.GotMsgBadZoneStatusRequest());
+    game.GotMsgStartTransition(true);
+    check(game.transitionVisible());
+    packet.put("bad", int32_t(0));
+    game.gotMsgOnExtensionResponse("zonestatus", packet);
+    check(game.GotMsgBadZoneStatusRequest());
+    game.GotMsgStartTransition(false);
+    check(!game.transitionVisible() && game.GotMsgBadZoneStatusRequest());
+    game.GotTransitionMsgDone();
+    check(!game.GotMsgBadZoneStatusRequest());
     game.daringRemaining = 10;
     game.Pause(true);
     game.tick(1);
