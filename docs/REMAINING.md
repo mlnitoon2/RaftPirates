@@ -15,3 +15,7 @@ The client is an independent C++ reconstruction. Original assets and Java classe
 No remaining names were listed in the historical source-name inventory. That inventory includes partial adapters, so the work above remains open. See [coverage](COVERAGE.md), [message inventory](MESSAGE_INVENTORY.md) and [native behavior evidence](NATIVE_BEHAVIOR.md).
 
 Detailed historical reconstruction notes and superseded reports remain available in the [archived source tree](https://github.com/mlnitoon2/RaftPirates/tree/1d6b3f82aff5b161488d03f0bc1a9f7fbffa5ef1/docs).
+
+## Current device-reported issues
+
+The latest Android feedback reports unresolved splash glow alignment, quest book content, material inventory, settings, auto-safe-water text, map HUD placement, blueprint selection stalls and diving gameplay. Native changes address these areas, but require another device test before closing them. Blueprint paging is an interim alternative to the original continuous scroll. Diving movement and rope composition are provisional until checked against the original game. The public host CI does not execute the original-assets tests unless `RAFT_ASSET_ROOT` is supplied.

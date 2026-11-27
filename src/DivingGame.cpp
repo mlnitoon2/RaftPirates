@@ -21,6 +21,9 @@ namespace rp::diving_game {
             sys::res::ResourceSpriteSheet::Create(root_ / "xml_resources/rp_diving.xml"));
         image_ = std::make_shared<Image>(loadAssetImage(root_ / atlas_->imagePath));
         robot_ = sys::res::ResourceAEAnim::Create(root_ / "xml_bin/anim_diving_robot.bin");
+        // Draw the continuous rope separately, without copying compositions every frame.
+        for(auto& comp:robot_.comps)
+            comp.layers.erase(std::remove_if(comp.layers.begin(),comp.layers.end(),[](const auto& layer){return layer.name=="rope";}),comp.layers.end());
         label_.init(std::make_shared<sys::gfx::ResourceSpriteFont>(
                         sys::gfx::ResourceSpriteFont::Create(root_, "rp_font_title")),
                     "", {});
@@ -316,14 +319,15 @@ namespace rp::diving_game {
             // visible region end-to-end; the exported pair otherwise leaves a gap.
             if(auto rope=atlas_->findSpriteByName("diving_rope")){
                 auto cell=*rope;cell.ox=cell.oy=0;cell.ow=cell.w;cell.oh=cell.h;
+                GfxManager ropeGfx;
+                ropeGfx.setScreenClip(std::array<float,4>{219,29,421,y_});
                 for(float y=29;y<y_;y+=cell.h){
                     GfxSprite s;s.cell=cell;s.image=image_;s.SetPos(x_+3-cell.w*.5f,y);
-                    s.SetPriority(-10);m.submit(s);
+                    ropeGfx.submit(s);
                 }
+                ropeGfx.RenderScreen(target);
             }
-            auto robotOnly=c;
-            robotOnly.layers.erase(std::remove_if(robotOnly.layers.begin(),robotOnly.layers.end(),[](const auto& layer){return layer.name=="rope";}),robotOnly.layers.end());
-            renderer_.submit(m, robot_, robotOnly, c.duration() > 0 ? std::fmod(elapsed_, c.duration()) : 0,
+            renderer_.submit(m, robot_, c, c.duration() > 0 ? std::fmod(elapsed_, c.duration()) : 0,
                              Matrix::translation(x_, y_) *
                                  Matrix::translation(-c.width / 2.f, -c.height / 2.f));
             m.RenderScreen(target);

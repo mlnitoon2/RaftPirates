@@ -20,8 +20,8 @@ namespace rp {
                     node.set("width", 480.0);
                     node.set("height", 320.0);
                     // Center the 480x320 composition in the 640x400 research viewport.
-                    node.set("xOffset", -240.0);
-                    node.set("yOffset", -160.0);
+                    node.set("absoluteX", 80.0);
+                    node.set("absoluteY", 40.0);
                 }
                 return true;
             }

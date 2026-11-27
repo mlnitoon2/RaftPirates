@@ -18,6 +18,13 @@ namespace rp {
         static std::string name(PortView& v) {
             return v.xmlName_;
         }
+        static void openShop(PortView& v,const Game& g,const std::string& name){
+            v.panel_=PortView::Panel::Shop;v.openXml(g,name);
+        }
+        static size_t page(const PortView& v){return v.page_;}
+        static int selection(const PortView& v){return v.shopSelection_;}
+        static size_t itemCount(const PortView& v){return v.xmlItems_.size();}
+        static float listTop(const PortView& v){return v.blueprintListTop_;}
     };
 } // namespace rp
 
@@ -136,6 +143,24 @@ int main(int argc, char** argv) {
                 ++changed;
         }
         CHECK(changed > 100);
+        // Exercise more than one catalogue page, including selection without a full
+        // generic touch/layout traversal.
+        rp::Game catalogue;
+        loadPlayerFixture(catalogue);
+        for(int id=2;id<=8;++id){
+            auto entry=catalogue.blueprints.at(1);
+            catalogue.blueprints.emplace(id,std::move(entry));
+        }
+        rp::PortView browser(argv[1]);
+        rp::PortViewTestAccess::openShop(browser,catalogue,"tabbed_menu_blueprints");
+        CHECK(rp::PortViewTestAccess::itemCount(browser)==5);
+        const float listY=rp::PortViewTestAccess::listTop(browser)+12;
+        int first=rp::PortViewTestAccess::selection(browser);
+        browser.touchDown(190,listY);browser.touch(catalogue,190,listY);
+        CHECK(rp::PortViewTestAccess::selection(browser)!=first);
+        browser.touchDown(450,listY);browser.touchDrag(100,listY);browser.touch(catalogue,100,listY);
+        CHECK(rp::PortViewTestAccess::page(browser)==1);
+        CHECK(rp::PortViewTestAccess::itemCount(browser)==3);
         std::cout << "Original HUD asset, action, and protocol checks passed\n";
         return 0;
     } catch (const std::exception& e) {
