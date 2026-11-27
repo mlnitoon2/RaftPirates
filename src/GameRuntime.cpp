@@ -39,6 +39,7 @@ namespace {
         int width = 640, height = 400, port = 9933;
         bool initialized = false, paused = false, connected = false, connecting = false;
         bool admin = false;
+        bool rewardPopupPending = false;
         std::string host, user, session, status, music, authEndpoint;
         bool loginSent = false, snapshotReceived = false, loggedTransportWait = false;
         bool titleTouchArmed = false;
@@ -205,6 +206,7 @@ namespace {
         rt.endingLoading = false;
         rt.savedSession.clear();
         rt.pendingAdminNotice.clear();
+        rt.rewardPopupPending = false;
         rt.oceanReceived = false;
     }
 
@@ -346,6 +348,7 @@ namespace sys::platform::game {
             rt.authEndpoint.clear();
             rt.savedSession.clear();
             rt.pendingAdminNotice.clear();
+            rt.rewardPopupPending = false;
             rt.resumeAttempt = false;
             rt.titlePresented = false;
             rt.titleTouchArmed = false;
@@ -521,7 +524,20 @@ namespace sys::platform::game {
                     platform.log(std::string("SmartFox login state unavailable: ") + ex.what());
                 }
             }
-            if (rt.connected && !rt.pendingAdminNotice.empty()) {
+            if (rt.connected && rt.game.ready && rt.view && !rt.login &&
+                !rt.rewardPopupPending) {
+                if (auto reward = rt.game.takeQuestRewardNotice()) {
+                    if (reward->message) rt.engine.engineReceiver().SendGeneric(*reward->message);
+                    try {
+                        rt.rewardPopupPending = true;
+                        rt.engine.PopupText(platform, reward->title + "\n" + reward->text);
+                    } catch (...) {
+                        rt.rewardPopupPending = false;
+                        platform.log("Quest reward popup unavailable");
+                    }
+                }
+            }
+            if (rt.connected && !rt.pendingAdminNotice.empty() && !rt.rewardPopupPending) {
                 auto notice = std::move(rt.pendingAdminNotice);
                 rt.pendingAdminNotice.clear();
                 try {
@@ -826,6 +842,7 @@ namespace sys::platform::game {
         guarded(platform, [&] {
             sys::msg::MsgPopupTextResult m;
             m.accepted = accepted;
+            rt.rewardPopupPending = false;
             rt.game.gotMsgPopupTextResult(accepted);
             rt.engine.engineReceiver().SendGeneric(m);
         });

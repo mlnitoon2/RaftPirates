@@ -57,6 +57,18 @@ int main() {
     check(nameRequest && nameRequest->payload.getString("c") == "set_display_name");
     check(nameRequest->payload.getSFSObj("p")->getString("newName") == "The Example");
     check(!game.gotMsgKeyboardEntryResult("Unsolicited", false));
+    game.gotMsgOnExtensionResponse("gs_quest_reward", rewards);
+    check(game.numOfMaterialPossessed(2u) == 7);
+    auto reward = game.takeQuestRewardNotice();
+    check(reward && dynamic_cast<rp::MsgCollectedMaterials*>(reward->message.get()));
+    check(!game.takeQuestRewardNotice());
+    rp::MsgCheat cheat;
+    cheat.type = "test";
+    check(!game.gotMsgCheat(cheat));
+    game.serverName("127.0.0.1");
+    game.enableDevelopmentCommands(true);
+    check(game.gotMsgCheat(cheat).has_value());
+    game.enableDevelopmentCommands(false);
     game.materialNames[2] = "Wood";
     auto materialRequest = game.gotMsgConfirmMaterialPurchase(2, 10, 5);
     check(materialRequest && materialRequest->payload.getString("c") == "purchase_item");

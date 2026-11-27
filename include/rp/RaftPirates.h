@@ -1,5 +1,6 @@
 #pragma once
 #include "rp/Game.h"
+#include "rp/Messages.h"
 #include <deque>
 
 namespace rp {
@@ -54,6 +55,17 @@ namespace rp {
         void gotMsgPopupTextResult(bool accepted);
         std::optional<bool> takePopupResult();
         std::map<int, int> QuestRewards(const sfs::SFSObjectWrapper& rewardPacket) const;
+        struct QuestRewardNotice {
+            std::string title, text;
+            std::shared_ptr<MsgBase> message;
+        };
+        std::optional<QuestRewardNotice> takeQuestRewardNotice();
+        // Developer requests are disabled unless explicitly enabled for a loopback test server.
+        void enableDevelopmentCommands(bool enabled);
+        std::optional<sfs::Message> gotMsgCheat(const MsgCheat&) const;
+        std::optional<sfs::Message> gotMsgCheatDuplicatePlayer(const MsgCheatDuplicatePlayer&) const;
+        std::optional<sfs::Message> gotMsgCheatStartBattle(const MsgCheatStartBattle&) const;
+        std::optional<sfs::Message> gotMsgDebugGatherAllUsers(const MsgDebugGatherAllUsers&) const;
         std::optional<sfs::Message> gotMsgKeyboardEntryResult(const std::string& name,
                                                               bool cancelled);
         std::optional<sfs::Message> gotMsgConfirmMaterialPurchase(int material, int amount,
@@ -128,6 +140,10 @@ namespace rp {
         bool namingShip_ = false, battleMode_ = false;
         std::string currentMenu_;
         std::optional<bool> popupResult_;
+        std::deque<QuestRewardNotice> rewardNotices_;
+        bool developmentCommands_ = false;
+        bool developmentAllowed() const;
+        void acceptQuestReward(const sfs::SFSObjectWrapper&);
         std::set<int> startedTutorials_, completedTutorials_;
         std::deque<sfs::Message> queued_;
         std::string adminMessage_, serverName_, debugMessage_;

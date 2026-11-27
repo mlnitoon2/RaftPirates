@@ -29,6 +29,8 @@ namespace rp {
         namingShip_ = battleMode_ = false;
         currentMenu_.clear();
         popupResult_.reset();
+        rewardNotices_.clear();
+        developmentCommands_ = false;
         startedTutorials_.clear();
         completedTutorials_.clear();
         queued_.clear();
@@ -55,6 +57,8 @@ namespace rp {
         namingShip_ = battleMode_ = false;
         currentMenu_.clear();
         popupResult_.reset();
+        rewardNotices_.clear();
+        developmentCommands_ = false;
         processing_ = true;
         pending.reset();
         pendingMove.reset();
@@ -280,6 +284,114 @@ namespace rp {
         return out;
     }
 
+    std::optional<RaftPirates::QuestRewardNotice> RaftPirates::takeQuestRewardNotice() {
+        if (rewardNotices_.empty()) return {};
+        auto notice = std::move(rewardNotices_.front());
+        rewardNotices_.pop_front();
+        return notice;
+    }
+
+    void RaftPirates::acceptQuestReward(const sfs::SFSObjectWrapper& packet) {
+        if (!connected_ || !ready) return;
+        const auto title = packet.getString("quest_title", "Quest complete").substr(0, 256);
+        auto notice = [&](const std::string& text, std::shared_ptr<MsgBase> message) {
+            if (rewardNotices_.size() < 64)
+                rewardNotices_.push_back({title, text, std::move(message)});
+        };
+        auto rewards = QuestRewards(packet);
+        if (!rewards.empty()) {
+            auto event = std::make_shared<MsgCollectedMaterials>();
+            event->popupTitle = title;
+            std::string text;
+            for (const auto& [id, amount] : rewards) {
+                giveMaterial(unsigned(id), amount);
+                event->materialIds.push_back(id);
+                event->materialAmts.push_back(amount);
+                if (text.size() < 2048) {
+                    auto name = materialNames.find(id);
+                    text += std::to_string(amount) + " " +
+                        (name == materialNames.end() ? "Material " + std::to_string(id) : name->second) + "\n";
+                }
+            }
+            notice(text, event);
+        }
+        if (auto added = packet.getSFSArray("blueprints_added"))
+            for (const auto& value : added->values) {
+                auto row = std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value);
+                if (!row || !*row) continue;
+                const int id = (*row)->getInt("blueprint_id");
+                if (id <= 0) continue;
+                giveBlueprint(id);
+                auto event = std::make_shared<MsgCollectedBlueprint>();
+                event->popupTitle = title;
+                event->blueprintId = id;
+                auto info = blueprints.find(id);
+                event->text = info == blueprints.end() ? "Blueprint " + std::to_string(id) : info->second.name();
+                if (info != blueprints.end()) {
+                    event->image = info->second.image;
+                    event->spriteSheet = info->second.sheet;
+                }
+                notice(event->text, event);
+            }
+        auto amount = [&](const char* key, const char* field) {
+            auto row = packet.getSFSObj(key);
+            return row ? std::max(0, row->getInt(field)) : 0;
+        };
+        if (int count = amount("fastclocks_added", "num_fastclocks"); count > 0) {
+            giveMaterial(10, count);
+            auto event = std::make_shared<MsgCollectedFastclocks>();
+            event->popupTitle = title; event->numFastclocks = count;
+            notice(std::to_string(count) + " Fastclocks", event);
+        }
+        if (int count = amount("sonar_added", "num_sonar"); count > 0) {
+            giveMaterial(12, count);
+            auto event = std::make_shared<MsgCollectedSonar>();
+            event->popupTitle = title; event->numSonar = count;
+            notice(std::to_string(count) + " Sonar", event);
+        }
+        if (int count = amount("mapmove_added", "num_mapmove"); count > 0) {
+            // The map-action state still comes from the authoritative map state packet.
+            auto event = std::make_shared<MsgCollectedMapMove>();
+            event->popupTitle = title; event->numMapMove = count;
+            notice(std::to_string(count) + " Map moves", event);
+        }
+        if (auto maps = packet.getSFSArray("treasuremaps"))
+            for (const auto& value : maps->values) {
+                auto row = std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value);
+                if (!row || !*row) continue;
+                auto event = std::make_shared<MsgTreasureMapGotOne>();
+                event->popupTitle = title;
+                event->type = (*row)->getString("type");
+                event->typedata = (*row)->getInt("typedata");
+                notice("Treasure map", event);
+            }
+    }
+
+    void RaftPirates::enableDevelopmentCommands(bool enabled) { developmentCommands_ = enabled; }
+    bool RaftPirates::developmentAllowed() const {
+        return developmentCommands_ && ready && connected_ &&
+            (serverName_ == "localhost" || serverName_ == "127.0.0.1" || serverName_ == "::1");
+    }
+    std::optional<sfs::Message> RaftPirates::gotMsgCheat(const MsgCheat& m) const {
+        if (!developmentAllowed() || m.type.empty() || m.type.size() > 128) return {};
+        sfs::SFSObjectWrapper p; p.put("type", m.type);
+        return request("cheat", p);
+    }
+    std::optional<sfs::Message> RaftPirates::gotMsgCheatDuplicatePlayer(const MsgCheatDuplicatePlayer& m) const {
+        if (!developmentAllowed() || m.username.empty() || m.username.size() > 128) return {};
+        sfs::SFSObjectWrapper p; p.put("type", std::string("player_dup")); p.put("dup_name", m.username);
+        return request("cheat", p);
+    }
+    std::optional<sfs::Message> RaftPirates::gotMsgCheatStartBattle(const MsgCheatStartBattle& m) const {
+        if (!developmentAllowed() || m.username.empty() || m.username.size() > 128) return {};
+        sfs::SFSObjectWrapper p; p.put("opponent", m.username);
+        return request("gs_debug_battle", p);
+    }
+    std::optional<sfs::Message> RaftPirates::gotMsgDebugGatherAllUsers(const MsgDebugGatherAllUsers&) const {
+        if (!developmentAllowed()) return {};
+        return request("gatherallusers");
+    }
+
     bool RaftPirates::gotMsgNameShip() {
         if (!connected_ || !ready || namingShip_)
             return false;
@@ -448,7 +560,9 @@ namespace rp {
 
     void RaftPirates::processExtension(const std::string& command,
                                        const sfs::SFSObjectWrapper& data) {
-        if (command == "purchase_response")
+        if (command == "gs_quest_reward")
+            acceptQuestReward(data);
+        else if (command == "purchase_response")
             gotMsgBoughtItem(data);
         else if (command == "gs_materials_changed")
             gotMsgUpdateCurrency(data);
