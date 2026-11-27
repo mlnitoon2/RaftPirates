@@ -1,5 +1,6 @@
 #include "rp/BuildModeState.h"
 #include "rp/GridSprite.h"
+#include "rp/GridObjectHelpers.h"
 #include "rp/TouchControls.h"
 #include "rp/RPMenuHandler.h"
 #include "PlayerFixture.h"
@@ -20,6 +21,23 @@ int main() {
     try {
         Game game;
         loadPlayerFixture(game);
+        {
+            std::string tokens="alpha;;omega";
+            CHECK(Tokenize(tokens,";")=="alpha");
+            CHECK(Tokenize(tokens,";").empty());
+            CHECK(Tokenize(tokens,";")=="omega" && tokens.empty());
+            GridObject x(1,7,1,2,0,0),y(2,7,1,3,0,0);
+            std::map<int,GridObjectInfo> definitions;
+            definitions[7].type=1;
+            definitions[7].name="DivingUnit";
+            CHECK(IsComponent(&x,definitions) && IsDivingUnit(&x,definitions));
+            CHECK(!IsRaft(&x,definitions) && !IsWreckage(nullptr,definitions));
+            CHECK(SortGridObjPredicate(x,y));
+            definitions[7].name="boss05";
+            CHECK(IsBossWeapon(&x,definitions) && !IsBarracks(&x,definitions));
+            definitions[7].name="barracks";
+            CHECK(IsBarracks(&x,definitions) && !IsBossWeapon(&x,definitions));
+        }
         game.storeItems[1] = {1, 4, 100, 1, "pack", "misc", "Pack", "rp_menu.xml", ""};
         game.objects[5] = {5, 0, 1000, "WoodRaft", "gfx/rafts/raft_wood.png", -192, 0, {{0, 0}}};
         game.blueprints[3] = {3, 5, 1, "Wooden Raft"};

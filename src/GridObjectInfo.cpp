@@ -1,4 +1,5 @@
 #include "rp/Player.h"
+#include "rp/GridObjectHelpers.h"
 #include <algorithm>
 #include <sstream>
 #include <stdexcept>
@@ -43,11 +44,11 @@ namespace rp {
     GridObjectInfo::GridObjectInfo(const std::string& data, int battlePoints) {
         auto& info = *this;
         info.bp = std::max(0, battlePoints);
-        std::istringstream stream(data);
-        std::string part;
-        if (std::getline(stream, part, ';') && !part.empty())
-            info.type = number(part);
-        while (std::getline(stream, part, ';')) {
+        std::string remaining=data;
+        auto part=Tokenize(remaining,";");
+        if(!part.empty()) info.type=number(part);
+        while(!remaining.empty()) {
+            part=Tokenize(remaining,";");
             if (part.empty())
                 continue;
             GridObjectPiece piece(part);

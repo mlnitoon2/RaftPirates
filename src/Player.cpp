@@ -1,4 +1,5 @@
 #include "rp/Player.h"
+#include "rp/GridObjectHelpers.h"
 #include "rp/Material.h"
 #include <algorithm>
 #include <limits>
@@ -346,7 +347,7 @@ namespace rp {
                 auto isDiveAsset = [](const std::string& asset) {
                     return asset.find("anim_core_dive_unit") != std::string::npos;
                 };
-                if (def.name == "DivingUnit" || isDiveAsset(def.asset) ||
+                if (IsDivingUnit(&c,objects) || isDiveAsset(def.asset) ||
                     std::any_of(def.pieces.begin(), def.pieces.end(),
                                 [&](const auto& piece) { return isDiveAsset(piece.asset); }))
                     return {r.id, c.id};

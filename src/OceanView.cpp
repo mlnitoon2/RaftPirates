@@ -1,5 +1,6 @@
 #include "rp/Game.h"
 #include "rp/GridSprite.h"
+#include "rp/UnitHealthBarSprite.h"
 #include "rp/GfxOceanGradient.h"
 #include "rp/GfxOceanGrid.h"
 #include "sys/gfx/AssetImage.h"
@@ -574,25 +575,23 @@ namespace rp {
             }
         }
         mgr.RenderScreen(out);
-        if (healthBars_)
-            for (const auto& [key, e] : sprites_) {
-                if (!e->sprite->GetVisible() || e->definition.bp <= 0)
-                    continue;
-                auto health = std::clamp(e->object.GetHealth(e->definition.bp), 0.f, 1.f);
-                if (health >= 1)
-                    continue;
-                auto point = WorldToScreen(e->world);
-                if (!std::isfinite(point.x) || !std::isfinite(point.y) ||
-                    point.x < -30 || point.x > out.width + 30 || point.y < -30 ||
-                    point.y > out.height + 30)
-                    continue;
-                int x = int(point.x) - 15, y = int(point.y) - 24;
-                for (int dy = 0; dy < 4; ++dy)
-                    for (int dx = 0; dx < 30; ++dx)
-                        if (x + dx >= 0 && x + dx < out.width && y + dy >= 0 && y + dy < out.height)
-                            out.at(x + dx, y + dy) = dx < int(health * 30)
-                                ? Color{61, 201, 80, 255} : Color{40, 40, 40, 255};
-            }
+        if (healthBars_) {
+            try {
+                auto load=[&](const std::string& path){
+                    auto it=images_.find(path);
+                    if(it==images_.end())
+                        it=images_.emplace(path,std::make_shared<Image>(loadAssetImage(root_/path))).first;
+                    return it->second;
+                };
+                UnitHealthBarSprite bar(*this,load("gfx/HUD/health_meter.png"),
+                                         load("gfx/HUD/health_meter_green.pvr"));
+                for (const auto& [key, e] : sprites_) {
+                    if (!e->sprite->GetVisible() || e->definition.bp <= 0) continue;
+                    bar.Update(e->world,e->object.GetHealth(e->definition.bp));
+                    bar.Render(out);
+                }
+            } catch(const std::exception&) { /* Original health-meter assets unavailable. */ }
+        }
         if (diveLoadKey_ && diveCapacity_ > 0) {
             const auto& entry = *sprites_.at(*diveLoadKey_);
             const auto p = WorldToScreen(entry.world);

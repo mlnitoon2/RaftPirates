@@ -19,6 +19,9 @@ add_library(raftpirates_game STATIC
     src/Game.cpp
     src/BuildModeState.cpp
     src/GridObject.cpp
+    src/GridObjectHelpers.cpp
+    src/FootprintSprite.cpp
+    src/UnitHealthBarSprite.cpp
     src/GridObjectInfo.cpp
     src/GridSprite.cpp
     src/Player.cpp

@@ -45,6 +45,11 @@ Names newly implemented in source are listed here and removed from the provision
 - Reclassified already-present action/accessor methods (GridObject, Raft, RaftComponent, DivingUnit, Zone).
 - Original binary has no source-file debug table; new files use recovered class names, existing paths preserved. Pass 37 final ARM64 build passed (45927489860).
 
+## Pass 39 source review
+
+- GridObjectHelpers: ARM32 0x41bed0–0x41bf58 compares native type 0/1/2; 0x41c150–0x41c28c compares exact names boss, boss01–boss05, barracks, DivingUnit. Portable helpers take an explicit catalogue instead of an intrusive object data pointer. SortGridObjPredicate uses original x-then-y comparison at 0x3aa8b8; Tokenize consumes the input and one delimiter byte (single-byte separators used in existing grid data parser). Multi-byte delimiter semantics remain unverified.
+- FootprintSprite and nested SpriteFootprint now own and render placement sprites from the original construction_footprints_junk.xml atlas, integrated in PortView. UnitHealthBarSprite uses original gfx/HUD/health_meter.png and health_meter_green.pvr, replacing synthetic bars in OceanView; scale, offset and fill clipping are portable approximations. Original tick at 0x62f8b4 returns immediately. Tests added for tokenization, classification and comparison; not yet executed.
+
 ## Priority gaps
 
 - Original menu scripts: complete game/SWIG bindings, message dispatch, dynamic templates, tutorial and quest flows, all popups and transitions.
@@ -56,7 +61,7 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-293 names from the Pass 33 inventory now have named source implementations through Pass 38 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+316 names from the Pass 33 inventory now have named source implementations through Pass 39 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (29)
 
@@ -70,9 +75,9 @@ Names newly implemented in source are listed here and removed from the provision
 
 `Duplicate`, `GetTotalBattlePoints`, `GetUserObjectID`, `GetWreckageObject`, `Pieces`, `RegisterAllClasses`, `Repair`, `Salvage`, `SetState`, `SetWreckageObject`, `Wreckage`, `getAvailableActions`, `initWithSFSObject`, `~Wreckage`
 
-### `rp` (11)
+### `rp` (3)
 
-`Dostuff_place`, `IsBarracks`, `IsBossWeapon`, `IsComponent`, `IsDivingUnit`, `IsRaft`, `IsWreckage`, `MyDataSortPredicate`, `SortGridObjPredicate`, `Tokenize`, `performaIsoSort`
+`Dostuff_place`, `MyDataSortPredicate`, `performaIsoSort`
 
 ### `rp::AccessorySprite` (11)
 
@@ -118,10 +123,6 @@ Names newly implemented in source are listed here and removed from the provision
 
 `AddedToOcean`
 
-### `rp::FootprintSprite` (7)
-
-`FootprintSprite`, `Init`, `SetColour`, `SetPriorities`, `SetPriority`, `Update`, `~FootprintSprite`
-
 ### `rp::ItemPlacementSprite` (7)
 
 `ItemPlacementSprite`, `OkayToPlace`, `SetPosition`, `SetPriority`, `SetToObject`, `Update`, `~ItemPlacementSprite`
@@ -129,10 +130,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::SelectedWallSprite` (7)
 
 `Init`, `SelectedWallSprite`, `SetPriorities`, `SetPriority`, `Update`, `tick`, `~SelectedWallSprite`
-
-### `rp::UnitHealthBarSprite` (7)
-
-`Init`, `SetColour`, `SetVisible`, `UnitHealthBarSprite`, `Update`, `tick`, `~UnitHealthBarSprite`
 
 ### `rp::DiveMeterSprite` (6)
 
@@ -341,10 +338,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::DoStuffExtraData` (1)
 
 `DoStuffExtraData`
-
-### `rp::FootprintSprite::SpriteFootprint` (1)
-
-`~SpriteFootprint`
 
 ### `rp::Ocean` (1)
 

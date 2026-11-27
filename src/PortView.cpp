@@ -1,4 +1,5 @@
 #include "rp/PortView.h"
+#include "rp/FootprintSprite.h"
 #include "rp/RaftPirates.h"
 #include "rp/RPMenuHandler.h"
 #include "rp/BuildModeState.h"
@@ -312,19 +313,9 @@ namespace rp {
                         if (auto def = g.objects.find(object); def != g.objects.end())
                             footprint = def->second.cells;
                     }
-                    float step = parent ? 1.f / 6 : 1.f;
-                    for (auto c : footprint) {
-                        auto center = ocean_.WorldToScreen(
-                            {(parent ? parent->x : 0) + (placement_->x + c.x + .5f) * step,
-                             (parent ? parent->y : 0) + (placement_->y + c.y + .5f) * step});
-                        GfxSprite sprite;
-                        sprite.image = image;
-                        sprite.cell = *cell;
-                        float width = ocean_.Unit() * 2 * ocean_.Zoom() * step;
-                        sprite.SetScale(width / cell->ow, width * .5f / cell->oh);
-                        sprite.SetPos(center.x - width * .5f, center.y - width * .25f);
-                        drawSprite(out, sprite);
-                    }
+                    FootprintSprite overlay(ocean_,image,*cell);
+                    overlay.Update(*placement_,footprint,parent);
+                    overlay.Render(out);
                 }
             } catch (const std::exception&) { /* No substitute for missing original assets. */
             }
