@@ -21,7 +21,9 @@ namespace rp {
         const auto p=view_.WorldToScreen(world_);
         if(!std::isfinite(p.x)||!std::isfinite(p.y))return;
         const float s=.5f;
-        const float x=p.x-frame_->width*s/2,y=p.y-24;
+        if(p.x<0||p.x>=dst.width||p.y<0||p.y>=dst.height)return;
+        const float x=std::clamp(p.x-frame_->width*s/2,0.f,std::max(0.f,dst.width-frame_->width*s));
+        const float y=std::clamp(p.y-24,0.f,std::max(0.f,dst.height-frame_->height*s));
         GfxSprite frame;
         frame.init(frame_);frame.SetPos(x,y);frame.SetScale(s,s);
         frame.SetColor(colour_.r,colour_.g,colour_.b,colour_.a);

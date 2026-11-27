@@ -8,7 +8,7 @@ namespace rp::diving_game {
     DivingGame::ItemFloater::ItemFloater(CollectableType type,float x,float y):DivingCollectable(type,x,y){}
     DivingGame::ItemFloater::~ItemFloater()=default;
     void DivingGame::ItemFloater::tick(float dt,float speed){
-        if(std::isfinite(dt)&&dt>0&&std::isfinite(speed))y+=speed*dt;
+        if(std::isfinite(dt)&&dt>0&&std::isfinite(speed))y-=speed*dt;
     }
     using namespace sys::gfx;
 
@@ -36,7 +36,7 @@ namespace rp::diving_game {
         scrolling_.emplace_back(std::vector<std::string>{"diving_layer003_01","diving_layer003_02"},128,.25f,288);
         scrolling_.emplace_back(std::vector<std::string>{"diving_layer002_01","diving_layer002_02"},128,.5f,288);
         scrolling_.emplace_back(std::vector<std::string>{"diving_layer001_01","diving_layer001_02"},128,1.f,288);
-        x_=targetX_=320; y_=270;
+        x_=targetX_=320; y_=144;
         setPos(210,22);
         gears_ = 0;
         level_ = 1;
@@ -81,7 +81,7 @@ namespace rp::diving_game {
     }
 
     void DivingGame::spawnItem(DivingCollectable::CollectableType type, float x) {
-        items_.emplace_back(type, std::clamp(x, 238.f, 402.f), 40);
+        items_.emplace_back(type, std::clamp(x, 238.f, 402.f), 277);
     }
 
     bool DivingGame::robotCollidesWithItem(const DivingCollectable& item) const {
@@ -244,7 +244,7 @@ namespace rp::diving_game {
                 }
                 UpdateGearCount();
                 i = items_.erase(i);
-            } else if (i->y > 335)
+            } else if (i->y < 20)
                 i = items_.erase(i);
             else
                 ++i;
@@ -312,8 +312,19 @@ namespace rp::diving_game {
             GfxManager m;
             // Robot animation includes the rope; let it reach the inner top/bottom frame edges.
             m.setScreenClip(std::array<float,4>{219,22,421,310});
-            renderer_.submit(m, robot_, c, c.duration() > 0 ? std::fmod(elapsed_, c.duration()) : 0,
-                             Matrix::translation(x_, y_) * Matrix::scale(.65f, .65f) *
+            // The atlas rope has 32 transparent pixels in its logical height. Tile the
+            // visible region end-to-end; the exported pair otherwise leaves a gap.
+            if(auto rope=atlas_->findSpriteByName("diving_rope")){
+                auto cell=*rope;cell.ox=cell.oy=0;cell.ow=cell.w;cell.oh=cell.h;
+                for(float y=29;y<y_;y+=cell.h){
+                    GfxSprite s;s.cell=cell;s.image=image_;s.SetPos(x_+3-cell.w*.5f,y);
+                    s.SetPriority(-10);m.submit(s);
+                }
+            }
+            auto robotOnly=c;
+            robotOnly.layers.erase(std::remove_if(robotOnly.layers.begin(),robotOnly.layers.end(),[](const auto& layer){return layer.name=="rope";}),robotOnly.layers.end());
+            renderer_.submit(m, robot_, robotOnly, c.duration() > 0 ? std::fmod(elapsed_, c.duration()) : 0,
+                             Matrix::translation(x_, y_) *
                                  Matrix::translation(-c.width / 2.f, -c.height / 2.f));
             m.RenderScreen(target);
         }

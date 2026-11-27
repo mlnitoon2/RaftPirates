@@ -98,7 +98,7 @@ namespace rp::diving_game {
         };
         std::vector<ItemFloater> items_;
         std::vector<ScrollingLayer> scrolling_;
-        float x_ = 320, y_ = 270, targetX_ = 320, speed_ = 120, duration_ = 20, remaining_ = 20,
+        float x_ = 320, y_ = 144, targetX_ = 320, speed_ = 120, duration_ = 20, remaining_ = 20,
               elapsed_ = 0, spawn_ = 0;
         int level_ = 1, gears_ = 0, shape_ = 0, direction_ = 0;
         sys::gfx::Vec2 panelPosition_{210,22}, panelFrom_{210,22}, panelTarget_{210,22};

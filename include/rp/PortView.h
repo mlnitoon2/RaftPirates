@@ -87,6 +87,11 @@ namespace rp {
         };
         Panel panel_ = Panel::None;
         size_t page_ = 0;
+        static constexpr size_t BlueprintPageSize=5;
+        float blueprintListTop_=300;
+        std::optional<sys::gfx::Vec2> blueprintGesture_;
+        bool blueprintPageMove(const Game&,int);
+        void selectBlueprintSlot(const Game&,float);
         int selectedBlueprint_ = 0;
         int selectedParent_ = 0, selectedComponent_ = 0;
         bool moving_ = false;
