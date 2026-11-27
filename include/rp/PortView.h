@@ -1,4 +1,5 @@
 #pragma once
+#include <set>
 #include "rp/Game.h"
 #include "rp/Hud.h"
 #include "rp/DivingGame.h"
@@ -22,6 +23,7 @@ namespace rp {
         std::optional<sfs::Message> touch(Game&, float x, float y);
         void tick(float dt);
         std::optional<sfs::Message> takePendingRequest(Game&);
+        std::optional<sfs::Message> takeTutorialRequest(Game&);
         std::string activeMenu() const;
         void touchDown(float x, float y);
         void touchDrag(float x, float y);
@@ -69,6 +71,7 @@ namespace rp {
         bool hudEnabled(const Game& game) const;
         MapView mapView_;
         int selectedQuest_ = 0;
+        std::set<int> tutorialPopupsShown_;
         std::string requestedStoreItem_, notice_;
         std::optional<int> mapInfoEnemy_;
         float worldTime_ = 0;

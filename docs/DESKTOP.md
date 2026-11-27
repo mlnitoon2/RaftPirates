@@ -35,3 +35,7 @@ cmake --build build --target raftpirates_desktop
 ```
 
 The reconstructed native TCP client uses SDK 1.7.5 protocol details but is not the official SDK. UDP, encrypted SFS sessions, reconnect and full room/user tracking are not implemented.
+
+## Asset bundle and graphics
+
+When an authorized assets/ directory is committed at the repository root, Windows CI copies it into the portable ZIP automatically. The desktop host enables atlas-aware bilinear sprite sampling and linear framebuffer presentation without changing the game's 640x400 logical coordinate system. This smooths pixel edges but is not yet native high-resolution rendering. The original @2x assets are not automatically selected.

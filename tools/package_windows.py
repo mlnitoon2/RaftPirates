@@ -22,6 +22,11 @@ def package(exe, prefix, output, status, revision, hydra_revision):
         shutil.rmtree(staging)
     staging.mkdir(parents=True)
     (staging / "assets").mkdir()
+    asset_source = Path(__file__).resolve().parents[1] / "assets"
+    bundled_assets = (asset_source / "menus").is_dir() and (
+        asset_source / "xml_resources/properties.xml").is_file()
+    if bundled_assets:
+        shutil.copytree(asset_source, staging / "assets", dirs_exist_ok=True)
     shutil.copy2(exe, staging / exe.name)
 
     bin_dir = prefix / "bin"
@@ -72,8 +77,9 @@ def package(exe, prefix, output, status, revision, hydra_revision):
         f"RaftPirates: {revision}\nHydraLegacy: {hydra_revision}\n"
         f"Authenticode: {status}\n"
         "Copy original APK asset contents into assets/ and launch raftpirates_desktop.exe.\n"
-        "Compatible server configuration is in assets/xml_resources/properties.xml.\n"
-        "No original assets or account data are included.\n"
+        "Compatible server configuration is in assets/xml_resources/properties.xml.\n" +
+        ("Original assets are included. No account data is included.\n" if bundled_assets
+         else "No original assets or account data are included.\n") +
         "If antivirus reports a detection, stop and investigate. Do not disable protection.\n",
         encoding="utf-8")
     digest_lines = []

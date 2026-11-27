@@ -83,7 +83,16 @@ int main() {
     check(game.gotMsgStartBuildMode() && !game.inBattleMode());
     game.checkTutorialStart(1);
     game.checkTutorialCompletion(1);
-    check(game.tutorialStarted(1) && game.tutorialCompleted(1));
+    check(!game.tutorialStarted(1) && !game.tutorialCompleted(1));
+    game.checkTutorialStart(189);
+    game.checkTutorialCompletion(189);
+    game.checkTutorialCompletion(83);
+    check(game.tutorialStarted(189) && game.tutorialCompleted(189));
+    check(game.tutorialCompleted(83));
+    check(rp::RaftPirates::tutorialMilestone(76) == 7);
+    check(rp::RaftPirates::tutorialMilestone(247) == 14);
+    check(rp::RaftPirates::tutorialMilestone(261) == 32);
+    check(rp::RaftPirates::tutorialMilestone(83) == 33);
     check(game.GotMsgShowStore().empty());
     sfs::SFSObjectWrapper failedPurchase;
     failedPurchase.put("result", false);

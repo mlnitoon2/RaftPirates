@@ -672,6 +672,8 @@ namespace sys::platform::game {
             }
             if (!rt.connected || !rt.game.ready || !rt.view)
                 return;
+            if (auto tutorial = rt.view->takeTutorialRequest(rt.game))
+                send(platform, *tutorial);
             if (rt.lastImage.pixels.empty() ||
                 now - rt.lastFrame >= std::chrono::milliseconds(33)) {
                 rt.lastFrame = now;

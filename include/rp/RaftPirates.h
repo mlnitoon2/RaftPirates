@@ -89,6 +89,8 @@ namespace rp {
         void gotMsgAuthenticationChanged();
         void gotMsgGameCenterAuthChanged(bool usingGameCenter);
         void gotMsgGameCenterError(bool usingGameCenter);
+        // Original 33-stage analytics sequence, indexed by definition ID.
+        static int tutorialMilestone(int id);
         void checkTutorialStart(int id);
         void checkTutorialCompletion(int id);
         bool tutorialStarted(int id) const;

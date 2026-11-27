@@ -8,6 +8,7 @@ namespace rp {
     void Quest::initWithSFSObject(const sfs::SFSObjectWrapper& state,
                                   const sfs::SFSObjectWrapper& definition) {
         id = state.getInt("id", state.getInt("quest_id"));
+        definitionId = definition.getInt("id", definition.getInt("questid", id));
         unread = state.getBool("new", state.getInt("new") != 0);
         name = definition.getString("name");
         description = definition.getString("description");

@@ -580,13 +580,23 @@ namespace rp {
             handleLogOut();
     }
 
+    int RaftPirates::tutorialMilestone(int id) {
+        // Original ARM32 checkTutorialCompletion jump table at 0x49e60c.
+        static constexpr std::array<int, 33> order{
+            189, 190, 191, 192, 193, 5, 76, 6, 9, 194, 10, 11, 13, 247,
+            196, 14, 15, 74, 16, 17, 18, 19, 20, 21, 84, 77, 79, 80,
+            81, 85, 82, 261, 83};
+        auto found = std::find(order.begin(), order.end(), id);
+        return found == order.end() ? 0 : int(found - order.begin()) + 1;
+    }
+
     void RaftPirates::checkTutorialStart(int id) {
-        if (id > 0)
+        if (id == 189)
             startedTutorials_.insert(id);
     }
 
     void RaftPirates::checkTutorialCompletion(int id) {
-        if (id > 0 && startedTutorials_.count(id))
+        if (tutorialMilestone(id))
             completedTutorials_.insert(id);
     }
 
@@ -615,14 +625,20 @@ namespace rp {
 
     void RaftPirates::processExtension(const std::string& command,
                                        const sfs::SFSObjectWrapper& data) {
-        if (command == "gs_quest_reward")
+        if (command == "gs_quest_reward") {
+            checkTutorialCompletion(data.getInt("questid"));
             acceptQuestReward(data);
+        }
         else if (command == "purchase_response")
             gotMsgBoughtItem(data);
         else if (command == "gs_materials_changed")
             gotMsgUpdateCurrency(data);
         else
             extension(command, data);
+        if (command == "gs_quest")
+            for (const auto& [id, quest] : quests)
+                if (quest.progress < 100)
+                    checkTutorialStart(quest.definitionId);
         if (ready && connected_) {
             if (onlineBattle.phase() == BattleModeState::Phase::Idle)
                 gotMsgStartBuildMode();

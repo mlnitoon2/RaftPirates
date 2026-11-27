@@ -19,7 +19,7 @@ namespace rp {
         void markRead();
         void markOpened();
         void setProgressPercentage(int value);
-        int id = 0, progress = 0, type = 0, group = 0;
+        int id = 0, definitionId = 0, progress = 0, type = 0, group = 0;
         bool unread = false, visible = true, opened = false, popupImmediately = false;
         std::string name, description, sheet, image, highlightFeature;
         std::string sheetLeft, imageLeft, sheetBottom, imageBottom;

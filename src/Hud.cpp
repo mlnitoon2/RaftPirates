@@ -265,6 +265,39 @@ namespace rp {
         set("DaringMeter", "OpenChest", "visible", ready);
         set("DaringMeter", "ClosedChest", "visible", !ready);
         set("DaringMeter", "Lock", "visible", locked);
+        // The server-supplied highlight_feature drives the original tutorial arrow.
+        if (auto arrow = menu_.find(1, "TutorialArrow", true)) {
+            auto sprite = menu_.find(arrow, "Sprite");
+            std::string target;
+            for (const auto& [id, quest] : game.quests) {
+                if (quest.progress >= 100)
+                    continue;
+                const auto& feature = quest.highlightFeature;
+                if (feature == "challenge_charter") target = "QuestMenu";
+                else if (feature == "main_menu_map") target = "PirateMap";
+                else if (feature == "main_menu_rafts" || feature == "main_menu_weapons")
+                    target = "MainMenu";
+                else if (feature == "toggle_button") target = "EventNotification";
+                if (!target.empty())
+                    break;
+            }
+            auto owner = target.empty() ? 0 : menu_.find(normal_, target, true);
+            menu_.node(arrow).set("visible", owner != 0);
+            if (sprite) {
+                auto& n = menu_.node(sprite);
+                n.set("visible", owner != 0);
+                if (owner) {
+                    const auto b = bounds(target);
+                    const bool bottom = b.y + b.h * .5f > 200;
+                    n.set("absoluteX", double(std::clamp(b.x + b.w * .5f - 12, 0.f, 616.f)));
+                    n.set("absoluteY", double(std::clamp(bottom ? b.y - 26 : b.y + b.h + 2,
+                                                        0.f, 376.f)));
+                    n.set("width", 24.0);
+                    n.set("height", 24.0);
+                    n.set("rotation", bottom ? 3.141592654 : 0.0);
+                }
+            }
+        }
         menu_.solve();
     }
 

@@ -153,6 +153,27 @@ namespace rp {
         }
     }
 
+    std::optional<sfs::Message> PortView::takeTutorialRequest(Game& g) {
+        if (!g.ready || panel_ != Panel::None || map || grid || diving_ ||
+            onlineBattleActive_ || discovery_)
+            return {};
+        for (const auto& [id, quest] : g.quests) {
+            if (!quest.popupImmediately || !quest.unread || quest.progress >= 100 ||
+                tutorialPopupsShown_.count(id))
+                continue;
+            selectedQuest_ = id;
+            panel_ = Panel::QuestDetail;
+            openXml(g, "quest_dialog");
+            if (!xmlMenu_) {
+                panel_ = Panel::None;
+                return {};
+            }
+            tutorialPopupsShown_.insert(id);
+            return g.openQuest(id);
+        }
+        return {};
+    }
+
     std::optional<sfs::Message> PortView::takePendingRequest(Game& g) {
         if (!diving_ || !diveClosing_ || diving_->moving())
             return {};
