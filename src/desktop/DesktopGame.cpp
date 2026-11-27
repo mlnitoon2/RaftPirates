@@ -157,7 +157,17 @@ namespace {
 
         void send(const sfs::Message& message) override { client_.send(message); }
         void disconnect() override { client_.disconnect(); }
-        void keepAlive() override { client_.keepAlive(); }
+        void keepAlive() override {
+            // Raft Pirates' game-server keep-alive is an extension request,
+            // separate from the SDK's generic system ping.
+            if (client_.loggedIn()) {
+                sfs::SFSObjectWrapper p;
+                p.put("c", "keep_alive");
+                p.put("r", int32_t(-1));
+                p.put("p", std::make_shared<sfs::SFSObjectWrapper>());
+                client_.send({1, 13, p});
+            }
+        }
 
         void networkEvents() {
             for (const auto& e : client_.poll()) {
