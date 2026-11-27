@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:df8f8869bd82451da1dae0afe46cf953$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_gunwall.png" width="256" height="256">
+    <sprite n="gunboat_back_end" x="178" y="2" w="36" h="48" oX="159" oY="124" oW="256" oH="256"/>
+    <sprite n="gunboat_back_mid" x="178" y="52" w="28" h="50" oX="0" oY="3" oW="28" oH="64"/>
+    <sprite n="gunboat_cannon" x="208" y="66" w="22" h="26" oX="5" oY="0" oW="34" oH="42"/>
+    <sprite n="gunboat_cannonback" x="216" y="24" w="32" h="18" oX="0" oY="10" oW="34" oH="42"/>
+    <sprite n="gunboat_cannonfront" x="216" y="2" w="32" h="20" oX="0" oY="20" oW="34" oH="42"/>
+    <sprite n="gunboat_front" x="2" y="2" w="174" h="116" oX="7" oY="63" oW="256" oH="256"/>
+    <sprite n="gunboat_ring_01" x="232" y="66" w="20" h="14" oX="1" oY="4" oW="24" oH="24"/>
+    <sprite n="gunboat_ring_02" x="232" y="82" w="16" h="16" oX="6" oY="5" oW="24" oH="24"/>
+    <sprite n="gunboat_robot_001" x="2" y="188" w="108" h="66" oX="123" oY="117" oW="256" oH="256"/>
+    <sprite n="gunboat_robot_002" x="112" y="120" w="108" h="64" oX="123" oY="119" oW="256" oH="256"/>
+    <sprite n="gunboat_robot_003" x="2" y="120" w="108" h="66" oX="127" oY="116" oW="256" oH="256"/>
+    <sprite n="gunboat_rope" x="216" y="44" w="30" h="20" oX="2" oY="1" oW="34" oH="24"/>
+</TextureAtlas>

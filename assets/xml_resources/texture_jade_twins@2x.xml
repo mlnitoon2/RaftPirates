@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:6026b0b891a23dfd7d1f56140f2d7a04$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_jade_twins@2x.png" width="256" height="256">
+    <sprite n="jade_twins" x="0" y="0" w="100" h="138" oX="22" oY="11" oW="128" oH="160"/>
+    <sprite n="jade_twins_fire_01" x="90" y="228" w="36" h="26" oX="35" oY="69" oW="128" oH="160"/>
+    <sprite n="jade_twins_fire_02" x="170" y="184" w="42" h="50" oX="13" oY="69" oW="128" oH="160" r="y"/>
+    <sprite n="jade_twins_fire_03" x="140" y="74" w="46" h="56" oX="6" oY="70" oW="128" oH="160" r="y"/>
+    <sprite n="jade_twins_fire_04" x="170" y="132" w="70" h="50" oX="7" oY="62" oW="128" oH="160"/>
+    <sprite n="jade_twins_fire_05" x="170" y="0" w="74" h="70" oX="6" oY="44" oW="128" oH="160"/>
+    <sprite n="jade_twins_fire_06" x="90" y="140" w="78" h="86" oX="2" oY="36" oW="128" oH="160" r="y"/>
+    <sprite n="jade_twins_fire_07" x="0" y="140" w="88" h="90" oX="2" oY="27" oW="128" oH="160" r="y"/>
+    <sprite n="jade_twins_fire_08" x="102" y="74" w="36" h="62" oX="30" oY="24" oW="128" oH="160" r="y"/>
+    <sprite n="jade_twins_fire_09" x="102" y="0" w="66" h="72" oX="3" oY="55" oW="128" oH="160" r="y"/>
+    <sprite n="jade_twins_fire_10" x="188" y="72" w="44" h="52" oX="1" oY="66" oW="128" oH="160" r="y"/>
+</TextureAtlas>

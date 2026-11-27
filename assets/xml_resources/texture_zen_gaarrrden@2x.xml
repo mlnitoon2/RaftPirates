@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:29d79f77ddcb933009a56af0b067c05f$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_zen_gaarrrden@2x.png" width="256" height="512">
+    <sprite n="zen_gaarrrden_01" x="2" y="304" w="80" h="126" oX="5" oY="1" oW="120" oH="148"/>
+    <sprite n="zen_gaarrrden_02" x="2" y="206" w="114" h="96" oX="5" oY="50" oW="120" oH="148"/>
+    <sprite n="zen_gaarrrden_03" x="118" y="292" w="106" h="92" oX="0" oY="47" oW="120" oH="148"/>
+    <sprite n="zen_gaarrrden_04" x="118" y="206" w="110" h="84" oX="2" oY="47" oW="120" oH="148"/>
+    <sprite n="zen_gaarrrden_ground_01" x="2" y="2" w="196" h="101" oX="0" oY="0" oW="256" oH="163"/>
+    <sprite n="zen_gaarrrden_ground_02" x="2" y="105" w="192" h="99" oX="64" oY="64" oW="256" oH="163"/>
+    <sprite n="zen_gaarrrden_rock_01" x="2" y="432" w="72" h="48" oX="11" oY="35" oW="84" oH="84"/>
+    <sprite n="zen_gaarrrden_rock_02" x="200" y="44" w="50" h="38" oX="30" oY="22" oW="84" oH="84"/>
+    <sprite n="zen_gaarrrden_rock_03" x="200" y="2" w="50" h="40" oX="29" oY="20" oW="84" oH="84"/>
+    <sprite n="zen_gaarrrden_rock_04" x="196" y="134" w="42" h="48" oX="1" oY="1" oW="84" oH="84"/>
+    <sprite n="zen_gaarrrden_rock_05" x="200" y="84" w="42" h="48" oX="4" oY="1" oW="84" oH="84"/>
+</TextureAtlas>

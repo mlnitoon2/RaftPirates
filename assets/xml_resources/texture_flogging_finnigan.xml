@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:fd26001a38de18ca6a74eb971167b45c$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_flogging_finnigan.png" width="256" height="128">
+    <sprite n="flogging_arm01" x="114" y="90" w="44" h="30" oX="0" oY="31" oW="112" oH="76" r="y"/>
+    <sprite n="flogging_arm02" x="68" y="90" w="44" h="30" oX="0" oY="23" oW="112" oH="76" r="y"/>
+    <sprite n="flogging_arm03" x="68" y="78" w="66" h="10" oX="46" oY="29" oW="112" oH="76"/>
+    <sprite n="flogging_arm04" x="2" y="104" w="60" h="18" oX="44" oY="30" oW="112" oH="76"/>
+    <sprite n="flogging_arm05" x="208" y="44" w="34" h="54" oX="24" oY="33" oW="112" oH="76" r="y"/>
+    <sprite n="flogging_cannon" x="2" y="2" w="64" h="100"/>
+    <sprite n="flogging_cannonballs" x="208" y="2" w="46" h="40"/>
+    <sprite n="flogging_legs01" x="208" y="100" w="38" h="26" oX="18" oY="44" oW="112" oH="76"/>
+    <sprite n="flogging_robot01" x="68" y="2" w="46" h="74" oX="12" oY="2" oW="112" oH="76"/>
+    <sprite n="flogging_robot02" x="116" y="2" w="46" h="72" oX="12" oY="4" oW="112" oH="76"/>
+    <sprite n="flogging_robot03" x="164" y="2" w="42" h="68" oX="16" oY="2" oW="112" oH="76"/>
+    <sprite n="flogging_robot04" x="164" y="72" w="42" h="54" oX="20" oY="0" oW="112" oH="76"/>
+</TextureAtlas>

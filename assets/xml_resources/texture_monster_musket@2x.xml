@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:da76452ef717c74224477f67cc8c418b$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_monster_musket@2x.png" width="512" height="512">
+    <sprite n="monster_back_01" x="356" y="235" w="136" h="106" oX="85" oY="131" oW="512" oH="512"/>
+    <sprite n="monster_back_02" x="245" y="358" w="120" h="104" oX="101" oY="128" oW="512" oH="512"/>
+    <sprite n="monster_back_03" x="411" y="1" w="100" h="96" oX="120" oY="133" oW="512" oH="512"/>
+    <sprite n="monster_back_05" x="112" y="412" w="62" h="86" oX="155" oY="86" oW="512" oH="512"/>
+    <sprite n="monster_back_06" x="140" y="259" w="104" h="152" oX="120" oY="81" oW="512" oH="512"/>
+    <sprite n="monster_back_07" x="373" y="126" w="138" h="108" oX="82" oY="137" oW="512" oH="512"/>
+    <sprite n="monster_barrel" x="366" y="342" w="116" h="106" oX="198" oY="120" oW="512" oH="512"/>
+    <sprite n="monster_base" x="1" y="410" w="110" h="68" oX="188" oY="165" oW="512" oH="512" r="y"/>
+    <sprite n="monster_front_01" x="1" y="1" w="214" h="128" oX="36" oY="227" oW="512" oH="512"/>
+    <sprite n="monster_front_02" x="216" y="1" w="194" h="124" oX="58" oY="223" oW="512" oH="512"/>
+    <sprite n="monster_front_03" x="216" y="126" w="156" h="106" oX="99" oY="217" oW="512" oH="512"/>
+    <sprite n="monster_front_05" x="245" y="233" w="110" h="124" oX="144" oY="166" oW="512" oH="512"/>
+    <sprite n="monster_front_06" x="1" y="259" w="138" h="150" oX="114" oY="158" oW="512" oH="512"/>
+    <sprite n="monster_front_07" x="1" y="130" w="202" h="128" oX="39" oY="225" oW="512" oH="512"/>
+</TextureAtlas>

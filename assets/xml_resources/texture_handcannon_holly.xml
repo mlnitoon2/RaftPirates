@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:c0c0d99c3304a94fec4e0e4a619db832$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_handcannon_holly.png" width="128" height="256">
+    <sprite n="hh_back_arm02" x="82" y="48" w="40" h="28" oX="6" oY="0" oW="46" oH="28"/>
+    <sprite n="hh_body" x="0" y="70" w="76" h="76" oX="0" oY="3" oW="80" oH="84"/>
+    <sprite n="hh_bullets_bk" x="0" y="232" w="32" h="22"/>
+    <sprite n="hh_bullets_fr" x="82" y="0" w="44" h="24"/>
+    <sprite n="hh_feet01" x="78" y="100" w="34" h="20" oX="30" oY="58" oW="80" oH="84"/>
+    <sprite n="hh_feet02" x="78" y="78" w="34" h="20" oX="30" oY="58" oW="80" oH="84"/>
+    <sprite n="hh_flash_01" x="78" y="122" w="32" h="32"/>
+    <sprite n="hh_flash_02" x="64" y="228" w="24" h="26" oX="8" oY="2" oW="32" oH="32"/>
+    <sprite n="hh_flash_03" x="34" y="232" w="28" h="16" oX="2" oY="9" oW="32" oH="32"/>
+    <sprite n="hh_front_arm" x="82" y="26" w="44" h="20" oX="1" oY="0" oW="46" oH="28"/>
+    <sprite n="hh_jump" x="0" y="148" w="62" h="82" oX="16" oY="1" oW="80" oH="84"/>
+    <sprite n="hh_shoot" x="64" y="156" w="60" h="70" oX="15" oY="0" oW="80" oH="84"/>
+    <sprite n="hh_squat" x="0" y="0" w="80" h="68" oX="0" oY="3" oW="80" oH="84"/>
+    <sprite n="robo_shadow" x="90" y="228" w="32" h="16"/>
+</TextureAtlas>

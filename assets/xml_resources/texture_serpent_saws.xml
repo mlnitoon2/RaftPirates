@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:21febb7f619dd3963c6ab8a698c64186$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_serpent_saws.png" width="128" height="256">
+    <sprite n="serpent_saws_back_01" x="76" y="0" w="46" h="46" oX="30" oY="36" oW="120" oH="128"/>
+    <sprite n="serpent_saws_back_saw" x="0" y="52" w="66" h="66" oX="44" oY="8" oW="120" oH="128"/>
+    <sprite n="serpent_saws_back_sh" x="0" y="120" w="62" h="28" oX="40" oY="52" oW="120" oH="128"/>
+    <sprite n="serpent_saws_back_teeth_01" x="44" y="196" w="38" h="34" oX="63" oY="5" oW="120" oH="128"/>
+    <sprite n="serpent_saws_back_teeth_02" x="0" y="150" w="36" h="40" oX="60" oY="3" oW="120" oH="128"/>
+    <sprite n="serpent_saws_back_teeth_03" x="0" y="196" w="42" h="56" oX="72" oY="9" oW="120" oH="128"/>
+    <sprite n="serpent_saws_back_teeth_04" x="64" y="130" w="44" h="64" oX="70" oY="5" oW="120" oH="128"/>
+    <sprite n="serpent_saws_front_01" x="0" y="0" w="74" h="50" oX="2" oY="58" oW="120" oH="128"/>
+    <sprite n="serpent_saws_front_02" x="44" y="150" w="12" h="10" oX="64" oY="73" oW="120" oH="128"/>
+    <sprite n="serpent_saws_front_saw" x="68" y="80" w="60" h="26" oX="50" oY="76" oW="120" oH="128"/>
+    <sprite n="serpent_saws_front_sh" x="68" y="108" w="58" h="20" oX="41" oY="102" oW="120" oH="128"/>
+    <sprite n="serpent_saws_front_teeth_01" x="84" y="196" w="42" h="32" oX="71" oY="74" oW="120" oH="128"/>
+    <sprite n="serpent_saws_front_teeth_02" x="76" y="48" w="46" h="30" oX="68" oY="73" oW="120" oH="128"/>
+    <sprite n="serpent_saws_front_teeth_03" x="44" y="232" w="34" h="8" oX="71" oY="99" oW="120" oH="128"/>
+    <sprite n="serpent_saws_front_teeth_04" x="84" y="230" w="36" h="10" oX="68" oY="97" oW="120" oH="128"/>
+</TextureAtlas>

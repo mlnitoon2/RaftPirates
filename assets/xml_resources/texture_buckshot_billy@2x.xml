@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:bf7395abfac487cc579e86ba92b8cf4e$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_buckshot_billy@2x.png" width="512" height="256">
+    <sprite n="bb_back_arm" x="416" y="132" w="88" h="36" oX="4" oY="1" oW="92" oH="56"/>
+    <sprite n="bb_back_arm02" x="68" y="164" w="80" h="54" oX="0" oY="1" oW="92" oH="56"/>
+    <sprite n="bb_body" x="120" y="2" w="150" h="130" oX="42" oY="46" oW="208" oH="208"/>
+    <sprite n="bb_bullets_bk" x="272" y="88" w="64" h="44"/>
+    <sprite n="bb_bullets_fr" x="416" y="40" w="88" h="46" oX="0" oY="1" oW="88" oH="48"/>
+    <sprite n="bb_feet01" x="338" y="88" w="68" h="42" oX="63" oY="130" oW="208" oH="208"/>
+    <sprite n="bb_feet02" x="416" y="170" w="68" h="40" oX="63" oY="132" oW="208" oH="208"/>
+    <sprite n="bb_flash_01" x="2" y="164" w="64" h="64"/>
+    <sprite n="bb_flash_02" x="272" y="2" w="46" h="48" oX="0" oY="7" oW="64" oH="64"/>
+    <sprite n="bb_flash_03" x="408" y="88" w="60" h="42" oX="4" oY="7" oW="64" oH="64"/>
+    <sprite n="bb_flash_04" x="320" y="2" w="32" h="48" oX="32" oY="6" oW="64" oH="64"/>
+    <sprite n="bb_front_arm" x="416" y="2" w="92" h="36" oX="0" oY="1" oW="92" oH="56"/>
+    <sprite n="bb_jump" x="2" y="2" w="116" h="160" oX="40" oY="17" oW="208" oH="208"/>
+    <sprite n="bb_shoot" x="150" y="134" w="102" h="110" oX="50" oY="25" oW="208" oH="208"/>
+    <sprite n="bb_squat" x="254" y="134" w="160" h="106" oX="32" oY="51" oW="208" oH="208"/>
+    <sprite n="robo_shadow" x="68" y="220" w="64" h="32"/>
+</TextureAtlas>

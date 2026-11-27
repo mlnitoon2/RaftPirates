@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:fffee9e84a65f4aa150607693b691ee2$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_chain_shot@2x.png" width="256" height="256">
+    <sprite n="chainshot_cannon_attach" x="126" y="42" w="14" h="12" oX="70" oY="60" oW="92" oH="100"/>
+    <sprite n="chainshot_cannon_ball" x="126" y="2" w="38" h="38" oX="1" oY="1" oW="40" oH="40"/>
+    <sprite n="chainshot_cannon_barrel01" x="104" y="114" w="64" h="44" oX="12" oY="20" oW="92" oH="100"/>
+    <sprite n="chainshot_cannon_barrel02" x="170" y="142" w="62" h="36" oX="14" oY="3" oW="92" oH="100"/>
+    <sprite n="chainshot_cannon_base" x="170" y="2" w="82" h="60" oX="4" oY="35" oW="92" oH="100"/>
+    <sprite n="chainshot_robot_arms01" x="66" y="64" w="108" h="48" oX="37" oY="92" oW="200" oH="200"/>
+    <sprite n="chainshot_robot_arms02" x="2" y="114" w="100" h="70" oX="53" oY="90" oW="200" oH="200"/>
+    <sprite n="chainshot_robot_arms03" x="2" y="186" w="80" h="66" oX="35" oY="99" oW="200" oH="200"/>
+    <sprite n="chainshot_robot_arms04" x="84" y="186" w="84" h="64" oX="37" oY="48" oW="200" oH="200"/>
+    <sprite n="chainshot_robot_body" x="2" y="2" w="62" h="110" oX="63" oY="28" oW="200" oH="200"/>
+    <sprite n="chainshot_robot_chain" x="66" y="2" w="58" h="50" oX="31" oY="99" oW="200" oH="200"/>
+    <sprite n="chainshot_robot_legs01" x="176" y="104" w="68" h="36" oX="61" oY="128" oW="200" oH="200"/>
+    <sprite n="chainshot_robot_shadow" x="176" y="64" w="76" h="38" oX="57" oY="134" oW="200" oH="200"/>
+</TextureAtlas>

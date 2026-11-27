@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:dce7582eb1ff62c915b1cfb999fad201$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/rafts/texture_busted_raft_enemy.png" width="256" height="256">
+    <sprite n="enemy_busted_raf_04" x="111" y="178" w="40" h="14" oX="27" oY="116" oW="288" oH="176"/>
+    <sprite n="enemy_busted_raft_01" x="0" y="0" w="256" h="132" oX="5" oY="32" oW="288" oH="176"/>
+    <sprite n="enemy_busted_raft_02" x="91" y="198" w="64" h="54" oX="99" oY="5" oW="288" oH="176"/>
+    <sprite n="enemy_busted_raft_03" x="201" y="172" w="50" h="30" oX="74" oY="42" oW="288" oH="176"/>
+    <sprite n="enemy_busted_raft_05" x="0" y="198" w="90" h="58" oX="48" oY="103" oW="288" oH="176"/>
+    <sprite n="enemy_busted_raft_06" x="156" y="221" w="44" h="32" oX="162" oY="27" oW="288" oH="176"/>
+    <sprite n="enemy_busted_raft_07" x="111" y="133" w="48" h="44" oX="134" oY="108" oW="288" oH="176"/>
+    <sprite n="enemy_busted_raft_08" x="201" y="203" w="48" h="22" oX="185" oY="105" oW="288" oH="176"/>
+    <sprite n="enemy_busted_raft_09" x="160" y="133" w="66" h="38" oX="198" oY="68" oW="288" oH="176"/>
+    <sprite n="enemy_busted_raft_10" x="201" y="226" w="44" h="20" oX="199" oY="65" oW="288" oH="176"/>
+    <sprite n="enemy_busted_raft_11" x="0" y="133" w="110" h="64" oX="12" oY="45" oW="288" oH="176"/>
+    <sprite n="enemy_busted_raft_12" x="156" y="178" w="44" h="42" oX="133" oY="48" oW="288" oH="176"/>
+    <sprite n="enemy_busted_raft_13" x="227" y="133" w="16" h="22" oX="176" oY="68" oW="288" oH="176"/>
+</TextureAtlas>
