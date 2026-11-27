@@ -15,6 +15,8 @@ namespace rp {
         sheet_ = ResourceSpriteSheet::Create(root / "xml_resources/rp_menu.xml");
         atlas_ = std::make_shared<Image>(loadAssetImage(root / sheet_.imagePath));
         font_ = ResourceSpriteFont::Create(root, "rp_font_title");
+        try{diceAnimation_=sys::res::ResourceAEAnim::Create(root/"xml_bin/anim_dice.bin",sys::res::AEFormat::RaftPirates2013);}catch(const std::exception&){}
+        try{vsAnimation_=sys::res::ResourceAEAnim::Create(root/"xml_bin/vs_screen_anim.bin",sys::res::AEFormat::RaftPirates2013);}catch(const std::exception&){}
         try {
             explosion_ = sys::res::ResourceAEAnim::Create(root / "xml_bin/anim_explosion.bin",
                                                           sys::res::AEFormat::RaftPirates2013);
@@ -223,7 +225,44 @@ namespace rp {
         submitText(gfx, std::to_string(hp) + " BP", x + 125, 32, .55f, 240);
     }
 
+    void GfxBattleScreen::renderBattleAnimations(Image& out,const BattleModeState& net,float dt){
+        if(net.dropdownType()!=lastDropdownType_){
+            lastDropdownType_=net.dropdownType();
+            if(lastDropdownType_>=0){
+                MsgBattleInfoDropdown msg;msg.type=lastDropdownType_;
+                dropdown_=std::make_unique<GfxBattleInfoDropDown>(&ownView_,msg);
+            }else if(dropdown_)dropdown_->Hide();
+        }
+        GfxManager gfx;
+        if(dropdown_){dropdown_->aTickMethodThatsNotCalledTick(dt);dropdown_->submit(gfx);}
+        if(diceAnimation_&&net.animationRemaining()>0){
+            const float elapsed=2.5f-net.animationRemaining();
+            const auto& rolls=net.battleRolls();
+            for(unsigned i=0;i<rolls.size();++i){
+                const auto& row=rolls[i];
+                for(unsigned side=0;side<2;++side){
+                    const bool attack=side==0;
+                    const bool own=(attack==net.attacker());
+                    const int value=attack?row.attack:row.defense;
+                    const bool won=attack?row.attack>row.defense:row.defense>row.attack;
+                    const bool win=elapsed>=1.25f&&won;
+                    std::string name=std::string("dice_")+(own?"green":"red")+(win?"_win00":"_roll00")+std::to_string(value);
+                    const auto* comp=diceAnimation_->find(name);if(!comp)continue;
+                    const float t=std::clamp(win?elapsed-1.25f:elapsed,0.f,comp->duration());
+                    const float x=(own?100.f:420.f)+float(i%4)*45.f,y=90.f+float(i/4)*48.f;
+                    effects_.submit(gfx,*diceAnimation_,*comp,t,
+                        Matrix::translation(x-comp->width*.3f,y-comp->height*.3f)*Matrix::scale(.6f,.6f),1100);
+                }
+            }
+        }
+        if(vsAnimation_&&net.introRemaining()>0){
+            if(auto* c=vsAnimation_->find("vs intro");c&&c->width>0&&c->height>0)
+                effects_.submit(gfx,*vsAnimation_,*c,std::clamp(3.f-net.introRemaining(),0.f,c->duration()),Matrix::scale(640.f/c->width,400.f/c->height),1200);
+        }
+        gfx.RenderScreen(out);
+    }
     Image GfxBattleScreen::Render(const Game& game, float time) {
+        const float dt=lastTime_>=0?std::clamp(time-lastTime_,0.f,.25f):0;
         prepare(game);
         updateBattleDamage(game, time);
         const auto& net = game.onlineBattle;
@@ -301,6 +340,7 @@ namespace rp {
                            point.y + hit.yOffset(), .85f, 130);
             }
         gfx.RenderScreen(out);
+        renderBattleAnimations(out,net,dt);
         loadMenu(game);
         if (menu_) {
             GfxManager ui;
@@ -317,6 +357,7 @@ namespace rp {
                            : net.phase() == Phase::Encounter   ? "attack_confirm_dialog"
                            : net.phase() == Phase::Positioning ? "battle_positioning_hud"
                            : net.phase() == Phase::Over        ? "battle_over_popup"
+                           : net.swapPopupVisible()            ? "swap_stance_popup"
                                                                : "battle_hud";
         if (!menu_ || menuName_ != name) {
             menuName_ = name;
@@ -353,7 +394,7 @@ namespace rp {
                     auto& t = m.node(touch);
                     t.set("width", double(std::max(1.f, dice.bounds.w)));
                     t.set("height", double(std::max(1.f, dice.bounds.h)));
-                    t.set("enabled", net.readyForDice() || !net.waiting());
+                    t.set("enabled", net.readyForDice() || net.shouldSendClientReady());
                 }
             }
         } else if (name == "battle_positioning_hud") {
@@ -396,6 +437,10 @@ namespace rp {
                 auto name = menu_->node(owner).name;
                 if (menuName_ == "attack_confirm_dialog" && (name == "Yes" || name == "No"))
                     return net.encounterResponse(name == "Yes");
+                if (menuName_ == "swap_stance_popup" && (name == "Yes" || name == "No")) {
+                    if(name=="Yes"){net.gotMsgBattleConfirmSwapStance();return net.SendClientReady(true);}
+                    net.cancelSwapPopup();return net.retreat();
+                }
                 if (menuName_ == "retreat_confirm" && (name == "Yes" || name == "No")) {
                     retreatConfirm_ = false;
                     menu_.reset();
@@ -417,7 +462,7 @@ namespace rp {
                 return {};
             }
         }
-        if (net.phase() == Phase::Positioning && y >= 60 && y < 310) {
+        if (net.phase() == Phase::Positioning && !net.hudBlocked("positioningHud") && y >= 60 && y < 310) {
             if (net.attacker() && !net.positioned()) {
                 auto p = ownView_.ScreenToWorld({x, y});
                 auto anchor = game.mainRaft();

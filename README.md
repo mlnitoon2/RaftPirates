@@ -1,8 +1,8 @@
 # Raft Pirates
 
-[![RaftPirates provisional source method coverage: 99.08%](docs/coverage.svg)](docs/REMAINING.md)
+[![RaftPirates provisional source method coverage: 100.00%](docs/coverage.svg)](docs/REMAINING.md)
 
-**Pass 49 source inventory: 1180/1191 (99.08%)** original method names addressed; 11 still listed as missing. Includes partial adapters and already-present names reviewed since the last compiled measurement. **Last measured host archive: 503/1191 (42.23%, Pass 33).** Neither figure establishes original ABI or gameplay parity. [Per-class matching status](docs/MATCHING_STATUS.md). [Remaining methods and priorities](docs/REMAINING.md). [Coverage report](docs/COVERAGE.md).
+**Pass 49 source inventory: 1191/1191 (100.00%)** original method names addressed; 0 still listed as missing. Includes partial adapters and already-present names reviewed since the last compiled measurement. **Last measured host archive: 503/1191 (42.23%, Pass 33).** Neither figure establishes original ABI or gameplay parity. [Per-class matching status](docs/MATCHING_STATUS.md). [Remaining methods and priorities](docs/REMAINING.md). [Coverage report](docs/COVERAGE.md).
 
 An unofficial C++ source reconstruction of Raft Pirates for research and game preservation, built on [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy). The project is not the recovered original source and is not a complete or binary-equivalent replacement. Original Java classes and resources are supplied by a locally available, compatible APK; they are not distributed by this repository.
 

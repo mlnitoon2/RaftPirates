@@ -474,6 +474,8 @@ namespace sys::platform::game {
             if (rt.view && !rt.login) {
                 rt.game.tick(dt);
                 rt.view->tick(dt);
+                if(rt.connected&&rt.game.onlineBattle.shouldSendClientReady())
+                    if(auto ready=rt.game.onlineBattle.SendClientReady())send(platform,*ready);
                 if(!rt.title && rt.game.ready){
                     const int mode=rt.game.onlineBattle.phase()!=rp::BattleModeState::Phase::Idle?2:
                                    rt.game.discovery?1:0;
@@ -485,6 +487,9 @@ namespace sys::platform::game {
                                 rt.game.GotTransitionMsgDone();
                                 rt.game.GotMsgStartTransition(false);
                                 rt.transition->hide();
+                            }else{
+                                rp::MsgTransitionDone msg;msg.shown=false;
+                                rt.game.onlineBattle.gotMsgTransitionDone(msg);
                             }
                         };
                     }

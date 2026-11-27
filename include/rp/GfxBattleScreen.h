@@ -4,6 +4,7 @@
 #include "rp/ExplosionFXSprite.h"
 #include "rp/BattleArrowSprite.h"
 #include "rp/AccessorySprite.h"
+#include "rp/GfxBattleInfoDropDown.h"
 #include "sys/gfx/ResourceSpriteFont.h"
 #include "sys/menu_redux/MenuRuntime.h"
 #include "sys/localization/LocalizationManager.h"
@@ -55,7 +56,10 @@ namespace rp {
         std::vector<DamageIndicatorSprite> damage_;
         std::map<std::pair<bool,int>,ExplosionFXSprite> explosions_;
         BattleArrowSprite arrow_;
-        std::optional<sys::res::ResourceAEAnim> explosion_;
+        std::optional<sys::res::ResourceAEAnim> explosion_,diceAnimation_,vsAnimation_;
+        std::unique_ptr<GfxBattleInfoDropDown> dropdown_;
+        int lastDropdownType_=-1;
+        void renderBattleAnimations(sys::gfx::Image&,const BattleModeState&,float dt);
         sys::gfx::AnimationRenderer effects_;
         float lastTime_ = -1, transition_ = 0;
         bool exiting_ = false;

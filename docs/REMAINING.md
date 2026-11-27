@@ -163,11 +163,10 @@ Original ELF SHA-256 29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f6fdd
 
 Portable state adapters are not original signatures/ownership. Original salvage/group move reducer, full native quest dispatch, platform notification registration, exact view transitions, persistent global state and minigame bonus assignment still need work. Some UI callbacks require host wiring; no new measured build or gameplay result. Source filenames follow class names, not recovered compiler translation-unit names (ELF does not expose those).
 
+Pass 49 BattleModeState: rechecked all eleven names against native ELF. PlayBattleAnimations 0x3895e8 reads results, attack_roll, defense_roll, target_raft, 2.5 s timer (0x3899a8); tick uses original dice_%s_roll%03d/dice_%s_win%03d and xml_bin/anim_dice.bin. APK contains the red/green 001–006 compositions. SwapPopup 0x38906c validates sync_counter before increment, hides dropdown and calls SwapStance 0x388e5c; host retains own/enemy IDs instead of native attack/defend pointer swaps. ToBattleView 0x388164 and ToPositioningView 0x388930 use BATTLE_SCREEN, OCEAN, FOOTPRINTS, RAFT_OBJECTS and BATTLE_GRID layers. Dropdown 0x384884/InfoRequest 0x3849fc, highlight 0x38b394 (dice_results/unpause_dice_results), quest read 0x382948, toggle 0x383280 (positioningHud/bossBattleWon), transition 0x382884 (vs intro, 3 s). The host uses checked server results, animation gates, original menu and asset names, and typed state snapshots. Native exact dice motion, target component explosion timing, rank UI, auto-move, tutorial dispatch and battle audio remain incomplete. Host test includes timer and readiness guard; not yet executed.
+
 ## Remaining method names by class (provisional source review)
 
-677 names from the Pass 33 inventory now have named source implementations through Pass 49 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+688 names from the Pass 33 inventory now have named source implementations through Pass 49 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
-### `rp::BattleModeState` (11)
-
-`PlayBattleAnimations`, `SwapPopup`, `SwapStance`, `ToBattleView`, `ToPositioningView`, `gotMsgBattleInfoDropdown`, `gotMsgBattleInfoRequest`, `gotMsgHighlightHudItem`, `gotMsgQuestRead`, `gotMsgToggleBlockHudItem`, `gotMsgTransitionDone`
-
+All 1,191 original qualified names in the provisional Raft Pirates inventory are now addressed. This does not mean the original executable, overloads, ABI or gameplay have been recreated. See remaining behavior notes above.
