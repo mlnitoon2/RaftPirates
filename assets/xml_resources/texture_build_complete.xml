@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:ab5cf771ed79a22c6c892f8f7a46c018$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/fx/texture_build_complete.png" width="256" height="256">
+    <sprite n="build_complete_blue_01" x="216" y="0" w="26" h="30" oX="23" oY="17" oW="72" oH="64"/>
+    <sprite n="build_complete_blue_02" x="140" y="48" w="38" h="34" oX="19" oY="13" oW="72" oH="64"/>
+    <sprite n="build_complete_blue_03" x="80" y="60" w="58" h="46" oX="9" oY="8" oW="72" oH="64"/>
+    <sprite n="build_complete_blue_04" x="14" y="78" w="64" h="58" oX="7" oY="1" oW="72" oH="64"/>
+    <sprite n="build_complete_green_01" x="186" y="0" w="28" h="34" oX="22" oY="15" oW="72" oH="64"/>
+    <sprite n="build_complete_green_02" x="140" y="84" w="38" h="34" oX="19" oY="13" oW="72" oH="64"/>
+    <sprite n="build_complete_green_03" x="82" y="138" w="58" h="46" oX="9" oY="8" oW="72" oH="64"/>
+    <sprite n="build_complete_green_04" x="16" y="138" w="64" h="58" oX="7" oY="1" oW="72" oH="64"/>
+    <sprite n="build_complete_red_01" x="106" y="108" w="22" h="28" oX="25" oY="18" oW="72" oH="64"/>
+    <sprite n="build_complete_red_02" x="142" y="120" w="38" h="34" oX="19" oY="13" oW="72" oH="64"/>
+    <sprite n="build_complete_red_03" x="90" y="186" w="58" h="46" oX="9" oY="8" oW="72" oH="64"/>
+    <sprite n="build_complete_red_04" x="24" y="198" w="64" h="58" oX="7" oY="1" oW="72" oH="64"/>
+    <sprite n="build_complete_string_01" x="0" y="230" w="22" h="16" oX="0" oY="70" oW="22" oH="88"/>
+    <sprite n="build_complete_string_02" x="216" y="32" w="20" h="32" oX="1" oY="52" oW="22" oH="88"/>
+    <sprite n="build_complete_string_03" x="0" y="166" w="14" h="62" oX="4" oY="21" oW="22" oH="88"/>
+    <sprite n="build_complete_string_04" x="0" y="0" w="4" h="84" oX="8" oY="0" oW="22" oH="88"/>
+    <sprite n="build_complete_string_05" x="6" y="0" w="12" h="76" oX="6" oY="7" oW="22" oH="88"/>
+    <sprite n="build_complete_string_06" x="0" y="86" w="12" h="78" oX="5" oY="5" oW="22" oH="88"/>
+    <sprite n="build_complete_yellow_01" x="80" y="108" w="24" h="28" oX="24" oY="18" oW="72" oH="64"/>
+    <sprite n="build_complete_yellow_02" x="146" y="0" w="38" h="34" oX="19" oY="13" oW="72" oH="64"/>
+    <sprite n="build_complete_yellow_03" x="86" y="0" w="58" h="46" oX="9" oY="8" oW="72" oH="64"/>
+    <sprite n="build_complete_yellow_04" x="20" y="0" w="64" h="58" oX="7" oY="1" oW="72" oH="64"/>
+</TextureAtlas>

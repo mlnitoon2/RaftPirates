@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:121d7d341a9cf06c4ea2332dce81c269$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_mow_the_man_down.png" width="128" height="512">
+    <sprite n="fence_bottom" x="88" y="278" w="32" h="32"/>
+    <sprite n="fence_top" x="88" y="311" w="32" h="30" oX="0" oY="1" oW="32" oH="32"/>
+    <sprite n="mow_grass01" x="0" y="191" w="64" h="34" oX="0" oY="6" oW="64" oH="40"/>
+    <sprite n="mow_grass02" x="0" y="119" w="64" h="36" oX="0" oY="4" oW="64" oH="40"/>
+    <sprite n="mow_grass03" x="0" y="41" w="64" h="40"/>
+    <sprite n="mow_grass04" x="0" y="0" w="64" h="40"/>
+    <sprite n="mow_grass05" x="0" y="156" w="64" h="34" oX="0" oY="6" oW="64" oH="40"/>
+    <sprite n="mow_grass06" x="0" y="82" w="64" h="36" oX="0" oY="4" oW="64" oH="40"/>
+    <sprite n="mow_mover00" x="88" y="342" w="22" h="16" oX="12" oY="53" oW="80" oH="84"/>
+    <sprite n="mow_mover01" x="65" y="102" w="60" h="48" oX="1" oY="32" oW="80" oH="84"/>
+    <sprite n="mow_mover02" x="65" y="0" w="62" h="48" oX="0" oY="31" oW="80" oH="84"/>
+    <sprite n="mow_mover03" x="65" y="49" w="60" h="52" oX="1" oY="31" oW="80" oH="84"/>
+    <sprite n="mow_mover04" x="65" y="151" w="46" h="30" oX="1" oY="41" oW="80" oH="84"/>
+    <sprite n="mow_mover05" x="65" y="182" w="46" h="28" oX="1" oY="42" oW="80" oH="84"/>
+    <sprite n="mow_robot00" x="86" y="428" w="42" h="64" oX="38" oY="0" oW="80" oH="84"/>
+    <sprite n="mow_robot01" x="86" y="359" w="42" h="68" oX="38" oY="1" oW="80" oH="84"/>
+    <sprite n="mow_robot02" x="0" y="293" w="42" h="70" oX="38" oY="0" oW="80" oH="84"/>
+    <sprite n="mow_robot03" x="0" y="364" w="42" h="68" oX="38" oY="1" oW="80" oH="84"/>
+    <sprite n="mow_robot04" x="45" y="278" w="42" h="70" oX="38" oY="0" oW="80" oH="84"/>
+    <sprite n="mow_robot05" x="0" y="226" w="44" h="66" oX="29" oY="17" oW="80" oH="84"/>
+    <sprite n="mow_robot06" x="65" y="211" w="44" h="66" oX="29" oY="17" oW="80" oH="84"/>
+    <sprite n="mow_robot07" x="0" y="433" w="42" h="66" oX="30" oY="18" oW="80" oH="84"/>
+    <sprite n="mow_robot08" x="43" y="418" w="42" h="66" oX="30" oY="17" oW="80" oH="84"/>
+    <sprite n="mow_robot09" x="43" y="349" w="42" h="68" oX="38" oY="0" oW="80" oH="84"/>
+</TextureAtlas>
