@@ -1,0 +1,35 @@
+<template>
+	<template type="template_nineslice_button" name="QElement">
+		<templateVar name="$text" equals="QUEST" />
+		
+		<templateVar name="$topHeight" equals="6" />
+		<templateVar name="$bottomHeight" equals="6" />
+		<templateVar name="$leftWidth" equals="6" />
+		<templateVar name="$rightWidth" equals="6" />
+		
+		<templateVar name="$width" equals="160" />
+		<templateVar name="$height" equals="24" />
+		
+		<templateVar name="$imageUp" equals="'gfx/menu/scale_box'" />
+		<templateVar name="$imageDown" equals="'gfx/menu/scale_box_over'" />
+		<!--<templateVar name="$imageDisabled" equals="QUEST" />-->
+		
+		<templateVar name="$layer" equals="'HUD'" />
+		
+		<position relativeTo="PARENT" vAnchor="TOP" hAnchor="LEFT" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="0" priority="0" />
+		
+		<touchComponent name="Touch">
+			<size dependentOnElement="element:name()"/>
+
+			<!-- Need an event here that will pop the dialog associated with the quest -->
+			<event name="onTouchUp" params="component, element, x, y, relX, relY">
+				if ( component("downInside"):GetInt() == 1 ) then
+					game.startDialog( element("quest_description"):GetString() )
+				end
+
+				onTouchUp( component, element, x, y, relX, relY )
+			</event>
+		</touchComponent>
+	</template>
+</template>

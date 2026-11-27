@@ -1,0 +1,47 @@
+<menu>
+	<position relativeTo="element:parent()" vAnchor="VCENTER" hAnchor="HCENTER" />
+	<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+	<event name="onInit" params="element">
+		element("totalTime"):SetFloat(0.0)
+		element("killThis"):SetInt(0)
+	</event>
+	
+	<event name="onTick" params="element, time" >
+		
+		if element["DamageText"]["Text"]("text"):GetString() ~= "" and element("killThis"):GetInt() == 0 then
+			if element("totalTime"):GetFloat()==0.0 then
+				print "start Number"
+				element("origDamageY"):SetInt(element["DamageText"]["Text"]("yOffset"):GetInt())
+				element["DamageText"]["Text"]("visible"):SetInt(1)
+			end
+			
+			element("totalTime"):SetFloat(element("totalTime"):GetFloat() + time)
+			
+			element["DamageText"]["Text"]("yOffset"):SetInt(element("origDamageY"):GetInt()-(20*element("totalTime"):GetFloat()))
+		
+			if element("totalTime"):GetFloat() &gt; 1.0 then
+				element("killThis"):SetInt(1)
+			end
+		end
+	</event>
+	
+	<element name="DamageText">
+		<position relativeTo="SCREEN" vAnchor="TOP" hAnchor="LEFT" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="0" priority="0" />
+		<textComponent name="Text" >
+			
+			<event name="onInit" params="component, element" >
+				component("font"):Set("rp_font_title")
+				component("size"):Set(1.0)
+				component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+				
+				component("red"):SetFloat(1.0)
+				component("green"):SetFloat(0.0)
+				component("blue"):SetFloat(0.3)
+				
+				component("layer"):SetString("HUD");
+				component("visible"):SetInt(0)
+			</event>
+		</textComponent>				
+	</element>
+</menu>
