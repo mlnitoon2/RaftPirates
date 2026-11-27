@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:32b4a510ba37c7bdd87bad79e15705db$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_boss.png" width="512" height="512">
+    <sprite n="boss_battery" x="276" y="266" w="46" h="44" oX="0" oY="0" oW="46" oH="46"/>
+    <sprite n="boss_battery_sh" x="102" y="314" w="46" h="22" oX="0" oY="21" oW="46" oH="46"/>
+    <sprite n="boss_bazooka" x="108" y="196" w="36" h="82"/>
+    <sprite n="boss_cannon" x="106" y="486" w="20" h="20"/>
+    <sprite n="boss_cannon_sh" x="174" y="406" w="16" h="6" oX="2" oY="14" oW="20" oH="20"/>
+    <sprite n="boss_corner" x="210" y="274" w="64" h="48"/>
+    <sprite n="boss_crate_01" x="106" y="338" w="66" h="74" oX="0" oY="2" oW="66" oH="76"/>
+    <sprite n="boss_crate_02" x="146" y="196" w="66" h="76"/>
+    <sprite n="boss_crate_03" x="184" y="414" w="66" h="66" oX="0" oY="10" oW="66" oH="76"/>
+    <sprite n="boss_crate_sh" x="108" y="280" w="66" h="30" oX="0" oY="46" oW="66" oH="76"/>
+    <sprite n="boss_deadrobot" x="62" y="458" w="42" h="50" oX="0" oY="3" oW="44" oH="54"/>
+    <sprite n="boss_deadrobot_sh" x="150" y="312" w="42" h="20" oX="2" oY="33" oW="44" oH="54"/>
+    <sprite n="boss_lady" x="50" y="196" w="56" h="116"/>
+    <sprite n="boss_lawnmower" x="2" y="460" w="58" h="50"/>
+    <sprite n="boss_lawnmower_sh" x="50" y="314" w="50" h="24" oX="7" oY="26" oW="58" oH="50"/>
+    <sprite n="boss_pipestack" x="2" y="196" w="46" h="142"/>
+    <sprite n="boss_pirate_01" x="174" y="334" w="76" h="70" oX="7" oY="50" oW="104" oH="136"/>
+    <sprite n="boss_pirate_02" x="214" y="196" w="76" h="68" oX="7" oY="52" oW="104" oH="136"/>
+    <sprite n="boss_pirate_03" x="106" y="414" w="76" h="70" oX="7" oY="50" oW="104" oH="136"/>
+    <sprite n="boss_pirate_04" x="56" y="340" w="48" h="116" oX="32" oY="4" oW="104" oH="136"/>
+    <sprite n="boss_pirate_05" x="2" y="340" w="52" h="118" oX="28" oY="2" oW="104" oH="136"/>
+    <sprite n="boss_skull" x="2" y="2" w="211" h="192"/>
+    <sprite n="boss_tankglow" x="176" y="274" w="32" h="36" oX="1" oY="0" oW="34" oH="38"/>
+    <sprite n="boss_wheel" x="252" y="324" w="38" h="46"/>
+</TextureAtlas>
