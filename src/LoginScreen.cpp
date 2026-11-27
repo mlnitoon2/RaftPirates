@@ -211,6 +211,18 @@ namespace rp {
         refresh();
     }
 
+    void LoginScreen::returnToMenu() {
+        busy_ = finishing_ = finished_ = false;
+        next_.clear();
+        password_.clear();
+        confirmation_.clear();
+        if (auto id = loading_.find(loading_.root(), "Anim")) {
+            loading_.node(id).set("animation", std::string("idle 2"));
+            loading_.node(id).set("loop", true);
+        }
+        show("login_menu");
+    }
+
     void LoginScreen::clearPassword() {
         password_.clear();
         confirmation_.clear();

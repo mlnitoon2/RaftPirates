@@ -114,7 +114,7 @@ namespace rp {
                 }
             }
         }
-        hud_->setSelectedActions(actions, game.numOfMaterialPossessed(10));
+        hud_->setSelectedActions(actions, game.numOfMaterialPossessed(9));
     }
 
     void PortView::updateScroll() {

@@ -244,6 +244,7 @@ namespace {
         if (message.empty()) {
             // A new login screen discards stale loading, input and modal state.
             rt.login = std::make_unique<rp::LoginScreen>(rt.assets);
+            rt.login->returnToMenu();
             rt.entry = rp::LoginScreen::Action::None;
             rt.status.clear();
         } else {
@@ -1108,8 +1109,15 @@ namespace sys::platform::game {
                 return;
             }
             rt.status = rt.game.status;
-            if (command == "cheat_result" && !data.getBool("result"))
-                platform.showPopup(data.getString("message", "Command failed."));
+            if (command == "cheat_result") {
+                if (data.getBool("result") && data.getBool("logout") && rt.admin) {
+                    forgetSession();
+                    loginError(platform, "");
+                    return;
+                }
+                if (!data.getBool("result"))
+                    platform.showPopup(data.getString("message", "Command failed."));
+            }
             if (command == "gs_error" && rt.view)
                 rt.view->purchaseCompleted(rt.game, false, 0);
             if (command == "lib_go_data") {

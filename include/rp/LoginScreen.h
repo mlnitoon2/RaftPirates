@@ -37,6 +37,7 @@ namespace rp {
         }
 
         void clearPassword();
+        void returnToMenu();
         void registrationComplete();
         void busy(bool);
         void finish();

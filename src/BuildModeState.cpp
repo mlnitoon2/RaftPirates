@@ -440,7 +440,7 @@ namespace rp {
     std::optional<sfs::Message> BuildModeState::UseClockSelected() const {
         auto object = dynamic_cast<const RaftComponent*>(selected());
         if (!game_.ready || !object || !object->Building() || object->GetRemainingTime() <= 0 ||
-            !game_.hasMaterial(10, 1))
+            !game_.hasMaterial(9, 1))
             return {};
         sfs::SFSObjectWrapper p;
         p.put("object_id", int32_t(id_));
