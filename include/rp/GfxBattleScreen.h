@@ -1,6 +1,8 @@
 #pragma once
 #include "rp/BattlePlacementScreen.h"
 #include "sys/gfx/ResourceSpriteFont.h"
+#include "sys/menu_redux/MenuRuntime.h"
+#include "sys/localization/LocalizationManager.h"
 
 namespace rp {
     class GfxBattleScreen {
@@ -24,6 +26,12 @@ namespace rp {
                          int selected, float time) const;
         void meter(sys::gfx::GfxManager& gfx, const Player& player, int x, bool own) const;
         int pick(const Player& player, const OceanView& view, float x, float y, int left) const;
+        void loadMenu(const Game& game);
+        std::filesystem::path root_;
+        sys::localization::LocalizationManager strings_;
+        std::unique_ptr<sys::menu_redux::MenuRuntime> menu_;
+        std::string menuName_;
+        bool positionChosen_ = false;
         OceanView ownView_, enemyView_;
         BattlePlacementScreen placement_;
         sys::gfx::ResourceSpriteSheet sheet_;

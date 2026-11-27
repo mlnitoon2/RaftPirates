@@ -29,6 +29,8 @@ namespace {
         std::unique_ptr<rp::PortView> view;
         std::unique_ptr<rp::SplashScreen> splash;
         std::unique_ptr<rp::TitleScreen> title;
+        std::unique_ptr<rp::LoadingManager> startupResources;
+        bool startupFinished = false;
         std::filesystem::path archivePath, assets, savedPath;
         std::string savedSession, pendingAdminNotice;
         bool resumeAttempt = false, titlePresented = false, oceanReceived = false;
@@ -216,9 +218,12 @@ namespace {
         }
         if (!rt.initialized)
             return;
-        // Connection events before Set Sail must never replace the title.
-        if (rt.title || rt.splash)
+        // The title is reached only after authentication. A lost connection there
+        // must return to login, not leave an apparently playable title screen.
+        if (rt.splash)
             return;
+        rt.title.reset();
+        rt.titlePresented = rt.titleTouchArmed = false;
         if (!rt.login) {
             if (rt.assets.empty())
                 return;
@@ -371,8 +376,13 @@ namespace sys::platform::game {
             rt.user.clear();
             rt.entry = rp::LoginScreen::Action::None;
             rt.endingLoading = false;
-            // Build the title before declaring initialization successful. The game view is lazy.
-            rt.title = std::make_unique<rp::TitleScreen>(root);
+            // Original loading_intro.xml authenticates before title.xml is presented.
+            rt.startupFinished = false;
+            rt.startupResources = std::make_unique<rp::LoadingManager>(root);
+            if (rt.startupResources->resourceExists("xml_bin/game_manifest.bin", "")) {
+                rt.startupResources->addManifest("xml_bin/game_manifest.bin");
+                rt.startupResources->start();
+            }
             try {
                 rt.splash = std::make_unique<rp::SplashScreen>(root);
             } catch (const std::exception& ex) {
@@ -383,7 +393,7 @@ namespace sys::platform::game {
             rt.initialized = true;
             rt.status.clear();
             rt.last = Clock::now();
-            platform.log("Raft Pirates Pass 29 startup: title initialized; property endpoint " +
+            platform.log("Raft Pirates Pass 30 startup: loading initialized; property endpoint " +
                          std::string(rt.authEndpoint.empty() ? "missing" : "configured"));
         });
     }
@@ -423,6 +433,8 @@ namespace sys::platform::game {
             rt.view.reset();
             rt.lastImage = {};
             rt.initialized = false;
+            rt.startupResources.reset();
+            rt.startupFinished = false;
             rt.admin = false;
             rt.entry = rp::LoginScreen::Action::None;
         });
@@ -454,15 +466,30 @@ namespace sys::platform::game {
                 rt.splash.reset();
                 rt.lastImage = {};
             }
-            if (rt.title) {
-                music(platform, "audio/music/theme.mp3");
-                platform.present(rt.title->render(), rt.width, rt.height);
-                if (!rt.titlePresented) {
-                    rt.titlePresented = true;
-                    platform.log("Raft Pirates startup: title presented");
-                    return;
+            if (!rt.startupFinished) {
+                rt.startupFinished = true;
+                rt.login = std::make_unique<rp::LoginScreen>(rt.assets);
+                if (loadSession()) {
+                    rt.login->busy(true);
+                    rt.resumeAttempt = true;
+                    rt.connecting = true;
+                    rt.game.DoConnect();
+                    rt.connectStarted = now;
+                    platform.log("Resuming saved login session during startup");
+                    try {
+                        platform.connect(rt.host, rt.port);
+                    } catch (...) {
+                        loginError(platform, "Please log in again.");
+                    }
                 }
-                return;
+            }
+            if (rt.startupResources && rt.startupResources->running()) {
+                rt.startupResources->update(dt);
+                if (!rt.startupResources->running()) {
+                    for (const auto& error : rt.startupResources->errors())
+                        platform.log("Resource: " + error);
+                    platform.log("Initial resource manifest processed");
+                }
             }
             pollAuth(platform);
             if (rt.connecting && rt.loginSent) {
@@ -506,7 +533,8 @@ namespace sys::platform::game {
                 loginError(platform, "Unable to connect. Please try again.");
             }
             if (rt.login) {
-                if (rt.connected && rt.game.ready && rt.oceanReceived && !rt.endingLoading) {
+                if (rt.connected && rt.game.ready && rt.oceanReceived && !rt.endingLoading &&
+                    (!rt.startupResources || !rt.startupResources->running())) {
                     try {
                         rt.view = std::make_unique<rp::PortView>(rt.assets);
                         rt.lastImage = rt.view->render(rt.game, rt.time, rt.status);
@@ -526,7 +554,7 @@ namespace sys::platform::game {
                     rt.savedSession.clear();
                     rt.resumeAttempt = false;
                     rt.login->finish();
-                    platform.log("Player ready: starting loading outro");
+                    platform.log("Player and ocean ready: starting loading outro before title");
                 }
                 if (!rt.endingLoading || now - rt.outroStarted < std::chrono::seconds(5)) {
                     try {
@@ -547,7 +575,15 @@ namespace sys::platform::game {
                     return;
                 rt.login.reset();
                 rt.lastFrame = now;
-                platform.log("Loading outro complete: entering gameplay");
+                rt.title = std::make_unique<rp::TitleScreen>(rt.assets, rt.user);
+                rt.titlePresented = rt.titleTouchArmed = false;
+                platform.log("Loading complete: presenting title");
+            }
+            if (rt.title) {
+                music(platform, "audio/music/theme.mp3");
+                platform.present(rt.title->render(), rt.width, rt.height);
+                rt.titlePresented = true;
+                return;
             }
             if (!rt.connected || !rt.game.ready || !rt.view)
                 return;
@@ -620,24 +656,12 @@ namespace sys::platform::game {
                 rt.titleTouchArmed = false;
                 rt.title->touchUp(px, py);
                 if (rt.title->started()) {
-                    platform.log("Pass 29: Set Sail pressed; leaving title");
+                    if (!rt.connected || !rt.game.ready || !rt.oceanReceived || !rt.view)
+                        return;
+                    platform.log("Set Sail pressed; entering loaded gameplay");
                     effect(platform, "audio/sfx/menu_button_down.wav");
-                    rt.login = std::make_unique<rp::LoginScreen>(rt.assets);
                     rt.title.reset();
                     rt.lastImage = {};
-                    if (loadSession()) {
-                        rt.login->busy(true);
-                        rt.resumeAttempt = true;
-                        rt.connecting = true;
-                        rt.game.DoConnect();
-                        rt.connectStarted = Clock::now();
-                        platform.log("Resuming saved login session");
-                        try {
-                            platform.connect(rt.host, rt.port);
-                        } catch (...) {
-                            loginError(platform, "Please log in again.");
-                        }
-                    }
                 }
                 return;
             }

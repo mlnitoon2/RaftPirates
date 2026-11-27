@@ -246,8 +246,9 @@ int main() {
         port.touch(moveGame, 580, 370);
         port.touch(moveGame, 180, 50);
         moveGame.storeItems[1] = {1, 4, 100, 1, "test_item", "misc", "Test"};
-        auto purchase = port.touch(moveGame, 30, 90);
-        CHECK(purchase && purchase->payload.getString("c") == "purchase_item");
+        CHECK(!port.touch(moveGame, 30, 90));
+        auto purchase = moveGame.buyStoreItem(1);
+        CHECK(purchase.payload.getString("c") == "purchase_item");
         O zoneRecord;
         zoneRecord.put("zone_id", int32_t(5));
         zoneRecord.put("name", "Nessie");

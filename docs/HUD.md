@@ -6,8 +6,8 @@ The original HUD scripts call game-specific Lua/SWIG functions that have not bee
 
 | Original element | Native adapter behavior |
 |---|---|
-| QuestMenu | Sends `gs_quest`; opens a temporary quest-count panel |
-| MainMenu | Opens the temporary shop/build/inventory/travel UI |
+| QuestMenu | Sends `gs_quest`; opens the original quest log XML with partially bound rows |
+| MainMenu | Opens original tabbed menu resources with partially bound actions |
 | PirateMap | Opens the map view |
 | EventNotification | Toggles construction view |
 | SafeFlag / BadZoneFlag | Displays the ocean safety status and opens an information panel |
@@ -27,10 +27,14 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
-The optional `raftpirates_original_hud` test loads the real menu files and verifies all supported HUD actions, including the resulting SFS commands. The JNI smoke test covers the startup-to-login transition, the HUD quest request and a diving request with mock Java callbacks. The native Android runtime and a real private server have not been tested.
+The optional `raftpirates_original_hud` test loads the real menu files and verifies all supported HUD actions, including the resulting SFS commands. The JNI smoke test covers loading-before-title startup, the HUD quest request and removal of the old debug dive hit area with mock Java callbacks. The native Android runtime and a real private server have not been tested.
 
 To render the title-screen preview:
 
 ```sh
 ./build/raftpirates_preview /path/to/assets preview.png
 ```
+
+## XML panels
+
+The normal HUD, map, shop, inventory, quest and battle views use original menu XML and template controls. PortView no longer renders debug text buttons or their coordinate hitboxes. Selected literal initialization assignments are evaluated by Hydra; native callbacks bind a subset of actions to server requests. Dynamic templates are populated from server data. Full Lua/SWIG callbacks, purchase confirmation, object action popups, scrolling and some transitions remain incomplete. Unbound controls are not evidence of working features.

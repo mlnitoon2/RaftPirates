@@ -6,149 +6,26 @@
 #include <cmath>
 #include <cctype>
 #include <sstream>
+#include <regex>
 
 namespace rp {
     using namespace sys::gfx;
     using namespace sys::res;
 
     namespace {
-        // Original implementation of a small debug-only 5x7 pixel alphabet.
-        const char* glyph(char ch) {
-            switch (std::toupper(static_cast<unsigned char>(ch))) {
-            case 'A':
-                return "0E11111F111111";
-            case 'B':
-                return "1E11111E11111E";
-            case 'C':
-                return "0F10101010100F";
-            case 'D':
-                return "1E11111111111E";
-            case 'E':
-                return "1F10101E10101F";
-            case 'F':
-                return "1F10101E101010";
-            case 'G':
-                return "0F10101711110F";
-            case 'H':
-                return "1111111F111111";
-            case 'I':
-                return "1F04040404041F";
-            case 'J':
-                return "0702020202120C";
-            case 'K':
-                return "11121418141211";
-            case 'L':
-                return "1010101010101F";
-            case 'M':
-                return "111B1515111111";
-            case 'N':
-                return "11191915131311";
-            case 'O':
-                return "0E11111111110E";
-            case 'P':
-                return "1E11111E101010";
-            case 'Q':
-                return "0E11111115120D";
-            case 'R':
-                return "1E11111E141211";
-            case 'S':
-                return "0F10100E01011E";
-            case 'T':
-                return "1F040404040404";
-            case 'U':
-                return "1111111111110E";
-            case 'V':
-                return "11111111110A04";
-            case 'W':
-                return "11111115151B11";
-            case 'X':
-                return "11110A040A1111";
-            case 'Y':
-                return "11110A04040404";
-            case 'Z':
-                return "1F01020408101F";
-            case '0':
-                return "0E11131519110E";
-            case '1':
-                return "040C040404040E";
-            case '2':
-                return "0E11010204081F";
-            case '3':
-                return "1E01010601011E";
-            case '4':
-                return "02060A121F0202";
-            case '5':
-                return "1F10101E01011E";
-            case '6':
-                return "0E10101E11110E";
-            case '7':
-                return "1F010204080808";
-            case '8':
-                return "0E11110E11110E";
-            case '9':
-                return "0E11110F01010E";
-            case '-':
-                return "0000001F000000";
-            case ':':
-                return "00040400040400";
-            case '.':
-                return "00000000000C0C";
-            case '/':
-                return "01010204081010";
-            case ' ':
-                return "00000000000000";
-            default:
-                return "0E110102040004";
-            }
-        }
-
         void rect(Image& i, int x, int y, int w, int h, Color c) {
             for (int yy = std::max(0, y); yy < std::min(i.height, y + h); ++yy)
                 for (int xx = std::max(0, x); xx < std::min(i.width, x + w); ++xx)
                     i.at(xx, yy) = c;
         }
 
-        int hex(char c) {
-            return c >= 'A' ? c - 'A' + 10 : c - '0';
-        }
-
-        void text(Image& i, int x, int y, const std::string& s, int scale = 2) {
-            for (char c : s) {
-                if (x + 6 * scale >= i.width)
-                    break;
-                auto g = glyph(c);
-                for (int row = 0; row < 7; ++row) {
-                    int b = hex(g[row * 2]) * 16 + hex(g[row * 2 + 1]);
-                    for (int col = 0; col < 5; ++col)
-                        if (b & (1 << (4 - col)))
-                            rect(i, x + col * scale, y + row * scale, scale, scale,
-                                 {238, 245, 250, 255});
-                }
-                x += 6 * scale;
-            }
-        }
-
-        void button(Image& i, int n, const std::string& s, bool active = false) {
-            rect(i, n * 106 + 2, 350, 103, 46,
-                 active ? Color{51, 115, 112, 255} : Color{29, 57, 74, 255});
-            text(i, n * 106 + 8, 366, s, 1);
-        }
     } // namespace
 
     PortView::PortView(std::filesystem::path root)
         : root_(std::move(root)), ocean_(root_), opponentOcean_(root_), touchControls_(&ocean_),
           loader_(root_) {
-        try {
-            panelFont_ = ResourceSpriteFont::Create(root_, "rp_font_title");
-            auto background =
-                std::make_shared<Image>(loadAssetImage(root_ / "gfx/menu/popup_bg.png"));
-            panelBackground_ = std::make_unique<GfxBox>(background, 16, 16, 16, 16);
-            panelBackground_->SetPos(14, 36);
-            panelBackground_->setBoxWidth(612);
-            panelBackground_->setBoxHeight(302);
-        } catch (const std::exception&) {
-            // Optional original resources may be absent in headless tests.
-        }
+        if (std::filesystem::exists(root_ / "text/en.utf8"))
+            strings_.loadFile(root_ / "text/en.utf8");
         if (loader_.resourceExists("xml_bin/game_manifest.bin", "")) {
             loader_.addManifest("xml_bin/game_manifest.bin");
             loader_.start();
@@ -156,8 +33,7 @@ namespace rp {
         if (std::filesystem::exists(root_ / "menus/hud.xml")) {
             try {
                 hud_ = std::make_unique<Hud>(root_);
-            } catch (
-                const std::exception&) { /* Keep debug interface if local assets are incomplete. */
+            } catch (const std::exception&) { /* No substitute controls for missing assets. */
             }
         }
     }
@@ -179,6 +55,8 @@ namespace rp {
             discovery_->tick(dt);
         if (diving_)
             diving_->tick(dt);
+        if (xmlMenu_)
+            xmlMenu_->tick(dt);
     }
 
     void PortView::touchDown(float x, float y) {
@@ -213,59 +91,7 @@ namespace rp {
             }
             if (battleScreen_)
                 return battleScreen_->Render(g, time);
-            out = ocean_.render(g, time, false);
-            if (net.hasOpponent()) {
-                auto enemy = opponentOcean_.render(net.opponent(), time, false);
-                for (int y = 100; y < 310; ++y)
-                    for (int x = 320; x < 640; ++x)
-                        out.at(x, y) = enemy.at((x - 320) * 2, (y - 100) * enemy.height / 210);
-            }
-            rect(out, 12, 12, 616, 84, {15, 38, 54, 255});
-            text(out, 24, 20, net.isBoss() ? "BOSS BATTLE" : "MULTIPLAYER BATTLE", 2);
-            if (net.hasOpponent())
-                text(out, 24, 44,
-                     net.opponent().playerName + " BP " +
-                         std::to_string(net.opponent().currentBP()),
-                     1);
-            text(out, 24, 66, net.waiting() ? "WAITING FOR SERVER" : net.message(), 1);
-            rect(out, 0, 342, 640, 58, {15, 38, 54, 255});
-            if (net.phase() == Phase::Encounter) {
-                text(out, 30, 365, "ACCEPT", 2);
-                text(out, 420, 365, "DECLINE", 2);
-            } else if (net.phase() == Phase::Positioning) {
-                int own = g.rafts.empty() ? 0 : g.rafts[ownBattleIndex_ % g.rafts.size()].id;
-                int enemy =
-                    net.opponent().rafts.empty()
-                        ? 0
-                        : net.opponent().rafts[enemyBattleIndex_ % net.opponent().rafts.size()].id;
-                text(out, 20, 315,
-                     "OWN RAFT " + std::to_string(own) + "    ENEMY RAFT " + std::to_string(enemy),
-                     1);
-                text(out, 10, 365, "OWN", 2);
-                text(out, 125, 365, "ENEMY", 2);
-                text(out, 260, 365, net.attacker() && !net.positioned() ? "POSITION" : "SELECT", 2);
-                if (net.attacker() && !net.positioned())
-                    text(out, 20, 295,
-                         "TAP OCEAN TO POSITION: " + std::to_string(attackPosition_.x) + "," +
-                             std::to_string(attackPosition_.y),
-                         1);
-                text(out, 495, 365, "RETREAT", 2);
-            } else if (net.phase() == Phase::Fighting) {
-                text(out, 20, 315,
-                     "DICE " + std::to_string(battleDice_) + "  OPPONENT TIME " +
-                         std::to_string(net.opponentTime()),
-                     1);
-                text(out, 15, 365, "DICE +/-", 1);
-                text(out, 190, 365, net.attacker() ? "ATTACK" : "DEFEND", 2);
-                text(out, 345, 365, "READY", 2);
-                text(out, 500, 365, "RETREAT", 1);
-            } else if (net.phase() == Phase::Over)
-                text(out, 24, 365, "BATTLE OVER - REQUEST PLUNDER", 2);
-            else if (net.phase() == Phase::Desynced)
-                text(out, 24, 365, "OUT OF SYNC - RETREAT", 2);
-            else
-                text(out, 24, 365, "WAITING FOR OPPONENT", 2);
-            return out;
+            return ocean_.render(g, time, false);
         }
         if (!g.discovery)
             discovery_.reset();
@@ -273,10 +99,7 @@ namespace rp {
             discovery_ = std::make_unique<DiscoveryModeState>(g, root_);
         if (discovery_) {
             discovery_->render(out);
-            rect(out, 0, 0, 640, 36, {15, 38, 54, 255});
-            text(out, 12, 12, discovery_->title(), 2);
-            rect(out, 0, 342, 640, 58, {15, 38, 54, 255});
-            text(out, 16, 366, "DISCOVERY - TAP TO RETURN", 2);
+            renderXml(out, g, "piratemap_menu");
             return out;
         }
         if (g.diveState.state != 3)
@@ -294,10 +117,6 @@ namespace rp {
         }
         if (diving_) {
             diving_->render(out);
-            text(out, 12, 15, "GEARS " + std::to_string(diving_->gears()), 2);
-            text(out, 450, 15, "TIME " + std::to_string(int(std::ceil(diving_->remaining()))), 2);
-            text(out, 15, 365, diving_->finished() ? "TAP TO RETURN" : "TAP / HOLD TO MOVE", 1);
-            text(out, 470, 365, "CENTER: EXIT", 1);
             return out;
         }
 
@@ -361,11 +180,6 @@ namespace rp {
                                              uint8_t(p.b * a + q.b * (1 - a)), 255};
                                     }
                             }
-                    if (g.bossData && g.bossData->getInt("zone") == g.zone)
-                        text(out, 60, 42,
-                             "BOSS: " + g.bossData->getString("display_name") + "  BP " +
-                                 std::to_string(g.bossData->getInt("battle_points")),
-                             1);
                     mapView_.showMap();
                     mapView_.movementAllowed(!g.pendingMap.has_value());
                     mapView_.setPlayerVisible(true);
@@ -382,8 +196,6 @@ namespace rp {
                                             boss ? "rp_map_boss" : "rp_battle_arrow", mx - 13,
                                             my - 13))
                             rect(out, mx - 4, my - 4, 9, 9, {240, 110, 85, 255});
-                        text(out, std::max(48, mx - 25), std::max(36, my - 23),
-                             ship.name.substr(0, 16), 1);
                     };
                     if (mapView_.boss())
                         drawMarker(*mapView_.boss(), true);
@@ -397,52 +209,20 @@ namespace rp {
                     }
                 }
             } catch (const std::exception&) {
-                text(out, 50, 80, "MAP UNAVAILABLE");
+                // Keep original map overlay available.
             }
         }
-        if (hudEnabled(g)) {
+        if (hud_ && g.ready && !map) {
             hud_->update(g);
             hud_->render(out);
-            // Research-client controls until ObjectSelectPopup is restored.
-            rect(out, 210, 356, 220, 42, {29, 57, 74, 255});
-            text(out, 222, 370, g.diveSeconds > 0 ? "DIVING" : "DIVE", 1);
-            text(out, 334, 370, "COLLECT", 1);
-            if (g.ready && !map) {
-                rect(out, 450, 300, 175, 34, {29, 57, 74, 255});
-                text(out, 460, 312, g.sonarPending ? "SONAR WAITING" : "PING SONAR", 1);
-            }
-            if (grid)
-                text(out, 150, 65,
-                     moving_              ? "MOVE: TAP DESTINATION"
-                     : selectedBlueprint_ ? "TAP TO BUILD"
-                                          : "TAP COMPONENT",
-                     1);
-            return out;
         }
-        rect(out, 0, 0, 640, 32, {15, 38, 54, 255});
-        text(out, 6, 4, g.playerName, 1);
-        text(out, 6, 18,
-             "ZONE " + std::to_string(g.zone) + " DARING " + std::to_string(g.daring) + " DIVE " +
-                 std::to_string(g.diveSeconds) + "S",
-             1);
-        rect(out, 0, 342, 640, 58, {15, 38, 54, 255});
-
-        button(out, 1, "GRID", grid);
-        button(out, 2, map ? "OCEAN" : "MAP", map);
-        button(out, 3, "DIVE");
-        button(out, 4, "COLLECT");
-        button(out, 5, "MENU", panel_ != Panel::None);
-        if (panel_ != Panel::None) {
+        if (panel_ != Panel::None)
             renderPanel(out, g);
-            return out;
-        }
-        if (grid && !map && !g.blueprints.empty()) {
-            auto b = g.blueprints.find(selectedBlueprint_);
-            rect(out, 0, 32, 640, 16, {15, 38, 54, 255});
-            std::string message = moving_                   ? "MOVE: TAP DESTINATION"
-                                  : b != g.blueprints.end() ? "PLACE: " + b->second.name()
-                                                            : "TAP COMPONENT TO SELECT";
-            text(out, 8, 35, message, 1);
+        else if (map)
+            renderXml(out, g, "piratemap_menu");
+        else {
+            xmlMenu_.reset();
+            xmlName_.clear();
         }
         return out;
     }
@@ -461,57 +241,15 @@ namespace rp {
         if (net.phase() != Phase::Idle) {
             if (battleScreen_)
                 return battleScreen_->Select(g, x, y);
-            if (net.waiting())
-                return {};
-            if (y < 342) {
-                if (net.phase() == Phase::Positioning && net.attacker() && !net.positioned() &&
-                    y >= 100) {
-                    auto point = ocean_.ScreenToWorld({x, y});
-                    attackPosition_ = {int(std::lround(point.x)), int(std::lround(point.y))};
-                }
-                return {};
-            }
-            if (net.phase() == Phase::Encounter)
-                return net.encounterResponse(x < 320);
-            if (net.phase() == Phase::Positioning) {
-                if (x < 110) {
-                    ++ownBattleIndex_;
-                    return {};
-                }
-                if (x < 250) {
-                    ++enemyBattleIndex_;
-                    return {};
-                }
-                if (x >= 470)
-                    return net.retreat();
-                if (net.attacker() && !net.positioned())
-                    return net.gotMsgBattleScreenRaftsSelected(attackPosition_.x,
-                                                               attackPosition_.y);
-                if (net.hasOpponent() && !g.rafts.empty() && !net.opponent().rafts.empty())
-                    return net.SendRaftSelection(
-                        g.rafts[ownBattleIndex_ % g.rafts.size()].id,
-                        net.opponent().rafts[enemyBattleIndex_ % net.opponent().rafts.size()].id,
-                        g);
-            } else if (net.phase() == Phase::Fighting) {
-                if (x < 160) {
-                    battleDice_ = std::clamp(battleDice_ + (x < 80 ? -1 : 1), 1, 8);
-                    return {};
-                }
-                if (x >= 470)
-                    return net.retreat();
-                if (x >= 330)
-                    return net.SendClientReady();
-                return net.gotMsgAttackRequest(battleDice_);
-            } else if (net.phase() == Phase::Over)
-                return net.plunder();
-            else if (net.phase() == Phase::Desynced)
-                return net.retreat();
             return {};
         }
         if (discovery_) {
-            if (y >= 342) {
-                discovery_->LeaveDiscovery(g);
-                discovery_.reset();
+            if (xmlMenu_ && xmlMenu_->hitTest(x, y)) {
+                auto id = xmlMenu_->owner(xmlMenu_->hitTest(x, y));
+                if (xmlMenu_->node(id).name == "Back") {
+                    discovery_->LeaveDiscovery(g);
+                    discovery_.reset();
+                }
             }
             return {};
         }
@@ -523,9 +261,15 @@ namespace rp {
             }
             return {};
         }
+        if (panel_ != Panel::None)
+            return panelTouch(g, x, y);
+        if (map) {
+            if (!xmlMenu_ || xmlName_ != "piratemap_menu")
+                openXml(g, "piratemap_menu");
+            if (xmlMenu_ && xmlMenu_->hitTest(x, y))
+                return xmlTouch(g, x, y);
+        }
         if (hudEnabled(g)) {
-            if (!map && x >= 450 && y >= 300 && y < 334)
-                return g.pingSonar();
             hud_->update(g);
             auto action = hud_->touch(x, y);
             switch (action) {
@@ -556,44 +300,28 @@ namespace rp {
             case Hud::Action::None:
                 break;
             }
-            if (y >= 356 && x >= 210 && x < 430) {
-                if (x < 320)
-                    diveStarted_ = true;
-                return g.dive(x < 320 ? "dive_start" : "dive_collect");
-            }
-            if (y >= 350)
-                return {};
         }
-        if (panel_ != Panel::None && y < 350)
-            return panelTouch(g, x, y);
-        if (y >= 350) {
-            int n = int(x) / 106;
-            switch (n) {
-            case 0:
-                return {};
-            case 1:
-                panel_ = Panel::None;
-                grid = !grid;
-                map = false;
-                return {};
-            case 2:
-                panel_ = Panel::None;
-                map = !g.hideMap && !map;
-                return {};
-            case 3:
-                diveStarted_ = true;
-                return g.dive("dive_start");
-            case 4:
-                return g.dive("dive_collect");
-            case 5:
-                if (!g.ready)
-                    return {};
-                panel_ = panel_ == Panel::None ? Panel::Build : Panel::None;
-                page_ = 0;
-                return {};
-            default:
-                return {};
-            }
+        if (!map && !grid) {
+            const auto unit = g.GetDiveUnit();
+            auto world = ocean_.ScreenToWorld({x, y});
+            for (const auto& raft : g.rafts)
+                if (raft.id == unit.first)
+                    for (const auto& component : raft.components)
+                        if (component.id == unit.second) {
+                            auto def = g.objects.find(component.type);
+                            if (def == g.objects.end())
+                                continue;
+                            int cx = int(std::floor((world.x - raft.x) * 6)),
+                                cy = int(std::floor((world.y - raft.y) * 6));
+                            for (auto cell : def->second.cells)
+                                if (component.x + cell.x == cx && component.y + cell.y == cy) {
+                                    if (g.diveState.state == 3)
+                                        return g.dive(g.diveSeconds > 0 ? "dive_info"
+                                                                        : "dive_collect");
+                                    diveStarted_ = true;
+                                    return g.dive("dive_start");
+                                }
+                        }
         }
         if (map) {
             loadMap(g);
@@ -676,72 +404,6 @@ namespace rp {
         return {};
     }
 
-    namespace {
-        struct PanelRow {
-            int id;
-            std::string label;
-        };
-
-        std::vector<PanelRow> shopRows(const Game& game) {
-            std::vector<PanelRow> result;
-            RPMenuHandler menu(game);
-            for (int id : menu.gotMsgGetAvailStoreItemRequest()) {
-                const auto& item = game.storeItems.at(id);
-                result.push_back({id, item.name + " - " + std::to_string(item.price)});
-            }
-            return result;
-        }
-
-        std::vector<PanelRow> travelRows(const Game& game) {
-            std::vector<PanelRow> result;
-            for (auto& [id, name] : game.zones)
-                result.push_back({id, "ZONE: " + name});
-            for (const auto& [id, name] : game.discoveries)
-                if (id > 0 && ([&] {
-                        std::istringstream ids(game.knownDiscoveries);
-                        int known;
-                        while (ids >> known) {
-                            if (known == id)
-                                return true;
-                            if (ids.peek() == ',' || ids.peek() == ';')
-                                ids.ignore();
-                        }
-                        return false;
-                    })())
-                    result.push_back({-id, "DISCOVERY: " + name});
-            return result;
-        }
-
-        std::vector<PanelRow> blueprintRows(const Game& game) {
-            std::vector<PanelRow> result;
-            RPMenuHandler menu(game);
-            for (int id : menu.gotMsgGetAvailBlueprintsRequest()) {
-                const auto* bp = menu.gotMsgBlueprintDisplayRequest(id);
-                if (!bp)
-                    continue;
-                std::string label = bp->name();
-                if (!menu.gotMsgHaveMaterialsRequest(id)) {
-                    auto cost = game.goldCostToBuild(id);
-                    label += cost ? " - NEED MATERIALS (" + std::to_string(*cost) + " GOLD)"
-                                  : " - NEED MATERIALS";
-                }
-                result.push_back({id, std::move(label)});
-            }
-            return result;
-        }
-
-        std::vector<PanelRow> inventoryRows(const Game& game) {
-            std::vector<PanelRow> result;
-            for (auto& [id, amount] : game.materials) {
-                auto it = game.materialNames.find(id);
-                result.push_back(
-                    {id, (it == game.materialNames.end() ? std::to_string(id) : it->second) +
-                             " : " + std::to_string(amount)});
-            }
-            return result;
-        }
-    } // namespace
-
     bool PortView::renderItemIcon(Image& target, const std::string& sheet, const std::string& name,
                                   int x, int y) {
         if (sheet.empty() || name.empty())
@@ -774,209 +436,281 @@ namespace rp {
         }
     }
 
-    void PortView::renderPanel(Image& image, const Game& game) {
-        rect(image, 14, 36, 612, 302, {15, 38, 54, 255});
-        if (panelBackground_) {
-            GfxManager gfx;
-            panelBackground_->submit(gfx);
-            gfx.RenderScreen(image);
-        }
-        auto label = [&](Image& target, int x, int y, const std::string& value, int size) {
-            if (!panelFont_) {
-                text(target, x, y, value, size);
-                return;
-            }
-            GfxManager gfx;
-            const float scale = size == 2 ? .70f : .48f;
-            auto layout =
-                panelFont_->layout(value, scale, float(std::max(1, 620 - x)), false, true);
-            panelFont_->submit(gfx, layout, float(x), float(y) - 2, {255, 244, 194, 255});
-            gfx.RenderScreen(target);
-        };
-        if (panel_ == Panel::Quest || panel_ == Panel::Safety || panel_ == Panel::Daring) {
-            std::string title = panel_ == Panel::Quest    ? "QUESTS"
-                                : panel_ == Panel::Safety ? "OCEAN SAFETY"
-                                                          : "DARING";
-            label(image, 25, 52, title, 2);
-            if (panel_ == Panel::Quest) {
-                auto ids = RPMenuHandler(game).gotMsgQuestInformationRequest();
-                auto selected = game.quests.find(selectedQuest_);
-                if (selected != game.quests.end()) {
-                    label(image, 25, 90, selected->second.name.substr(0, 85), 1);
-                    label(image, 25, 122,
-                          "PROGRESS: " + std::to_string(selected->second.progress) + "%", 1);
-                    const auto& description = selected->second.description;
-                    for (size_t i = 0; i < description.size() && i < 450; i += 85)
-                        label(image, 25, 150 + int(i / 85) * 18, description.substr(i, 85), 1);
-                    label(image, 25, 265, "TAP TO RETURN TO QUESTS", 1);
-                } else {
-                    for (size_t i = 0; i < 6 && i + page_ * 6 < ids.size(); ++i) {
-                        const auto& q = game.quests.at(ids[i + page_ * 6]);
-                        label(image, 25, 90 + int(i) * 29,
-                              (q.unread ? "NEW: " : "") + q.name.substr(0, 65) + " " +
-                                  std::to_string(q.progress) + "%",
-                              1);
+    void PortView::openXml(const Game& g, const std::string& name) {
+        using namespace sys::menu_redux;
+        xmlMenu_ = std::make_unique<MenuRuntime>(root_);
+        xmlName_ = name;
+        xmlItems_.clear();
+        try {
+            xmlMenu_->nativeEvent = [this](auto& m, unsigned id, const std::string& event) {
+                if (event == "onInit")
+                    m.applyLiteralProperties(id,
+                                             [this](const auto& s) { return strings_.getText(s); });
+                return true;
+            };
+            auto xml = sys::res::loadXML(root_ / "menus" / (name + ".xml"));
+            auto find = [](auto& self, sys::res::XmlNode& n,
+                           const std::string& name) -> sys::res::XmlNode* {
+                if (n.attr("name") == name)
+                    return &n;
+                for (auto& c : n.children)
+                    if (auto* p = self(self, c, name))
+                        return p;
+                return nullptr;
+            };
+            auto add = [&](sys::res::XmlNode& parent, const std::string& type,
+                           const std::string& id, double x, double y, const char* relative,
+                           const char* v, const char* h) {
+                sys::res::XmlNode t;
+                t.name = "template";
+                t.attributes = {{"type", type}, {"name", id}};
+                sys::res::XmlNode pos;
+                pos.name = "position";
+                pos.attributes = {{"relativeTo", relative}, {"vAnchor", v}, {"hAnchor", h}};
+                sys::res::XmlNode ori;
+                ori.name = "orientation";
+                ori.attributes = {{"vAnchor", v},
+                                  {"hAnchor", h},
+                                  {"xOffset", std::to_string(x)},
+                                  {"yOffset", std::to_string(y)},
+                                  {"priority", "-10"}};
+                t.children = {pos, ori};
+                parent.children.push_back(std::move(t));
+            };
+            if (name == "tabbed_menu_inventory") {
+                auto ids = RPMenuHandler(g).gotMsgGetAvailMaterialsRequest();
+                size_t i = 0;
+                for (int id : ids) {
+                    auto key = "material_" + std::to_string(id);
+                    xmlItems_[key] = id;
+                    add(xml, "MaterialInstance", key,
+                        (double(i) - (double(ids.size()) - 1) / 2) * 45, -50, "SCREEN", "BOTTOM",
+                        "HCENTER");
+                    ++i;
+                }
+            } else if (name.rfind("tabbed_menu_", 0) == 0) {
+                if (auto* list = find(find, xml, "itemList")) {
+                    std::vector<int> ids;
+                    if (name == "tabbed_menu_blueprints")
+                        ids = RPMenuHandler(g).gotMsgGetAvailBlueprintsRequest();
+                    else if (name == "tabbed_menu_maps")
+                        for (auto& [id, v] : g.zones)
+                            ids.push_back(id);
+                    else {
+                        for (int id : RPMenuHandler(g).gotMsgGetAvailStoreItemRequest())
+                            if (g.storeItems.at(id).group == name.substr(12))
+                                ids.push_back(id);
                     }
-                    if (ids.empty())
-                        label(image, 25, 90, "NO QUESTS", 1);
-                    label(image, 25, 275, "PREV", 1);
-                    label(image, 560, 275, "NEXT", 1);
+                    for (size_t i = 0; i < ids.size(); ++i) {
+                        auto key = "tabbedItem" + std::to_string(i);
+                        xmlItems_[key] = ids[i];
+                        add(*list, "TabbedMenuItem", key, 12 + int(i) * 128, 0, "itemList",
+                            "BOTTOM", "LEFT");
+                    }
+                }
+            } else if (name == "quest_log") {
+                if (auto* list = find(find, xml, "children")) {
+                    size_t i = 0;
+                    for (int id : RPMenuHandler(g).gotMsgQuestInformationRequest()) {
+                        auto key = "quest_" + std::to_string(id);
+                        xmlItems_[key] = id;
+                        add(*list, "QuestButton", key, -50, 48 + int(i++) * 55, "children", "TOP",
+                            "RIGHT");
+                    }
                 }
             }
-            if (panel_ == Panel::Safety)
-                label(image, 25, 90,
-                      game.badZone ? "LOW WATER"
-                      : game.safe  ? "SAFE WATER"
-                                   : "PIRATE WATER",
-                      2);
-            if (panel_ == Panel::Daring) {
-                label(image, 25, 90, "LEVEL " + std::to_string(game.daring), 2);
-                label(image, 25, 125, "REMAINING " + std::to_string(game.daringRemaining) + "S", 2);
+            xmlMenu_->load(xml);
+            xmlMenu_->resize(640, 400);
+            xmlMenu_->initialize();
+            auto& m = *xmlMenu_;
+            auto show = [&](const char* name, bool visible) {
+                if (auto id = m.find(1, name, true))
+                    m.node(id).set("visible", visible);
+            };
+            if (name == "piratemap_menu") {
+                for (auto n : {"AutoSafeWater", "MapActionsIcon", "PopupDialog", "TutorialArrow"})
+                    show(n, false);
+                for (auto n : {"PingSonar", "QuickTravel"})
+                    if (auto id = m.find(1, n, true)) {
+                        auto b = m.node(id).bounds;
+                        m.node(id).set("xOffset",
+                                       std::string(n) == "PingSonar" ? b.w / 2 + 3 : -b.w / 2 - 3);
+                        m.node(id).set("yOffset", -b.h / 2 - 3);
+                    }
+            } else if (name.rfind("tabbed_menu_", 0) == 0) {
+                show("Frame", false);
+                double x = 8;
+                for (int i = 1; i <= 7; ++i)
+                    if (auto id = m.find(1, "Tab" + std::to_string(i), true)) {
+                        m.node(id).set("xOffset", x);
+                        x += m.node(id).bounds.w + 16;
+                    }
             }
-            label(image, 25, 306, "TAP TO CLOSE", 1);
-            return;
-        }
-        const char* names[] = {"BUILD", "SHOP", "INVENTORY", "TRAVEL"};
-        const Panel panels[] = {Panel::Build, Panel::Shop, Panel::Inventory, Panel::Travel};
-        for (int i = 0; i < 4; ++i) {
-            rect(image, 20 + 150 * i, 42, 145, 28,
-                 panel_ == panels[i] ? Color{51, 115, 112, 255} : Color{29, 57, 74, 255});
-            label(image, 30 + 150 * i, 52, names[i], 1);
-        }
-        auto rows = panel_ == Panel::Shop        ? shopRows(game)
-                    : panel_ == Panel::Travel    ? travelRows(game)
-                    : panel_ == Panel::Inventory ? inventoryRows(game)
-                                                 : blueprintRows(game);
-        for (size_t i = 0; i < 6 && page_ * 6 + i < rows.size(); ++i) {
-            rect(image, 20, 76 + int(i) * 34, 600, 30, {29, 57, 74, 255});
-            const auto& row = rows[page_ * 6 + i];
-            bool icon = false;
-            if (panel_ == Panel::Shop) {
-                const auto& item = game.storeItems.at(row.id);
-                icon = renderItemIcon(image, item.sheet, item.image, 26, 78 + int(i) * 34);
-            } else if (panel_ == Panel::Build) {
-                const auto& item = game.blueprints.at(row.id);
-                icon = renderItemIcon(image, item.sheet, item.image, 26, 78 + int(i) * 34);
-            } else if (panel_ == Panel::Inventory) {
-                if (const auto* material = game.materialDB.getMaterialInfo(unsigned(row.id)))
-                    icon = renderItemIcon(image, material->sheet, material->image, 26,
-                                          78 + int(i) * 34);
-            }
-            label(image, icon ? 60 : 28, 87 + int(i) * 34, row.label, 1);
-        }
-        if (rows.empty())
-            label(image, 28, 90, "NO ITEMS", 1);
-        label(image, 25, 290, "PREV", 1);
-        label(image, 560, 290, "NEXT", 1);
-        label(image, 270, 290, "PAGE " + std::to_string(page_ + 1), 1);
-        if (panel_ == Panel::Build) {
-            label(image, 25, 316, "SELECT PART", 1);
-            if (selectedComponent_) {
-                label(image, 220, 316, "MOVE", 1);
-                label(image, 390, 316, "REMOVE", 1);
-                label(image, 470, 316, "REPAIR", 1);
-                label(image, 550, 316, "CLOCK", 1);
-            }
+            auto set = [&](unsigned id, const char* component, const char* key, Property value) {
+                if (auto c = m.find(id, component))
+                    m.node(c).set(key, std::move(value));
+            };
+            for (auto& [key, id] : xmlItems_)
+                if (auto element = m.find(1, key, true)) {
+                    if (name == "tabbed_menu_inventory") {
+                        if (auto mat = g.materialDB.getMaterialInfo(unsigned(id))) {
+                            set(element, "Icon", "spriteName", mat->image);
+                            set(element, "Icon", "sheetName", mat->sheet);
+                            set(element, "Amount", "text",
+                                std::to_string(g.numOfMaterialPossessed(unsigned(id))));
+                        }
+                    } else if (name == "tabbed_menu_blueprints") {
+                        const auto& b = g.blueprints.at(id);
+                        set(element, "itemImage", "spriteName", b.image);
+                        set(element, "itemImage", "sheetName", b.sheet);
+                        set(element, "itemImage", "visible", true);
+                        set(element, "itemName", "text", b.name());
+                        set(element, "itemCost", "visible", false);
+                        set(element, "currencyIcon", "visible", false);
+                    } else if (name == "quest_log") {
+                        const auto& q = g.quests.at(id);
+                        set(element, "ProgressText", "text", std::to_string(q.progress) + "%");
+                    } else if (name == "tabbed_menu_maps") {
+                        set(element, "itemName", "text", g.zones.at(id));
+                        set(element, "itemName", "visible", true);
+                    } else {
+                        const auto& item = g.storeItems.at(id);
+                        set(element, "itemImage", "spriteName", item.image);
+                        set(element, "itemImage", "sheetName", item.sheet);
+                        set(element, "itemCost", "text", std::to_string(item.price));
+                    }
+                }
+            m.solve();
+        } catch (const std::exception&) {
+            xmlMenu_.reset();
         }
     }
 
-    std::optional<sfs::Message> PortView::panelTouch(Game& game, float x, float y) {
-        if (panel_ == Panel::Quest || panel_ == Panel::Safety || panel_ == Panel::Daring) {
-            if (panel_ == Panel::Quest) {
-                if (y >= 290) {
-                    panel_ = Panel::None;
-                    selectedQuest_ = 0;
-                    return {};
-                }
-                if (selectedQuest_) {
-                    selectedQuest_ = 0;
-                    return {};
-                }
-                auto ids = RPMenuHandler(game).gotMsgQuestInformationRequest();
-                if (y >= 260) {
-                    if (x < 150 && page_)
-                        --page_;
-                    else if (x > 490 && (page_ + 1) * 6 < ids.size())
-                        ++page_;
-                    return {};
-                }
-                if (y >= 80 && y < 254) {
-                    size_t row = page_ * 6 + size_t(y - 80) / 29;
-                    if (row < ids.size()) {
-                        selectedQuest_ = ids[row];
-                        return game.openQuest(selectedQuest_);
-                    }
-                }
-            } else if (y >= 280)
-                panel_ = Panel::None;
-            return {};
+    void PortView::renderXml(Image& out, const Game& g, const std::string& name) {
+        if (!xmlMenu_ || xmlName_ != name)
+            openXml(g, name);
+        if (!xmlMenu_)
+            return;
+        if (name == "piratemap_menu")
+            if (auto sonar = xmlMenu_->find(1, "PingSonar", true))
+                if (auto label = xmlMenu_->find(sonar, "Text"))
+                    xmlMenu_->node(label).set("text", std::to_string(g.numOfMaterialPossessed(12)));
+        xmlMenu_->solve();
+        GfxManager renderer;
+        xmlMenu_->submit(renderer);
+        renderer.RenderScreen(out);
+    }
+
+    void PortView::renderPanel(Image& image, const Game& g) {
+        std::string name;
+        switch (panel_) {
+        case Panel::Quest:
+            name = "quest_log";
+            break;
+        case Panel::Safety:
+            name = g.badZone ? "hud_badzone_popup" : "safe_flag_popup";
+            break;
+        case Panel::Daring:
+            name = "daring_popup";
+            break;
+        case Panel::Inventory:
+            name = "tabbed_menu_inventory";
+            break;
+        case Panel::Travel:
+            name = "tabbed_menu_maps";
+            break;
+        case Panel::Shop:
+        case Panel::Build:
+            name = "tabbed_menu_blueprints";
+            break;
+        default:
+            return;
         }
-        if (y >= 42 && y < 70 && x >= 20 && x < 620) {
-            const Panel panels[] = {Panel::Build, Panel::Shop, Panel::Inventory, Panel::Travel};
-            panel_ = panels[std::min(3, int(x - 20) / 150)];
-            page_ = 0;
+        if (xmlMenu_ && xmlName_.rfind("tabbed_menu_", 0) == 0 &&
+            (panel_ == Panel::Shop || panel_ == Panel::Build || panel_ == Panel::Travel))
+            name = xmlName_;
+        if (xmlName_ == "sonar_popup" && panel_ == Panel::Safety)
+            name = xmlName_;
+        renderXml(image, g, name);
+    }
+
+    std::optional<sfs::Message> PortView::xmlTouch(Game& g, float x, float y) {
+        if (!xmlMenu_)
             return {};
-        }
-        auto rows = panel_ == Panel::Shop        ? shopRows(game)
-                    : panel_ == Panel::Travel    ? travelRows(game)
-                    : panel_ == Panel::Inventory ? inventoryRows(game)
-                                                 : blueprintRows(game);
-        if (y >= 280 && y < 305) {
-            if (x < 150 && page_ > 0)
-                --page_;
-            if (x > 490 && (page_ + 1) * 6 < rows.size())
-                ++page_;
+        auto& m = *xmlMenu_;
+        auto hit = m.hitTest(x, y);
+        if (!hit)
             return {};
-        }
-        if (panel_ == Panel::Build && y >= 305 && y < 338) {
-            panel_ = Panel::None;
-            grid = true;
-            map = false;
-            selectedBlueprint_ = 0;
-            if (x >= 190 && x < 360 && selectedComponent_)
-                moving_ = true;
-            else if (x >= 460 && selectedComponent_) {
-                BuildModeState build(game);
-                build.selectObject(selectedParent_, selectedComponent_);
-                return x >= 540 ? build.UseClockSelected() : build.repairSelected(false);
-            } else if (x >= 360 && selectedComponent_) {
-                BuildModeState build(game);
-                build.selectObject(selectedParent_, selectedComponent_);
-                auto request = build.gotMsgDestroyObjectRequest();
-                selectedComponent_ = 0;
-                selectedParent_ = 0;
-                return request;
-            } else {
-                moving_ = false;
-                selectedComponent_ = 0;
-                selectedParent_ = 0;
-            }
-            return {};
-        }
-        if (x < 20 || x >= 620 || y < 76 || y >= 280)
-            return {};
-        size_t row = page_ * 6 + size_t(y - 76) / 34;
-        if (row >= rows.size())
-            return {};
-        int id = rows[row].id;
-        if (panel_ == Panel::Shop) {
-            if (!RPMenuHandler(game).canPurchase(id)) {
-                game.status = "Item unavailable or insufficient currency";
+        auto owner = m.owner(hit);
+        auto name = m.node(owner).name;
+        auto body = m.node(hit).events.find("onTouchUp");
+        std::string script = body == m.node(hit).events.end() ? "" : body->second.source;
+        if (xmlName_ == "piratemap_menu") {
+            if (name == "Back") {
+                map = false;
+                xmlMenu_.reset();
                 return {};
             }
-            return game.buyStoreItem(id);
+            if (name == "QuickTravel") {
+                panel_ = Panel::Travel;
+                openXml(g, "tabbed_menu_maps");
+                return {};
+            }
+            if (name == "PingSonar") {
+                if (g.badZone) {
+                    panel_ = Panel::Safety;
+                    openXml(g, "sonar_popup");
+                    return {};
+                }
+                if (g.numOfMaterialPossessed(12) > 0)
+                    return g.pingSonar();
+                panel_ = Panel::Shop;
+                openXml(g, "tabbed_menu_misc");
+                return {};
+            }
         }
-        if (panel_ == Panel::Travel) {
-            panel_ = Panel::None;
-            return id < 0 ? game.discover(-id) : game.travel(id);
+        static const std::regex push(R"rx(menu:pushPopUp\("(tabbed_menu_[a-z]+)"\))rx");
+        std::smatch match;
+        if (std::regex_search(script, match, push)) {
+            openXml(g, match[1]);
+            return {};
         }
-        if (panel_ == Panel::Build) {
-            selectedBlueprint_ = id;
-            moving_ = false;
-            grid = true;
-            map = false;
+        if (name.rfind("backing", 0) == 0 || name == "bg" || name == "OK" || name == "Back" ||
+            name == "Close") {
             panel_ = Panel::None;
+            xmlMenu_.reset();
+            return {};
+        }
+        for (unsigned id = owner; id; id = m.node(id).parent) {
+            auto i = xmlItems_.find(m.node(id).name);
+            if (i == xmlItems_.end())
+                continue;
+            int item = i->second;
+            if (xmlName_ == "tabbed_menu_blueprints") {
+                selectedBlueprint_ = item;
+                grid = true;
+                map = false;
+                panel_ = Panel::None;
+                xmlMenu_.reset();
+                return {};
+            }
+            if (xmlName_ == "quest_log")
+                return g.openQuest(item);
+            if (xmlName_ == "tabbed_menu_maps") {
+                panel_ = Panel::None;
+                xmlMenu_.reset();
+                return g.travel(item);
+            }
+            return {}; // The original purchase confirmation is not yet bound.
         }
         return {};
+    }
+
+    std::optional<sfs::Message> PortView::panelTouch(Game& g, float x, float y) {
+        if (!xmlMenu_ || xmlName_ == "piratemap_menu") {
+            Image dummy(640, 400);
+            renderPanel(dummy, g);
+        }
+        return xmlTouch(g, x, y);
     }
 } // namespace rp

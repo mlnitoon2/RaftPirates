@@ -8,7 +8,8 @@ namespace rp {
     using Phase = BattleModeState::Phase;
 
     GfxBattleScreen::GfxBattleScreen(std::filesystem::path root)
-        : ownView_(root), enemyView_(root), effects_(root) {
+        : root_(root), ownView_(root), enemyView_(root), effects_(root) {
+        strings_.loadFile(root / "text/en.utf8");
         sheet_ = ResourceSpriteSheet::Create(root / "xml_resources/rp_menu.xml");
         atlas_ = std::make_shared<Image>(loadAssetImage(root / sheet_.imagePath));
         font_ = ResourceSpriteFont::Create(root, "rp_font_title");
@@ -65,6 +66,7 @@ namespace rp {
         if (lastPhase_ == Phase::Idle || lastAttacker_ != net.attacker() ||
             net.phase() == Phase::Starting) {
             placement_.Reset(net.attacker());
+            positionChosen_ = false;
             dice_ = 1;
             retreatConfirm_ = false;
         }
@@ -214,57 +216,6 @@ namespace rp {
         submitSprite(gfx, "battle_vs", 295, 9, 50, 50);
         if (net.isBoss())
             submitSprite(gfx, "battle_boss_token", 596, 61, 34, 34);
-        auto button = [&](const char* image, const std::string& label, float x, float w) {
-            submitSprite(gfx, image, x, 346, w, 48);
-            submitText(gfx, label, x + w / 2, 358, .63f, w - 8);
-        };
-        std::string instruction;
-        if (net.waiting())
-            instruction = "Waiting for opponent...";
-        else if (retreatConfirm_) {
-            instruction = "Retreat from battle?";
-            button("btn_long_red", "Retreat", 150, 145);
-            button("btn_long_green", "Cancel", 345, 145);
-        } else if (net.phase() == Phase::Encounter) {
-            instruction = "Battle encounter";
-            button("btn_long_green", "Attack", 40, 230);
-            button("btn_long_red", "Decline", 370, 230);
-        } else if (net.phase() == Phase::Positioning) {
-            bool moving = net.attacker() && !net.positioned();
-            instruction = moving ? "Tap water to position your fleet"
-                                 : "Select attacking and defending rafts";
-            if (moving) {
-                auto p = placement_.GetWorldPosition(0);
-                instruction += " (" + std::to_string(p.x) + ", " + std::to_string(p.y) + ")";
-                if (!placement_.OkayToPlace())
-                    instruction += " - overlaps or wreckage";
-            }
-            button("btn_long_green", moving ? "Position" : "Select", 245, 150);
-            button("btn_red", "", 576, 58);
-            submitSprite(gfx, "btn_retreat", 585, 354, 40, 32);
-        } else if (net.phase() == Phase::Fighting) {
-            instruction = net.readyForDice()
-                              ? (net.attacker() ? "Choose attack dice" : "Choose defense dice")
-                              : "Ready for next turn?";
-            submitSprite(gfx, "battle_slider_left", 10, 353, 26, 34);
-            submitSprite(gfx, "battle_slider_mid", 36, 353, 138, 34);
-            submitSprite(gfx, "battle_slider_right", 174, 353, 26, 34);
-            for (int n = 0; n < 8; ++n)
-                submitSprite(
-                    gfx, n < dice_ ? "dice_sm_green00" + std::to_string(n + 1) : "dice_sm_blank",
-                    23 + n * 20, 359, 19, 19);
-            button("btn_long_green",
-                   net.readyForDice() ? (net.attacker() ? "Attack" : "Defend") : "Ready", 245, 150);
-            button("btn_red", "", 576, 58);
-            submitSprite(gfx, "btn_retreat", 585, 354, 40, 32);
-        } else if (net.phase() == Phase::Over) {
-            instruction = "Battle over";
-            button("btn_long_green", "Continue", 245, 150);
-        } else if (net.phase() == Phase::Desynced) {
-            instruction = "Battle out of sync";
-            button("btn_long_red", "Retreat", 245, 150);
-        } else
-            instruction = "Waiting for opponent...";
         if (!moving && net.hasOpponent())
             for (const auto& hit : damage_) {
                 const auto& player = hit.own ? static_cast<const Player&>(game) : net.opponent();
@@ -287,11 +238,87 @@ namespace rp {
                 submitText(gfx, "-" + std::to_string(hit.amount), point.x,
                            point.y - 25 - 35 * (1.2f - hit.remaining), .85f, 130);
             }
-        if (!net.message().empty() && !net.waiting())
-            submitText(gfx, net.message(), 320, 289, .55f, 610);
-        submitText(gfx, instruction, 320, 318, .65f, 610);
         gfx.RenderScreen(out);
+        loadMenu(game);
+        if (menu_) {
+            GfxManager ui;
+            menu_->submit(ui);
+            ui.RenderScreen(out);
+        }
         return out;
+    }
+
+    void GfxBattleScreen::loadMenu(const Game& game) {
+        using namespace sys::menu_redux;
+        const auto& net = game.onlineBattle;
+        std::string name = retreatConfirm_ || net.phase() == Phase::Desynced ? "retreat_confirm"
+                           : net.phase() == Phase::Encounter   ? "attack_confirm_dialog"
+                           : net.phase() == Phase::Positioning ? "battle_positioning_hud"
+                           : net.phase() == Phase::Over        ? "battle_over_popup"
+                                                               : "battle_hud";
+        if (!menu_ || menuName_ != name) {
+            menuName_ = name;
+            menu_ = std::make_unique<MenuRuntime>(root_);
+            menu_->nativeEvent = [this](auto& m, unsigned id, const std::string& e) {
+                if (e == "onInit")
+                    m.applyLiteralProperties(
+                        id, [this](const auto& key) { return strings_.getText(key); });
+                return true;
+            };
+            try {
+                menu_->load(root_ / "menus" / (name + ".xml"));
+                menu_->resize(640, 400);
+                menu_->initialize();
+            } catch (const std::exception&) {
+                menu_.reset();
+                return;
+            }
+        }
+        auto& m = *menu_;
+        auto show = [&](const std::string& n, bool on) {
+            if (auto id = m.find(1, n, true))
+                m.node(id).set("visible", on);
+        };
+        if (name == "battle_hud") {
+            // Existing world meter rendering is retained until all original meter scripts are
+            // bound.
+            for (auto n : {"LeftBuildPoints", "RightBuildPoints", "CancelAutoAttack",
+                           "AutoAttackButton", "BattleMapButton"})
+                show(n, false);
+            if (auto id = m.find(1, "Dice", true)) {
+                auto& dice = m.node(id);
+                if (auto touch = m.find(id, "Touch")) {
+                    auto& t = m.node(touch);
+                    t.set("width", double(std::max(1.f, dice.bounds.w)));
+                    t.set("height", double(std::max(1.f, dice.bounds.h)));
+                    t.set("enabled", net.readyForDice() || !net.waiting());
+                }
+            }
+        } else if (name == "battle_positioning_hud") {
+            if (auto id = m.find(1, "InstructionText", true)) {
+                if (auto text = m.find(id, "Text"))
+                    m.node(text).set(
+                        "text",
+                        strings_.getText(net.attacker() && !net.positioned()
+                                             ? "BATTLE_INSTRUCTION_PLACEMENT"
+                                         : placement_.gotMsgRequestBattlePlacementState().first
+                                             ? "BATTLE_INSTRUCTION_CHOOSE_DEFEND"
+                                             : "BATTLE_INSTRUCTION_CHOOSE_ATTACK"));
+            }
+        } else if (name == "attack_confirm_dialog" || name == "retreat_confirm") {
+            // Original onPostInit sizes the popup using its text and No button.
+            if (auto dialog = m.find(1, "Dialog", true))
+                if (auto bg = m.find(dialog, "bg", true))
+                    if (auto sprite = m.find(bg, "Sprite")) {
+                        auto yes = m.find(dialog, "Yes", true),
+                             text = m.find(dialog, "BattleText", true);
+                        if (yes && text)
+                            m.node(sprite).set("height",
+                                               double(std::max(1.f, m.node(yes).bounds.h +
+                                                                        m.node(text).bounds.h)));
+                    }
+        }
+        m.solve();
     }
 
     std::optional<sfs::Message> GfxBattleScreen::Select(Game& game, float x, float y) {
@@ -299,67 +326,63 @@ namespace rp {
         auto& net = game.onlineBattle;
         if (net.waiting())
             return {};
-        if (retreatConfirm_) {
-            if (y >= 346) {
-                retreatConfirm_ = false;
-                if (x >= 150 && x < 295)
-                    return net.retreat();
-            }
-            return {};
-        }
-        if (net.phase() == Phase::Encounter && y >= 346) {
-            if (x < 270)
-                return net.encounterResponse(true);
-            if (x >= 370)
-                return net.encounterResponse(false);
-        }
-        if (net.phase() == Phase::Positioning) {
-            if (y >= 346 && x >= 576) {
-                retreatConfirm_ = true;
-                return {};
-            }
-            if (y >= 346 && x >= 245 && x < 395) {
-                if (net.attacker() && !net.positioned()) {
-                    auto p = placement_.GetWorldPosition(0);
-                    return net.gotMsgBattleScreenRaftsSelected(p.x, p.y);
+        loadMenu(game);
+        if (menu_) {
+            auto hit = menu_->hitTest(x, y);
+            if (hit) {
+                auto owner = menu_->owner(hit);
+                auto name = menu_->node(owner).name;
+                if (menuName_ == "attack_confirm_dialog" && (name == "Yes" || name == "No"))
+                    return net.encounterResponse(name == "Yes");
+                if (menuName_ == "retreat_confirm" && (name == "Yes" || name == "No")) {
+                    retreatConfirm_ = false;
+                    menu_.reset();
+                    return name == "Yes" ? net.retreat() : std::optional<sfs::Message>{};
                 }
-                auto ids = placement_.gotMsgRequestBattlePlacementState();
-                return net.SendRaftSelection(ids.first, ids.second, game);
+                if (name == "RetreatButton") {
+                    retreatConfirm_ = true;
+                    menu_.reset();
+                    return {};
+                }
+                if (menuName_ == "battle_over_popup" && name == "Continue")
+                    return net.plunder();
+                if (menuName_ == "battle_hud" && name == "Dice") {
+                    auto b = menu_->node(hit).bounds;
+                    dice_ = std::clamp(int((x - b.x) / std::max(1.f, b.w) * 8) + 1, 1, 8);
+                    return net.readyForDice() ? net.gotMsgAttackRequest(dice_)
+                                              : net.SendClientReady();
+                }
+                return {};
             }
-            if (y >= 60 && y < 310) {
-                if (net.attacker() && !net.positioned()) {
-                    auto p = ownView_.ScreenToWorld({x, y});
-                    auto anchor = game.mainRaft();
-                    if (!anchor && !game.rafts.empty())
-                        anchor = &game.rafts.front();
-                    if (anchor) {
-                        p.x -= anchor->x;
-                        p.y -= anchor->y;
-                    }
-                    placement_.SetPosition(placement_.GetClosestPosition(p));
-                } else if (net.hasOpponent()) {
-                    bool own = x < 320;
-                    auto id = pick(own ? static_cast<const Player&>(game) : net.opponent(),
-                                   own ? ownView_ : enemyView_, x, y, own ? 0 : 320);
-                    if (id)
-                        placement_.Select(own, id);
+        }
+        if (net.phase() == Phase::Positioning && y >= 60 && y < 310) {
+            if (net.attacker() && !net.positioned()) {
+                auto p = ownView_.ScreenToWorld({x, y});
+                auto anchor = game.mainRaft();
+                if (!anchor && !game.rafts.empty())
+                    anchor = &game.rafts.front();
+                if (anchor) {
+                    p.x -= anchor->x;
+                    p.y -= anchor->y;
+                }
+                auto cell = placement_.GetClosestPosition(p);
+                auto previous = placement_.GetWorldPosition(0);
+                placement_.SetPosition(cell);
+                if (positionChosen_ && cell.x == previous.x && cell.y == previous.y &&
+                    placement_.OkayToPlace())
+                    return net.gotMsgBattleScreenRaftsSelected(cell.x, cell.y);
+                positionChosen_ = true;
+            } else if (net.hasOpponent()) {
+                bool own = x < 320;
+                auto id = pick(own ? static_cast<const Player&>(game) : net.opponent(),
+                               own ? ownView_ : enemyView_, x, y, own ? 0 : 320);
+                if (id && placement_.Select(own, id)) {
+                    auto ids = placement_.gotMsgRequestBattlePlacementState();
+                    if (ids.first && ids.second)
+                        return net.SendRaftSelection(ids.first, ids.second, game);
                 }
             }
-        } else if (net.phase() == Phase::Fighting && y >= 346) {
-            if (x >= 576) {
-                retreatConfirm_ = true;
-                return {};
-            }
-            if (x >= 10 && x < 200) {
-                dice_ = std::clamp(int((x - 20) / 20) + 1, 1, 8);
-                return {};
-            }
-            if (x >= 245 && x < 395)
-                return net.readyForDice() ? net.gotMsgAttackRequest(dice_) : net.SendClientReady();
-        } else if (net.phase() == Phase::Over && y >= 346 && x >= 245 && x < 395)
-            return net.plunder();
-        else if (net.phase() == Phase::Desynced && y >= 346 && x >= 245 && x < 395)
-            return net.retreat();
+        }
         return {};
     }
 } // namespace rp

@@ -40,7 +40,7 @@ The authentication endpoint is read at runtime from `assets/xml_resources/proper
 
 A bare hostname defaults to HTTPS. A complete HTTP(S) URL or an explicit `auth.php` URL is accepted. The XML property is the sole authentication endpoint configuration; there is no compile-time override. The original `MyLib.getAuthURL()` separately returns the website base recovered from the ARM32 binary.
 
-Authentication uses the legacy BBB `auth.php` request and the returned `bbbId`, `sessId` and `serverIp`. The existing SmartFox Java SDK connects to that game host on port 9933 and logs in to the `RaftPirates` zone. A cold launch displays the splash and title screen; selecting Set Sail resumes a saved session or opens login. Gameplay requires a current login attempt and valid player and ocean snapshots. The SDK login event is preferred; preservation servers that deliver both world packets before the native login callback can complete application-level initialization while the SDK transport is connected. Server authentication and permissions remain the server’s responsibility. See [networking and startup](docs/STARTUP_AND_GAMEPLAY.md).
+Authentication uses the legacy BBB `auth.php` request and the returned `bbbId`, `sessId` and `serverIp`. The existing SmartFox Java SDK connects to that game host on port 9933 and logs in to the `RaftPirates` zone. A cold launch displays the splash and loading/login resources, resumes a saved session or opens login, and processes the initial world and resource manifest before displaying the Set Sail title. Set Sail enters the already-loaded game. Gameplay requires a current login attempt and valid player and ocean snapshots. The SDK login event is preferred; preservation servers that deliver both world packets before the native login callback can complete application-level initialization while the SDK transport is connected. Server authentication and permissions remain the server’s responsibility. See [networking and startup](docs/STARTUP_AND_GAMEPLAY.md).
 
 The historical endpoints are not guaranteed to be operational. Use authorized test servers and test-only accounts. Legacy GET authentication includes credentials in the URL; HTTPS is recommended, and no automatic downgrade to HTTP is performed. Plain HTTP requires a compatible Android network policy. Credentials and private server URLs must not be committed.
 
@@ -52,7 +52,7 @@ The historical endpoints are not guaranteed to be operational. Use authorized te
 | Networking | BBB authentication, SmartFox JNI handoff, typed extension requests, initial packet queue, disconnect cleanup and SDK keep-alive |
 | Player state | Static libraries, player snapshot, inventory, blueprints, raft and component state |
 | Gameplay | Partial construction, repairs, travel, diving, discovery, shop and quest interfaces |
-| Combat | Sonar and boss markers, encounters, battle placement, dice requests, damage updates and provisional asset-based battle UI |
+| Combat | Sonar and boss markers, encounters, battle placement, dice requests, damage updates and original battle XML controls with partial native action bindings |
 | Engine | Software rendering, original assets, animation, menu layout and localization through HydraLegacy |
 | Android bridge | 94 native declarations matched; some callbacks are explicit unsupported stubs |
 
@@ -85,6 +85,6 @@ Platform services and the legacy Android JNI exports live in HydraLegacy; its se
 
 ### Saved login and static libraries
 
-After successful authentication and receipt of valid player data, the client stores the issued session token, BBB ID, returned game-server host and configured authentication endpoint in application-private storage. Cold launch stays on the title until Set Sail is pressed; saved sessions then resume automatically. Expired sessions fall back to login; explicit logout removes the saved session. No password is saved. The historical encrypted save format has not been reconstructed.
+After successful authentication and receipt of valid player data, the client stores the issued session token, BBB ID, returned game-server host and configured authentication endpoint in application-private storage. Saved sessions resume automatically during startup loading, before the title is displayed. Expired sessions fall back to login; explicit logout removes the saved session. No password is saved. The historical encrypted save format has not been reconstructed.
 
 Validated complete static-library snapshots are cached in application-private storage, scoped to the authentication endpoint and game host. The stored timestamp is sent as `last_updated` on the next login. Incomplete or unreadable caches are not used.

@@ -1,0 +1,29 @@
+HydraLegacy: APK assets extracted: 710
+HydraLegacy: Raft Pirates Pass 30 startup: loading initialized; property endpoint configured
+HydraLegacy: SmartFox callback: OnLogin
+HydraLegacy: SmartFox callback: OnLoginError
+HydraLegacy: Initial resource manifest processed
+HydraLegacy: Pass 29: SmartFox login request sent
+HydraLegacy: NET: lib_go_data
+HydraLegacy: NET: gs_player
+HydraLegacy: Pass 29: initial player packet validated
+HydraLegacy: NET: gs_ocean
+HydraLegacy: Initial ocean received; checking game session readiness
+HydraLegacy: Initial world received; SDK transport is not connected
+HydraLegacy: Pass 29: server supplied initial player and ocean; accepting game session
+HydraLegacy: Player snapshot accepted
+HydraLegacy: Player and ocean ready: starting loading outro before title
+HydraLegacy: Loading complete: presenting title
+HydraLegacy: Set Sail pressed; entering loaded gameplay
+HydraLegacy: Received server administration message
+HydraLegacy: Pass 29: new Android host; resetting previous game session
+HydraLegacy: Raft Pirates Pass 30 startup: loading initialized; property endpoint configured
+HydraLegacy: Resuming saved login session during startup
+HydraLegacy: Raft Pirates Pass 30 startup: loading initialized; property endpoint configured
+HydraLegacy: Resuming saved login session during startup
+HydraLegacy: Initial resource manifest processed
+HydraLegacy: Pass 29: SmartFox login request sent
+HydraLegacy: SmartFox callback: OnLoginError
+Original JNI mock lifecycle, login, SFS response and request passed
+In-process URL fixture: original properties endpoint, URL encoding, saved login and BBB handoff passed
+94 JNI declarations matched exported names

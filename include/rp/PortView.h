@@ -8,7 +8,8 @@
 #include "rp/GfxBattleScreen.h"
 #include "rp/DiscoveryModeState.h"
 #include "rp/TouchControls.h"
-#include "sys/gfx/GfxBox.h"
+#include "sys/menu_redux/MenuRuntime.h"
+#include "sys/localization/LocalizationManager.h"
 #include "sys/gfx/ResourceSpriteFont.h"
 
 namespace rp {
@@ -67,8 +68,13 @@ namespace rp {
         int selectedParent_ = 0, selectedComponent_ = 0;
         bool moving_ = false;
         std::optional<sfs::Message> panelTouch(Game&, float x, float y);
-        std::unique_ptr<sys::gfx::GfxBox> panelBackground_;
-        std::optional<sys::gfx::ResourceSpriteFont> panelFont_;
+        std::unique_ptr<sys::menu_redux::MenuRuntime> xmlMenu_;
+        std::string xmlName_;
+        std::map<std::string, int> xmlItems_;
+        sys::localization::LocalizationManager strings_;
+        void openXml(const Game&, const std::string&);
+        void renderXml(sys::gfx::Image&, const Game&, const std::string&);
+        std::optional<sfs::Message> xmlTouch(Game&, float, float);
         void renderPanel(sys::gfx::Image&, const Game&);
         void loadMap(const Game&);
     };

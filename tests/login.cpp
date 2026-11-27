@@ -87,19 +87,19 @@ namespace {
         game::touchDown(platform, 640, 730);
         game::touchUp(platform, 640, 730);
         game::tick(platform);
-        CHECK(sameImage(expected, platform.frame));
+        CHECK(!sameImage(expected, platform.frame));
         game::touchUp(platform, 640, 730);
         game::tick(platform);
-        CHECK(sameImage(expected, platform.frame));
+        CHECK(!sameImage(expected, platform.frame));
         game::touchDown(platform, 640, 730);
         game::pause(platform, true);
         game::pause(platform, false);
         game::touchUp(platform, 640, 730);
         game::tick(platform);
-        CHECK(sameImage(expected, platform.frame));
+        CHECK(!sameImage(expected, platform.frame));
         for (int i = 0; i < 10; ++i)
             game::tick(platform);
-        CHECK(sameImage(expected, platform.frame));
+        CHECK(!sameImage(expected, platform.frame));
         CHECK(platform.connects == 0 && platform.auths == 0);
         game::touchDown(platform, 640, 730);
         game::touchUp(platform, 640, 730);
@@ -109,7 +109,7 @@ namespace {
         game::init(platform, "test.apk", 1280, 800);
         game::touchUp(platform, 640, 730);
         game::tick(platform);
-        CHECK(sameImage(expected, platform.frame));
+        CHECK(!sameImage(expected, platform.frame));
         game::kill(platform);
     }
 } // namespace

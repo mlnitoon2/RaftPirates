@@ -1,6 +1,6 @@
 # Pass 23–24: multiplayer and boss battle transport
 
-`BattleModeState` now owns the reconstructed online path. The reconstruction-only `OnlineBattle` source files were removed. `Game::extension` forwards recognized packets, and the JNI send path uses the existing SmartFox Java SDK. `Ocean` keeps a separate opponent snapshot. Disconnect clears the online encounter and sonar state. The temporary online battle controls are not the original battle layout. No Offline Play or manual Connect option was reintroduced.
+`BattleModeState` now owns the reconstructed online path. The reconstruction-only `OnlineBattle` source files were removed. `Game::extension` forwards recognized packets, and the JNI send path uses the existing SmartFox Java SDK. `Ocean` keeps a separate opponent snapshot. Disconnect clears the online encounter and sonar state. Battle presentation loads the original encounter confirmation, positioning HUD, battle HUD, retreat confirmation and battle-over popup XML. The original action bindings are only partially reconstructed. No Offline Play or manual Connect option was reintroduced.
 
 ## Outgoing protocol evidence
 
@@ -36,6 +36,6 @@ The original `MapView::updateBoss` at `0x44a914` reads the boss record without c
 
 ## Current limitations
 
-The battle controls now use original sprites and font assets, but the complete original battle XML, scripts and layout are not restored. Exact result ownership when raft IDs collide, synchronization ordering, selection after destruction, timing and animation, boss phases and reward eligibility are not completely recovered. The server must send authoritative outcomes and implement matching commands. No actual multiplayer server session or complete boss fight was tested.
+The battle controls load original XML, sprites and font assets; only selected actions and literal initialization properties are bound. The complete original Lua scripts and layout behavior are not restored. Exact result ownership when raft IDs collide, synchronization ordering, selection after destruction, timing and animation, boss phases and reward eligibility are not completely recovered. The server must send authoritative outcomes and implement matching commands. No actual multiplayer server session or complete boss fight was tested.
 
 `tests/multiplayer.cpp` exercises synthetic map/boss and opponent records, position requests, raft selection, ready gating, dice fields, server-authoritative damage, counter advancement, stance swaps, duplicate handling, retreat, decline and plunder. Host JNI smoke testing checks the login/SFS bridge, not live combat.

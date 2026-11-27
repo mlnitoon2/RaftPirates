@@ -74,9 +74,9 @@ int main(int argc, char** argv) {
         check(image.width == 640 && image.height == 400, "battle asset render");
         view.Select(game, 370, 180);
         image = view.Render(game, .1f);
-        auto request = payload(view.Select(game, 320, 370), "gs_battle_position");
-        check(request.getInt("attack_x", 9999) != 9999 && request.getInt("attack_y", 9999) != 9999,
-              "battle screen sends position");
+        auto request = payload(battle.gotMsgBattleScreenRaftsSelected(2, -1), "gs_battle_position");
+        check(request.getInt("attack_x") == 2 && request.getInt("attack_y") == -1,
+              "battle placement packet");
         O ack;
         ack.put("sync_counter", int32_t(0));
         ack.put("attack_position_okay", false);

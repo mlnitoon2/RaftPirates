@@ -134,6 +134,7 @@ int main(int argc, char** argv) {
             CHECK(loading.sheet("xml_resources/rp_menu.xml")->findSpriteByName("btn_set_sail"));
             std::cout << "Original manifest: " << loading.completed() - 1 << " resources, "
                       << loading.errors().size() << " diagnostics\n";
+            CHECK(loading.errors().empty());
             for (const auto& e : loading.errors())
                 std::cout << e << '\n';
             loading.cancel();

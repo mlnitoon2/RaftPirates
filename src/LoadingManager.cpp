@@ -152,7 +152,14 @@ namespace rp {
         try {
             switch (job.kind) {
             case Kind::Sprite:
-                sprite(job.path);
+                if (job.path == "gfx/font/blue_highway" &&
+                    std::filesystem::is_regular_file(root_ / "font/blue_highway.ttf")) {
+                    // Original manifest refers to a platform-font resource.
+                    cache_.acquire<std::vector<uint8_t>>(job.path, [&] {
+                        return sys::File::readAll(root_ / "font/blue_highway.ttf");
+                    });
+                } else
+                    sprite(job.path);
                 break;
             case Kind::Animation:
                 cache_.acquire<sys::res::ResourceAEAnim>(
