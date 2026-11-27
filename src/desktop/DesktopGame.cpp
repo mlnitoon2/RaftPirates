@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <atomic>
 #include <optional>
 #include <stdexcept>
 #ifdef _WIN32
@@ -40,8 +41,13 @@ namespace {
                 if((Mix_Init(MIX_INIT_MP3)&MIX_INIT_MP3)==0)
                     log(std::string("MP3 decoder unavailable: ")+Mix_GetError());
                 audioOpen_ = Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0;
-                if (audioOpen_)
+                if (audioOpen_) {
                     Mix_AllocateChannels(24);
+                    int hz=0,channels=0; Uint16 fmt=0;
+                    Mix_QuerySpec(&hz,&fmt,&channels);
+                    log(std::string("SDL audio driver: ")+(SDL_GetCurrentAudioDriver()?SDL_GetCurrentAudioDriver():"unknown")+
+                        ", "+std::to_string(hz)+" Hz, "+std::to_string(channels)+" channels, format "+std::to_string(fmt));
+                }
             }
             if (!audioOpen_)
                 log(std::string("Audio device unavailable: ")+Mix_GetError());
@@ -79,8 +85,10 @@ namespace {
         }
 
         void music(const std::string& path) override {
-            if (!audioOpen_)
-                return;
+            if (!audioOpen_) {
+                if(path.empty())return;
+                throw std::runtime_error("SDL_mixer audio device is not open");
+            }
             Mix_HaltMusic();
             if (music_) {
                 Mix_FreeMusic(music_);
@@ -88,9 +96,10 @@ namespace {
             }
             if (path.empty())
                 return;
-            music_ = Mix_LoadMUS((root_ / path).string().c_str());
+            music_ = Mix_LoadMUS((root_ / path).u8string().c_str());
             if (!music_ || Mix_PlayMusic(music_, -1) < 0)
-                log("Unable to play music: " + path + ": " + Mix_GetError());
+                throw std::runtime_error("Unable to play music: " + path + ": " + Mix_GetError());
+            log("Playing music: "+path);
         }
 
         void pauseMusic(bool paused) override {
@@ -107,17 +116,44 @@ namespace {
 
         void effect(const std::string& path) override {
             if (!audioOpen_)
-                return;
+                throw std::runtime_error("SDL_mixer audio device is not open");
             auto it = effects_.find(path);
             if (it == effects_.end()) {
-                auto* chunk = Mix_LoadWAV((root_ / path).string().c_str());
+                auto* chunk = Mix_LoadWAV((root_ / path).u8string().c_str());
                 if (!chunk) {
-                    log("Unable to load sound: " + path + ": " + Mix_GetError());
-                    return;
+                    throw std::runtime_error("Unable to load sound: " + path + ": " + Mix_GetError());
                 }
                 it = effects_.emplace(path, chunk).first;
             }
-            Mix_PlayChannel(-1, it->second, 0);
+            if(Mix_PlayChannel(-1, it->second, 0)<0)
+                throw std::runtime_error("Unable to play sound: "+path+": "+Mix_GetError());
+        }
+
+        bool testAudio() {
+            if(!audioOpen_)throw std::runtime_error("Audio device unavailable");
+            int hz=0,channels=0; Uint16 fmt=0;
+            Mix_QuerySpec(&hz,&fmt,&channels);
+            if(fmt!=AUDIO_S16SYS)throw std::runtime_error("PCM test requires signed 16-bit output");
+            std::atomic<bool> nonzero{false};
+            Mix_SetPostMix([](void* state,Uint8* stream,int bytes){
+                auto& seen=*static_cast<std::atomic<bool>*>(state);
+                for(int i=0;i<bytes;++i)if(stream[i]!=0){seen.store(true,std::memory_order_relaxed);break;}
+            },&nonzero);
+            bool mp3=false,wav=false;
+            try {
+                music("audio/music/theme.mp3");
+                SDL_Delay(1500);
+                mp3=nonzero.load(std::memory_order_relaxed)&&Mix_PlayingMusic()!=0;
+                music("");
+                SDL_Delay(150);
+                nonzero.store(false,std::memory_order_relaxed);
+                effect("audio/sfx/menu_button_down.wav");
+                SDL_Delay(600);
+                wav=nonzero.load(std::memory_order_relaxed);
+            }catch(...){Mix_SetPostMix(nullptr,nullptr);throw;}
+            Mix_SetPostMix(nullptr,nullptr);
+            log(std::string("Audio PCM test: MP3=")+(mp3?"PASS":"FAIL")+", WAV="+(wav?"PASS":"FAIL"));
+            return mp3&&wav;
         }
 
         void showPopup(const std::string& message) override {
@@ -312,9 +348,11 @@ static int runGame(int argc, char** argv) {
     }
     try {
         fs::path root;
-        bool allowHttp = false;
+        bool allowHttp = false, audioTest=false;
         for (int i = 1; i < argc; ++i) {
-            if (std::string(argv[i]) == "--allow-insecure-auth")
+            if (std::string(argv[i]) == "--audio-test")
+                audioTest=true;
+            else if (std::string(argv[i]) == "--allow-insecure-auth")
                 allowHttp = true;
             else if (root.empty())
                 root = argv[i];
@@ -334,6 +372,11 @@ static int runGame(int argc, char** argv) {
             return 1;
         }
         DesktopServices platform(root, allowHttp);
+        if(audioTest) {
+            bool passed=platform.testAudio();
+            platform.showPopup(passed?"MP3 and WAV produced nonzero PCM. Check the selected Windows playback device if still silent.":"Audio PCM test failed. See desktop.log in the save directory.");
+            return passed?0:3;
+        }
         game::init(platform, root, 640, 400);
         if (!game::initialized())
             return 2;

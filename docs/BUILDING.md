@@ -98,3 +98,7 @@ git push
 ```
 
 The importer verifies every included file against the archived inventory before writing, skips identical files, and refuses changed or unrecognized files. It does not commit or push automatically. The Windows build copies the committed files into its runtime assets directory.
+
+### Desktop audio diagnostics
+
+Run `raftpirates_desktop.exe --audio-test` to play the original theme and button sound independently of login or server state. The diagnostic checks nonzero mixed PCM and logs the SDL audio driver and output format to desktop.log. It cannot detect a muted Windows output or disconnected physical speaker. Failed music playback is retried rather than permanently disabling all sound.
