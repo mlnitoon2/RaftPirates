@@ -70,7 +70,7 @@ namespace rp {
             try {
                 hud_ = std::make_unique<Hud>(root_);
                 sys::EngineConfig properties;
-                properties.LoadProperties(root_ / "xml_resources/properties.xml");
+                properties.LoadProperties((root_ / "xml_resources/properties.xml").string());
                 admin_ = properties.GetPropertyAsBool("admin", false);
                 hud_->setAdmin(admin_);
             } catch (const std::exception&) { /* No substitute controls for missing assets. */
