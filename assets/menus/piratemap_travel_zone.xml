@@ -1,0 +1,113 @@
+<menu>
+	<element name="topElement">
+		<size dependentOnElement="element:name()"/>
+		
+		<event name="onPostInit" params="element">
+			element:SetupGenericListener(game.engineReceiver(), "rp::MsgZoneMoveToResult", "gotMsgZoneMoveToResult")
+		</event>
+		
+		<event name="gotMsgZoneMoveToResult" params="element, msg">
+			menu:popPopUp()
+			if msg.success then
+				game.hidePirateMap()
+			end
+		</event>		
+		
+		<element name="bg">
+			<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+			<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="5" />
+			<ninesliceComponent name="Sprite">
+				<event name="onInit" params="component, element" >
+					component("spriteName"):Set("gfx/menu/menu_overlay")
+					component("width"):SetFloat( screenWidth() );
+					component("height"):SetFloat( screenHeight() );
+					component("layer"):SetString("PIRATE_MAP_HUD");
+				</event>
+			</ninesliceComponent>
+			<touchComponent>
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">
+					--[[menu:popPopUp()--]]
+				</event>
+			</touchComponent>
+		</element>
+		
+		<element name="Dialog">
+			
+			<element name="Bird">
+				<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+				<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="2" />
+				
+				
+				<spriteSheetComponent name="Sprite">
+					<event name="onInit" params="component, element" >
+						component("useOffsets"):SetInt(1)
+						component("spriteName"):Set("tutorial_bird")
+						component("sheetName"):Set("xml_resources/rp_menu.xml")
+						component("layer"):SetString("PIRATE_MAP_HUD");
+					</event>
+				</spriteSheetComponent>
+			</element>
+			
+			<element name="Bg">
+				<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+				<position relativeTo="element:parent()[&quot;Bird&quot;]" vAnchor="TOP" hAnchor="HCENTER" />
+				<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="1" />
+				<spriteSheetComponent name="Sprite">
+					<event name="onInit" params="component, element" >
+						component("useOffsets"):SetInt(1)
+						component("spriteName"):Set("tutorial_pop")
+						component("sheetName"):Set("xml_resources/rp_menu.xml")
+						component("layer"):SetString("PIRATE_MAP_HUD");
+					</event>
+				</spriteSheetComponent>
+			</element>
+      
+			<element name="BgBottom">
+				<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+				<position relativeTo="element:parent()[&quot;Bg&quot;]" vAnchor="BOTTOM" hAnchor="HCENTER" />
+				<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+				<spriteSheetComponent name="Sprite">
+					<event name="onInit" params="component, element" >
+						component("useOffsets"):SetInt(1)
+						component("spriteName"):Set("tutorial_pop_02")
+						component("sheetName"):Set("xml_resources/rp_menu.xml")
+						component("layer"):SetString("PIRATE_MAP_HUD");
+					</event>
+				</spriteSheetComponent>
+			</element>
+      
+			<element name="TutorialText">
+				<size dependentOnElement="element:name()" dependentOnComponent="Text" />
+				<position relativeTo="element:parent()[&quot;Bg&quot;]" vAnchor="VCENTER" hAnchor="LEFT" />
+				<orientation vAnchor="VCENTER" hAnchor="LEFT" xOffset="screenWidth()/8" yOffset="0" priority="-1" />
+				<textComponent name="Text" >
+					
+					<event name="onInit" params="component, element" >
+						component("font"):Set("blue_highway")
+						component("size"):Set(1.0)
+						component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+						
+						component("red"):SetFloat(1.0)
+						component("green"):SetFloat(1.0)
+						component("blue"):SetFloat(1.0)
+						
+						component("text"):SetString("TRAVELLING_TO_ZONE")
+						
+						component("layer"):SetString("PIRATE_MAP_HUD");
+					</event>
+				</textComponent>			
+			</element>
+			<touchComponent name="Touch">
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">
+				
+				</event>
+			</touchComponent>
+
+		</element>
+
+	</element>
+</menu>

@@ -1,0 +1,117 @@
+<template>
+
+	<defaultTemplateVar name="$width" equals="screenWidth()*0.70"/>
+	<defaultTemplateVar name="$height" equals="screenWidth()*0.70"/>
+	<defaultTemplateVar name="$layer" equals="PIRATE_MAP_HUD"/>
+	<defaultTemplateVar name="$clippinglayer" equals="PIRATE_MAP_HUD_CLIPPED"/>
+	<defaultTemplateVar name="$autoShow" equals="1"/>
+	
+	<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+	
+	<event name="onInit" params="element">	
+	<![CDATA[
+		element("targetWidth"):SetFloat($width)
+		element("animating"):SetInt(0)
+	]]>
+	</event>
+	
+	<event name="onPostInit" params="element">	
+	<![CDATA[
+		if not ( $autoShow == 0 ) then
+			element:DoStoredScript("show")		
+		end
+	]]>
+	</event>
+	
+	<event name="show" params="element">	
+	<![CDATA[
+		local c = element["Sprite"]
+		if c("showing"):GetInt() == 0 then
+			local currentWidth = c("width"):GetFloat()
+			local targetWidth = element("targetWidth"):GetFloat()
+			c("showing"):SetInt(1)
+			c("hiding"):SetInt(0)		
+			c("totalTime"):SetFloat(0.5)
+			c("t"):SetFloat(0)
+			c("vFrom"):SetFloat( currentWidth )
+			c("vTo"):SetFloat( targetWidth )
+			element("animating"):SetInt(1)
+		end
+	]]>
+	</event>
+	
+	<event name="hide" params="element">
+	<![CDATA[
+		local c = element["Sprite"]
+		if c("hiding"):GetInt() == 0 then			
+			local currentWidth = c("width"):GetFloat()
+			local targetWidth = element("targetWidth"):GetFloat()
+			c("hiding"):SetInt(1)
+			c("showing"):SetInt(0)
+			c("totalTime"):SetFloat(0.5)
+			c("t"):SetFloat(0)
+			c("vFrom"):SetFloat( currentWidth )
+			c("vTo"):SetFloat(0)
+			element("animating"):SetInt(1)
+		end
+	]]>
+	</event>
+	
+	<ninesliceComponent name="Sprite">
+	
+		<event name="onInit" params="component, element">						
+		<![CDATA[
+			component("width"):SetFloat( 0 );
+			component("height"):SetFloat( $height );
+			component("topHeight"):SetFloat( 16 );
+			component("bottomHeight"):SetFloat( 16 );
+			component("leftWidth"):SetFloat( 16 );
+			component("rightWidth"):SetFloat( 16);
+			component("spriteName"):SetString("gfx/menu/popup_bg")
+			component("layer"):SetString("$layer")
+			component("showing"):SetInt(0)
+			component("hiding"):SetInt(0)			
+		]]>	
+		</event>
+				
+		<event name="onTick" params="component, element, dt" >
+		<![CDATA[
+			if ( component("showing"):GetInt() == 1 ) or ( component("hiding"):GetInt() == 1 ) then			
+				local totalTime = component("totalTime"):GetFloat()
+				local t = component("t"):GetFloat()
+				if t < totalTime then
+					local v1 = component("vFrom"):GetFloat()
+					local v2 = component("vTo"):GetFloat()
+					local easedTime = 0
+					if component("showing"):GetInt() == 1 then
+						easedTime = Back_EaseOut(t, 0, 1, totalTime)
+					end
+					if component("hiding"):GetInt() == 1 then
+						easedTime = Back_EaseIn(t, 0, 1, totalTime)
+					end					
+					local v = lerpf( v1, v2, easedTime )
+					t = t + dt
+					component("t"):SetFloat(t)
+					component("width"):SetFloat( v );
+					
+					local pos = component:position()
+					game.setWorldClipping("PIRATE_MAP_HUD_CLIPPED", pos.x-14, pos.y-14, component("width"):GetFloat()+28, component("height"):GetFloat()+28);
+					
+				else
+					if component("showing"):GetInt() == 1 then
+						component("showing"):SetInt(0)
+						element:DoStoredScript("onDoneShow")
+					end					
+					if component("hiding"):GetInt() == 1 then
+						component("hiding"):SetInt(0)
+						element:DoStoredScript("onDoneHide")
+					end					
+					element("animating"):SetInt(0)
+				end
+			end	
+		]]>					
+		</event>
+		
+	</ninesliceComponent>
+	
+</template>

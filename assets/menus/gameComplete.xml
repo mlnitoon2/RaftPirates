@@ -1,0 +1,97 @@
+<menu>
+	<element name="TopElement">
+	
+		<size dependentOnElement="element:name()" dependentOnComponent="Panel"/>
+		<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+		
+		<element name="blackout">
+			<size dependentOnElement="element:name()" dependentOnComponent="blackout"/>
+			<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="10" />
+			
+			<spriteComponent name="blackout">
+				<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+			
+				<event name="onInit" params="component, element">
+					component("spriteName"):Set("gfx/black_bg")
+					component("size"):SetFloat( 3.2 )
+					component("alpha"):SetFloat( 0.80 )
+				</event>
+			</spriteComponent>
+			
+			<touchComponent name="Touch">
+				<size dependentOnElement="element:name()"/>
+			</touchComponent>
+		</element>
+		
+		<spriteComponent name="Panel">
+			<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="8" />
+		
+			<event name="onInit" params="component, element">
+				component("spriteName"):Set("gfx/menu/OPTIONS_FRAME")
+			</event>
+		</spriteComponent>
+		
+		<!-- Message to Player -->
+		<element name="ConfirmMessage">
+			<size dependentOnElement="element:name()" dependentOnComponent="Panel"/>
+			<position relativeTo="PARENT" vAnchor="TOP" hAnchor="HCENTER" />
+			<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="80" priority="5" />
+			
+			<textComponent name="Label" >
+				<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="30" priority="0" />
+				<size w="350" h="400" />
+				
+				<event name="onInit" params="component, element" >
+					component("font"):Set("font_calibri_20")
+					component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+										
+					component("red"):SetFloat(0.31)
+					component("green"):SetFloat(0.80)
+					component("blue"):SetFloat(0.93)
+					
+					component("text"):SetString("GAME_COMPLETE")
+				</event>
+			</textComponent>
+		</element>
+		
+	<!-- Resume Buttons -->
+	<template type="template_button" name="Back">
+		<templateVar name="$fontName" equals="font_calibri_20" />
+		<templateVar name="$text" equals="'BACK'" />
+		
+		<templateVar name="$downR" equals="253" />
+		<templateVar name="$downG" equals="148" />
+		<templateVar name="$downB" equals="178" />
+
+		<templateVar name="$upR" equals="79" />
+		<templateVar name="$upG" equals="207" />
+		<templateVar name="$upB" equals="237" />
+		
+		<position relativeTo="PARENT" vAnchor="TOP" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="275" priority="3" />
+		
+		<templateVar name="$imageUp" equals="'gfx/menu/DIALOG_BUTTON'" />
+		<templateVar name="$imageDown" equals="'gfx/menu/DIALOG_BUTTON_Rollover'" />
+		
+		<templateVar name="$offsetY" equals="-5" />
+		
+		<touchComponent name="Touch">
+			<size dependentOnElement="element:name()"/>
+			<event name="onTouchUp" params="component, element">
+				if ( component("downInside"):GetInt() == 1 ) then
+					element:root():popPopUp()
+					lua_sys.resumeGame()
+				end
+				onTouchUp(component, element)
+			</event>
+		</touchComponent>
+	</template>
+		
+	</element>
+		
+</menu>
