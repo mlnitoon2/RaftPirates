@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:30d0500efeef37132102efd38aa56a75$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/menu/rp_startup_anim.png" width="256" height="512">
+    <sprite n="rp_start_6wave" x="2" y="2" w="170" h="174" oX="287" oY="76" oW="512" oH="384"/>
+    <sprite n="rp_start_arm001" x="222" y="310" w="24" h="22" oX="26" oY="43" oW="100" oH="100"/>
+    <sprite n="rp_start_arm002" x="222" y="334" w="22" h="20" oX="13" oY="41" oW="100" oH="100"/>
+    <sprite n="rp_start_arm003" x="222" y="356" w="18" h="16" oX="18" oY="41" oW="100" oH="100"/>
+    <sprite n="rp_start_arm004" x="222" y="374" w="16" h="14" oX="19" oY="39" oW="100" oH="100"/>
+    <sprite n="rp_start_bbb" x="2" y="178" w="170" h="174" oX="55" oY="76" oW="512" oH="384"/>
+    <sprite n="rp_start_leg001" x="222" y="236" w="32" h="36" oX="28" oY="58" oW="100" oH="100"/>
+    <sprite n="rp_start_leg002" x="222" y="274" w="32" h="34" oX="30" oY="60" oW="100" oH="100"/>
+    <sprite n="rp_start_robot001" x="2" y="420" w="46" h="54" oX="21" oY="16" oW="100" oH="100"/>
+    <sprite n="rp_start_robot002" x="2" y="354" w="64" h="64" oX="11" oY="16" oW="100" oH="100"/>
+    <sprite n="rp_start_rope001" x="212" y="226" w="8" h="232" oX="40" oY="2" oW="94" oH="248"/>
+    <sprite n="rp_start_rope002" x="246" y="2" w="8" h="232" oX="40" oY="2" oW="94" oH="248"/>
+    <sprite n="rp_start_rope003" x="228" y="2" w="16" h="232" oX="35" oY="2" oW="94" oH="248"/>
+    <sprite n="rp_start_rope004" x="174" y="226" w="36" h="232" oX="26" oY="2" oW="94" oH="248"/>
+    <sprite n="rp_start_rope005" x="174" y="2" w="52" h="222" oX="12" oY="12" oW="94" oH="248"/>
+</TextureAtlas>

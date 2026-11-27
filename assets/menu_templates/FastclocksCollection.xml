@@ -1,0 +1,63 @@
+<template>
+	<size dependentOnElement="element:name()" dependentOnComponent="ItemImage" />
+	<event name="onInit" params="element">
+		element("numCollected"):SetInt(0)
+	</event>
+	
+	<event name="setNumFastclocks" params="element">
+		if element("numCollected"):GetInt()~=0 then
+			element["NumFastclocks"]["Text"]("text"):SetString("+"..element("numCollected"):GetInt())
+			element:DoStoredScript("enableMe")
+			element("yOffset"):SetInt(element("yOffset"):GetInt()+element["ItemImage"]["Sprite"]("height"):GetInt()/3)
+		else
+			element:DoStoredScript("disableMe")
+		end
+	</event>
+	
+	<event name="enableMe" params="element">
+		element["ItemImage"]["Sprite"]("visible"):SetInt(1)
+		element["NumFastclocks"]["Text"]("visible"):SetInt(1)
+	</event>
+	
+	<event name="disableMe" params="element">
+		element["ItemImage"]["Sprite"]("visible"):SetInt(0)
+		element["NumFastclocks"]["Text"]("visible"):SetInt(0)
+	</event>
+
+	<element name="ItemImage">
+		<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+		<position relativeTo="element:parent()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+		<spriteSheetComponent name = "Sprite">
+			<event name="onInit" params="component, element" >
+				component("useOffsets"):SetInt(1)
+				component("spriteName"):SetString("reward_clock")
+				component("sheetName"):SetString("xml_resources/rp_menu.xml")
+				component("layer"):SetString("PIRATE_MAP_HUD");
+			</event>
+		</spriteSheetComponent>
+	</element>
+	
+	<element name= "NumFastclocks">
+		<size dependentOnElement="element:name()" dependentOnComponent="Text" />
+		<position relativeTo="element:parent()[&quot;ItemImage&quot;]" vAnchor="TOP" hAnchor="HCENTER" />
+		<orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+		<event name="onPostInit" params="element">
+			element("yOffset"):SetInt(-element:parent()["ItemImage"]["Sprite"]("height"):GetInt()/4 + 8)
+		</event>
+		<textComponent name="Text">
+			<event name="onInit" params="component, element" >
+				component("font"):Set("blue_highway")
+				component("size"):Set(1.0)
+				component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+				
+				component("red"):SetFloat(1.0)
+				component("green"):SetFloat(1.0)
+				component("blue"):SetFloat(1.0)
+				
+				component("text"):SetString("+")
+				component("layer"):SetString("PIRATE_MAP_HUD");
+			</event>
+		</textComponent>
+	</element>
+</template>

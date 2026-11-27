@@ -1,0 +1,89 @@
+<template>
+	<size dependentOnElement="element:name()" dependentOnComponent="UpSprite" />
+
+	<spriteSheetComponent name="UpSprite">
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="1" />		
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("btn_red")	
+			component:GetVar("sheetName"):SetString("xml_resources/rp_menu.xml")
+			component:GetVar("visible"):SetInt(1)
+			component:GetVar("layer"):Set("HUD")					
+		</event>
+	</spriteSheetComponent>
+	
+	<spriteSheetComponent name="UpSprite2">
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />		
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("sound_robot")	
+			component:GetVar("sheetName"):SetString("xml_resources/rp_menu.xml")
+			component:GetVar("visible"):SetInt(1)
+			component:GetVar("layer"):Set("HUD")					
+		</event>
+	</spriteSheetComponent>
+	
+	
+	
+	<event name="onPostInit" params="element">
+		element:DoStoredScript("refresh")
+	</event>
+			
+
+	
+	<touchComponent name="Touch">
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />		
+		<size dependentOnElement="element:name()" dependentOnComponent="UpSprite" />
+		<event name="onInit" params="component, element">
+			component("singleTouch"):SetInt(1)
+		</event>
+		<event name="onTouchDown" params="component, element">
+		<![CDATA[
+			--element:GetComponent("UpSprite"):GetVar("visible"):SetInt(0)				
+			--element:GetComponent("DownSprite"):GetVar("visible"):SetInt(1)		
+		]]>
+		</event>
+		<event name="onTouchUp" params="component, element">
+		<![CDATA[
+			--element:GetComponent("UpSprite"):GetVar("visible"):SetInt(1)				
+			--element:GetComponent("DownSprite"):GetVar("visible"):SetInt(0)	
+			
+			game.setSoundEnabled( not game.isSoundEnabled() );	
+			element:DoStoredScript("refresh")			
+		
+			playSoundFx("audio/sfx/menu_button_down.wav")	
+			print("SOUND TOGGLE: UP")
+		]]>
+		</event>			
+		<event name="onTouchRelease" params="component, element">
+		<![CDATA[
+			--element:GetComponent("UpSprite"):GetVar("visible"):SetInt(1)				
+			--element:GetComponent("DownSprite"):GetVar("visible"):SetInt(0)	
+			]]>
+		</event>
+	</touchComponent>
+	
+	<function name="refresh" params="element">
+	
+		if game.isSoundEnabled() then
+			element["UpSprite"]("spriteName"):Set("btn_green")	
+		else
+			element["UpSprite"]("spriteName"):Set("btn_red")	
+		end
+		
+		element["UpSprite"]("sheetName"):SetString("xml_resources/rp_menu.xml")
+	</function>
+	
+	<function name="hide" params="element">
+		element:GetComponent("UpSprite"):GetVar("visible"):SetInt(0)				
+		element:GetComponent("Touch"):GetVar("enabled"):SetInt(0)
+	</function>
+	
+	<function name="show" params="element">
+		element:GetComponent("UpSprite"):GetVar("visible"):SetInt(1)				
+		element:GetComponent("Touch"):GetVar("enabled"):SetInt(1)
+	</function>
+
+	
+</template>

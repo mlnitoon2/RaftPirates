@@ -1,0 +1,58 @@
+<template name="template_animspritebutton">
+
+	<defaultTemplateVar name="$animSprite" equals="BUTTON_BG" />
+	<defaultTemplateVar name="$sfx" equals="[[audio/sfx/Battle_Begin.wav]]" />
+	<defaultTemplateVar name="$scale" equals="1.0" />
+	<defaultTemplateVar name="$rd" equals="1.0" />
+	<defaultTemplateVar name="$gr" equals="1.0" />
+	<defaultTemplateVar name="$bl" equals="1.0" />
+	
+	<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+	<animSpriteComponent name="Sprite">	
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("$animSprite")
+			component:GetVar("frame"):SetInt(0)
+		</event>
+	</animSpriteComponent>
+	<textComponent name="Text">
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priorityOffset="-1" />
+		<event name="onInit" params="component, element">
+			component:GetVar("font"):Set(lua_sys.getButtonFont())
+			component:GetVar("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+			component:GetVar("text"):Set("$text")
+			
+			component:GetVar("size"):SetFloat($scale)
+		</event>
+	</textComponent>
+	<touchComponent name="Touch">	
+		<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+		<event name="onInit" params="component, element">
+			component("singleTouch"):SetInt(1)
+		</event>
+		<event name="onTouchDown" params="component, element">
+			element:GetComponent("Sprite"):GetVar("frame"):SetInt(1)
+			menu:SetElementComponentVarFloat(element:name(), "Text", "red", $rd)
+			menu:SetElementComponentVarFloat(element:name(), "Text", "green", $gr)
+			menu:SetElementComponentVarFloat(element:name(), "Text", "blue", $bl)
+		</event>
+		<event name="onTouchUp" params="component, element">
+			if (string.len("$sfx") ~= 0) then
+				element:DoStoredScript("playSFX")
+			end
+			element:GetComponent("Sprite"):GetVar("frame"):SetInt(0)
+			menu:SetElementComponentVarFloat(element:name(), "Text", "red", 1.0)
+			menu:SetElementComponentVarFloat(element:name(), "Text", "green", 1.0)
+			menu:SetElementComponentVarFloat(element:name(), "Text", "blue", 1.0)				
+		</event>
+		<event name="onTouchRelease" params="component, element">
+			element:GetComponent("Sprite"):GetVar("frame"):SetInt(0)
+			menu:SetElementComponentVarFloat(element:name(), "Text", "red", 1.0)
+			menu:SetElementComponentVarFloat(element:name(), "Text", "green", 1.0)
+			menu:SetElementComponentVarFloat(element:name(), "Text", "blue", 1.0)
+		</event>			
+	</touchComponent>
+	<function name="playSFX" params="element">
+		lua_sys.playSoundFx("$sfx")
+	</function>
+</template>

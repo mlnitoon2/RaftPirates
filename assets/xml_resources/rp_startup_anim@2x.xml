@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:fef268956cc9a02d6313d262aaa2ba6f$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/menu/rp_startup_anim@2x.png" width="512" height="1024">
+    <sprite n="rp_start_6wave" x="2" y="466" w="338" h="346" oX="575" oY="154" oW="1024" oH="768"/>
+    <sprite n="rp_start_arm001" x="228" y="420" w="48" h="40" oX="52" oY="89" oW="200" oH="200"/>
+    <sprite n="rp_start_arm002" x="164" y="422" w="44" h="40" oX="26" oY="82" oW="200" oH="200"/>
+    <sprite n="rp_start_arm003" x="278" y="420" w="36" h="32" oX="35" oY="81" oW="200" oH="200"/>
+    <sprite n="rp_start_arm004" x="292" y="350" w="32" h="26" oX="38" oY="80" oW="200" oH="200"/>
+    <sprite n="rp_start_bbb" x="72" y="2" w="338" h="346" oX="111" oY="154" oW="1024" oH="768"/>
+    <sprite n="rp_start_leg001" x="164" y="350" w="62" h="70" oX="57" oY="117" oW="200" oH="200"/>
+    <sprite n="rp_start_leg002" x="228" y="350" w="62" h="68" oX="61" oY="120" oW="200" oH="200"/>
+    <sprite n="rp_start_robot001" x="72" y="350" w="90" h="106" oX="44" oY="34" oW="200" oH="200"/>
+    <sprite n="rp_start_robot002" x="2" y="814" w="128" h="126" oX="22" oY="34" oW="200" oH="200"/>
+    <sprite n="rp_start_rope001" x="390" y="350" w="14" h="462" oX="82" oY="6" oW="188" oH="496"/>
+    <sprite n="rp_start_rope002" x="374" y="350" w="14" h="462" oX="82" oY="6" oW="188" oH="496"/>
+    <sprite n="rp_start_rope003" x="342" y="350" w="30" h="462" oX="72" oY="6" oW="188" oH="496"/>
+    <sprite n="rp_start_rope004" x="2" y="2" w="68" h="462" oX="55" oY="6" oW="188" oH="496"/>
+    <sprite n="rp_start_rope005" x="406" y="350" w="104" h="442" oX="24" oY="26" oW="188" oH="496"/>
+</TextureAtlas>

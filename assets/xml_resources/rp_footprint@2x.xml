@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:70ec339c95c6aa9c385503613ad3c38f$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/menu/rp_footprint@2x.png" width="1024" height="1024">
+    <sprite n="footprint_000" x="4" y="4" w="128" h="128"/>
+    <sprite n="footprint_001" x="136" y="4" w="128" h="128"/>
+    <sprite n="footprint_002" x="268" y="4" w="128" h="128"/>
+    <sprite n="footprint_003" x="400" y="4" w="128" h="128"/>
+    <sprite n="footprint_004" x="532" y="4" w="128" h="128"/>
+    <sprite n="footprint_005" x="664" y="4" w="128" h="128"/>
+    <sprite n="footprint_006" x="796" y="4" w="128" h="128"/>
+    <sprite n="footprint_007" x="4" y="136" w="128" h="128"/>
+    <sprite n="footprint_008" x="136" y="136" w="128" h="128"/>
+    <sprite n="footprint_009" x="268" y="136" w="128" h="128"/>
+    <sprite n="footprint_010" x="400" y="136" w="128" h="128"/>
+    <sprite n="footprint_011" x="532" y="136" w="128" h="128"/>
+    <sprite n="footprint_012" x="664" y="136" w="128" h="128"/>
+    <sprite n="footprint_013" x="796" y="136" w="128" h="128"/>
+    <sprite n="footprint_014" x="4" y="268" w="128" h="128"/>
+    <sprite n="footprint_015" x="136" y="268" w="128" h="128"/>
+    <sprite n="footprint_016" x="268" y="268" w="128" h="128"/>
+    <sprite n="footprint_017" x="400" y="268" w="128" h="128"/>
+    <sprite n="footprint_018" x="532" y="268" w="128" h="128"/>
+    <sprite n="footprint_019" x="664" y="268" w="128" h="128"/>
+    <sprite n="footprint_020" x="796" y="268" w="128" h="128"/>
+    <sprite n="footprint_021" x="4" y="400" w="128" h="128"/>
+    <sprite n="footprint_022" x="136" y="400" w="128" h="128"/>
+    <sprite n="footprint_023" x="268" y="400" w="128" h="128"/>
+    <sprite n="footprint_024" x="400" y="400" w="128" h="128"/>
+    <sprite n="footprint_025" x="532" y="400" w="128" h="128"/>
+    <sprite n="footprint_026" x="664" y="400" w="128" h="128"/>
+    <sprite n="footprint_027" x="796" y="400" w="128" h="128"/>
+    <sprite n="footprint_028" x="4" y="532" w="128" h="128"/>
+    <sprite n="footprint_029" x="136" y="532" w="128" h="128"/>
+    <sprite n="footprint_030" x="268" y="532" w="128" h="128"/>
+    <sprite n="footprint_031" x="400" y="532" w="128" h="128"/>
+    <sprite n="footprint_032" x="532" y="532" w="128" h="128"/>
+    <sprite n="footprint_033" x="664" y="532" w="128" h="128"/>
+    <sprite n="footprint_034" x="796" y="532" w="128" h="128"/>
+    <sprite n="footprint_035" x="4" y="664" w="128" h="128"/>
+    <sprite n="footprint_036" x="136" y="664" w="128" h="128"/>
+    <sprite n="footprint_037" x="268" y="664" w="128" h="128"/>
+    <sprite n="footprint_038" x="400" y="664" w="128" h="128"/>
+    <sprite n="footprint_039" x="532" y="664" w="128" h="128"/>
+    <sprite n="footprint_040" x="664" y="664" w="128" h="128"/>
+    <sprite n="footprint_041" x="796" y="664" w="128" h="128"/>
+    <sprite n="footprint_042" x="4" y="796" w="128" h="128"/>
+    <sprite n="footprint_043" x="136" y="796" w="128" h="128"/>
+    <sprite n="footprint_044" x="268" y="796" w="128" h="128"/>
+    <sprite n="footprint_045" x="400" y="796" w="128" h="128"/>
+    <sprite n="footprint_046" x="532" y="796" w="128" h="128"/>
+    <sprite n="footprint_bg" x="664" y="796" w="128" h="128"/>
+</TextureAtlas>

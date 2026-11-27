@@ -1,0 +1,63 @@
+<template>
+	<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+	<spriteComponent name="Sprite">
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("$sign")
+			
+			if(game:firstLoad() ~= 0) then
+				component("visible"):SetInt(0)
+			else
+				component("visible"):SetInt(1)
+			end
+		</event>
+	</spriteComponent>	
+	
+	<textComponent name="Text">
+		<position relativeTo="element:name()" component="" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+		<event name="onInit" params="component, element">
+			component:GetVar("alignment"):SetInt(8)
+			component:GetVar("font"):Set(lua_game.getButtonFont())
+			local signString = ("LEVEL " .. (game:level() + 1))
+			signString = signString 
+			component:GetVar("text"):Set(signString)
+			
+			if(game:firstLoad() ~= 0) then
+				component("visible"):SetInt(0)
+			else
+				component("visible"):SetInt(1)
+			end				
+		</event>
+	</textComponent>
+	
+	<event name="onInit" params="component, element">
+		element:GetVar("time"):SetFloat(0)
+		element:GetVar("fadeduration"):SetFloat(0.5)
+		element:GetVar("staticduration"):SetFloat(1)
+		if(game:firstLoad() ~= 0) then
+			element("active"):SetInt(0)
+		end
+	</event>			
+	<event name="onTick" params="component, element">
+		element:GetVar("time"):SetFloat(element:GetVar("time"):GetFloat() + dt)
+		if(element:GetVar("time"):GetFloat() >= 0 and element:GetVar("time"):GetFloat() > element:GetVar("staticduration"):GetFloat()) then
+			if(element:GetVar("fadeduration"):GetFloat() > element:GetVar("time"):GetFloat() - element:GetVar("staticduration"):GetFloat()) then
+				local t = 1.0 - (element:GetVar("time"):GetFloat() - element:GetVar("staticduration"):GetFloat())/element:GetVar("fadeduration"):GetFloat()
+				if(0 > t) then
+					t = 0
+				end
+				element:GetComponent("Sprite"):GetVar("alpha"):SetFloat(t)
+				element:GetComponent("Text"):GetVar("alpha"):SetFloat(t)
+				element:GetVar("Y"):SetFloat(element:GetVar("Y"):GetFloat() - dt*lua_sys.screenHeight()/8.0)
+			else
+				element:GetComponent("Sprite"):GetVar("visible"):SetInt(0)
+				element:GetComponent("Text"):GetVar("visible"):SetInt(0)	
+				element("active"):SetInt(0)					
+			end
+		end
+	</event>		
+	<function name="FireSign">
+		element:GetVar("time"):SetFloat(0)
+		element:GetComponent("Sprite"):GetVar("visible"):SetInt(1)
+	</function>
+</template>	
