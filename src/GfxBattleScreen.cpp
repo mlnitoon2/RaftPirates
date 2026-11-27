@@ -170,6 +170,8 @@ namespace rp {
         prepare(game);
         updateBattleDamage(game, time);
         const auto& net = game.onlineBattle;
+        ownView_.SetBossOcean(net.isBoss());
+        enemyView_.SetBossOcean(net.isBoss());
         Image out(640, 400, {36, 133, 168, 255});
         auto ids = placement_.gotMsgRequestBattlePlacementState();
         bool moving = net.phase() == Phase::Positioning && net.attacker() && !net.positioned() &&

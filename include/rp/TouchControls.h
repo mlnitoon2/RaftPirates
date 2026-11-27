@@ -6,6 +6,7 @@ namespace rp {
       public:
         enum class InteractionMode { Select, Pan };
         explicit TouchControls(OceanView* view);
+        ~TouchControls();
         void SetZoomLimits(float low, float high, bool clampNow);
         void SetLockedView(bool locked);
         void LockView(bool locked);

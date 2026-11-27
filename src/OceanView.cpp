@@ -49,6 +49,10 @@ namespace rp {
 
     void OceanView::Init() {
         sprites_.clear();
+        ticking_.clear();
+        mutedRafts_.clear();
+        diveLoadKey_.reset();
+        diveLoad_ = diveCapacity_ = 0;
         raftOpacity_.clear();
         picked_.reset();
         lastDiveParent_ = lastDiveObject_ = 0;
@@ -102,6 +106,7 @@ namespace rp {
         e->sprite = std::make_unique<GridSprite>(*this, e->object, e->definition, world, zoom_);
         appearance(*e, parent ? parent : object.id);
         sprites_[key] = std::move(e);
+        AddToTick(parent, object.id);
     }
 
     void OceanView::UpdateSprite(int parent, const GridObject& object,
@@ -124,6 +129,9 @@ namespace rp {
         const SpriteKey key{parent, id};
         if (picked_ == key)
             picked_.reset();
+        RemoveFromTick(parent, id);
+        if (diveLoadKey_ == key)
+            diveLoadKey_.reset();
         sprites_.erase(key);
     }
 
@@ -142,11 +150,14 @@ namespace rp {
             if (it->first.first == raft) {
                 if (picked_ == it->first)
                     picked_.reset();
+                ticking_.erase(it->first);
+                if (diveLoadKey_ == it->first) diveLoadKey_.reset();
                 it = sprites_.erase(it);
             } else
                 ++it;
         }
         raftOpacity_.erase(raft);
+        mutedRafts_.erase(raft);
     }
 
     void OceanView::sync(const Player& game) {
@@ -165,10 +176,14 @@ namespace rp {
             if (!present.count(it->first)) {
                 if (picked_ == it->first)
                     picked_.reset();
+                ticking_.erase(it->first);
+                if (diveLoadKey_ == it->first) diveLoadKey_.reset();
                 it = sprites_.erase(it);
             } else
                 ++it;
         }
+        for (auto it = mutedRafts_.begin(); it != mutedRafts_.end();)
+            if (!rafts.count(*it)) it = mutedRafts_.erase(it); else ++it;
         for (auto it = raftOpacity_.begin(); it != raftOpacity_.end();)
             if (!rafts.count(it->first))
                 it = raftOpacity_.erase(it);
@@ -305,12 +320,47 @@ namespace rp {
                it->second->object.GetHealth(it->second->definition.bp) < 1;
     }
 
+    void OceanView::AddToTick(int parent, int id) {
+        if (sprites_.count({parent, id}))
+            ticking_.emplace(parent, id);
+    }
+
+    void OceanView::RemoveFromTick(int parent, int id) {
+        ticking_.erase({parent, id});
+    }
+
+    unsigned OceanView::Layer() const { return layer_; }
+    void OceanView::SetLayer(unsigned layer) { layer_ = layer; }
+
+    void OceanView::SetBossOcean(bool enabled) { bossOcean_ = enabled; }
+
+    void OceanView::SetRaftMute(int raft, bool mute) {
+        if (raft <= 0) return;
+        if (mute) mutedRafts_.insert(raft);
+        else mutedRafts_.erase(raft);
+    }
+
+    bool OceanView::RaftMuted(int raft) const { return mutedRafts_.count(raft) != 0; }
+
+    void OceanView::gotMsgDiveUnitLoadChange(int parent, int id, int load, int maximum) {
+        if (maximum <= 0 || !getGridSprite(parent, id)) {
+            diveLoadKey_.reset();
+            diveLoad_ = diveCapacity_ = 0;
+            return;
+        }
+        diveLoadKey_ = SpriteKey{parent, id};
+        diveCapacity_ = maximum;
+        diveLoad_ = std::clamp(load, 0, maximum);
+    }
+
     void OceanView::tick(float dt) {
         if (!std::isfinite(dt) || dt < 0)
             return;
         animationClock_ += dt;
-        for (auto& [key, e] : sprites_)
-            e->slack = std::max(0.f, e->slack - dt);
+        for (const auto& key : ticking_) {
+            auto& e = *sprites_.at(key);
+            e.slack = std::max(0.f, e.slack - dt);
+        }
     }
 
     bool OceanView::gotMsgGfxLayerPickResult(int parent, int id) {
@@ -494,8 +544,15 @@ namespace rp {
             lastDiveObject_ = dive->object;
         }
         lastDiving_ = diving;
-        Image out(640, 400, {36, 133, 168, 255});
+        if (diving)
+            gotMsgDiveUnitLoadChange(dive->parent, dive->object, dive->GetLoadValue(),
+                                     dive->GetMaxLoad());
+        else
+            diveLoadKey_.reset();
+        // Portable boss-water tint, not the original gradient asset.
+        Image out(640, 400, bossOcean_ ? Color{30, 75, 105, 255} : Color{36, 133, 168, 255});
         GfxManager mgr;
+        mgr.setLayerOffset(Layer());
         auto base = [this](const Raft& r) { return WorldToScreen({float(r.x), float(r.y)}); };
         for (const auto& r : game.rafts) {
             auto it = game.objects.find(r.type);
@@ -565,6 +622,20 @@ namespace rp {
                             out.at(x + dx, y + dy) = dx < int(health * 30)
                                 ? Color{61, 201, 80, 255} : Color{40, 40, 40, 255};
             }
+        if (diveLoadKey_ && diveCapacity_ > 0) {
+            const auto& entry = *sprites_.at(*diveLoadKey_);
+            const auto p = WorldToScreen(entry.world);
+            if (entry.sprite->GetVisible() && std::isfinite(p.x) && std::isfinite(p.y) &&
+                p.x >= -30 && p.x < out.width + 30 && p.y >= -30 && p.y < out.height + 30) {
+                const int fill = int(30.0 * diveLoad_ / diveCapacity_);
+                for (int y = 0; y < 4; ++y)
+                    for (int x = 0; x < 30; ++x) {
+                        const int px = int(p.x) - 15 + x, py = int(p.y) - 34 + y;
+                        if (px >= 0 && px < out.width && py >= 0 && py < out.height)
+                            out.at(px, py) = x < fill ? Color{240, 203, 78, 255} : Color{40, 40, 40, 255};
+                    }
+            }
+        }
         return out;
     }
 } // namespace rp

@@ -6,6 +6,7 @@ namespace rp {
     class GridSprite {
       public:
         struct SpritePiece {
+            ~SpritePiece();
             GridPiece definition;
             sys::gfx::Gfx appearance;
             unsigned order = 0, suborder = 0;

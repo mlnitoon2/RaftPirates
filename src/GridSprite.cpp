@@ -7,6 +7,8 @@ namespace rp {
     using namespace sys::gfx;
     using namespace sys::res;
 
+    GridSprite::SpritePiece::~SpritePiece() = default;
+
     GridSprite::GridSprite(const OceanView& ocean, const GridObject& object,
                            const GridObjectInfo& definition, Vec2 world, float scale)
         : ocean_(ocean), object_(object), definition_(definition), world_(world), scale_(scale) {

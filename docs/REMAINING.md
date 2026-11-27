@@ -20,6 +20,12 @@ Names newly implemented in source are listed here and removed from the provision
 - RaftPirates: confirmed material purchase, blueprint-material request generation, gold repair, display-name keyboard result, tutorial bookkeeping (no external analytics), mode tracking, social account-change cleanup, touch keep-alive, four-menu preloading. Purchase/repair and name requests are available as typed methods, but original menu triggers and all server responses are still incomplete. No debug/cheat requests or new privileged behavior were inferred.
 - Android game runtime now uses Hydra's EngineAndroid for keyboard, popup, resume, exit and URL callbacks. Pass 35 ARM64 CI succeeded; Pass 36 verification is pending.
 
+## Pass 37 source review
+
+- OceanView: added remaining six named adapters: tick registration/cleanup, layer access, boss water tint, mute state and diver load indicator. Boss tint and load indicator are portable approximations; actual per-raft audio playback and original boss gradient are not implemented. Mute state is available but not connected to an audio emitter. Tick registration controls slack updates, not the original accessory tick ABI.
+- Added explicit GridSprite::SpritePiece and TouchControls destruction.
+- Pass 36 ARM64 build passed (45926117694).
+
 ## Priority gaps
 
 - Original menu scripts: complete game/SWIG bindings, message dispatch, dynamic templates, tutorial and quest flows, all popups and transitions.
@@ -31,11 +37,7 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-52 names from the Pass 33 inventory now have named source implementations in Passes 34–36 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
-
-### `rp::OceanView` (6)
-
-`AddToTick`, `Layer`, `RemoveFromTick`, `SetBossOcean`, `SetRaftMute`, `gotMsgDiveUnitLoadChange`
+60 names from the Pass 33 inventory now have named source implementations through Pass 37 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::RaftPirates` (11)
 
@@ -364,10 +366,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::GridObjectsDB` (1)
 
 `getDataName`
-
-### `rp::GridSprite::SpritePiece` (1)
-
-`~SpritePiece`
 
 ### `rp::MapView::TreasureMapPoints` (1)
 
@@ -1088,10 +1086,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::RaftInfo` (1)
 
 `RaftInfo`
-
-### `rp::TouchControls` (1)
-
-`~TouchControls`
 
 ### `rp::Transition::MsgDone` (1)
 

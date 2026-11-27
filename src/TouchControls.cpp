@@ -12,6 +12,8 @@ namespace rp {
         }
     } // namespace
 
+    TouchControls::~TouchControls() = default;
+
     TouchControls::TouchControls(OceanView* view) : view_(view) {
         if (!view_)
             throw std::invalid_argument("Missing ocean view");

@@ -102,6 +102,14 @@ namespace rp {
         OceanView(const OceanView&) = delete;
         OceanView& operator=(const OceanView&) = delete;
         void Init();
+        void AddToTick(int parent, int id);
+        void RemoveFromTick(int parent, int id);
+        unsigned Layer() const;
+        void SetLayer(unsigned layer);
+        void SetBossOcean(bool enabled);
+        void SetRaftMute(int raft, bool mute);
+        bool RaftMuted(int raft) const;
+        void gotMsgDiveUnitLoadChange(int parent, int id, int load, int maximum);
         void SetOcean(const Player&);
         void AddGrid(const Raft&, const std::map<int, GridObjectInfo>&);
         void RemoveGrid(int raft);
@@ -167,6 +175,12 @@ namespace rp {
         struct VisualEntry;
         std::map<SpriteKey, std::unique_ptr<VisualEntry>> sprites_;
         std::map<int, float> raftOpacity_;
+        std::set<SpriteKey> ticking_;
+        std::set<int> mutedRafts_;
+        std::optional<SpriteKey> diveLoadKey_;
+        int diveLoad_ = 0, diveCapacity_ = 0;
+        unsigned layer_ = 0;
+        bool bossOcean_ = false;
         std::optional<SpriteKey> picked_;
         bool healthBars_ = false, waterBuckets_ = false, customAxes_ = false;
         float animationClock_ = 0, lastRenderTime_ = -1;
