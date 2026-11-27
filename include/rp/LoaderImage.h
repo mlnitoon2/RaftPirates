@@ -4,6 +4,7 @@
 namespace rp {
     class LoaderImage final : public Loader {
       public:
+        static const char* ID;
         using Loader::Loader;
         ~LoaderImage() override;
         const char* getType() const override;

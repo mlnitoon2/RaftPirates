@@ -2,10 +2,12 @@
 #include "rp/LoadingManager.h"
 
 namespace rp {
+    const char* LoaderImage::ID = "SPR";
+
     LoaderImage::~LoaderImage() = default;
 
     const char* LoaderImage::getType() const {
-        return "SPR";
+        return ID;
     }
 
     const std::string& LoaderImage::getId() const {

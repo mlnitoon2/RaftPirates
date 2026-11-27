@@ -15,7 +15,8 @@ namespace rp {
         void addAEAnim(const std::string& path);
         void addSheet(const std::string& path);
         void addManifest(const std::string& path);
-        bool resourceExists(const char* path, const char* extension) const;
+        bool resourceExists(const char* id, const char* type) const;
+        bool assetExists(const char* path, const char* extension = "") const;
         void start();
         void cancel();
         void update(float dt);

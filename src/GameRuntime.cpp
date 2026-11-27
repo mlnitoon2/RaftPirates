@@ -385,7 +385,7 @@ namespace sys::platform::game {
             // Original loading_intro.xml authenticates before title.xml is presented.
             rt.startupFinished = false;
             rt.startupResources = std::make_unique<rp::LoadingManager>(root);
-            if (rt.startupResources->resourceExists("xml_bin/game_manifest.bin", "")) {
+            if (rt.startupResources->assetExists("xml_bin/game_manifest.bin")) {
                 rt.startupResources->addManifest("xml_bin/game_manifest.bin");
                 rt.startupResources->start();
             }

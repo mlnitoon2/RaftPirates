@@ -2,10 +2,12 @@
 #include "rp/LoadingManager.h"
 
 namespace rp {
+    const char* LoaderManifest::ID = "MANI";
+
     LoaderManifest::~LoaderManifest() = default;
 
     const char* LoaderManifest::getType() const {
-        return "MANI";
+        return ID;
     }
 
     const std::string& LoaderManifest::getId() const {

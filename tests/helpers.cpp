@@ -148,6 +148,7 @@ int main(int argc, char** argv) {
             rp::LoaderMenu menu("menus/test.xml");
             rp::LoaderManifest manifest("xml_bin/game_manifest.bin");
             CHECK(std::string(image.getType()) == "SPR" && image.getId() == "gfx/rafts/raft_core");
+            CHECK(image.getType() == rp::LoaderImage::ID);
             CHECK(std::string(menu.getType()) == "MENU" && !menu.prepare(nullptr));
             CHECK(std::string(manifest.getType()) == "MANI" && !manifest.prepare(nullptr));
         }
@@ -166,7 +167,10 @@ int main(int argc, char** argv) {
             rp::LoadingManager loading(argv[1]);
             loading.addManifest("xml_bin/game_manifest.bin");
             loading.start();
-            CHECK(loading.resourceExists("xml_bin/game_manifest.bin", ""));
+            CHECK(loading.assetExists("xml_bin/game_manifest.bin"));
+            CHECK(loading.resourceExists("xml_bin/game_manifest.bin", "MANI"));
+            CHECK(!loading.resourceExists("xml_bin/game_manifest.bin", "SPR"));
+            CHECK(!loading.resourceExists("xml_bin/game_manifest.bin", ""));
             while (loading.running())
                 loading.update(.016f);
             CHECK(loading.completed() == 32 && loading.total() == 32 &&

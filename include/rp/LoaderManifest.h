@@ -4,6 +4,7 @@
 namespace rp {
     class LoaderManifest final : public Loader {
       public:
+        static const char* ID;
         using Loader::Loader;
         ~LoaderManifest() override;
         const char* getType() const override;

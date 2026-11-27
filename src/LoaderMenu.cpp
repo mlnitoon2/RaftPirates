@@ -2,10 +2,12 @@
 #include "rp/LoadingManager.h"
 
 namespace rp {
+    const char* LoaderMenu::ID = "MENU";
+
     LoaderMenu::~LoaderMenu() = default;
 
     const char* LoaderMenu::getType() const {
-        return "MENU";
+        return ID;
     }
 
     const std::string& LoaderMenu::getId() const {

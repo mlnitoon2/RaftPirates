@@ -2,10 +2,12 @@
 #include "rp/LoadingManager.h"
 
 namespace rp {
+    const char* LoaderSpriteSheet::ID = "SS";
+
     LoaderSpriteSheet::~LoaderSpriteSheet() = default;
 
     const char* LoaderSpriteSheet::getType() const {
-        return "SS";
+        return ID;
     }
 
     const std::string& LoaderSpriteSheet::getId() const {

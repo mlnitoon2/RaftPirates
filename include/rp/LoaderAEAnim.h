@@ -4,6 +4,7 @@
 namespace rp {
     class LoaderAEAnim final : public Loader {
       public:
+        static const char* ID;
         using Loader::Loader;
         ~LoaderAEAnim() override;
         const char* getType() const override;

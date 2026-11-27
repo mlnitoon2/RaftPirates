@@ -2,10 +2,12 @@
 #include "rp/LoadingManager.h"
 
 namespace rp {
+    const char* LoaderAEAnim::ID = "AE";
+
     LoaderAEAnim::~LoaderAEAnim() = default;
 
     const char* LoaderAEAnim::getType() const {
-        return "AE";
+        return ID;
     }
 
     const std::string& LoaderAEAnim::getId() const {

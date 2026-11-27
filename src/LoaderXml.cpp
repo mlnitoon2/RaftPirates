@@ -2,10 +2,12 @@
 #include "rp/LoadingManager.h"
 
 namespace rp {
+    const char* LoaderXml::ID = "XMLDATA";
+
     LoaderXml::~LoaderXml() = default;
 
     const char* LoaderXml::getType() const {
-        return "XMLDATA";
+        return ID;
     }
 
     const std::string& LoaderXml::getId() const {

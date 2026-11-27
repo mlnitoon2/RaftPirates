@@ -4,6 +4,7 @@
 namespace rp {
     class LoaderSpriteSheet final : public Loader {
       public:
+        static const char* ID;
         using Loader::Loader;
         ~LoaderSpriteSheet() override;
         const char* getType() const override;

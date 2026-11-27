@@ -26,7 +26,28 @@ namespace rp {
         return root_ / path;
     }
 
-    bool LoadingManager::resourceExists(const char* path, const char* extension) const {
+    bool LoadingManager::resourceExists(const char* id, const char* type) const {
+        if (!id || !type)
+            return false;
+        for (const auto& job : jobs_) {
+            if (job.path != id)
+                continue;
+            const char* jobType = nullptr;
+            switch (job.kind) {
+            case Kind::Sprite: jobType = LoaderImage::ID; break;
+            case Kind::Animation: jobType = LoaderAEAnim::ID; break;
+            case Kind::Sheet: jobType = LoaderSpriteSheet::ID; break;
+            case Kind::Menu: jobType = LoaderMenu::ID; break;
+            case Kind::Manifest: jobType = LoaderManifest::ID; break;
+            case Kind::Xml: jobType = LoaderXml::ID; break;
+            }
+            if (jobType && std::string(jobType) == type)
+                return true;
+        }
+        return false;
+    }
+
+    bool LoadingManager::assetExists(const char* path, const char* extension) const {
         if (!path)
             return false;
         try {

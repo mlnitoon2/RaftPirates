@@ -62,7 +62,7 @@ namespace rp {
         preloadedMenus_ = RaftPirates::preloadMenus(root_);
         if (std::filesystem::exists(root_ / "text/en.utf8"))
             strings_.loadFile(root_ / "text/en.utf8");
-        if (loader_.resourceExists("xml_bin/game_manifest.bin", "")) {
+        if (loader_.assetExists("xml_bin/game_manifest.bin")) {
             loader_.addManifest("xml_bin/game_manifest.bin");
             loader_.start();
         }
