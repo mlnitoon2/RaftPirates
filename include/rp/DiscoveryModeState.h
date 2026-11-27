@@ -10,6 +10,9 @@ namespace rp {
         void Pause();
         void LeaveDiscovery(Game& game);
         void LeaveDiscoveryReally(Game& game);
+        void GotMsgTransitionDone(Game& game);
+        void HandleExtensionResponse(Game& game, const std::string& command,
+                                     const sfs::SFSObjectWrapper& data);
         bool leaving() const;
         const std::string& title() const;
         void render(sys::gfx::Image& out);

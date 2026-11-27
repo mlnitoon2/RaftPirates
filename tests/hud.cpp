@@ -52,13 +52,38 @@ int main(int argc, char** argv) {
         bounds = hud.bounds("QuestMenu");
         req = view.touch(g, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
         CHECK(req && req->payload.getString("c") == "gs_quest");
-        view.touch(g, 30, 310);
+        view.touch(g, 500, 310);
         bounds = hud.bounds("EventNotification");
         view.touch(g, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
         CHECK(view.grid);
         bounds = hud.bounds("PirateMap");
         view.touch(g, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
         CHECK(view.map);
+        rp::OceanView ocean(argv[1]);
+        g.objects.at(3).name = "Diving structure";
+        const auto unit = g.GetDiveUnit();
+        CHECK(unit.first == 1 && unit.second == 2);
+        const auto& comp = g.rafts.front().components.back();
+        auto pos = ocean.WorldToScreen({(comp.x + .5f) / 6, (comp.y + .5f) / 6});
+        CHECK(ocean.Pick(g, unit.first, unit.second, pos, 0));
+        rp::PortView diver(argv[1]);
+        diver.render(g, 0, "");
+        auto diveRequest = diver.touch(g, pos.x, pos.y);
+        CHECK(diveRequest && diveRequest->payload.getString("c") == "dive_start");
+        g.diveState.parent = unit.first;
+        g.diveState.object = unit.second;
+        g.diveState.StartDive(20, 19.7f);
+        auto drop = ocean.render(g, 1, false, &g.diveState);
+        g.diveState.remaining = 16;
+        auto submerged = ocean.render(g, 4, false, &g.diveState);
+        size_t changed = 0;
+        for (size_t i = 0; i < drop.pixels.size(); ++i) {
+            const auto& a = drop.pixels[i];
+            const auto& b = submerged.pixels[i];
+            if (a.r != b.r || a.g != b.g || a.b != b.b || a.a != b.a)
+                ++changed;
+        }
+        CHECK(changed > 100);
         std::cout << "Original HUD asset, action, and protocol checks passed\n";
         return 0;
     } catch (const std::exception& e) {

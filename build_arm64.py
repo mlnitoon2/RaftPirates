@@ -14,6 +14,7 @@ ROOT = pathlib.Path(__file__).resolve().parent
 WIN = os.name == "nt"
 DEFAULT_NDK = "28.2.13676358"
 DEFAULT_CMAKE = "3.22.1"
+ABIS = {"arm64-v8a": (2, 183), "armeabi-v7a": (1, 40), "x86": (1, 3), "x86_64": (2, 62)}
 
 
 def run(*args):
@@ -40,6 +41,7 @@ def main():
         type=pathlib.Path,
         default=os.environ.get("ANDROID_HOME") or os.environ.get("ANDROID_SDK_ROOT"),
     )
+    parser.add_argument("--abi", choices=ABIS, default="arm64-v8a", help="Android target ABI")
     parser.add_argument("--ndk", type=pathlib.Path, help="Existing NDK root (optional)")
     parser.add_argument("--ndk-version", default=DEFAULT_NDK)
     parser.add_argument("--cmake-version", default=DEFAULT_CMAKE)
@@ -87,8 +89,8 @@ def main():
 
     cmake = binary(cmake_dir / "cmake")
     ninja = binary(cmake_dir / "ninja")
-    build = ROOT / "build-android-arm64"
-    output = ROOT / "out/lib/arm64-v8a/libraftpirates.so"
+    build = ROOT / ("build-android-" + args.abi)
+    output = ROOT / "out" / "lib" / args.abi / "libraftpirates.so"
 
     optional = "OFF" if args.minimal else "ON"
     run(
@@ -99,7 +101,7 @@ def main():
         "-DCMAKE_MAKE_PROGRAM=" + str(ninja),
         "-DCMAKE_TOOLCHAIN_FILE=" + str(toolchain),
         "-DHYDRA_LEGACY_DIR=" + str(args.hydra.resolve()),
-        "-DANDROID_ABI=arm64-v8a",
+        "-DANDROID_ABI=" + args.abi,
         "-DANDROID_PLATFORM=android-23",
         "-DANDROID_STL=c++_static",
         "-DCMAKE_BUILD_TYPE=Release",
@@ -113,12 +115,13 @@ def main():
 
     library = build / "libraftpirates.so"
     data = library.read_bytes()
+    elf_class, machine = ABIS[args.abi]
     if (
-        data[:6] != b"\x7fELF\x02\x01"
+        len(data) < 20 or data[:6] != b"\x7fELF" + bytes((elf_class, 1))
         or struct.unpack_from("<H", data, 16)[0] != 3
-        or struct.unpack_from("<H", data, 18)[0] != 183
+        or struct.unpack_from("<H", data, 18)[0] != machine
     ):
-        raise RuntimeError("Build did not produce an AArch64 ELF64 shared object.")
+        raise RuntimeError(f"Build did not produce a {args.abi} ELF shared object.")
 
     # Verify every native declaration of the original APK before publishing the library.
     name = "llvm-nm.exe" if WIN else "llvm-nm"
@@ -139,7 +142,7 @@ def main():
     output.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(library, output)
     print(
-        "ARM64 shared library:",
+        f"{args.abi} shared library:",
         output,
         "\nExperimental original-APK bridge. Full game compatibility is not established.",
     )

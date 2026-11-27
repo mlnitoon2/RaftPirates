@@ -39,6 +39,8 @@ namespace rp {
     // Owns player inventory and raft instances. Static definitions are injected from libraries.
     class Player {
       public:
+        Player();
+        void init();
         std::map<int, GridObjectInfo> objects;
         std::map<int, Blueprint> blueprints;
         std::map<int, std::string> materialNames;

@@ -4,7 +4,7 @@ Generated from defined function symbols. Name coverage is unique qualified metho
 
 | Original build | Names matched | Coverage | Names with signature overlap | Binary match |
 |---|---:|---:|---:|---|
-| Raft Pirates 2013 | 473/1191 | 39.7145% | 218 | Not compared |
+| Raft Pirates 2013 | 482/1191 | 40.4702% | 224 | Not compared |
 
 ## Raft Pirates 2013
 
@@ -27,10 +27,10 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::BossBattleRaftHighlightSprite` | 0/5 | 0.00% | 0 |
 | `rp::BuildModeState` | 34/63 | 53.97% | 8 |
 | `rp::DamageIndicatorSprite` | 0/3 | 0.00% | 0 |
-| `rp::Discovery` | 4/6 | 66.67% | 3 |
+| `rp::Discovery` | 5/6 | 83.33% | 4 |
 | `rp::DiscoveryDB` | 6/6 | 100.00% | 3 |
 | `rp::DiscoveryGridObject` | 0/2 | 0.00% | 0 |
-| `rp::DiscoveryModeState` | 6/9 | 66.67% | 3 |
+| `rp::DiscoveryModeState` | 8/9 | 88.89% | 3 |
 | `rp::DiveMeterSprite` | 0/6 | 0.00% | 0 |
 | `rp::DiveUnitReadoutSprite` | 0/6 | 0.00% | 0 |
 | `rp::DiveUnitReadoutSprite::ReadoutLight` | 0/2 | 0.00% | 0 |
@@ -251,13 +251,13 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::MsgZoneMoveTo` | 0/1 | 0.00% | 0 |
 | `rp::MsgZoneMoveToResult` | 0/1 | 0.00% | 0 |
 | `rp::Ocean` | 9/10 | 90.00% | 5 |
-| `rp::OceanView` | 24/62 | 38.71% | 17 |
+| `rp::OceanView` | 25/62 | 40.32% | 17 |
 | `rp::OverlapTree` | 0/4 | 0.00% | 0 |
 | `rp::PerimeterTree` | 0/3 | 0.00% | 0 |
 | `rp::PerimeterWallSprite` | 0/10 | 0.00% | 0 |
 | `rp::PerimeterWallSprite::SpriteBalloon` | 0/1 | 0.00% | 0 |
 | `rp::PlacementSprite` | 0/9 | 0.00% | 0 |
-| `rp::Player` | 27/30 | 90.00% | 19 |
+| `rp::Player` | 29/30 | 96.67% | 21 |
 | `rp::Quest` | 6/6 | 100.00% | 5 |
 | `rp::QuestTypeDB` | 5/5 | 100.00% | 2 |
 | `rp::QuestTypeInfo` | 0/1 | 0.00% | 0 |
@@ -284,10 +284,10 @@ Baseline SHA-256 (.so): `29544f0b70c947e23b05c01016a88b94b90e28fd204ba956daea16f
 | `rp::WaterBucketSprite` | 0/3 | 0.00% | 0 |
 | `rp::Wreckage` | 0/14 | 0.00% | 0 |
 | `rp::WreckageSprite` | 0/6 | 0.00% | 0 |
-| `rp::Zone` | 10/13 | 76.92% | 9 |
+| `rp::Zone` | 11/13 | 84.62% | 10 |
 | `rp::ZonesDB` | 7/7 | 100.00% | 4 |
 | `rp::diving_game::DivingCollectable` | 1/1 | 100.00% | 0 |
-| `rp::diving_game::DivingGame` | 25/28 | 89.29% | 15 |
+| `rp::diving_game::DivingGame` | 27/28 | 96.43% | 17 |
 | `rp::diving_game::DivingGame::ItemFloater` | 0/3 | 0.00% | 0 |
 | `rp::diving_game::DivingMaterial` | 0/1 | 0.00% | 0 |
 | `rp::diving_game::ScrollingLayer` | 0/4 | 0.00% | 0 |
@@ -376,6 +376,7 @@ Matched names:
 - `rp::Discovery::initWithSFSObject`
 - `rp::Discovery::questgroupid`
 - `rp::Discovery::zoneid`
+- `rp::Discovery::~Discovery`
 - `rp::DiscoveryDB::DiscoveryDB`
 - `rp::DiscoveryDB::buildData`
 - `rp::DiscoveryDB::getById`
@@ -383,6 +384,8 @@ Matched names:
 - `rp::DiscoveryDB::load`
 - `rp::DiscoveryDB::save`
 - `rp::DiscoveryModeState::DiscoveryModeState`
+- `rp::DiscoveryModeState::GotMsgTransitionDone`
+- `rp::DiscoveryModeState::HandleExtensionResponse`
 - `rp::DiscoveryModeState::LeaveDiscovery`
 - `rp::DiscoveryModeState::LeaveDiscoveryReally`
 - `rp::DiscoveryModeState::Pause`
@@ -541,6 +544,7 @@ Matched names:
 - `rp::OceanView::ConvertToWorld`
 - `rp::OceanView::Height`
 - `rp::OceanView::Offset`
+- `rp::OceanView::Pick`
 - `rp::OceanView::Position`
 - `rp::OceanView::Priority`
 - `rp::OceanView::ScreenToWorld`
@@ -563,6 +567,7 @@ Matched names:
 - `rp::Player::GetDiveUnit`
 - `rp::Player::GetRaftAtPosition`
 - `rp::Player::GetRaftByID`
+- `rp::Player::Player`
 - `rp::Player::RaftCleanupRequired`
 - `rp::Player::RaftRepairRequired`
 - `rp::Player::RaftsConnectedToRaft`
@@ -577,6 +582,7 @@ Matched names:
 - `rp::Player::hasBlueprint`
 - `rp::Player::hasMaterial`
 - `rp::Player::hasRaft`
+- `rp::Player::init`
 - `rp::Player::initWithSFSObject`
 - `rp::Player::isSafe`
 - `rp::Player::isZoneKnown`
@@ -734,6 +740,7 @@ Matched names:
 - `rp::Zone::initWithSFSObject`
 - `rp::Zone::max_bp`
 - `rp::Zone::min_bp`
+- `rp::Zone::~Zone`
 - `rp::ZonesDB::ZonesDB`
 - `rp::ZonesDB::buildData`
 - `rp::ZonesDB::getById`
@@ -742,6 +749,7 @@ Matched names:
 - `rp::ZonesDB::save`
 - `rp::ZonesDB::~ZonesDB`
 - `rp::diving_game::DivingCollectable::DivingCollectable`
+- `rp::diving_game::DivingGame::AutoScaleText`
 - `rp::diving_game::DivingGame::CheckMenuButtonStates`
 - `rp::diving_game::DivingGame::ConfirmDiveFinish`
 - `rp::diving_game::DivingGame::DivingGame`
@@ -756,6 +764,7 @@ Matched names:
 - `rp::diving_game::DivingGame::gotMsgUpdate`
 - `rp::diving_game::DivingGame::moveDiver`
 - `rp::diving_game::DivingGame::moveTo`
+- `rp::diving_game::DivingGame::onMsgTouchState`
 - `rp::diving_game::DivingGame::robotCollidesWithItem`
 - `rp::diving_game::DivingGame::spawnItem`
 - `rp::diving_game::DivingGame::touchCancel`

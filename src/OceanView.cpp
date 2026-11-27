@@ -131,7 +131,48 @@ namespace rp {
         CalculateHelpers();
     }
 
-    Image OceanView::render(const Player& game, float time, bool grid) {
+    bool OceanView::Pick(const Player& game, int parent, int object, Vec2 screen, float time) {
+        if (screen.x < 0 || screen.y < 0 || screen.x >= 640 || screen.y >= 400)
+            return false;
+        auto raft = game.GetRaftByID(parent);
+        if (!raft)
+            return false;
+        for (const auto& c : raft->components) {
+            if (c.id != object)
+                continue;
+            auto def = game.objects.find(c.type);
+            if (def == game.objects.end())
+                return false;
+            GridSprite sprite(*this, c, def->second,
+                              {float(raft->x) + float(c.x) / 6 + 1.f / 12,
+                               float(raft->y) + float(c.y) / 6 + 1.f / 12},
+                              zoom_);
+            sprite.UpdateAnimations(std::max(0.f, time));
+            Image mask(640, 400, {0, 0, 0, 0});
+            GfxManager mgr;
+            sprite.submit(mgr, images_, bins_, animations_, root_, false);
+            mgr.RenderScreen(mask);
+            if (mask.at(int(screen.x), int(screen.y)).a > 32)
+                return true;
+            auto world = ScreenToWorld(screen);
+            int cx = int(std::floor((world.x - raft->x) * 6)),
+                cy = int(std::floor((world.y - raft->y) * 6));
+            for (auto cell : def->second.cells)
+                if (cx == c.x + cell.x && cy == c.y + cell.y)
+                    return true;
+        }
+        return false;
+    }
+
+    Image OceanView::render(const Player& game, float time, bool grid, const DiveState* dive) {
+        const bool diving = dive && dive->Diving();
+        if (lastDiving_ && !diving)
+            returnStart_ = time;
+        if (diving) {
+            lastDiveParent_ = dive->parent;
+            lastDiveObject_ = dive->object;
+        }
+        lastDiving_ = diving;
         Image out(640, 400, {36, 133, 168, 255});
         GfxManager mgr;
         auto base = [this](const Raft& r) { return WorldToScreen({float(r.x), float(r.y)}); };
@@ -161,18 +202,32 @@ namespace rp {
                 auto it = game.objects.find(c.type);
                 if (it == game.objects.end())
                     continue;
-                float x = b.x + (c.x - c.y) * 32 * zoom_, y = b.y + (c.x + c.y + 1) * 16 * zoom_;
                 GridSprite sprite(*this, c, it->second,
                                   {float(r.x) + float(c.x) / 6 + 1.f / 12,
                                    float(r.y) + float(c.y) / 6 + 1.f / 12},
                                   zoom_);
                 if (c.Destroyed())
                     sprite.SetColour(150, 150, 150, 180);
-                sprite.UpdateAnimations(std::max(0.f, time));
-                if (sprite.submit(mgr, images_, bins_, animations_, root_, false) > 0)
-                    continue;
-                line(out, int(x - 10), int(y - 10), int(x + 10), int(y + 10), {250, 192, 70, 255});
-                line(out, int(x - 10), int(y + 10), int(x + 10), int(y - 10), {250, 192, 70, 255});
+                float animTime = std::max(0.f, time);
+                if (diving && dive->parent == r.id && dive->object == c.id) {
+                    float elapsed = std::max(0.f, float(dive->totalSeconds) - dive->remaining);
+                    if (elapsed < 2.0167f) {
+                        sprite.SetAnimation({"drop"});
+                        animTime = elapsed;
+                    } else if (dive->remaining <= 0) {
+                        sprite.SetAnimation({"return"});
+                        animTime = .68f;
+                    } else {
+                        sprite.SetAnimation({"diving"});
+                        animTime = elapsed - 2.0167f;
+                    }
+                } else if (r.id == lastDiveParent_ && c.id == lastDiveObject_ &&
+                           time - returnStart_ < .6833f && time >= returnStart_) {
+                    sprite.SetAnimation({"return"});
+                    animTime = time - returnStart_;
+                }
+                sprite.UpdateAnimations(animTime);
+                sprite.submit(mgr, images_, bins_, animations_, root_, false);
             }
         }
         mgr.RenderScreen(out);

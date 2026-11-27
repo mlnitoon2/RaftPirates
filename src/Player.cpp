@@ -61,6 +61,19 @@ namespace rp {
         });
     }
 
+    Player::Player() {
+        init();
+    }
+
+    void Player::init() {
+        materials.clear();
+        owned.clear();
+        rafts.clear();
+        playerName.clear();
+        knownZones.clear();
+        safe = true;
+    }
+
     void Player::initWithSFSObject(const O& data) {
         std::vector<Raft> nextRafts;
         std::map<int, int> nextMaterials;
@@ -327,7 +340,15 @@ namespace rp {
         for (const auto& r : rafts)
             for (const auto& c : r.components) {
                 auto o = objects.find(c.type);
-                if (o != objects.end() && o->second.name == "DivingUnit")
+                if (o == objects.end() || c.Destroyed())
+                    continue;
+                const auto& def = o->second;
+                auto isDiveAsset = [](const std::string& asset) {
+                    return asset.find("anim_core_dive_unit") != std::string::npos;
+                };
+                if (def.name == "DivingUnit" || isDiveAsset(def.asset) ||
+                    std::any_of(def.pieces.begin(), def.pieces.end(),
+                                [&](const auto& piece) { return isDiveAsset(piece.asset); }))
                     return {r.id, c.id};
             }
         return {};

@@ -13,7 +13,7 @@ The original HUD scripts call game-specific Lua/SWIG functions that have not bee
 | SafeFlag / BadZoneFlag | Displays the ocean safety status and opens an information panel |
 | DaringMeter | Shows level, timer, progress, chest and lock; sends `daring_advance` only when locally eligible |
 
-The quest badge is a proxy for a nonempty quest list, not the original unread/new-quest state. The countdown and progress are based on the existing server timer model. The server remains authoritative; the client does not increment the level itself. Daring is locked in safe water, bad zones, paused states or at a positive zone limit. The original script's complete percentage smoothing, liquid-courage and tutorial behaviors remain unimplemented.
+Quest rows now use visible quest records, quest-type image metadata, unread markers and progress. An empty server quest list cannot populate the dialog. The countdown and progress are based on the existing server timer model. The server remains authoritative; the client does not increment the level itself. Daring is locked in safe water, bad zones, paused states or at a positive zone limit. The original script's complete percentage smoothing, liquid-courage and tutorial behaviors remain unimplemented.
 
 The independent Zone and Discovery classes read the original wire fields. Native references: `Zone::initWithSFSObject` at `0x5118f8`, `Zone::id` at `0x511f9c`, `Zone::daringLimit` at `0x511a24`; `Discovery::initWithSFSObject` at `0x3d3674`, `id` at `0x3d36d8`, `questgroupid` at `0x3d385c`, `zoneid` at `0x3d3a10`. The old name/map lookup tables are kept for existing views. The original discovery scene is not implemented by these metadata classes.
 
@@ -38,3 +38,9 @@ To render the title-screen preview:
 ## XML panels
 
 The normal HUD, map, shop, inventory, quest and battle views use original menu XML and template controls. PortView no longer renders debug text buttons or their coordinate hitboxes. Selected literal initialization assignments are evaluated by Hydra; native callbacks bind a subset of actions to server requests. Dynamic templates are populated from server data. Pass 31 adds selected native purchase confirmation and object action bindings, scroll capture and clipping, viewport arithmetic, and original placement footprint rendering. Full Lua/SWIG callbacks, repair/salvage cost presentation, selection animations, scroll behavior and transitions remain incomplete. Unbound controls are not evidence of working features.
+
+## Pass 32
+
+Quest buttons open the original quest dialog and the list uses vertical swipe capture. Shop item textures use server atlas/sprite identifiers, with the original green blueprint sprite when present. The map uses the same aspect-fit geometry for drawing and touch, requests map-action state on open, and exposes available action counts and timer data. These are selected native bindings, not complete original scripts. Exact layout and live server behavior are not verified.
+
+Diving can be requested from the actual structure: alpha-based sprite picking supplements the grid footprint. The structure selects the original idle/drop/diving/return compositions from server dive state, and the minigame selects idle/moving/end robot compositions. Requests use the selected server object identifiers. Actual animation and diving flow on Android remain unverified.

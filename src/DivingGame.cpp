@@ -161,6 +161,29 @@ namespace rp::diving_game {
         updateButtonStates();
     }
 
+    void DivingGame::AutoScaleText(GfxText* text) {
+        if (!text)
+            return;
+        GfxText::Format format;
+        format.maxWidth = 120;
+        format.maxHeight = 40;
+        format.autoScale = true;
+        text->setFormat(format);
+    }
+
+    void DivingGame::onMsgTouchState(const sys::msg::MsgTouchState& msg) {
+        if (msg.points.empty()) {
+            if (pressed_)
+                touchCancel({});
+            return;
+        }
+        const auto& point = msg.points.front();
+        if (pressed_)
+            touchDrag({point.first, point.second});
+        else
+            touchDown({point.first, point.second});
+    }
+
     void DivingGame::gotMsgUpdate(const sys::msg::MsgUpdate& msg) {
         tick(msg.dt);
     }
@@ -222,7 +245,11 @@ namespace rp::diving_game {
                                                                       : "diving_gear",
                    i.x - 10, i.y - 10);
         if (!robot_.comps.empty()) {
-            const auto& c = robot_.comps.front();
+            const auto* composition =
+                robot_.find(finished_                                     ? "end"
+                            : (std::abs(targetX_ - x_) > 1 || direction_) ? "moving"
+                                                                          : "idle");
+            const auto& c = composition ? *composition : robot_.comps.front();
             GfxManager m;
             renderer_.submit(m, robot_, c, c.duration() > 0 ? std::fmod(elapsed_, c.duration()) : 0,
                              Matrix::translation(x_, y_) * Matrix::scale(.65f, .65f) *
@@ -235,7 +262,8 @@ namespace rp::diving_game {
         sprite(target, "diving_arrow", 242, 350, 1.4f, true);
         sprite(target, "diving_arrow", 365, 350, 1.4f);
         sprite(target, "diving_gear", 307, 350, 1.2f);
-        label_.changeText("Level " + std::to_string(level_));
+        label_.changeText(std::to_string(gears_));
+        AutoScaleText(&label_);
         label_.SetPos(20, 50);
         label_.Render(target);
     }

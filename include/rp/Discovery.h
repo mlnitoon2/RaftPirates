@@ -4,6 +4,7 @@
 namespace rp {
     class Discovery {
       public:
+        ~Discovery();
         void initWithSFSObject(const sfs::SFSObjectWrapper& data);
         int id() const;
         const std::string& name() const;

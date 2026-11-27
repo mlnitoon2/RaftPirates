@@ -96,7 +96,9 @@ namespace rp {
         explicit OceanView(std::filesystem::path root)
             : root_(std::move(root)), animations_(root_) {}
 
-        sys::gfx::Image render(const Player&, float time, bool grid);
+        sys::gfx::Image render(const Player&, float time, bool grid,
+                               const DiveState* dive = nullptr);
+        bool Pick(const Player&, int parent, int object, sys::gfx::Vec2 screen, float time);
         void SetPosition(sys::gfx::Vec2 p);
         void SetWidth(float w);
         void SetHeight(float h);
@@ -125,6 +127,9 @@ namespace rp {
         sys::gfx::Vec2 position_{320, 86}, offset_{}, axisX_{192, 96}, axisY_{-192, 96};
         float width_ = 640, height_ = 400, priority_ = 0, unit_ = 192, zoom_ = 1;
         std::filesystem::path root_;
+        int lastDiveParent_ = 0, lastDiveObject_ = 0;
+        bool lastDiving_ = false;
+        float returnStart_ = -10;
         sys::gfx::AnimationRenderer animations_;
         std::map<std::string, std::shared_ptr<sys::gfx::Image>> images_;
         std::map<std::string, sys::res::ResourceAEAnim> bins_;

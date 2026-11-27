@@ -1,6 +1,6 @@
 # Remaining reconstruction
 
-Pass 31: 473/1191 original qualified method names matched (39.7145%). 718 names remain absent. Target: 50%.
+Pass 32: 482/1191 original qualified method names matched (40.4702%). 709 names remain absent. Target: 50%.
 
 The comparison uses the original ARM32 ELF and the corresponding compiled host static archive. Matching a name does not prove signature, ABI or functional equivalence. Methods with existing names may still be partial. The list below is a symbol inventory, not a list of verified missing player-facing features.
 
@@ -19,9 +19,9 @@ The comparison uses the original ARM32 ELF and the corresponding compiled host s
 
 `GotMsgAutoSafeModeRequest`, `GotMsgCheckForNewDailyQuest`, `GotMsgDoingFacebookAuth`, `GotMsgOnMenuLoadGlobal`, `GotMsgSetAutoSafeMode`, `GotMsgShowNewDailyQuest`, `GotMsgShowStore`, `GotMsgStartTransition`, `GotTransitionMsgDone`, `HandleGoingToDiscovery`, `QuestRewards`, `checkTutorialCompletion`, `checkTutorialStart`, `gotMsgAuthComplete`, `gotMsgAuthFailed`, `gotMsgAuthenticationChanged`, `gotMsgAuthenticationFailed`, `gotMsgBoughtCurrency`, `gotMsgBoughtItem`, `gotMsgCheat`, `gotMsgCheatDuplicatePlayer`, `gotMsgCheatStartBattle`, `gotMsgConfirmBlueprintMaterialsPurchase`, `gotMsgConfirmMaterialPurchase`, `gotMsgConfirmRepairGridObjectWithGold`, `gotMsgConfirmZoneMovement`, `gotMsgDaringMeterAdvance`, `gotMsgDebugGatherAllUsers`, `gotMsgDiscoveryGetAllKnownRequest`, `gotMsgGameCenterAuthChanged`, `gotMsgGameCenterError`, `gotMsgKeyboardEntryResult`, `gotMsgMapMarkerMoved`, `gotMsgMenuBattleAccept`, `gotMsgNameShip`, `gotMsgOnDebugMessage`, `gotMsgOnExtensionResponse2`, `gotMsgOnRoomJoin2`, `gotMsgPopupTextResult`, `gotMsgPurchaseItemRequest`, `gotMsgQuickTravelGetAllKnownRequest`, `gotMsgReconnect`, `gotMsgReenablePingSonar`, `gotMsgRequestPingSonar`, `gotMsgStartBattleMode`, `gotMsgStartBuildMode`, `gotMsgTouchDown`, `gotMsgTouchDrag`, `gotMsgTouchUp`, `gotMsgUpdateCurrency`, `gotMsgZoneGetAllKnownRequest`, `preloadMenus`, `serverName`
 
-### `rp::OceanView` (38)
+### `rp::OceanView` (37)
 
-`AddAnimSlack`, `AddGrid`, `AddSprite`, `AddToTick`, `CheckForBucket`, `FillPrioritySorter`, `FocalPoint`, `GetPriority`, `GetSpritePriority`, `Init`, `Layer`, `OceanView`, `Pick`, `PlayRaftAttackAnims`, `RemoveFromTick`, `RemoveGrid`, `RemoveSprite`, `SetAxiseseses`, `SetBossOcean`, `SetOcean`, `SetOrdering`, `SetRaftMute`, `SetRaftTransparent`, `SetTempPriorities`, `ShowWaterBuckets`, `UpdateAnimations`, `UpdateSprite`, `getGridSprite`, `gotMsgAnimateGridSprite`, `gotMsgDiveUnitLoadChange`, `gotMsgGfxLayerPickResult`, `gotMsgGridObjectEvent`, `gotMsgSparseGridObjectAdded`, `gotMsgSparseGridObjectRemoved`, `gotMsgUpdateOceanView`, `removeAllHealthBars`, `showHealthBars`, `tick`
+`AddAnimSlack`, `AddGrid`, `AddSprite`, `AddToTick`, `CheckForBucket`, `FillPrioritySorter`, `FocalPoint`, `GetPriority`, `GetSpritePriority`, `Init`, `Layer`, `OceanView`, `PlayRaftAttackAnims`, `RemoveFromTick`, `RemoveGrid`, `RemoveSprite`, `SetAxiseseses`, `SetBossOcean`, `SetOcean`, `SetOrdering`, `SetRaftMute`, `SetRaftTransparent`, `SetTempPriorities`, `ShowWaterBuckets`, `UpdateAnimations`, `UpdateSprite`, `getGridSprite`, `gotMsgAnimateGridSprite`, `gotMsgDiveUnitLoadChange`, `gotMsgGfxLayerPickResult`, `gotMsgGridObjectEvent`, `gotMsgSparseGridObjectAdded`, `gotMsgSparseGridObjectRemoved`, `gotMsgUpdateOceanView`, `removeAllHealthBars`, `showHealthBars`, `tick`
 
 ### `rp::BuildModeState` (29)
 
@@ -223,10 +223,6 @@ The comparison uses the original ARM32 ELF and the corresponding compiled host s
 
 `DamageIndicatorSprite`, `tick`, `~DamageIndicatorSprite`
 
-### `rp::DiscoveryModeState` (3)
-
-`GotMsgTransitionDone`, `HandleExtensionResponse`, `name`
-
 ### `rp::GfxShipPreviewScreen` (3)
 
 `GfxShipPreviewScreen`, `aTickMethodThatsNotCalledTick`, `~GfxShipPreviewScreen`
@@ -251,10 +247,6 @@ The comparison uses the original ARM32 ELF and the corresponding compiled host s
 
 `GeneratePerimeterTree`, `PerimeterTree`, `~PerimeterTree`
 
-### `rp::Player` (3)
-
-`Player`, `getResourceFiles`, `init`
-
 ### `rp::ThrobingIndicatorSprite` (3)
 
 `ThrobingIndicatorSprite`, `tick`, `~ThrobingIndicatorSprite`
@@ -263,14 +255,6 @@ The comparison uses the original ARM32 ELF and the corresponding compiled host s
 
 `WaterBucketSprite`, `tick`, `~WaterBucketSprite`
 
-### `rp::Zone` (3)
-
-`mapfile`, `name`, `~Zone`
-
-### `rp::diving_game::DivingGame` (3)
-
-`AutoScaleText`, `onMsgTouchState`, `setPos`
-
 ### `rp::diving_game::DivingGame::ItemFloater` (3)
 
 `ItemFloater`, `tick`, `~ItemFloater`
@@ -278,10 +262,6 @@ The comparison uses the original ARM32 ELF and the corresponding compiled host s
 ### `rp::BattleModeState::BattleDice` (2)
 
 `BattleDice`, `~BattleDice`
-
-### `rp::Discovery` (2)
-
-`name`, `~Discovery`
 
 ### `rp::DiscoveryGridObject` (2)
 
@@ -335,6 +315,10 @@ The comparison uses the original ARM32 ELF and the corresponding compiled host s
 
 `Build`, `RegistryAllClasses`
 
+### `rp::Zone` (2)
+
+`mapfile`, `name`
+
 ### `rp::Blueprint` (1)
 
 `name`
@@ -342,6 +326,14 @@ The comparison uses the original ARM32 ELF and the corresponding compiled host s
 ### `rp::BlueprintInfo` (1)
 
 `~BlueprintInfo`
+
+### `rp::Discovery` (1)
+
+`name`
+
+### `rp::DiscoveryModeState` (1)
+
+`name`
 
 ### `rp::DoStuffExtraData` (1)
 
@@ -1067,6 +1059,10 @@ The comparison uses the original ARM32 ELF and the corresponding compiled host s
 
 `~SpriteBalloon`
 
+### `rp::Player` (1)
+
+`getResourceFiles`
+
 ### `rp::QuestTypeInfo` (1)
 
 `~QuestTypeInfo`
@@ -1082,6 +1078,10 @@ The comparison uses the original ARM32 ELF and the corresponding compiled host s
 ### `rp::Transition::MsgDone` (1)
 
 `~MsgDone`
+
+### `rp::diving_game::DivingGame` (1)
+
+`setPos`
 
 ### `rp::diving_game::DivingMaterial` (1)
 

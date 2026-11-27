@@ -1,8 +1,8 @@
 # Raft Pirates
 
-[![RaftPirates original method-name coverage: 39.7145%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
+[![RaftPirates original method-name coverage: 40.4702%](docs/coverage.svg)](docs/MATCHING_STATUS.md)
 
-**473/1191 original method names (39.7145%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md). [Remaining methods and priorities](docs/REMAINING.md).
+**482/1191 original method names (40.4702%)** in the compiled host reconstruction. This measures interface-name overlap, not identical original source or binary behavior. [Per-class matching status](docs/MATCHING_STATUS.md). [Remaining methods and priorities](docs/REMAINING.md).
 
 An unofficial C++ source reconstruction of Raft Pirates for research and game preservation, built on [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy). The project is not the recovered original source and is not a complete or binary-equivalent replacement. Original Java classes and resources are supplied by a locally available, compatible APK; they are not distributed by this repository.
 
@@ -26,6 +26,10 @@ out/lib/arm64-v8a/libraftpirates.so
 The build checks the ARM64 ELF header and required JNI symbols. The library is intended for `lib/arm64-v8a/libraftpirates.so` in a compatible APK. APK packaging, Java compatibility changes and signing are outside the scope of the native build.
 
 The [Android workflow](.github/workflows/android.yml) compiles both repositories, validates the result and publishes the rebuilt `libraftpirates.so` at the repository root after a successful build. [Build history](https://github.com/mlnitoon2/RaftPirates/actions).
+
+### Other Android ABIs
+
+`build_arm64.py` defaults to `arm64-v8a` and also accepts `--abi armeabi-v7a`, `--abi x86`, and `--abi x86_64`. Output is isolated in `out/lib/<abi>/libraftpirates.so`; the script checks the ELF class, machine and required JNI exports for that ABI. CI still publishes ARM64 only. Other targets are configured but have not been tested on devices.
 
 ## Network configuration
 

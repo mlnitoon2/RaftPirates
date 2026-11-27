@@ -56,12 +56,25 @@ namespace rp {
         bool hudEnabled(const Game& game) const;
         MapView mapView_;
         int selectedQuest_ = 0;
+        float worldTime_ = 0;
+        bool scrollVertical_ = false;
         std::map<std::string, std::shared_ptr<sys::gfx::Image>> tiles_;
         std::map<std::string, std::pair<std::shared_ptr<sys::res::ResourceSpriteSheet>,
                                         std::shared_ptr<sys::gfx::Image>>>
             shopAtlases_;
         bool renderItemIcon(sys::gfx::Image&, const std::string&, const std::string&, int, int);
-        enum class Panel { None, Shop, Inventory, Travel, Build, Quest, Safety, Daring, Confirm };
+        enum class Panel {
+            None,
+            Shop,
+            Inventory,
+            Travel,
+            Build,
+            Quest,
+            QuestDetail,
+            Safety,
+            Daring,
+            Confirm
+        };
         Panel panel_ = Panel::None;
         size_t page_ = 0;
         int selectedBlueprint_ = 0;

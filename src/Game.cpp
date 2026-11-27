@@ -472,7 +472,9 @@ namespace rp {
     Message Game::dive(const std::string& command) const {
         if (command != "dive_start" && command != "dive_info" && command != "dive_collect")
             throw std::runtime_error("Unknown dive action");
-        const auto unit = GetDiveUnit();
+        const auto unit = command != "dive_start" && diveState.parent > 0 && diveState.object > 0
+                              ? std::make_pair(diveState.parent, diveState.object)
+                              : GetDiveUnit();
         if (unit.second) {
             O p;
             p.put("parent_id", int32_t(unit.first));

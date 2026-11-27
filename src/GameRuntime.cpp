@@ -393,7 +393,7 @@ namespace sys::platform::game {
             rt.initialized = true;
             rt.status.clear();
             rt.last = Clock::now();
-            platform.log("Raft Pirates Pass 31 startup: loading initialized; property endpoint " +
+            platform.log("Raft Pirates Pass 32 startup: loading initialized; property endpoint " +
                          std::string(rt.authEndpoint.empty() ? "missing" : "configured"));
         });
     }

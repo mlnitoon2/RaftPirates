@@ -1,6 +1,8 @@
 #include "rp/Zone.h"
 
 namespace rp {
+    Zone::~Zone() = default;
+
     void Zone::initWithSFSObject(const sfs::SFSObjectWrapper& data) {
         id_ = data.getInt("zone_id");
         name_ = data.getString("name");

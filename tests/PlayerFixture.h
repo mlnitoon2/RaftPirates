@@ -16,6 +16,8 @@ inline void loadPlayerFixture(rp::Game& g) {
                     0,
                     {{0, 1}, {1, 0}, {1, 1}, {1, 2}, {2, 1}}};
     g.blueprints[1] = {1, 4, 1, "Pain Sprinkler"};
+    g.blueprints[1].sheet = "thumbs_weapons.xml";
+    g.blueprints[1].image = "thumb_pain_sprinkler";
     g.owned.insert(1);
     g.rafts.push_back({1, 1, 0, 0, 1000, 0, {{1, 2, 4, 1, 1000, 0, 0}, {2, 3, 1, 3, 1000, 0, 0}}});
     g.playerName = "Fixture player";

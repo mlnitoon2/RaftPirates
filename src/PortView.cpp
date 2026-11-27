@@ -19,6 +19,15 @@ namespace rp {
                     i.at(xx, yy) = c;
         }
 
+        struct MapRect {
+            int x, y, w, h;
+        };
+
+        MapRect mapRect(int w, int h) {
+            const float scale = std::min(624.f / std::max(1, w), 384.f / std::max(1, h));
+            int width = std::max(1, int(w * scale)), height = std::max(1, int(h * scale));
+            return {(640 - width) / 2, (400 - height) / 2, width, height};
+        }
     } // namespace
 
     PortView::PortView(std::filesystem::path root)
@@ -83,7 +92,7 @@ namespace rp {
             return;
         auto offset = xmlMenu_->scrollOffset(swipe_);
         for (auto [id, origin] : scrollOrigins_)
-            xmlMenu_->node(id).set("xOffset", origin + offset);
+            xmlMenu_->node(id).set(scrollVertical_ ? "yOffset" : "xOffset", origin + offset);
         xmlMenu_->solve();
     }
 
@@ -130,6 +139,7 @@ namespace rp {
     }
 
     Image PortView::render(const Game& g, float time, const std::string& status) {
+        worldTime_ = time;
         Image out(640, 400, {36, 133, 168, 255});
         using Phase = BattleModeState::Phase;
         const auto& net = g.onlineBattle;
@@ -158,7 +168,10 @@ namespace rp {
         }
         if (g.diveState.state != 3)
             diveSeen_ = false;
-        if (diveStarted_ && g.diveState.state == 3 && !diveSeen_) {
+        if (diveStarted_ && g.diveState.state == 3 && !diveSeen_ &&
+            (g.diveState.remaining <= 0 ||
+             g.diveState.totalSeconds - g.diveState.remaining >=
+                 std::min(2.0167f, float(g.diveState.totalSeconds) * .5f))) {
             diveSeen_ = true;
             diveStarted_ = false;
             try {
@@ -178,12 +191,13 @@ namespace rp {
             map = false;
         if (!map) {
             mapView_.hideMap();
-            out = ocean_.render(g, time, grid);
+            out = ocean_.render(g, time, grid, &g.diveState);
         } else {
             try {
                 loadMap(g);
                 if (mapView_.data()) {
                     auto& m = *mapView_.data();
+                    auto box = mapRect(m.width * m.tileWidth, m.height * m.tileHeight);
                     for (auto& l : m.layers)
                         for (int y = 0; y < l.height; ++y)
                             for (int x = 0; x < l.width; ++x) {
@@ -211,9 +225,10 @@ namespace rp {
                                 auto local = gid - set->firstGid;
                                 int sx = int(local % cols) * set->tileWidth,
                                     sy = int(local / cols) * set->tileHeight;
-                                int dx = 48 + x * 544 / m.width, dy = 36 + y * 306 / m.height,
-                                    dx1 = 48 + (x + 1) * 544 / m.width,
-                                    dy1 = 36 + (y + 1) * 306 / m.height;
+                                int dx = box.x + x * box.w / m.width,
+                                    dy = box.y + y * box.h / m.height,
+                                    dx1 = box.x + (x + 1) * box.w / m.width,
+                                    dy1 = box.y + (y + 1) * box.h / m.height;
                                 for (int yy = dy; yy < dy1; ++yy)
                                     for (int xx = dx; xx < dx1; ++xx) {
                                         int u = (xx - dx) * set->tileWidth / (dx1 - dx),
@@ -244,8 +259,8 @@ namespace rp {
                     mapView_.updateBoss(g.bossData, g.zone);
                     mapView_.updateEnemyShips(g.sonarShips);
                     auto drawMarker = [&](const MapView::EnemyShipPoints& ship, bool boss) {
-                        int mx = 48 + int(ship.x * 544.f / (m.width * m.tileWidth)),
-                            my = 36 + int(ship.y * 306.f / (m.height * m.tileHeight));
+                        int mx = box.x + int(ship.x * box.w / (m.width * m.tileWidth)),
+                            my = box.y + int(ship.y * box.h / (m.height * m.tileHeight));
                         if (!renderItemIcon(out, "rp_menu.xml",
                                             boss ? "rp_map_boss" : "rp_battle_arrow", mx - 13,
                                             my - 13))
@@ -257,8 +272,8 @@ namespace rp {
                         drawMarker(enemy, false);
                     if (mapView_.playerVisible()) {
                         auto marker = mapView_.playerPosition();
-                        int mx = 48 + int(marker.x * 544 / (m.width * m.tileWidth)),
-                            my = 36 + int(marker.y * 306 / (m.height * m.tileHeight));
+                        int mx = box.x + int(marker.x * box.w / (m.width * m.tileWidth)),
+                            my = box.y + int(marker.y * box.h / (m.height * m.tileHeight));
                         renderItemIcon(out, "rp_menu.xml", "rp_map_marker", mx - 13, my - 13);
                     }
                 }
@@ -398,7 +413,8 @@ namespace rp {
                 return {};
             case Hud::Action::Map:
                 map = !g.hideMap;
-                return {};
+                return map ? std::optional<sfs::Message>(Game::request("mapaction_request"))
+                           : std::nullopt;
             case Hud::Action::Cancel:
                 moving_ = false;
                 selectedBlueprint_ = selectedComponent_ = selectedParent_ = 0;
@@ -448,31 +464,25 @@ namespace rp {
         }
         if (!map && !grid) {
             const auto unit = g.GetDiveUnit();
-            auto world = ocean_.ScreenToWorld({x, y});
-            for (const auto& raft : g.rafts)
-                if (raft.id == unit.first)
-                    for (const auto& component : raft.components)
-                        if (component.id == unit.second) {
-                            auto def = g.objects.find(component.type);
-                            if (def == g.objects.end())
-                                continue;
-                            int cx = int(std::floor((world.x - raft.x) * 6)),
-                                cy = int(std::floor((world.y - raft.y) * 6));
-                            for (auto cell : def->second.cells)
-                                if (component.x + cell.x == cx && component.y + cell.y == cy) {
-                                    if (g.diveState.state == 3)
-                                        return g.dive(g.diveSeconds > 0 ? "dive_info"
-                                                                        : "dive_collect");
-                                    diveStarted_ = true;
-                                    return g.dive("dive_start");
-                                }
-                        }
+            if (unit.second && ocean_.Pick(g, unit.first, unit.second, {x, y}, worldTime_)) {
+                if (g.diveState.Diving()) {
+                    if (g.diveSeconds > 0)
+                        diveStarted_ = true;
+                    return g.dive(g.diveSeconds > 0 ? "dive_info" : "dive_collect");
+                }
+                diveStarted_ = true;
+                return g.dive("dive_start");
+            }
         }
         if (map) {
             loadMap(g);
-            if (!mapView_.data() || x < 48 || x >= 592 || y < 36 || y >= 342)
+            if (!mapView_.data())
                 return {};
-            float u = (x - 48) / 544.f, v = (y - 36) / 306.f;
+            const auto& data = *mapView_.data();
+            auto box = mapRect(data.width * data.tileWidth, data.height * data.tileHeight);
+            if (x < box.x || x >= box.x + box.w || y < box.y || y >= box.y + box.h)
+                return {};
+            float u = (x - box.x) / box.w, v = (y - box.y) / box.h;
             float wx = u * mapView_.data()->width * mapView_.data()->tileWidth;
             float wy = v * mapView_.data()->height * mapView_.data()->tileHeight;
             mapView_.showMap();
@@ -603,6 +613,7 @@ namespace rp {
         xmlName_ = name;
         xmlItems_.clear();
         swipe_ = 0;
+        scrollVertical_ = false;
         scrollOrigins_.clear();
         xmlCaptured_ = false;
         try {
@@ -676,6 +687,8 @@ namespace rp {
                 if (auto* list = find(find, xml, "children")) {
                     size_t i = 0;
                     for (int id : RPMenuHandler(g).gotMsgQuestInformationRequest()) {
+                        if (!g.quests.at(id).visible)
+                            continue;
                         auto key = "quest_" + std::to_string(id);
                         xmlItems_[key] = id;
                         add(*list, "QuestButton", key, -50, 48 + int(i++) * 55, "children", "TOP",
@@ -692,8 +705,23 @@ namespace rp {
                     m.node(id).set("visible", visible);
             };
             if (name == "piratemap_menu") {
-                for (auto n : {"AutoSafeWater", "MapActionsIcon", "PopupDialog", "TutorialArrow"})
+                for (auto n : {"AutoSafeWater", "PopupDialog", "TutorialArrow"})
                     show(n, false);
+                show("MapActionsIcon", g.mapActionMax > 0);
+                if (auto quick = xmlMenu_->find(1, "QuickTravel", true)) {
+                    if (auto sprite = xmlMenu_->find(quick, "Sprite")) {
+                        if (auto zone = g.zones.find(g.zone); zone != g.zones.end()) {
+                            try {
+                                const auto atlas = ResourceSpriteSheet::Create(
+                                    root_ / "xml_resources/rp_menu.xml");
+                                if (atlas.findSpriteByName(zone->second))
+                                    xmlMenu_->node(sprite).set("spriteName", zone->second);
+                            } catch (const std::exception&) {
+                            }
+                        }
+                    }
+                }
+
                 for (auto n : {"PingSonar", "QuickTravel"})
                     if (auto id = m.find(1, n, true)) {
                         auto b = m.node(id).bounds;
@@ -701,10 +729,32 @@ namespace rp {
                                        std::string(n) == "PingSonar" ? b.w / 2 + 3 : -b.w / 2 - 3);
                         m.node(id).set("yOffset", -b.h / 2 - 3);
                     }
+            } else if (name == "quest_log") {
+                if (auto dialog = m.find(1, "DialogPopup", true)) {
+                    m.node(dialog).set("absoluteX", m.width() / 4 - m.node(dialog).bounds.w);
+                    if (auto sprite = m.find(dialog, "DialogSprite"))
+                        m.node(sprite).set("hFlip", 1.0);
+                    if (auto children = m.find(dialog, "children")) {
+                        if ((swipe_ = m.find(dialog, "Swiper"))) {
+                            scrollVertical_ = true;
+                            m.node(swipe_).set("direction", 1.0);
+                            m.node(swipe_).set("mode", 1.0);
+                            m.listenToTouches(swipe_, dialog);
+                            m.setWindowSize(swipe_, m.node(dialog).bounds.h);
+                            m.setScrollSize(swipe_,
+                                            std::max(0.f, 48.f + float(xmlItems_.size()) * 55.f -
+                                                              m.node(dialog).bounds.h));
+                            for (auto& [key, item] : xmlItems_)
+                                if (auto el = m.find(children, key, true))
+                                    scrollOrigins_[el] =
+                                        m.node(el).bounds.y - m.node(children).bounds.y;
+                        }
+                    }
+                }
             } else if (name.rfind("tabbed_menu_", 0) == 0) {
                 show("Frame", false);
                 // Match MenuTab and MenuTabCurrency's original onInit/onPostSolve placement.
-                double x = 8;
+                double x = 40;
                 for (int i = 1; i <= 4; ++i)
                     if (auto id = m.find(1, "Tab" + std::to_string(i), true)) {
                         m.node(id).set("xOffset", x);
@@ -712,8 +762,8 @@ namespace rp {
                             x += m.node(bg).number("width") + m.node(bg).number("leftWidth") +
                                  m.node(bg).number("rightWidth") * .5;
                     }
-                x = 12;
-                for (int i = 5; i <= 7; ++i)
+                x = -36;
+                for (int i = 7; i >= 5; --i)
                     if (auto id = m.find(1, "Tab" + std::to_string(i), true)) {
                         m.node(id).set("xOffset", x);
                         x -= m.node(id).bounds.w + 2;
@@ -737,7 +787,7 @@ namespace rp {
                         for (auto& [key, id] : xmlItems_)
                             if (auto el = m.find(list, key, true)) {
                                 auto index = std::stoi(key.substr(10));
-                                scrollOrigins_[el] = (m.node(list).bounds.w - m.width()) / 2 +
+                                scrollOrigins_[el] = std::max(0.f, -m.node(list).bounds.x) + 12 +
                                                      index * m.width() * .2;
                             }
                     }
@@ -757,7 +807,18 @@ namespace rp {
                         }
                     } else if (name == "tabbed_menu_blueprints") {
                         const auto& b = g.blueprints.at(id);
-                        set(element, "itemImage", "spriteName", b.image);
+                        std::string image = b.image;
+                        if (!image.empty() && !b.sheet.empty() && image.size() > 0) {
+                            try {
+                                auto atlas = ResourceSpriteSheet::Create(
+                                    root_ / "xml_resources" /
+                                    std::filesystem::path(b.sheet).filename());
+                                if (atlas.findSpriteByName(image + "_green"))
+                                    image += "_green";
+                            } catch (const std::exception&) {
+                            }
+                        }
+                        set(element, "itemImage", "spriteName", image);
                         set(element, "itemImage", "sheetName", b.sheet);
                         set(element, "itemImage", "visible", true);
                         set(element, "itemName", "text", strings_.getText(b.name()));
@@ -773,6 +834,17 @@ namespace rp {
                     } else if (name == "quest_log") {
                         const auto& q = g.quests.at(id);
                         set(element, "ProgressText", "text", std::to_string(q.progress) + "%");
+                        set(element, "ProgressText", "visible", q.progress > 0 && q.progress < 100);
+                        if (auto type = g.questTypeDB.getQuestTypeInfo(unsigned(q.type))) {
+                            auto sheet = type->getString(
+                                "sheet_id", type->getString("sprite_sheet_id", q.sheet));
+                            auto image = type->getString("image_id", q.image);
+                            if (!sheet.empty() && !image.empty()) {
+                                set(element, "ItemImage", "spriteName", image);
+                                set(element, "ItemImage", "sheetName", sheet);
+                            }
+                        }
+                        set(element, "NewQuest", "visible", q.unread);
                     } else if (name == "tabbed_menu_maps") {
                         set(element, "itemName", "text", g.zones.at(id));
                         set(element, "itemName", "visible", true);
@@ -808,6 +880,23 @@ namespace rp {
                 if (auto label = m.find(1, "ConfirmText", true))
                     set(label, "Text", "text", text);
             }
+            if (name == "quest_dialog" && g.quests.count(selectedQuest_)) {
+                const auto& q = g.quests.at(selectedQuest_);
+                if (auto id = m.find(1, "TitleText", true))
+                    set(id, "Text", "text", strings_.getText(q.name));
+                if (auto id = m.find(1, "DescriptionText", true))
+                    set(id, "Text", "text", strings_.getText(q.description));
+                if (auto popup = m.find(1, "PopupDialog", true)) {
+                    if (auto bg = m.find(popup, "bg")) {
+                        m.node(bg).set("width", m.width() * .7);
+                        m.node(bg).set("height", m.height() * .75);
+                        if (auto sprite = m.find(bg, "Sprite")) {
+                            m.node(sprite).set("width", m.width() * .7);
+                            m.node(sprite).set("height", m.height() * .75);
+                        }
+                    }
+                }
+            }
             m.solve();
             updateScroll();
         } catch (const std::exception&) {
@@ -816,14 +905,35 @@ namespace rp {
     }
 
     void PortView::renderXml(Image& out, const Game& g, const std::string& name) {
-        if (!xmlMenu_ || xmlName_ != name)
+        bool refresh = false;
+        if (name == "quest_log" && xmlMenu_ && xmlName_ == name) {
+            size_t count = 0;
+            for (const auto& q : g.quests)
+                if (q.second.visible) {
+                    ++count;
+                    if (!xmlItems_.count("quest_" + std::to_string(q.first)))
+                        refresh = true;
+                }
+            refresh = refresh || count != xmlItems_.size();
+        }
+        if (!xmlMenu_ || xmlName_ != name || refresh)
             openXml(g, name);
         if (!xmlMenu_)
             return;
-        if (name == "piratemap_menu")
+        if (name == "piratemap_menu") {
+            if (auto icon = xmlMenu_->find(1, "MapActionsIcon", true)) {
+                xmlMenu_->node(icon).set("visible", g.mapActionMax > 0);
+                if (auto label = xmlMenu_->find(icon, "TextRegenLimit"))
+                    xmlMenu_->node(label).set("text", std::to_string(g.mapActions));
+                if (auto label = xmlMenu_->find(icon, "TextMoveTimer")) {
+                    xmlMenu_->node(label).set("text", std::to_string(std::max(0, g.mapActionTime)));
+                    xmlMenu_->node(label).set("visible", g.mapActions < g.mapActionMax);
+                }
+            }
             if (auto sonar = xmlMenu_->find(1, "PingSonar", true))
                 if (auto label = xmlMenu_->find(sonar, "Text"))
                     xmlMenu_->node(label).set("text", std::to_string(g.numOfMaterialPossessed(12)));
+        }
         xmlMenu_->solve();
         GfxManager renderer;
         xmlMenu_->submit(renderer);
@@ -838,6 +948,9 @@ namespace rp {
             break;
         case Panel::Quest:
             name = "quest_log";
+            break;
+        case Panel::QuestDetail:
+            name = "quest_dialog";
             break;
         case Panel::Safety:
             name = g.badZone ? "hud_badzone_popup" : "safe_flag_popup";
@@ -968,8 +1081,12 @@ namespace rp {
                 xmlMenu_.reset();
                 return {};
             }
-            if (xmlName_ == "quest_log")
+            if (xmlName_ == "quest_log") {
+                selectedQuest_ = item;
+                panel_ = Panel::QuestDetail;
+                openXml(g, "quest_dialog");
                 return g.openQuest(item);
+            }
             if (xmlName_ == "tabbed_menu_maps") {
                 panel_ = Panel::None;
                 xmlMenu_.reset();

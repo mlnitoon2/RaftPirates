@@ -4,6 +4,7 @@
 namespace rp {
     class Zone {
       public:
+        ~Zone();
         void initWithSFSObject(const sfs::SFSObjectWrapper& data);
         int id() const;
         const std::string& name() const;

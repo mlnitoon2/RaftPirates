@@ -24,6 +24,8 @@ namespace rp::diving_game {
         void InitLevel();
         void NextLevel();
         void NextShape();
+        void AutoScaleText(sys::gfx::GfxText* text);
+        void onMsgTouchState(const sys::msg::MsgTouchState& msg);
         void gotMsgUpdate(const sys::msg::MsgUpdate& msg);
         void tick(float dt);
         void moveDiver(DiverMoveDirection direction, float seconds);

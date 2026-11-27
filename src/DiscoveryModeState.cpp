@@ -37,6 +37,18 @@ namespace rp {
         game.discovery = 0;
     }
 
+    void DiscoveryModeState::GotMsgTransitionDone(Game& game) {
+        if (leaving_)
+            LeaveDiscoveryReally(game);
+    }
+
+    void DiscoveryModeState::HandleExtensionResponse(Game& game, const std::string& command,
+                                                     const sfs::SFSObjectWrapper& data) {
+        game.extension(command, data);
+        if (!game.discovery)
+            leaving_ = true;
+    }
+
     bool DiscoveryModeState::leaving() const {
         return leaving_;
     }
