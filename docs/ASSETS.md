@@ -11,3 +11,16 @@ This extracts the actual files under `assets/` to `assets_local/`, preserving pa
 ## Verify an extracted directory
 
 The repository includes the expected SHA-256 and size for all 710 asset files in `evidence/asset_inventory.json`. Run `python tools/verify_assets.py assets_local` (or specify any extracted asset directory) to check the exact archive used for the reconstruction. An asset-only ZIP with an `assets/` root can be unpacked alongside the repository; pass `assets` as the verification path. The original archive itself remains a local input.
+
+## Merge a verified batch for Windows builds
+
+Use an authorized local APK or a partial asset ZIP with an `assets/` root:
+
+```powershell
+python tools/import_assets.py "C:\path\to\RaftPirates-50-new-assets.zip"
+git add assets
+git commit -m "Import verified original assets"
+git push
+```
+
+The importer verifies every included file against the archived inventory before writing, skips identical files, and refuses changed or unrecognized files. It does not commit or push automatically. The Windows build copies the committed files into its runtime assets directory.
