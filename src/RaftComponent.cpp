@@ -1,4 +1,5 @@
 #include "rp/RaftComponent.h"
+#include "rp/SparseGrid.h"
 #include <algorithm>
 #include <cmath>
 
@@ -24,6 +25,10 @@ namespace rp {
     void RaftComponent::SetRemainingTime(int seconds) {
         remaining = std::max(0, seconds);
         remainingFraction = 0;
+    }
+
+    void RaftComponent::AddedToOcean(SparseGrid& grid) {
+        if (Building()) grid.AddToTempTick(this);
     }
 
     void RaftComponent::UseClock(float seconds) {

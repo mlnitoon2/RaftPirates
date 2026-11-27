@@ -3,6 +3,7 @@
 #include "rp/GridObject.h"
 
 namespace rp {
+    class SparseGrid;
     struct RaftComponent : GridObject {
         RaftComponent() = default;
         RaftComponent(int user, int object, int px, int py, int points, int objectState,
@@ -15,6 +16,7 @@ namespace rp {
         float GetRemainingTime() const;
         void SetRemainingTime(int seconds);
         void UseClock(float seconds);
+        void AddedToOcean(SparseGrid& grid);
         void SetState(int value) override;
         int GetBattlePoints() const override;
         void Repair(int battlePoints, int maxBattlePoints);

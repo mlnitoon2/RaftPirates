@@ -124,9 +124,11 @@ Names newly implemented in source are listed here and removed from the provision
 
 - Three resource loaders now use native type strings AE, SS and XMLDATA, and delegate to the existing resource cache. AE and sheet preparation enqueue image dependencies; native dependency ordering and asset fallback remain unverified. XML preparation returns true. This is a 15-name provisional source addition, not compiled coverage.
 
+- Added six provisional grid/component names: temporary tick registration, duplicate suppression, completion removal and construction registration. Parent-grid propagation, lifetime ownership and native construction messages are not restored; caller must manage object lifetimes.
+
 ## Remaining method names by class (provisional source review)
 
-517 names from the Pass 33 inventory now have named source implementations through Pass 46 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+523 names from the Pass 33 inventory now have named source implementations through Pass 46 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (20)
 
@@ -220,10 +222,6 @@ Names newly implemented in source are listed here and removed from the provision
 
 `Init`, `RaftAttackSprite`, `Update`, `tick`, `~RaftAttackSprite`
 
-### `rp::SparseGrid` (5)
-
-`AddToTempTick`, `AddedToOcean`, `IsAncestor`, `RemoveFromTempTick`, `TempTick`
-
 ### `rp::BattlePointsViewSprite` (4)
 
 `BattlePointsViewSprite`, `SetColour`, `tick`, `~BattlePointsViewSprite`
@@ -251,10 +249,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::MsgStartDialog` (2)
 
 `MsgStartDialog`, `~MsgStartDialog`
-
-### `rp::RaftComponent` (1)
-
-`AddedToOcean`
 
 ### `rp::BlueprintInfo` (1)
 

@@ -24,3 +24,5 @@ Coverage represents source names, not fully verified original behavior. The 47-n
 ## Pass 46 static checks
 
 - 0x243174/0x243190/0x2431e4 return static identifiers AE/SS/XMLDATA. 0x243288 returns true. 0x2434b8, 0x24352c, 0x2435a0 call XML, atlas and AE creation respectively. 0x24f700 reads AE dependencies; 0x250320 reads the atlas image. Host preparation uses the existing parsers instead of duplicating the original binary reader.
+
+- 0x4ee794 calls virtual TempTick and erases completed objects; 0x4ee8e8 suppresses duplicates and propagates to parent grids. 0x4ee864 walks parent links; portable flat membership is not equivalent. 0x54b8f4 registers building components and broadcasts a message; only registration is restored.

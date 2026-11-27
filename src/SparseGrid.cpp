@@ -1,5 +1,6 @@
 #include "rp/SparseGrid.h"
 #include <limits>
+#include <cmath>
 
 namespace rp {
     namespace {
@@ -15,6 +16,29 @@ namespace rp {
 
     SparseGrid::SparseGrid() = default;
     SparseGrid::~SparseGrid() = default;
+
+    void SparseGrid::AddedToOcean() { attached_ = true; }
+
+    bool SparseGrid::IsAncestor(const GridObject* object) const {
+        // This host grid has only direct membership, not the native parent chain.
+        return object && hasObject(object->GetUserObjectID());
+    }
+
+    void SparseGrid::AddToTempTick(GridObject* object) {
+        if (object) tempTick_.insert(object);
+    }
+
+    void SparseGrid::RemoveFromTempTick(GridObject* object) {
+        tempTick_.erase(object);
+    }
+
+    bool SparseGrid::TempTick(float dt) {
+        if (!std::isfinite(dt) || dt < 0) return tempTick_.empty();
+        const auto snapshot = tempTick_;
+        for (auto* object : snapshot)
+            if (tempTick_.count(object) && object->TempTick(dt)) tempTick_.erase(object);
+        return tempTick_.empty();
+    }
 
     uint64_t SparseGrid::GenerateKey(Cell p) {
         return (uint64_t(uint32_t(p.x)) << 32) | uint32_t(p.y);
