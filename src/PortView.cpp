@@ -791,7 +791,10 @@ namespace rp {
                     auto& n=m.node(icon);n.set("absoluteX",70.0);n.set("absoluteY",double(m.height()-42));n.set("width",170.0);n.set("height",38.0);
                     auto place=[&](const char* name,float x,float y){if(auto id=m.find(icon,name)){auto& c=m.node(id);c.set("absoluteX",double(x));c.set("absoluteY",double(y));}};
                     place("Sprite",70,m.height()-42);place("SpriteBarBG",100,m.height()-27);place("SpriteBarFG",100,m.height()-24);
-                    if(auto ball=m.find(icon,"SpriteBarBallBG"))m.node(ball).set("visible",false);
+                    if(auto ball=m.find(icon,"SpriteBarBallBG")){
+                        auto& n=m.node(ball);n.set("absoluteX",double(100+m.node(m.find(icon,"SpriteBarBG")).bounds.w-4));
+                        n.set("absoluteY",double(m.height()-34));
+                    }
                     place("TextRegenLimit",145,m.height()-27);place("TextMoveTimer",145,m.height()-45);
                     if(auto label=m.find(icon,"TextMoveCount"))m.node(label).set("visible",false);
                 }
@@ -1468,6 +1471,12 @@ namespace rp {
                 openXml(g, "tabbed_menu_misc");
                 return {};
             }
+        }
+        // Native tab event scripts are consumed by this host; keep their navigation explicit.
+        if(xmlName_.rfind("tabbed_menu_",0)==0 && name.size()==4 && name.rfind("Tab",0)==0){
+            static const char* menus[]={"tabbed_menu_blueprints","tabbed_menu_inventory","tabbed_menu_misc","tabbed_menu_free","tabbed_menu_gold","tabbed_menu_diamonds"};
+            const int tab=name[3]-'1';
+            if(tab>=0 && tab<6){panel_=Panel::Shop;if(xmlName_!=menus[tab])openXml(g,menus[tab]);return {};}
         }
         static const std::regex push(R"rx(menu:pushPopUp\("(tabbed_menu_[a-z]+)"\))rx");
         std::smatch match;
