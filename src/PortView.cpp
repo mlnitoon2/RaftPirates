@@ -117,6 +117,14 @@ namespace rp {
         }
     }
 
+    std::optional<sfs::Message> PortView::takePendingRequest(Game& g){
+        if(!diving_||!diveClosing_||diving_->moving())return {};
+        diving_.reset();diveClosing_=false;
+        if(!g.diveState.Diving()||divingUnit_!=std::make_pair(g.diveState.parent,g.diveState.object))return {};
+        if(!g.diveState.collected.empty())return BuildModeState(g).SendBonusMaterials();
+        return g.collectDive();
+    }
+
     void PortView::cancelInput(){
         if(xmlCaptured_&&xmlMenu_)xmlMenu_->touchCancel();
         if(oceanGesture_)touchControls_.touchCancel({});
@@ -181,7 +189,10 @@ namespace rp {
         }
         if (g.diveState.state != 3){
             diveSeen_ = false;
-            if(!g.diveState.Diving())diving_.reset();
+            if(!g.diveState.Diving()){diving_.reset();diveClosing_=false;}
+        }
+        if(diving_&&divingUnit_!=std::make_pair(g.diveState.parent,g.diveState.object)){
+            diving_.reset();diveClosing_=false;diveSeen_=false;
         }
         if (diveStarted_ && g.diveState.state == 3 && !diveSeen_ &&
             (g.diveState.remaining <= 0 ||
@@ -193,11 +204,15 @@ namespace rp {
                 diving_ = std::make_unique<diving_game::DivingGame>(
                     root_, unsigned(g.diveState.depth + 1));
                 diving_->setDuration(float(std::max(8, g.diveState.totalSeconds)));
+                divingUnit_={g.diveState.parent,g.diveState.object};
+                diveClosing_=false;
+                diving_->setPos(850,22);diving_->moveTo(210,22,1.f);
             } catch (const std::exception&) {
                 diving_.reset();
             }
         }
         if (diving_) {
+            out=ocean_.render(g,time,grid,&g.diveState);
             diving_->render(out);
             return out;
         }
@@ -366,11 +381,9 @@ namespace rp {
         }
         if (diving_) {
             diving_->touchUp({x, y});
-            if (diving_->confirmed()) {
-                BuildModeState build(g);
-                auto request=build.SendBonusMaterials();
-                if(request)diving_.reset();
-                return request;
+            if (diving_->confirmed() && !diveClosing_) {
+                diveClosing_=true;
+                diving_->moveTo(850,22,1.f);
             }
             return {};
         }
@@ -470,7 +483,7 @@ namespace rp {
                     if (g.diveSeconds > 0)
                         diveStarted_ = true;
                     if(g.diveSeconds>0)return g.dive("dive_info");
-                    return BuildModeState(g).SendBonusMaterials();
+                    return g.collectDive();
                 }
                 diveStarted_ = true;
                 return g.dive("dive_start");

@@ -107,7 +107,7 @@ namespace rp {
 
     std::optional<sfs::Message> BuildModeState::SendBonusMaterials(){
         const auto& dive=game_.diveState;
-        if(!game_.ready||!waiting_.empty()||game_.diveCollectPending||dive.parent<=0||dive.object<=0)return {};
+        if(!game_.ready||!waiting_.empty()||game_.diveCollectPending||dive.parent<=0||dive.object<=0||dive.collected.empty())return {};
         sfs::SFSObjectWrapper p;
         p.put("object_id",int32_t(dive.object));p.put("object_type",int32_t(1));p.put("parent_id",int32_t(dive.parent));
         auto bonus=std::make_shared<sfs::SFSArrayWrapper>();
@@ -125,22 +125,23 @@ namespace rp {
         try{
             diving_=std::make_unique<diving_game::DivingGame>(ocean_->assetRoot(),unsigned(std::max(1,game_.diveState.depth+1)));
             diving_->setDuration(float(std::max(8,game_.diveState.totalSeconds)));
-            diving_->setPos(0,ocean_->Height());diving_->moveTo(0,0,.5f);
+            diving_->setPos(ocean_->Width()+210,22);diving_->moveTo(210,22,1.f);
         }catch(const std::exception&){diving_.reset();return false;}
-        if(menu_)menu_->setHudMode(0);
+        if(menu_)menu_->setHudMode(2);
         if(playMusic)playMusic("audio/music/underwater");
         return true;
     }
     std::optional<sfs::Message> BuildModeState::gotMsgDivingGameDone(const MsgDivingGameDone&){
         if(!diving_||closingDive_)return {};
-        auto result=SendBonusMaterials();if(!result)return {};
-        closingDive_=true;diving_->moveTo(0,ocean_?ocean_->Height():400,.5f);
+        closingDive_=true;diving_->moveTo((ocean_?ocean_->Width():640)+210,22,1.f);
         if(menu_)menu_->setHudMode(1);
         if(playMusic)playMusic("audio/music/ambient");
-        return result;
+        return {};
     }
-    void BuildModeState::gotMsgDivingGameDoneMoving(const MsgDivingGameDoneMoving&){
-        if(closingDive_){diving_.reset();closingDive_=false;}
+    std::optional<sfs::Message> BuildModeState::gotMsgDivingGameDoneMoving(const MsgDivingGameDoneMoving&){
+        if(!closingDive_||!diving_||diving_->moving())return {};
+        diving_.reset();closingDive_=false;
+        return SendBonusMaterials();
     }
     std::optional<sfs::Message> BuildModeState::gotMsgGridObjectEvent(const MsgGridObjectEvent& msg){
         if(!game_.ready||msg.id<=0)return {};

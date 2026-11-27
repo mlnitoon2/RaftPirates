@@ -82,6 +82,7 @@ namespace rp {
         bool canPlaceComponent(int object, int parent, int x, int y, int ignoreParent = 0,
                                int ignoreId = 0) const;
         sfs::Message dive(const std::string& command) const;
+        std::optional<sfs::Message> collectDive();
         sfs::Message travel(int id);
         sfs::Message buy(int id) const;
         sfs::Message buyStoreItem(int id) const;

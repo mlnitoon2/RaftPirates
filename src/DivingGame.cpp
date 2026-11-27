@@ -36,7 +36,8 @@ namespace rp::diving_game {
         scrolling_.emplace_back(std::vector<std::string>{"diving_layer003_01","diving_layer003_02"},128,.25f,288);
         scrolling_.emplace_back(std::vector<std::string>{"diving_layer002_01","diving_layer002_02"},128,.5f,288);
         scrolling_.emplace_back(std::vector<std::string>{"diving_layer001_01","diving_layer001_02"},128,1.f,288);
-        setPos(320,270);
+        x_=targetX_=320; y_=270;
+        setPos(210,22);
         gears_ = 0;
         level_ = 1;
         shape_ = 0;
@@ -48,6 +49,7 @@ namespace rp::diving_game {
     }
 
     void DivingGame::setDuration(float seconds) {
+        if (!std::isfinite(seconds)) return;
         duration_ = std::clamp(seconds, 1.f, 120.f);
         Reset();
     }
@@ -109,13 +111,15 @@ namespace rp::diving_game {
 
     void DivingGame::setPos(float x,float y) {
         if (!std::isfinite(x)||!std::isfinite(y))return;
-        x_=targetX_=std::clamp(x,238.f,402.f);
-        y_=std::clamp(y,180.f,285.f);
+        panelPosition_=panelFrom_=panelTarget_={x,y};
+        panelElapsed_=panelDuration_=0;
     }
 
-    void DivingGame::moveTo(float x, float y, float) {
-        targetX_ = std::clamp(x, 238.f, 402.f);
-        y_ = std::clamp(y, 180.f, 285.f);
+    void DivingGame::moveTo(float x, float y, float duration) {
+        if (!std::isfinite(x)||!std::isfinite(y)||!std::isfinite(duration)) return;
+        if(duration<=0){setPos(x,y);return;}
+        panelFrom_=panelPosition_;panelTarget_={x,y};panelElapsed_=0;panelDuration_=duration;
+        pressed_=false;direction_=0;
     }
 
     bool DivingGame::wasLeftButtonTouched(const Vec2& p) const {
@@ -133,7 +137,7 @@ namespace rp::diving_game {
     void DivingGame::CheckMenuButtonStates(const Vec2& p) {
         direction_ = wasLeftButtonTouched(p) ? -1 : wasRightButtonTouched(p) ? 1 : 0;
         if (!direction_ && p.y < 340)
-            moveTo(p.x, y_, .15f);
+            targetX_ = std::clamp(p.x,238.f,402.f);
     }
 
     void DivingGame::updateButtonStates() {
@@ -142,18 +146,19 @@ namespace rp::diving_game {
     }
 
     void DivingGame::touchDown(const Vec2& p) {
-        if (finished_)
+        if (finished_ || moving() || !std::isfinite(p.x) || !std::isfinite(p.y))
             return;
         pressed_ = true;
         CheckMenuButtonStates(p);
     }
 
     void DivingGame::touchDrag(const Vec2& p) {
-        if (pressed_ && !finished_)
+        if (pressed_ && !finished_ && !moving() && std::isfinite(p.x) && std::isfinite(p.y))
             CheckMenuButtonStates(p);
     }
 
     void DivingGame::touchUp(const Vec2& p) {
+        if(moving() || !std::isfinite(p.x) || !std::isfinite(p.y)) return;
         if (finished_) {
             ConfirmDiveFinish();
             return;
@@ -166,7 +171,7 @@ namespace rp::diving_game {
             else if (wasRightButtonTouched(p))
                 moveDiver(DiverMoveDirection::Right, .25f);
             else
-                moveTo(p.x, y_, .15f);
+                targetX_ = std::clamp(p.x,238.f,402.f);
         }
         pressed_ = false;
         updateButtonStates();
@@ -205,8 +210,17 @@ namespace rp::diving_game {
     }
 
     void DivingGame::tick(float dt) {
-        if (finished_ || !std::isfinite(dt) || dt <= 0)
-            return;
+        if (!std::isfinite(dt) || dt <= 0) return;
+        if(moving()){
+            const float step=std::min(dt,panelDuration_-panelElapsed_);
+            panelElapsed_+=step;
+            const float t=std::min(1.f,panelElapsed_/panelDuration_);
+            panelPosition_={panelFrom_.x+(panelTarget_.x-panelFrom_.x)*t,
+                            panelFrom_.y+(panelTarget_.y-panelFrom_.y)*t};
+            if(!moving())panelPosition_=panelTarget_;
+            dt-=step;
+        }
+        if(finished_ || dt<=0) return;
         dt = std::min(dt, .1f);
         elapsed_ += dt;
         for(auto& layer:scrolling_)layer.tick(dt);
@@ -254,6 +268,17 @@ namespace rp::diving_game {
     }
 
     void DivingGame::render(Image& target) {
+        if(target.width!=640||target.height!=400)target=Image(640,400,{9,36,60,255});
+        const float x=panelPosition_.x-210,y=panelPosition_.y-22;
+        if(std::abs(x)>=640||std::abs(y)>=400)return;
+        Image contents;renderContents(contents);
+        const int dx=int(std::round(x)),dy=int(std::round(y));
+        for(int row=std::max(0,-dy);row<std::min(400,400-dy);++row)
+            for(int col=std::max(0,-dx);col<std::min(640,640-dx);++col)
+                target.at(col+dx,row+dy)=contents.at(col,row);
+    }
+
+    void DivingGame::renderContents(Image& target) {
         target = Image(640, 400, {9, 36, 60, 255});
         sprite(target, "diving_bg", 210, 22, 1);
         {

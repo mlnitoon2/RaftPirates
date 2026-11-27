@@ -23,11 +23,17 @@ int main() {
         loadPlayerFixture(game);
         {
             Game dive;dive.ready=true;dive.diveState.parent=1;dive.diveState.object=2;
+            dive.diveState.state=3;dive.diveState.bonus[9]=2;dive.diveState.collected[9]=1;
             BuildModeState first(dive),second(dive);
             CHECK(first.SendBonusMaterials().has_value());
             CHECK(!second.SendBonusMaterials());
             dive.extension("gs_error",{});
             CHECK(second.SendBonusMaterials().has_value());
+            dive.extension("gs_error",{});
+            dive.diveState.collected.clear();
+            CHECK(!BuildModeState(dive).SendBonusMaterials());
+            dive.diveState.remaining=1;CHECK(!dive.collectDive());
+            dive.diveState.remaining=0;CHECK(dive.collectDive());CHECK(!dive.collectDive());
         }
         {
             Game shop;

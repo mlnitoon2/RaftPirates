@@ -20,6 +20,7 @@ namespace rp {
         sys::gfx::Image render(const Game&, float time, const std::string& status);
         std::optional<sfs::Message> touch(Game&, float x, float y);
         void tick(float dt);
+        std::optional<sfs::Message> takePendingRequest(Game&);
         std::string activeMenu() const;
         void touchDown(float x, float y);
         void touchDrag(float x, float y);
@@ -56,6 +57,8 @@ namespace rp {
         int battleDice_ = 1;
         bool diveStarted_ = false;
         bool diveSeen_ = false;
+        bool diveClosing_ = false;
+        std::pair<int,int> divingUnit_{};
         bool hudEnabled(const Game& game) const;
         MapView mapView_;
         int selectedQuest_ = 0;

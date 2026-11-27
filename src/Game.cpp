@@ -486,6 +486,12 @@ namespace rp {
         return request("gs_build_remove", p);
     }
 
+    std::optional<Message> Game::collectDive(){
+        if(!ready||diveCollectPending||!diveState.Diving()||diveState.remaining>0||diveState.parent<=0||diveState.object<=0)return {};
+        if(!diveState.collected.empty())return BuildModeState(*this).SendBonusMaterials();
+        auto request=dive("dive_collect");diveCollectPending=true;return request;
+    }
+
     Message Game::dive(const std::string& command) const {
         if (command != "dive_start" && command != "dive_info" && command != "dive_collect")
             throw std::runtime_error("Unknown dive action");

@@ -475,6 +475,7 @@ namespace sys::platform::game {
             if (rt.view && !rt.login) {
                 rt.game.tick(dt);
                 rt.view->tick(dt);
+                if(rt.connected)if(auto request=rt.view->takePendingRequest(rt.game))send(platform,*request);
                 if(rt.connected&&rt.game.onlineBattle.shouldSendClientReady())
                     if(auto ready=rt.game.onlineBattle.SendClientReady())send(platform,*ready);
                 if(!rt.title && rt.game.ready){

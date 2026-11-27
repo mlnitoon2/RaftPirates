@@ -124,6 +124,21 @@ namespace rp {
             float(std::clamp(num(p, "time_total_secs", num(p, "time_remaining_secs")), 0, 86400)),
             float(std::max(0, num(p, "time_remaining_secs"))));
         next.SetState(num(p, "state"));
+        if(auto rows=p.getSFSArray("bonus_items")){
+            for(const auto& value:rows->values){
+                const auto item=std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value);
+                if(!item||!*item)continue;
+                const int id=num(**item,"material_id"),amount=num(**item,"amt");
+                if(id>0&&amount>0)next.bonus.emplace(id,amount);
+            }
+        }
+        if(Diving()&&next.Diving()&&parent==next.parent&&object==next.object){
+            if(!p.get("bonus_items"))next.bonus=bonus;
+            for(const auto& [id,amount]:collected){
+                auto found=next.bonus.find(id);
+                if(found!=next.bonus.end()&&amount>0&&amount<=found->second)next.collected.emplace(id,amount);
+            }
+        }
         *this = std::move(next);
     }
 

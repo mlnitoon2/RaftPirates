@@ -60,6 +60,9 @@ namespace rp::diving_game {
         void render(sys::gfx::Image& target);
         void setDuration(float seconds);
 
+        bool moving() const { return panelElapsed_ < panelDuration_; }
+        sys::gfx::Vec2 panelPosition() const { return panelPosition_; }
+
         bool finished() const {
             return finished_;
         }
@@ -98,6 +101,9 @@ namespace rp::diving_game {
         float x_ = 320, y_ = 270, targetX_ = 320, speed_ = 120, duration_ = 20, remaining_ = 20,
               elapsed_ = 0, spawn_ = 0;
         int level_ = 1, gears_ = 0, shape_ = 0, direction_ = 0;
+        sys::gfx::Vec2 panelPosition_{210,22}, panelFrom_{210,22}, panelTarget_{210,22};
+        float panelElapsed_ = 0, panelDuration_ = 0;
+        void renderContents(sys::gfx::Image&);
         bool finished_ = false, confirmed_ = false, pressed_ = false;
         void sprite(sys::gfx::Image& target, const char* name, float x, float y, float scale = 1,
                     bool flip = false);

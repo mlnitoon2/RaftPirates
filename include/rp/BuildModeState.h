@@ -23,7 +23,7 @@ namespace rp {
         void setupNotificationForRaftComponent(int parent, int id, int seconds);
         void gotMsgBuildModeToggleView(const MsgBuildModeToggleView&);
         std::optional<sfs::Message> gotMsgDivingGameDone(const MsgDivingGameDone&);
-        void gotMsgDivingGameDoneMoving(const MsgDivingGameDoneMoving&);
+        std::optional<sfs::Message> gotMsgDivingGameDoneMoving(const MsgDivingGameDoneMoving&);
         bool gotMsgDivingGameShow(const MsgDivingGameShow&);
         std::optional<sfs::Message> gotMsgGridObjectEvent(const MsgGridObjectEvent&);
         void gotMsgHighlightHudItem(const MsgHighlightHudItem&);
