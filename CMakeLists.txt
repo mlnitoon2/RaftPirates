@@ -16,7 +16,6 @@ add_library(raftpirates_game STATIC
     src/Ocean.cpp
     src/RaftPirates.cpp
     src/Messages.cpp
-    src/Pass47Types.cpp
     src/Game.cpp
     src/BuildModeState.cpp
     src/GridObject.cpp
@@ -36,9 +35,17 @@ add_library(raftpirates_game STATIC
     src/UnitHealthBarSprite.cpp
     src/GridObjectInfo.cpp
     src/GridSprite.cpp
-    src/Pass48Overlays.cpp
-    src/Pass48Diving.cpp
-    src/Pass48Effects.cpp
+    src/OverlayAccessory.cpp
+    src/SelectedWallSprite.cpp
+    src/BossBattleRaftHighlightSprite.cpp
+    src/RaftGridSprite.cpp
+    src/PerimeterWallSprite.cpp
+    src/DiveMeterSprite.cpp
+    src/DiveUnitReadoutSprite.cpp
+    src/FireFXSprite.cpp
+    src/SplashFXSprite.cpp
+    src/WreckageSprite.cpp
+    src/GfxBattleInfoDropDown.cpp
     src/AccessorySprite.cpp
     src/RaftAttackSprite.cpp
     src/MovementArrowSprite.cpp

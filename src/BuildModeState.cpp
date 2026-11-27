@@ -170,8 +170,9 @@ namespace rp {
         }
     }
     void BuildModeState::gotMsgLoadingAnimFinished(const MsgLoadingAnimFinished&){
-        if(menu_){menu_->popMenu();menu_->pushMenu("hud");menu_->setHudMode(1);}
-        SetCheckForHoles("gotMsgLoadingAnimFinished");
+        // ARM 0x3b0714: safe players enter the title menu. The unsafe branch
+        // sends a native message whose full dispatch has not yet been recovered.
+        if(menu_&&game_.safe)menu_->pushMenu("title");
     }
     std::optional<sfs::Message> BuildModeState::gotMsgOfferWallReward(int amount){
         if(!game_.ready||amount<=0||!waiting_.empty())return {};

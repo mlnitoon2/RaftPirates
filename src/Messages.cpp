@@ -184,3 +184,13 @@ namespace rp {
     MsgZoneMoveTo::~MsgZoneMoveTo() = default;
     MsgZoneMoveToResult::~MsgZoneMoveToResult() = default;
 } // namespace rp
+
+namespace rp {
+    MsgStartDialog::MsgStartDialog(int identifier, const std::string& a, const std::string& b,
+                                  const std::string& c, const std::vector<std::string>& d,
+                                  const std::vector<std::string>& e, const std::string& f,
+                                  const std::string& g, const std::string& h, const std::string& i,
+                                  const std::string& j, const std::string& k)
+        : id(identifier), leading{a,b,c}, first(d), second(e), trailing{f,g,h,i,j,k} {}
+    MsgStartDialog::~MsgStartDialog() = default;
+} // namespace rp

@@ -170,3 +170,7 @@ Pass 49 BattleModeState: rechecked all eleven names against native ELF. PlayBatt
 688 names from the Pass 33 inventory now have named source implementations through Pass 49 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 All 1,191 original qualified names in the provisional Raft Pirates inventory are now addressed. This does not mean the original executable, overloads, ABI or gameplay have been recreated. See remaining behavior notes above.
+
+### Pass 49 naming and accuracy audit
+
+All 31 target method spellings were checked against the original ELF. Class-named source files replace Pass47Types.cpp and the Pass48 overlay, diving and effects bundles; these are reconstructed filenames, not a claim of recovered original translation-unit names. Corrected the safe-player loading branch to use `title` (0x3b0714); unsafe message dispatch remains unresolved. Added a duplicate-ready guard before mutating swap state. The Pass 48 ARM64 CI run 45936526364 succeeded; this does not establish Pass 49 behavior or compiled symbol coverage.

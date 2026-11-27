@@ -32,3 +32,10 @@ namespace rp {
         progress = std::clamp(value, 0, 100);
     }
 } // namespace rp
+
+namespace rp {
+    QuestTypeInfo::QuestTypeInfo(const sfs::SFSObjectWrapper& row)
+        : id(row.getInt("type_id")), name(row.getString("name")),
+          sheet(row.getString("sheet_id")), image(row.getString("image_id")) {}
+    QuestTypeInfo::~QuestTypeInfo() = default;
+} // namespace rp

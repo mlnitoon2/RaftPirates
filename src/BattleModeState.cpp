@@ -189,7 +189,7 @@ namespace rp {
     }
 
     std::optional<sfs::Message> BattleModeState::SendClientReady(bool confirmSwap) {
-        if (phase_ != Phase::Fighting || !needReady_ || animationRemaining_>0 || dicePaused_)
+        if (phase_ != Phase::Fighting || !needReady_ || waiting() || animationRemaining_>0 || dicePaused_)
             return {};
         if(swapPopupVisible_){confirmSwap_=true;swapPopupVisible_=false;}
         O p;
@@ -401,4 +401,9 @@ namespace rp {
             pending_.clear();
         return true;
     }
+} // namespace rp
+
+namespace rp {
+    BattleModeState::BattleDice::BattleDice(const BattleDice&) = default;
+    BattleModeState::BattleDice::~BattleDice() = default;
 } // namespace rp

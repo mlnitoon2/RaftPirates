@@ -47,3 +47,7 @@ namespace rp {
         return name_;
     }
 } // namespace rp
+
+namespace rp {
+    BlueprintInfo::~BlueprintInfo() = default;
+} // namespace rp

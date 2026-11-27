@@ -1,4 +1,5 @@
 #include "rp/DivingGame.h"
+#include <stdexcept>
 #include "sys/gfx/AssetImage.h"
 #include <algorithm>
 #include <cmath>
@@ -292,4 +293,25 @@ namespace rp::diving_game {
         label_.SetPos(20, 50);
         label_.Render(target);
     }
+} // namespace rp::diving_game
+
+namespace rp::diving_game {
+DivingMaterial::DivingMaterial(int px, int py, sys::gfx::Gfx* parent)
+            : x(static_cast<float>(px)), y(static_cast<float>(py)) {
+            sprite.setParent(parent);
+            sprite.setHAnchor(sys::gfx::Gfx::HorizontalAnchor::Center);
+            sprite.setVAnchor(sys::gfx::Gfx::VerticalAnchor::Center);
+            sprite.SetPriority(50);
+            sprite.SetPos(x, y);
+        }
+
+        void DivingMaterial::configure(std::shared_ptr<const sys::res::ResourceSpriteSheet> atlas,
+                                      std::shared_ptr<const sys::gfx::Image> image,
+                                      const std::string& cell) {
+            if (!atlas || !image || !atlas->findSpriteByName(cell))
+                throw std::invalid_argument("Missing diving material atlas cell");
+            sprite.sheet = std::move(atlas);
+            sprite.SetImage(std::move(image));
+            sprite.setSpriteName(cell);
+        }
 } // namespace rp::diving_game
