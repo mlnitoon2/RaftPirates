@@ -167,6 +167,7 @@ namespace rp {
         sys::gfx::Vec2 ScreenToWorld(sys::gfx::Vec2 screen) const;
         void SetZoom(float zoom);
         float Zoom() const;
+        const std::filesystem::path& assetRoot() const { return root_; }
         void SetOffset(sys::gfx::Vec2 offset, bool immediate);
         sys::gfx::Vec2 Offset() const;
         void CalculateHelpers();

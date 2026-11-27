@@ -5,7 +5,7 @@
 namespace rp {
     BattlePointsViewSprite::BattlePointsViewSprite(const OceanView* ocean, GridSprite* parent,
                                                    std::string prefix, int overridePoints)
-        : AccessorySprite(ocean, parent, 17), prefix_(std::move(prefix)), override_(overridePoints) {}
+        : AccessorySprite(ocean, parent, 6), prefix_(std::move(prefix)), override_(overridePoints) {}
     BattlePointsViewSprite::~BattlePointsViewSprite() = default;
     // Native ignores externally supplied color; tick controls label opacity.
     void BattlePointsViewSprite::SetColour(uint8_t, uint8_t, uint8_t, uint8_t) {}

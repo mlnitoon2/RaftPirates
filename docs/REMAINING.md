@@ -149,9 +149,11 @@ Names newly implemented in source are listed here and removed from the provision
 - BattleShipPlacementSprite 0x584bd8 and 0x584c14 check base then attached child; 0x584d00 routes flattened priority by base piece count, 0x58506c propagates scale. Host resolves retained OceanView sprites by raft/component IDs (no stored dangling sprite pointers), flattens graphics pieces and binds actual battle views. Existing Pieces() still denotes raft snapshots for public indexing.
 - ShipPlacementSprite 0x61949c traverses owned sprites, 0x619574 counts pieces, 0x619650 delegates priority by piece count, 0x619764 tests occupied position then child validity, 0x6193f4 resets to object. Portable copied raft/child preview uses catalogue footprints, checked grid translation, original-object reset and explicit graphics submission. Original native Ocean membership, drag flags and child validation callbacks not yet equivalent. Fifteen provisional names added.
 
+Pass 48 further evidence: ARM base state defaults (0x38232c–0x382710), checkerboard tile parity and truncating modulus (0x3f9f14, 0x3fac00); CPU tint is approximate. Fixed native accessory identifiers 5 (movement arrow) and 6 (battle points), and generalized accessory draw/visibility/lifetime dispatch. State listener ownership and original GL rendering remain unverified.
+
 ## Remaining method names by class (provisional source review)
 
-581 names from the Pass 33 inventory now have named source implementations through Pass 48 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+593 names from the Pass 33 inventory now have named source implementations through Pass 48 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (20)
 
@@ -185,17 +187,9 @@ Names newly implemented in source are listed here and removed from the provision
 
 `FireFXSprite`, `Init`, `SetColour`, `SetVisible`, `Update`, `~FireFXSprite`
 
-### `rp::GfxOceanCheckerBoard` (6)
-
-`FloatMod`, `GfxOceanCheckerBoard`, `Render`, `SetPosition`, `SetUnitSize`, `~GfxOceanCheckerBoard`
-
 ### `rp::RaftGridSprite` (6)
 
 `Init`, `RaftGridSprite`, `SetPriorities`, `SetPriority`, `Update`, `~RaftGridSprite`
-
-### `rp::RaftPiratesGameState` (6)
-
-`GetStateName`, `Pause`, `RaftPiratesGameState`, `isReadyForBattle`, `tick`, `~RaftPiratesGameState`
 
 ### `rp::SplashFXSprite` (6)
 

@@ -4,7 +4,7 @@
 
 namespace rp {
     MovementArrowSprite::MovementArrowSprite(const OceanView* ocean, GridSprite* parent, int piece)
-        : AccessorySprite(ocean, parent, 16), piece_(piece) {}
+        : AccessorySprite(ocean, parent, 5), piece_(piece) {}
     MovementArrowSprite::~MovementArrowSprite() = default;
     void MovementArrowSprite::tick(float) {
         if (!ocean_ || !parent_ || piece_ < 0 || static_cast<size_t>(piece_) >= parent_->Pieces()) return;

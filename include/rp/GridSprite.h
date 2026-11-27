@@ -56,6 +56,8 @@ namespace rp {
         void SetAnimation(std::vector<std::string> names);
         bool HasAttack() const;
         const std::string& definitionName() const { return definition_.name; }
+        const GridObjectInfo& definition() const { return definition_; }
+        int objectState() const { return object_.state; }
         int battlePoints() const { return object_.GetBattlePoints(); }
         void Attack();
         int submit(sys::gfx::GfxManager&, std::map<std::string, std::shared_ptr<sys::gfx::Image>>&,

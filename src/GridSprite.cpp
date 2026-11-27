@@ -28,6 +28,8 @@ namespace rp {
         accessory->SetScale(scale_);
         accessory->SetMute(muted_);
         accessory->Update();
+        accessory->SetVisible(visible_);
+        accessory->SetPriorities();
         accessory->AddToTick();
         const int id = accessory->GetID();
         accessories_.emplace(id, std::move(accessory));
@@ -114,6 +116,7 @@ namespace rp {
         visible_ = v;
         for (auto& p : pieces_)
             p.appearance.SetVisible(v);
+        for (auto& entry : accessories_) entry.second->SetVisible(v);
     }
 
     bool GridSprite::GetVisible() const {
@@ -122,6 +125,7 @@ namespace rp {
 
     void GridSprite::SetColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
         colour_ = {r, g, b, a};
+        for (auto& entry : accessories_) entry.second->SetColour(r,g,b,a);
         Update();
     }
 
@@ -143,6 +147,7 @@ namespace rp {
         auto base = ocean_.WorldToScreen(world_);
         for (unsigned i = 0; i < pieces_.size(); ++i)
             SetPriority(i, ocean_.Priority() + base.y + pieces_[i].order * .01f + pieces_[i].suborder * .0001f);
+        for (auto& entry : accessories_) entry.second->SetPriorities();
     }
 
     void GridSprite::SetOrder(unsigned i, unsigned order, unsigned sub) {
@@ -172,7 +177,9 @@ namespace rp {
     }
 
     bool GridSprite::ContainsGfx(const Gfx* gfx) const {
-        return gfx && std::any_of(pieces_.begin(), pieces_.end(),
+        if (!gfx) return false;
+        for (const auto& entry : accessories_) if (entry.second->ContainsGfx(gfx)) return true;
+        return std::any_of(pieces_.begin(), pieces_.end(),
                                   [&](const auto& p) { return &p.appearance == gfx; });
     }
 
@@ -202,8 +209,7 @@ namespace rp {
             // Defer removal until after callbacks; deleting an accessory during its tick
             // invalidates the iterator and destroys the executing object.
             for (auto it = accessories_.begin(); it != accessories_.end();) {
-                auto* attack = dynamic_cast<RaftAttackSprite*>(it->second.get());
-                if (attack && attack->finished()) it = accessories_.erase(it);
+                if (it->second->finished()) it = accessories_.erase(it);
                 else ++it;
             }
             UpdateParticles();
@@ -299,8 +305,7 @@ namespace rp {
             }
         }
         for (const auto& entry : accessories_)
-            if (const auto* attack = dynamic_cast<const RaftAttackSprite*>(entry.second.get()))
-                drawn += attack->submit(manager, renderer);
+            drawn += entry.second->submit(manager, renderer);
         return drawn;
     }
 } // namespace rp
