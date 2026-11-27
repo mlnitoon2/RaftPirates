@@ -23,6 +23,7 @@ namespace rp {
         std::string activeMenu() const;
         void touchDown(float x, float y);
         void touchDrag(float x, float y);
+        void cancelInput();
 
         bool isDiving() const {
             return bool(diving_);

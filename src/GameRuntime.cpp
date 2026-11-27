@@ -1,5 +1,6 @@
 #include "rp/RaftPirates.h"
 #include "rp/PortView.h"
+#include "rp/Transition.h"
 #include "rp/LoginScreen.h"
 #include "sys/platform/Services.h"
 #include "rp/SplashScreen.h"
@@ -27,6 +28,8 @@ namespace {
         bool endingLoading = false;
         sys::EngineAndroid engine;
         std::unique_ptr<rp::PortView> view;
+        std::unique_ptr<rp::Transition> transition;
+        int transitionMode=0;
         std::unique_ptr<rp::SplashScreen> splash;
         std::unique_ptr<rp::TitleScreen> title;
         std::unique_ptr<rp::LoadingManager> startupResources;
@@ -197,6 +200,8 @@ namespace {
         rt.loginSent = false;
         rt.snapshotReceived = false;
         rt.loggedTransportWait = false;
+        rt.transition.reset();
+        rt.transitionMode=0;
         rt.view.reset();
         rt.lastImage = {};
         rt.user.clear();
@@ -340,6 +345,8 @@ namespace sys::platform::game {
             rt.splash.reset();
             rt.title.reset();
             rt.login.reset();
+            rt.transition.reset();
+            rt.transitionMode=0;
             rt.view.reset();
             rt.auth = {};
             rt.loginSent = false;
@@ -442,6 +449,8 @@ namespace sys::platform::game {
             rt.title.reset();
             rt.login.reset();
             rt.auth = {};
+            rt.transition.reset();
+            rt.transitionMode=0;
             rt.view.reset();
             rt.lastImage = {};
             rt.initialized = false;
@@ -465,6 +474,28 @@ namespace sys::platform::game {
             if (rt.view && !rt.login) {
                 rt.game.tick(dt);
                 rt.view->tick(dt);
+                if(!rt.title && rt.game.ready){
+                    const int mode=rt.game.onlineBattle.phase()!=rp::BattleModeState::Phase::Idle?2:
+                                   rt.game.discovery?1:0;
+                    if(!rt.transition) {
+                        rt.transition=std::make_unique<rp::Transition>(rt.assets,&rt.engine.engineReceiver());
+                        rt.transitionMode=mode;
+                        rt.transition->done=[](bool shown){
+                            if(shown){
+                                rt.game.GotTransitionMsgDone();
+                                rt.game.GotMsgStartTransition(false);
+                                rt.transition->hide();
+                            }
+                        };
+                    }
+                    if(mode!=rt.transitionMode&&!rt.transition->active()){
+                        rt.transitionMode=mode;
+                        rt.view->cancelInput();
+                        rt.game.GotMsgStartTransition(true);
+                        rt.transition->show();
+                    }
+                    rt.transition->tick(dt);
+                }
                 const auto menu = rt.view->activeMenu();
                 if (menu != rt.game.currentMenu()) {
                     rt.game.GotMsgOnMenuLoadGlobal(menu);
@@ -643,13 +674,17 @@ namespace sys::platform::game {
                 effect(platform, "audio/sfx/diving_game_end.wav");
             rt.lastGears = gears;
             rt.lastDiveFinished = finished;
-            platform.present(rt.lastImage, rt.width, rt.height);
+            if(rt.transition&&rt.transition->active()){
+                auto frame=rt.lastImage;
+                rt.transition->Render(frame);
+                platform.present(frame,rt.width,rt.height);
+            }else platform.present(rt.lastImage, rt.width, rt.height);
         });
     }
 
     void touchDown(Services& platform, float x, float y) {
         guarded(platform, [&] {
-            if (!rt.initialized || rt.paused || rt.splash)
+            if (!rt.initialized || rt.paused || rt.splash || (rt.transition&&rt.transition->blocksInput()))
                 return;
             if (rt.title) {
                 if (!rt.titlePresented)
@@ -761,7 +796,8 @@ namespace sys::platform::game {
                 }
                 return;
             }
-            if (!rt.connected || !rt.game.ready || !rt.view)
+            if (!rt.connected || !rt.game.ready || !rt.view ||
+                (rt.transition&&rt.transition->blocksInput()))
                 return;
             const auto now = Clock::now();
             if (rt.connected && rt.game.gotMsgTouchUp(std::chrono::duration<float>(now - rt.lastPing).count())) {
@@ -783,7 +819,7 @@ namespace sys::platform::game {
 
     void touchMove(Services& platform, float x, float y) {
         guarded(platform, [&] {
-            if (rt.splash)
+            if (rt.splash || (rt.transition&&rt.transition->blocksInput()))
                 return;
             if (rt.title) {
                 rt.title->touchDrag(x * 640 / rt.width, y * 400 / rt.height);
@@ -809,6 +845,7 @@ namespace sys::platform::game {
 
     void touchState(Services& platform, const std::vector<float>& x, const std::vector<float>& y) {
         guarded(platform, [&] {
+            if(rt.transition&&rt.transition->blocksInput())return;
             auto n = std::min({x.size(), y.size(), size_t(16)});
             sys::msg::MsgTouchState m;
             for (size_t i = 0; i < n; ++i)

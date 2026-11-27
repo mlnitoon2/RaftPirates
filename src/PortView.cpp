@@ -115,6 +115,12 @@ namespace rp {
         }
     }
 
+    void PortView::cancelInput(){
+        if(xmlCaptured_&&xmlMenu_)xmlMenu_->touchCancel();
+        if(oceanGesture_)touchControls_.touchCancel({});
+        if(diving_)diving_->touchCancel({});
+        xmlCaptured_=oceanGesture_=false;
+    }
     void PortView::touchDown(float x, float y) {
         xmlCaptured_ = false;
         if (xmlMenu_ && (panel_ != Panel::None || map) && xmlMenu_->hitTest(x, y)) {

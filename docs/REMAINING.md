@@ -36,6 +36,8 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Pass 38 source review
 
+- Transition uses original anim_loading_curtains.bin intro/idle/outro compositions and typed MsgDone events. Connected portable mode-change detection to the existing network queue pause/resume and input guards. Original transition trigger timing, alternate state flags, and exact animation timing are not fully recovered. Fallback is a short dark fade only if the asset is unavailable.
+
 - GfxOceanGradient: six RGB colors recovered from original ARM32 GRADIENTCOLOURS (0xa60a74), original anim_water_peak.bin path recovered. Integrated gradient and waves into OceanView; original zone ordering, wave placements, interpolation and timing are not established.
 - GfxOceanGrid uses the OceanView transform, original truncating FloatMod equivalent and raft cell line rendering. Integrated in OceanView in place of hardcoded 192-pixel grid geometry.
 - MsgQueuer owns SFS packet copies and drains the existing session queue in order; original polymorphic clone ABI is not recreated.
@@ -54,7 +56,7 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-284 names from the Pass 33 inventory now have named source implementations through Pass 38 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+293 names from the Pass 33 inventory now have named source implementations through Pass 38 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (29)
 
@@ -111,10 +113,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::RPMenuHandler` (8)
 
 `gotMsgPopPopUpGlobal`, `gotMsgQuestRead`, `gotMsgRequestLocalizedChristeningText`, `gotMsgStartDialog`, `gotMsgStoreCategoryRequest`, `gotMsgStoreDisplayStatus`, `gotSimpleRequest`, `topPopUp`
-
-### `rp::Transition` (8)
-
-`Transition`, `changeType`, `disableAllInput`, `gotMsgAnimationFinished`, `hide`, `show`, `tick`, `~Transition`
 
 ### `rp::DivingUnit` (1)
 
@@ -363,10 +361,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::RaftInfo` (1)
 
 `RaftInfo`
-
-### `rp::Transition::MsgDone` (1)
-
-`~MsgDone`
 
 ### `rp::diving_game::DivingMaterial` (1)
 
