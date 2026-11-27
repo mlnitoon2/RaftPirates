@@ -90,6 +90,16 @@ Names newly implemented in source are listed here and removed from the provision
 - BattleShipPlacementSprite: portable selection, object/position adapters and adjacency highlighting, now refreshed when moving a fleet. Original weak UpdateParticles returns immediately; boss-core queries, graphics ownership, priority and scale remain open.
 - 55 additional names addressed provisionally, including partial adapters and already-present methods. No new compiled comparison or runtime claim. Hydra static parity findings: [PASS43_PARITY.md](https://github.com/mlnitoon2/HydraLegacy/blob/main/docs/PASS43_PARITY.md).
 
+## Pass 44 loader, geometry and visual review
+
+- LoaderImage, LoaderManifest, LoaderMenu and Loader: recovered native SPR/MANI/MENU identifiers and integrated job dispatch. Manifest expansion is transactional; native resource-manager ABI is not reproduced.
+- OverlapTree and PerimeterTree: portable occupied-cell bounds and exterior-edge extraction, with exclusive upper bounds; not the original recursive tree layout. Raft placement uses the bounds check. GridObjectDataRes and DiscoveryGridObject use catalogue snapshots, including the original barnacle_bills lookup.
+- ScrollingLayer: speed multiplier and vertical motion from original instruction review; original diving atlas tiles wired into the minigame. Parallax rates and recycling are approximations.
+- DamageIndicatorSprite: native 1.5-second lifetime and 20-pixel/second rise. BattleArrowSprite, WaterBucketSprite and ThrobingIndicatorSprite: native timing/scale constants and asset identifiers inform portable overlay implementations. ItemOnRaftPlacementSprite routes component placement through the existing placement adapter; full native priority behavior is unverified.
+- Hydra named-layer fix preserves layer names and aligns text, sprite and touch ordering; exact original global layer ordering is not recovered.
+- ARM64 build 45933481659 passed for the loader/geometry/battle/diving batch, using the preceding Hydra revision. Later changes and combined build need verification. Regression fixtures added but host tests and device visual parity are not yet established.
+- 46 requested names provisionally addressed; 20 requested names remain. No new compiled original-symbol measurement.
+
 ## Priority gaps
 
 - Original menu scripts: complete game/SWIG bindings, message dispatch, dynamic templates, tutorial and quest flows, all popups and transitions.
@@ -101,7 +111,7 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-409 names from the Pass 33 inventory now have named source implementations through Pass 43 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+455 names from the Pass 33 inventory now have named source implementations through Pass 44 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (20)
 
@@ -235,77 +245,21 @@ Names newly implemented in source are listed here and removed from the provision
 
 `BattlePointsViewSprite`, `SetColour`, `tick`, `~BattlePointsViewSprite`
 
-### `rp::LoaderImage` (4)
-
-`getId`, `getType`, `load`, `~LoaderImage`
-
-### `rp::LoaderManifest` (4)
-
-`getId`, `getType`, `prepare`, `~LoaderManifest`
-
-### `rp::LoaderMenu` (4)
-
-`getId`, `getType`, `prepare`, `~LoaderMenu`
-
-### `rp::OverlapTree` (4)
-
-`GenerateOverlapTree`, `OverlapTree`, `Within`, `~OverlapTree`
-
-### `rp::diving_game::ScrollingLayer` (4)
-
-`ScrollingLayer`, `SetSpeed`, `addSprite`, `tick`
-
-### `rp::BattleArrowSprite` (3)
-
-`BattleArrowSprite`, `tick`, `~BattleArrowSprite`
-
 ### `rp::BattlePlacementScreen` (3)
 
 `CheckBossCoreRafts`, `ContainsGfx`, `SetPriority`
-
-### `rp::DamageIndicatorSprite` (3)
-
-`DamageIndicatorSprite`, `tick`, `~DamageIndicatorSprite`
 
 ### `rp::GfxShipPreviewScreen` (3)
 
 `GfxShipPreviewScreen`, `aTickMethodThatsNotCalledTick`, `~GfxShipPreviewScreen`
 
-### `rp::GridObjectDataRes` (3)
-
-`Get`, `GridObjectDataRes`, `~GridObjectDataRes`
-
-### `rp::ItemOnRaftPlacementSprite` (3)
-
-`ItemOnRaftPlacementSprite`, `SetPriority`, `~ItemOnRaftPlacementSprite`
-
-### `rp::Loader` (3)
-
-`load`, `prepare`, `~Loader`
-
 ### `rp::MovementArrowSprite` (3)
 
 `MovementArrowSprite`, `tick`, `~MovementArrowSprite`
 
-### `rp::PerimeterTree` (3)
-
-`GeneratePerimeterTree`, `PerimeterTree`, `~PerimeterTree`
-
-### `rp::ThrobingIndicatorSprite` (3)
-
-`ThrobingIndicatorSprite`, `tick`, `~ThrobingIndicatorSprite`
-
-### `rp::WaterBucketSprite` (3)
-
-`WaterBucketSprite`, `tick`, `~WaterBucketSprite`
-
 ### `rp::BattleModeState::BattleDice` (2)
 
 `BattleDice`, `~BattleDice`
-
-### `rp::DiscoveryGridObject` (2)
-
-`DiscoveryGridObject`, `~DiscoveryGridObject`
 
 ### `rp::DiveUnitReadoutSprite::ReadoutLight` (2)
 
