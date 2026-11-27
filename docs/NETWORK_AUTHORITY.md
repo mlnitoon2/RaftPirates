@@ -1,0 +1,3 @@
+# Network authority audit
+
+The Android ARMv7 reference exports `rp::RaftPirates::gotMsgOnLogin` at `0x4a1df8` and `gotMsgOnConnection` at `0x4a446c`. The reconstruction must not substitute world packets for SDK login. `gs_player` and `gs_ocean` may arrive before login and are queued, but only a connected, authenticated SmartFox session can enter the world or send gameplay commands. Lost transport or SDK identity returns to login. The original `GotMsgSetAutoSafeMode` at `0x4bb98c` calls `SFSClient::SendClientRequest` at `0x4bba14` and then updates the client flag at `0x4bba50`; that optimistic UI behavior is intentionally retained. This is a targeted static audit, not proof of full binary equivalence or a live server test.

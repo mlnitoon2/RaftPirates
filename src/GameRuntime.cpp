@@ -46,7 +46,7 @@ namespace {
         std::string adminEntry;
         bool rewardPopupPending = false;
         std::string host, user, session, status, music, authEndpoint;
-        bool loginSent = false, snapshotReceived = false, loggedTransportWait = false;
+        bool loginSent = false;
         bool titleTouchArmed = false;
         int lastGears = 0;
         bool lastDiveFinished = false, audioFailed = false;
@@ -178,8 +178,9 @@ namespace {
 
     void send(Services& platform, const sfs::Message& msg) {
         try {
-            if (!rt.connected || !rt.game.ready)
-                throw std::runtime_error("Login is required");
+            if (!rt.connected || !rt.game.ready || !platform.transportConnected() ||
+                !platform.loggedIn())
+                throw std::runtime_error("Active server login is required");
             platform.send(msg);
             if (msg.payload.getString("c") == "set_auto_safe_enabled")
                 if (auto args = msg.payload.getSFSObj("p"))
@@ -198,8 +199,6 @@ namespace {
         rt.connecting = false;
         rt.game.DoLostConnection(true);
         rt.loginSent = false;
-        rt.snapshotReceived = false;
-        rt.loggedTransportWait = false;
         rt.transition.reset();
         rt.transitionMode = 0;
         rt.view.reset();
@@ -254,7 +253,8 @@ namespace {
     }
 
     void acceptGameSession(Services& platform) {
-        if (!rt.connecting || !rt.loginSent || !rt.login || rt.title || rt.splash)
+        if (!rt.connecting || !rt.loginSent || !rt.login || rt.title || rt.splash ||
+            !platform.transportConnected() || !platform.loggedIn())
             return;
         rt.connected = true;
         rt.connecting = false;
@@ -268,24 +268,6 @@ namespace {
             platform.log(std::string("Initial world rejected: ") + ex.what());
             loginError(platform, "Unable to load the game. Please try again.");
         }
-    }
-
-    // Some preservation servers acknowledge login by sending the initial world, but
-    // the old Java SDK never emits its native login event. Do not fabricate a Java user
-    // or skip authentication: require the current login request, a connected transport,
-    // and both validated application responses from that connection.
-    void completeInitialWorld(Services& platform) {
-        if (!rt.connecting || !rt.loginSent || !rt.snapshotReceived || !rt.oceanReceived)
-            return;
-        if (!platform.transportConnected()) {
-            if (!rt.loggedTransportWait) {
-                platform.log("Initial world received; SDK transport is not connected");
-                rt.loggedTransportWait = true;
-            }
-            return;
-        }
-        platform.log("server supplied initial player and ocean; accepting game session");
-        acceptGameSession(platform);
     }
 
     void pollAuth(Services& platform) {
@@ -368,8 +350,6 @@ namespace sys::platform::game {
             rt.resumeAttempt = false;
             rt.titlePresented = false;
             rt.titleTouchArmed = false;
-            rt.snapshotReceived = false;
-            rt.loggedTransportWait = false;
             rt.oceanReceived = false;
             rt.time = 0;
             rt.archivePath = apk;
@@ -574,12 +554,14 @@ namespace sys::platform::game {
                         platform.log(
                             "SmartFox SDK confirms login; recovering missing native login event");
                         sys::platform::game::onLogin(platform);
-                    } else {
-                        completeInitialWorld(platform);
                     }
                 } catch (const std::exception& ex) {
                     platform.log(std::string("SmartFox login state unavailable: ") + ex.what());
                 }
+            }
+            if (rt.connected && (!platform.transportConnected() || !platform.loggedIn())) {
+                loginError(platform, "Game server connection lost.");
+                return;
             }
             if (rt.connected && rt.game.ready && rt.view && !rt.login && !rt.rewardPopupPending) {
                 if (auto reward = rt.game.takeQuestRewardNotice()) {
@@ -1087,7 +1069,8 @@ namespace sys::platform::game {
     void onExtension(Services& platform, const std::string& command,
                      const sfs::SFSObjectWrapper& data) {
         guarded(platform, [&] {
-            if ((!rt.connected && !rt.connecting) || !rt.loginSent)
+            if ((!rt.connected && !rt.connecting) || !rt.loginSent ||
+                !platform.transportConnected())
                 return;
             platform.log("NET: " + command);
             try {
@@ -1097,7 +1080,6 @@ namespace sys::platform::game {
                         !player->getSFSArray("rafts") || !player->getSFSArray("materials") ||
                         !player->getSFSArray("blueprints"))
                         throw std::runtime_error("Incomplete initial player snapshot");
-                    rt.snapshotReceived = true;
                     platform.log("initial player packet validated");
                 }
                 if (command == "gs_ocean" && !rt.connected && !data.getSFSObj("ocean_state"))
@@ -1149,8 +1131,6 @@ namespace sys::platform::game {
             }
             if (command == "gs_player" && rt.game.ready)
                 platform.log("Player snapshot accepted");
-            if (command == "gs_player" || command == "gs_ocean")
-                completeInitialWorld(platform);
         });
     }
 
