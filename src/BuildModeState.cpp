@@ -226,6 +226,7 @@ namespace rp {
     std::optional<sfs::Message> BuildModeState::salvageSelected() const {
         if (!selected() || !selected()->Destroyed())
             return {};
+        if(auto raft=dynamic_cast<const Raft*>(selected());raft&&!raft->Salvage())return {};
         return gotMsgDestroyObjectRequest();
     }
 

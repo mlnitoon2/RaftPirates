@@ -1,5 +1,6 @@
 #pragma once
 #include "rp/Game.h"
+#include "rp/Messages.h"
 #include <deque>
 
 namespace rp {
@@ -46,6 +47,8 @@ namespace rp {
         std::vector<int> currentBlueprintPage(size_t pageSize) const;
         const Blueprint* gotMsgBlueprintDisplayRequest(int id) const;
         const StoreItem* gotMsgStoreItemDisplayRequest(int id) const;
+        std::optional<MsgStoreItemDisplayResponse> storeDisplayMessage(int id)const;
+        std::optional<MsgQuestData> questDataMessage(int id)const;
         const MaterialInfo* gotMsgMaterialInformationRequest(int id) const;
         const sfs::SFSObjectWrapper* gotMsgQuestTypeInformationRequest(int id) const;
         bool gotMsgRequestOceanSafetyUpdate() const;

@@ -1,6 +1,14 @@
 #include "rp/Messages.h"
 
 namespace rp {
+    MsgConfirmMaterialPurchaseInfo::MsgConfirmMaterialPurchaseInfo(int material,int count,int gold):materialId(material),amount(count),goldPrice(gold){}
+    MsgConfirmMaterialPurchaseInfo::~MsgConfirmMaterialPurchaseInfo()=default;
+    MsgQuestData::MsgQuestData(const Quest& value):quest(value){}
+    MsgQuestData::~MsgQuestData()=default;
+    MsgQuestEvent::MsgQuestEvent(int id,int value):questId(id),progress(value){}
+    MsgQuestEvent::~MsgQuestEvent()=default;
+    MsgStoreItemDisplayResponse::MsgStoreItemDisplayResponse(const StoreItem& value):item(value){}
+    MsgStoreItemDisplayResponse::~MsgStoreItemDisplayResponse()=default;
     MsgAnimateGridSprite::~MsgAnimateGridSprite() = default;
     MsgAttackRequest::~MsgAttackRequest() = default;
     MsgAttackRequestFailed::~MsgAttackRequestFailed() = default;

@@ -60,6 +60,9 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Pass 41 source review
 
+- Raft::Salvage checks eligibility only, preserving existing server-authoritative destruction request and core/connectivity checks. Ocean::initWithSFSObject consumes the supported gs_opponent player_object packet, integrated with battle startup; not a general ocean snapshot reconstruction.
+- Four message types hold existing Quest, StoreItem, purchase/progress fields; two retrieval adapters in RPMenuHandler. Native payload layout and dispatcher wiring remain unverified. The unknown dialog/scroll messages remain listed.
+
 - RaftFactory/RaftComponentFactory use named default builders and are called by Player/Raft snapshot parsing. Only the generic Raft and RaftComponent classes are registered; original specialized factories and their signatures remain unknown.
 - EnemyShipPoints explicit construction and lifetime; ItemFloater owns movement inside the existing diving game. No original minigame mechanics or graphics parity is claimed.
 - Pass 40 ARM64 build passed; Pass 41 uses the updated Hydra source.
@@ -75,7 +78,7 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-341 names from the Pass 33 inventory now have named source implementations through Pass 41 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+351 names from the Pass 33 inventory now have named source implementations through Pass 41 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (29)
 
@@ -285,33 +288,13 @@ Names newly implemented in source are listed here and removed from the provision
 
 `ReadoutLight`, `~ReadoutLight`
 
-### `rp::MsgConfirmMaterialPurchaseInfo` (2)
-
-`MsgConfirmMaterialPurchaseInfo`, `~MsgConfirmMaterialPurchaseInfo`
-
-### `rp::MsgQuestData` (2)
-
-`MsgQuestData`, `~MsgQuestData`
-
-### `rp::MsgQuestEvent` (2)
-
-`MsgQuestEvent`, `~MsgQuestEvent`
-
 ### `rp::MsgStartDialog` (2)
 
 `MsgStartDialog`, `~MsgStartDialog`
 
-### `rp::MsgStoreItemDisplayResponse` (2)
-
-`MsgStoreItemDisplayResponse`, `~MsgStoreItemDisplayResponse`
-
 ### `rp::MsgTabbedItemScrollTo` (2)
 
 `MsgTabbedItemScrollTo`, `~MsgTabbedItemScrollTo`
-
-### `rp::Raft` (1)
-
-`Salvage`
 
 ### `rp::RaftComponent` (1)
 
@@ -320,10 +303,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::BlueprintInfo` (1)
 
 `~BlueprintInfo`
-
-### `rp::Ocean` (1)
-
-`initWithSFSObject`
 
 ### `rp::PerimeterWallSprite::SpriteBalloon` (1)
 

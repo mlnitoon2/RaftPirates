@@ -18,6 +18,7 @@ namespace rp {
         float GetHealth(const std::map<int, GridObjectInfo>& objects) const;
 
         bool Destroyed() const;
+        bool Salvage() const;
         int GridDimensionsX() const;
         int GridDimensionsY() const;
         void SetState(int value) override;

@@ -84,6 +84,16 @@ namespace rp {
         return it == game_.storeItems.end() ? nullptr : &it->second;
     }
 
+    std::optional<MsgStoreItemDisplayResponse> RPMenuHandler::storeDisplayMessage(int id)const{
+        auto p=gotMsgStoreItemDisplayRequest(id);
+        if(!p)return {};
+        return MsgStoreItemDisplayResponse(*p);
+    }
+    std::optional<MsgQuestData> RPMenuHandler::questDataMessage(int id)const{
+        auto p=game_.quests.find(id);
+        if(p==game_.quests.end())return {};
+        return MsgQuestData(p->second);
+    }
     const MaterialInfo* RPMenuHandler::gotMsgMaterialInformationRequest(int id) const {
         return id > 0 ? game_.materialDB.getMaterialInfo(unsigned(id)) : nullptr;
     }

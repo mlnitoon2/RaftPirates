@@ -44,6 +44,8 @@ namespace rp {
         return static_cast<float>(current) / total;
     }
 
+    bool Raft::Salvage() const {return Destroyed()&&id>0;}
+
     bool Raft::Destroyed() const {
         return state == 2;
     }

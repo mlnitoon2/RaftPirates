@@ -142,18 +142,11 @@ namespace rp {
         if (c == "gs_opponent") {
             if (phase_ != Phase::Starting && phase_ != Phase::Positioning)
                 return true;
-            auto data = p.getSFSObj("player_object");
-            if (!data) {
-                message_ = "Missing opponent data";
+            if(!ocean_.initWithSFSObject(p,player)){
+                message_="Missing opponent data";
                 return true;
             }
-            Player next;
-            next.objects = player.objects;
-            next.initWithSFSObject(*data);
-            next.playerName = p.getString("opponent_name", next.playerName);
-            opponent_ = std::make_shared<Player>(std::move(next));
-            ocean_.init(0);
-            ocean_.addPlayer(1, opponent_, 0, 0);
+            opponent_=ocean_.GetPlayer(1);
             haveOpponent_ = true;
             boss_ = p.getBool("is_boss", false);
             phase_ = Phase::Positioning;

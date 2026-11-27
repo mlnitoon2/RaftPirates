@@ -10,6 +10,19 @@ namespace rp {
         players_.clear();
     }
 
+    bool Ocean::initWithSFSObject(const sfs::SFSObjectWrapper& packet,const Player& catalogue){
+        auto data=packet.getSFSObj("player_object");
+        if(!data)return false;
+        auto player=std::make_shared<Player>();
+        player->objects=catalogue.objects;
+        player->initWithSFSObject(*data);
+        player->playerName=packet.getString("opponent_name",player->playerName);
+        Ocean next;
+        next.init(0);
+        if(!next.addPlayer(1,std::move(player),0,0))return false;
+        *this=std::move(next);return true;
+    }
+
     bool Ocean::addPlayer(unsigned id, std::shared_ptr<Player> player, int x, int y) {
         if (!id || !player)
             return false;

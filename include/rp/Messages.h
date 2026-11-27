@@ -1,6 +1,8 @@
 #pragma once
 #include "sys/msg/MsgReceiver.h"
 #include "sfs/SFSObjectWrapper.h"
+#include "rp/Quest.h"
+#include "rp/StoreDB.h"
 #include <map>
 
 namespace rp {
@@ -9,6 +11,30 @@ namespace rp {
     // as an owned SFS object instead of inventing pointer fields.
     struct OpaqueGameMessage : MsgBase {
         sfs::SFSObjectWrapper payload;
+    };
+
+    struct MsgConfirmMaterialPurchaseInfo : MsgBase {
+        MsgConfirmMaterialPurchaseInfo(int material,int count,int gold);
+        ~MsgConfirmMaterialPurchaseInfo() override;
+        int materialId=0,amount=0,goldPrice=0;
+    };
+
+    struct MsgQuestData : MsgBase {
+        MsgQuestData(const Quest& value);
+        ~MsgQuestData() override;
+        Quest quest;
+    };
+
+    struct MsgQuestEvent : MsgBase {
+        MsgQuestEvent(int id,int value);
+        ~MsgQuestEvent() override;
+        int questId=0,progress=0;
+    };
+
+    struct MsgStoreItemDisplayResponse : MsgBase {
+        MsgStoreItemDisplayResponse(const StoreItem& value);
+        ~MsgStoreItemDisplayResponse() override;
+        StoreItem item;
     };
 
     struct MsgAnimateGridSprite : MsgBase {

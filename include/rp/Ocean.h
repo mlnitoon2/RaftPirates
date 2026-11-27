@@ -13,6 +13,8 @@ namespace rp {
         Ocean();
         ~Ocean();
         void init(int zone);
+        // Snapshot adapter for the existing gs_opponent player_object payload.
+        bool initWithSFSObject(const sfs::SFSObjectWrapper&,const Player& catalogue);
         bool addPlayer(unsigned id, std::shared_ptr<Player> player, int x, int y);
         bool movePlayer(unsigned id, int x, int y);
         bool removePlayer(unsigned id);
