@@ -32,6 +32,23 @@ namespace rp {
         }),ids.end());
         return ids;
     }
+    std::optional<int> RPMenuHandler::storeCategoryId()const{
+        for(const auto& [id,name]:game_.storeGroups)if(name==category_)return id;
+        return {};
+    }
+    void RPMenuHandler::gotMsgStoreDisplayStatus(const MsgStoreDisplayStatus& msg){storeVisible_=msg.visible;}
+    void RPMenuHandler::gotMsgPopPopUpGlobal(){popPopUp();}
+    std::optional<sfs::Message> RPMenuHandler::gotMsgQuestRead(Game& game,const MsgQuestRead& msg){
+        if(&game!=&game_||!game.quests.count(msg.id))return {};
+        return game.openQuest(msg.id);
+    }
+    void RPMenuHandler::gotMsgStartDialog(const std::string& name){displayPopUpImmediately(name);}
+    std::vector<int> RPMenuHandler::gotSimpleRequest(const std::string& kind)const{
+        if(kind=="AVAIL_STOREITEMS")return category_.empty()?gotMsgGetAvailStoreItemRequest():storeItemsForTab("tabbed_menu_"+category_);
+        if(kind=="AVAIL_BLUEPRINTS")return gotMsgGetAvailBlueprintsRequest();
+        if(kind=="AVAIL_MATERIALS")return gotMsgGetAvailMaterialsRequest();
+        return {};
+    }
     std::vector<int> RPMenuHandler::gotMsgGetAllBlueprintsRequest() const {
         std::vector<int> result;
         for (auto& [id, b] : game_.blueprints)
@@ -243,6 +260,7 @@ namespace rp {
         queued_.clear();
         blueprintSelected_ = storeSelected_ = blueprintPage_ = storePage_ = hudMode_ = 0;
         category_.clear();
+        storeVisible_=false;
     }
 
     namespace {
@@ -256,11 +274,7 @@ namespace rp {
 
     std::vector<int> RPMenuHandler::currentStorePage(size_t size) const {
         auto ids = gotMsgGetAvailStoreItemRequest();
-        if (!category_.empty())
-            ids.erase(
-                std::remove_if(ids.begin(), ids.end(),
-                               [&](int id) { return game_.storeItems.at(id).group != category_; }),
-                ids.end());
+        if (!category_.empty())ids=storeItemsForTab("tabbed_menu_"+category_);
         return pageOf(std::move(ids), storePage_, size);
     }
 

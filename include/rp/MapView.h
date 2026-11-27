@@ -1,10 +1,14 @@
 #pragma once
+#include <set>
 #include "sys/res/TmxMap.h"
 #include "rp/GridObject.h"
 #include "sfs/SFSObjectWrapper.h"
 #include "sys/gfx/Gfx.h"
 
 namespace rp {
+    class Game;
+    struct MsgConfirmMapMovement;
+    struct MsgToggleBlockHudItem;
     class MapView {
       public:
         MapView();
@@ -38,6 +42,15 @@ namespace rp {
         bool movementAllowed() const;
         void movementAllowed(bool allowed);
         void showMap();
+        void gotMsgHidePirateMap();
+        void gotMsgShowPirateMap();
+        void gotMsgAnimationFinished();
+        bool gotMsgConfirmMapMovement(const MsgConfirmMapMovement&);
+        void gotMsgToggleBlockHudItem(const MsgToggleBlockHudItem&);
+        void setPlayer(const Game&);
+        void updatePlayerInfo(const Game&);
+        bool tutorialBattleStartShipMove();
+        void gotMsgTutorialStartBattleMove();
         void hideMap();
 
         bool visible() const {
@@ -112,6 +125,7 @@ namespace rp {
         std::optional<EnemyShipPoints> boss_;
         sys::gfx::Vec2 player_{}, destination_{}, target_{};
         bool visible_ = false, playerVisible_ = true, targetVisible_ = false;
-        bool canMove_ = true, dragging_ = false;
+        bool canMove_ = true, dragging_ = false, playerInitialized_=false, tutorialMove_=false;
+        std::set<std::string> blockedHud_;
     };
 } // namespace rp

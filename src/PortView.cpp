@@ -203,7 +203,7 @@ namespace rp {
         if (g.hideMap)
             map = false;
         if (!map) {
-            mapView_.hideMap();
+            mapView_.gotMsgHidePirateMap();
             out = ocean_.render(g, time, grid, &g.diveState);
         } else {
             try {
@@ -262,15 +262,8 @@ namespace rp {
                                              uint8_t(p.b * a + q.b * (1 - a)), 255};
                                     }
                             }
-                    mapView_.showMap();
-                    mapView_.movementAllowed(!g.pendingMap.has_value());
-                    mapView_.setPlayerVisible(true);
-                    mapView_.setPlayerPosition(
-                        {(std::clamp(g.mapX, -100, 100) + 100) * m.width * m.tileWidth / 200.f,
-                         (std::clamp(g.mapY, -100, 100) + 100) * m.height * m.tileHeight / 200.f},
-                        true);
-                    mapView_.updateBoss(g.bossData, g.zone);
-                    mapView_.updateEnemyShips(g.sonarShips);
+                    mapView_.gotMsgShowPirateMap();
+                    mapView_.updatePlayerInfo(g);
                     auto drawMarker = [&](const MapView::EnemyShipPoints& ship, bool boss) {
                         int mx = box.x + int(ship.x * box.w / (m.width * m.tileWidth)),
                             my = box.y + int(ship.y * box.h / (m.height * m.tileHeight));
@@ -525,7 +518,8 @@ namespace rp {
             }
             if (!enemyId)
                 mapView_.touchUp({wx, wy});
-            if (!mapView_.moveShip()) {
+            MsgConfirmMapMovement confirmation;confirmation.confirmed=true;
+            if (!mapView_.gotMsgConfirmMapMovement(confirmation)) {
                 g.status = g.pendingMap ? "Waiting for movement" : "Cannot sail onto land";
                 return {};
             }
@@ -1370,7 +1364,8 @@ namespace rp {
                 selectedQuest_ = item;
                 panel_ = Panel::QuestDetail;
                 openXml(g, "quest_dialog");
-                return g.openQuest(item);
+                MsgQuestRead request;request.id=item;
+                return RPMenuHandler(g).gotMsgQuestRead(g,request);
             }
             if (xmlName_ == "tabbed_menu_maps") {
                 panel_ = Panel::None;

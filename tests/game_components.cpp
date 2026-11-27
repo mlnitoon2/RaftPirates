@@ -74,7 +74,9 @@ int main() {
         menu.gotMsgQueueMenuPopup("B");
         menu.tick(1);
         CHECK(menu.topPopUp() == "A");
-        menu.popPopUp();
+        MsgStoreDisplayStatus storeStatus;storeStatus.visible=true;
+        menu.gotMsgStoreDisplayStatus(storeStatus);CHECK(menu.storeVisible());
+        menu.gotMsgPopPopUpGlobal();
         menu.tick(1);
         CHECK(menu.topPopUp() == "B" && !menu.hasAnyQueuedPopups());
         menu.destroyCurMenuData();
