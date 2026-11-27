@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:1bea38d6ff8dbcdf55300e691214aade$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/fx/texture_fire_smallest.png" width="64" height="64">
+    <sprite n="fire1" x="1" y="35" w="25" h="25" oX="15" oY="25" oW="57" oH="75"/>
+    <sprite n="fire2" x="35" y="1" w="27" h="33" oX="18" oY="20" oW="57" oH="75"/>
+    <sprite n="fire3" x="27" y="35" w="23" h="21" oX="17" oY="20" oW="57" oH="75"/>
+    <sprite n="fireglow" x="1" y="1" w="33" h="33" oX="11" oY="16" oW="57" oH="75"/>
+</TextureAtlas>

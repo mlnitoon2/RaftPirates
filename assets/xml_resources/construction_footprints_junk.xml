@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:c1af7c8e87af98c1e09a09acd0d929a6$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/construction_footprints_junk.png" width="256" height="256">
+    <sprite n="build_tarp_dark" x="42" y="178" w="32" h="72"/>
+    <sprite n="build_tarp_light" x="42" y="100" w="32" h="72"/>
+    <sprite n="construction_timer" x="42" y="78" w="62" h="16" oX="9" oY="8" oW="80" oH="32"/>
+    <sprite n="construction_timer_glow" x="42" y="4" w="78" h="30" oX="1" oY="0" oW="80" oH="32"/>
+    <sprite n="footprint_1x1" x="42" y="40" w="64" h="32"/>
+    <sprite n="footprint_1x1_occupied" x="126" y="4" w="64" h="32"/>
+    <sprite n="footprint_1x1_red" x="112" y="42" w="64" h="32"/>
+    <sprite n="footprint_edge" x="158" y="80" w="36" h="18"/>
+    <sprite n="footprint_edgewhite" x="200" y="80" w="36" h="18"/>
+    <sprite n="item_glow_left" x="4" y="130" w="32" h="120" oX="0" oY="8" oW="32" oH="128"/>
+    <sprite n="item_glow_right" x="4" y="4" w="32" h="120" oX="0" oY="8" oW="32" oH="128"/>
+    <sprite n="item_scrap_01" x="196" y="4" w="48" h="32" oX="9" oY="9" oW="64" oH="48"/>
+    <sprite n="item_scrap_02" x="182" y="42" w="46" h="32" oX="10" oY="10" oW="64" oH="48"/>
+    <sprite n="item_scrap_03" x="110" y="80" w="42" h="34" oX="10" oY="7" oW="64" oH="48"/>
+</TextureAtlas>

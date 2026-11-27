@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:451e798028211af27c77e87743d10f47$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_core_dive_unit@2x.png" width="1024" height="512">
+    <sprite n="c_dive_01" x="0" y="0" w="616" h="336"/>
+    <sprite n="c_dive_belt_01" x="774" y="346" w="64" h="84" oX="195" oY="136" oW="616" oH="336"/>
+    <sprite n="c_dive_belt_02" x="708" y="346" w="64" h="84" oX="195" oY="136" oW="616" oH="336"/>
+    <sprite n="c_dive_belt_03" x="330" y="404" w="64" h="84" oX="195" oY="136" oW="616" oH="336"/>
+    <sprite n="c_dive_chest" x="708" y="432" w="64" h="72"/>
+    <sprite n="c_dive_diver_01" x="898" y="272" w="104" h="148" oX="14" oY="0" oW="124" oH="148"/>
+    <sprite n="c_dive_diver_02" x="618" y="0" w="108" h="148" oX="14" oY="0" oW="124" oH="148"/>
+    <sprite n="c_dive_diver_03" x="0" y="338" w="124" h="110" oX="0" oY="0" oW="124" oH="148"/>
+    <sprite n="c_dive_pully" x="78" y="450" w="32" h="32"/>
+    <sprite n="c_dive_pully_01" x="892" y="422" w="64" h="48"/>
+    <sprite n="c_dive_pully_02" x="774" y="432" w="64" h="48"/>
+    <sprite n="c_dive_pully_03" x="618" y="464" w="64" h="48"/>
+    <sprite n="c_dive_pullyrope" x="330" y="338" w="98" h="64" oX="240" oY="80" oW="616" oH="336"/>
+    <sprite n="c_dive_rope_01" x="728" y="0" w="288" h="76" oX="0" oY="0" oW="288" oH="80"/>
+    <sprite n="c_dive_rope_02" x="618" y="272" w="278" h="72" oX="10" oY="0" oW="288" oH="80"/>
+    <sprite n="c_dive_rope_03" x="728" y="78" w="270" h="70" oX="18" oY="0" oW="288" oH="80"/>
+    <sprite n="c_dive_rope_top_01" x="840" y="398" w="50" h="50" oX="0" oY="0" oW="52" oH="52"/>
+    <sprite n="c_dive_rope_top_02" x="840" y="346" w="50" h="50" oX="0" oY="0" oW="52" oH="52"/>
+    <sprite n="c_dive_run_01" x="0" y="450" w="76" h="44"/>
+    <sprite n="c_dive_run_02" x="618" y="346" w="88" h="116"/>
+    <sprite n="c_dive_run_03" x="230" y="338" w="98" h="148" oX="1" oY="0" oW="112" oH="148"/>
+    <sprite n="c_dive_run_04" x="524" y="338" w="92" h="142" oX="3" oY="6" oW="112" oH="148"/>
+    <sprite n="c_dive_run_05" x="126" y="338" w="102" h="148" oX="0" oY="0" oW="112" oH="148"/>
+    <sprite n="c_dive_run_06" x="430" y="338" w="92" h="142" oX="3" oY="6" oW="112" oH="148"/>
+    <sprite n="c_dive_screw" x="958" y="456" w="62" h="32" oX="0" oY="0" oW="64" oH="32"/>
+    <sprite n="c_dive_short_rope_01" x="1000" y="112" w="12" h="32"/>
+    <sprite n="c_dive_short_rope_02" x="1000" y="78" w="12" h="32"/>
+    <sprite n="c_dive_top_01" x="958" y="422" w="64" h="32"/>
+    <sprite n="c_dive_treadmill_01" x="812" y="150" w="192" h="120"/>
+    <sprite n="c_dive_treadmill_02" x="618" y="150" w="192" h="120"/>
+</TextureAtlas>

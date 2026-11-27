@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:a8ad546e466ba781e7fe4919caa93357$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_boom_buddha.png" width="128" height="128">
+    <sprite n="boom_buddah_01" x="2" y="2" w="62" h="56"/>
+    <sprite n="boom_buddah_burner" x="66" y="2" w="36" h="34" oX="0" oY="6" oW="36" oH="40"/>
+    <sprite n="boom_buddah_glow" x="34" y="60" w="30" h="20" oX="1" oY="8" oW="32" oH="32"/>
+    <sprite n="boom_buddah_lid_01" x="98" y="38" w="28" h="24" oX="2" oY="4" oW="32" oH="32"/>
+    <sprite n="boom_buddah_lid_02" x="2" y="60" w="30" h="24" oX="1" oY="4" oW="32" oH="32"/>
+    <sprite n="boom_buddah_lid_03" x="30" y="86" w="26" h="28" oX="3" oY="2" oW="32" oH="32"/>
+    <sprite n="boom_buddah_lid_04" x="2" y="86" w="26" h="28" oX="2" oY="2" oW="32" oH="32"/>
+    <sprite n="boom_buddah_lid_05" x="66" y="38" w="30" h="24" oX="1" oY="4" oW="32" oH="32"/>
+</TextureAtlas>

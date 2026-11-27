@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:92521afbf1fb4ad6841efcf3f67f1051$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_raft_cannons@2x.png" width="256" height="128">
+    <sprite n="raft_cannon_01" x="106" y="62" w="76" h="54" oX="7" oY="11" oW="128" oH="80"/>
+    <sprite n="raft_cannon_02" x="2" y="2" w="102" h="62" oX="7" oY="13" oW="128" oH="80"/>
+    <sprite n="raft_cannon_03" x="2" y="66" w="100" h="60" oX="5" oY="13" oW="128" oH="80"/>
+    <sprite n="raft_cannon_04" x="184" y="84" w="46" h="28" oX="19" oY="37" oW="128" oH="80"/>
+    <sprite n="raft_cannon_05" x="106" y="2" w="84" h="58" oX="24" oY="15" oW="128" oH="80"/>
+    <sprite n="raft_cannon_06" x="192" y="2" w="56" h="80" oX="22" oY="18" oW="128" oH="80" r="y"/>
+</TextureAtlas>

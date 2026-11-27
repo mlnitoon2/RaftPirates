@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:1762e7110658e71546309aae08c7b73c$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_pain_sprinkler@2x.png" width="512" height="256">
+    <sprite n="pain_sprinkler_arc" x="2" y="2" w="214" h="152" oX="245" oY="206" oW="512" oH="512"/>
+    <sprite n="pain_sprinkler_arc_shadow" x="218" y="130" w="176" h="116" oX="254" oY="283" oW="512" oH="512"/>
+    <sprite n="pain_sprinkler_bar" x="218" y="2" w="202" h="126" oX="57" oY="232" oW="512" oH="512"/>
+    <sprite n="pain_sprinkler_foot" x="422" y="2" w="68" h="70" oX="414" oY="248" oW="512" oH="512"/>
+    <sprite n="pain_sprinkler_propanefoot" x="396" y="130" w="100" h="104" oX="222" oY="309" oW="512" oH="512"/>
+    <sprite n="pain_sprinkler_shadow" x="2" y="156" w="168" h="94" oX="79" oY="288" oW="512" oH="512"/>
+</TextureAtlas>

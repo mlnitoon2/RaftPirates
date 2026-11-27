@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:a5da91bce83970f41de5e25eb059d76a$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_tight_squeeze.png" width="128" height="128">
+    <sprite n="tight_squeeze" x="0" y="0" w="86" h="80" oX="1" oY="2" oW="110" oH="86"/>
+    <sprite n="tight_squeeze_robot_01" x="87" y="0" w="38" h="48" oX="57" oY="28" oW="110" oH="86"/>
+    <sprite n="tight_squeeze_robot_02" x="65" y="81" w="30" h="46" oX="59" oY="46" oW="110" oH="86" r="y"/>
+    <sprite n="tight_squeeze_robot_03" x="96" y="49" w="26" h="44" oX="60" oY="50" oW="110" oH="86" r="y"/>
+    <sprite n="tight_squeeze_tail" x="0" y="81" w="64" h="46" oX="45" oY="38" oW="110" oH="86"/>
+</TextureAtlas>

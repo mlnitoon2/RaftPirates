@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:320ae7642187472f471012ca8e51e6cc$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_blimey_bang_bang@2x.png" width="512" height="512">
+    <sprite n="blimey_bang_bang_base_01" x="8" y="8" w="412" h="222" oX="0" oY="92" oW="412" oH="316"/>
+    <sprite n="blimey_bang_bang_base_02" x="428" y="8" w="36" h="56" oX="209" oY="258" oW="412" oH="316"/>
+    <sprite n="blimey_bang_bang_engine" x="136" y="238" w="184" h="160" oX="114" oY="53" oW="412" oH="316"/>
+    <sprite n="blimey_bang_bang_pipes" x="8" y="238" w="120" h="176" oX="175" oY="3" oW="412" oH="316"/>
+</TextureAtlas>

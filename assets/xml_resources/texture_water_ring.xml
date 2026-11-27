@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:cb6d30db17ac045d8732d5475cc6a8a8$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/fx/texture_water_ring.png" width="128" height="128">
+    <sprite n="water_ring_01" x="106" y="62" w="10" h="6" oX="27" oY="13" oW="64" oH="32"/>
+    <sprite n="water_ring_02" x="2" y="84" w="24" h="12" oX="20" oY="10" oW="64" oH="32"/>
+    <sprite n="water_ring_03" x="66" y="62" w="38" h="20" oX="13" oY="6" oW="64" oH="32"/>
+    <sprite n="water_ring_04" x="68" y="34" w="50" h="26" oX="7" oY="3" oW="64" oH="32"/>
+    <sprite n="water_ring_05" x="68" y="2" w="58" h="30" oX="3" oY="1" oW="64" oH="32"/>
+    <sprite n="water_ring_06" x="2" y="36" w="62" h="32" oX="1" oY="0" oW="64" oH="32"/>
+    <sprite n="water_ring_07" x="2" y="2" w="64" h="32"/>
+</TextureAtlas>

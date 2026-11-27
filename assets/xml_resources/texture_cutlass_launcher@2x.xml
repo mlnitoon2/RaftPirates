@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:f71995d55da308c01f9b4b677c29d17b$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_cutlass_launcher@2x.png" width="256" height="256">
+    <sprite n="cutlass_launcher_01" x="116" y="2" w="52" h="66" oX="27" oY="12" oW="80" oH="96"/>
+    <sprite n="cutlass_launcher_02" x="110" y="162" w="52" h="66" oX="27" oY="12" oW="80" oH="96"/>
+    <sprite n="cutlass_launcher_03" x="56" y="166" w="52" h="66" oX="27" oY="12" oW="80" oH="96"/>
+    <sprite n="cutlass_launcher_04" x="2" y="166" w="52" h="66" oX="27" oY="12" oW="80" oH="96"/>
+    <sprite n="cutlass_launcher_back" x="76" y="100" w="52" h="60" oX="8" oY="0" oW="80" oH="96"/>
+    <sprite n="cutlass_launcher_front" x="40" y="2" w="74" h="96" oX="1" oY="0" oW="80" oH="96"/>
+    <sprite n="cutlass_launcher_sword" x="2" y="2" w="36" h="162" oX="0" oY="0" oW="36" oH="164"/>
+    <sprite n="cutlass_launcher_sword_top" x="40" y="100" w="34" h="64" oX="0" oY="0" oW="36" oH="64"/>
+</TextureAtlas>

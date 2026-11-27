@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:75244e95714d3f6d147a371031d05aa5$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_captains_hook.png" width="128" height="128">
+    <sprite n="capitans_hook" x="2" y="2" w="78" h="104"/>
+    <sprite n="capitans_hook_cannon_bk" x="82" y="2" w="32" h="36"/>
+    <sprite n="capitans_hook_cannon_fr" x="82" y="40" w="32" h="24"/>
+    <sprite n="capitans_hook_front" x="82" y="66" w="28" h="32" oX="25" oY="65" oW="78" oH="104"/>
+    <sprite n="capitans_hook_sh" x="2" y="108" w="78" h="18" oX="0" oY="64" oW="78" oH="104"/>
+</TextureAtlas>

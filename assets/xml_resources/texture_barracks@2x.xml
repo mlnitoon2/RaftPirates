@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:753595bf9e307999b793f42e0b043d0c$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_barracks@2x.png" width="512" height="256">
+    <sprite n="barracks_piston" x="480" y="2" w="30" h="64" oX="1" oY="0" oW="32" oH="64"/>
+    <sprite n="barracks_pistonarm_01" x="310" y="2" w="64" h="64"/>
+    <sprite n="barracks_pistonarm_02" x="376" y="2" w="54" h="62" oX="0" oY="1" oW="64" oH="64"/>
+    <sprite n="barracks_pistonarm_03" x="432" y="2" w="46" h="62" oX="0" oY="2" oW="64" oH="64"/>
+    <sprite n="barracks_smoke" x="2" y="214" w="16" h="16"/>
+    <sprite n="barracks_tent" x="2" y="2" w="306" h="210" oX="1" oY="1" oW="308" oH="212"/>
+</TextureAtlas>
