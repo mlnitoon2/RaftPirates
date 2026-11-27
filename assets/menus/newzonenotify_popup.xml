@@ -1,0 +1,221 @@
+<menu>
+
+  <element name = "HudNewZoneNotifyPopUpRoot">
+
+    <event name="onInit" params="element">
+      <![CDATA[
+		]]>
+    </event>
+
+    <event name="onPostInit" params="element">
+      <![CDATA[
+		element["topElement"]["TutorialText"]["Text"]("text"):SetString("NEWZONE_NOTIFY_DESC")
+		element["topElement"]["MainButton"]["Text"]("text"):SetString("OK")
+		element["topElement"]["PopupDialog"]["bg"]["Sprite"]("height"):SetFloat(  element:GetElement("topElement"):GetElement("TutorialText"):GetComponent("Text"):absH() + element:GetElement("topElement"):GetElement("MainButton"):GetComponent("UpSprite"):absH() + 18)
+		]]>
+    </event>
+
+
+    <element name="topElement">
+      <size dependentOnElement="element:name()"/>
+
+      <element name="bg">
+        <size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+        <position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+        <orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="6" />
+        <ninesliceComponent name="Sprite">
+          <event name="onInit" params="component, element" >
+            <![CDATA[
+				component("spriteName"):Set("gfx/menu/menu_overlay")
+				component("width"):SetFloat( screenWidth() );
+				component("height"):SetFloat( screenHeight() );
+				component("layer"):SetString("PIRATE_MAP_HUD");
+			]]>
+          </event>
+        </ninesliceComponent>
+        <touchComponent name="Touch">
+          <size dependentOnElement="element:name()"/>
+          <event name="onTouchUp" params="component, element">
+            <![CDATA[
+							playSoundFx("audio/sfx/menu_button_down.wav")	
+							menu:popPopUp()
+						]]>
+          </event>
+        </touchComponent>
+      </element>
+
+      <element name="PopupDialog">
+        <size dependentOnElement="element:name()" dependentOnComponent="ImageRight"/>
+
+        <element name="ImageRight">
+          <size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+          <position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="TOP" hAnchor="RIGHT" />
+          <orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="10" yOffset="0" priority="-1" />
+          <spriteSheetComponent name="Sprite">
+            <event name="onInit" params="component, element" >
+              <![CDATA[
+								--[[component("useOffsets"):SetInt(1)]]
+								component("layer"):SetString("PIRATE_MAP_HUD");
+								
+								component("sheetName"):Set( "xml_resources/rp_menu.xml" )
+								component("spriteName"):Set( "tutorial_bird" )
+								
+							]]>
+            </event>
+          </spriteSheetComponent>
+        </element>
+		
+		<spriteSheetComponent name="BackSprite">
+			<position relativeTo="element[&quot;bg&quot;]" vAnchor="TOP" hAnchor="LEFT" />
+			<orientation vAnchor="BOTTOM" hAnchor="RIGHT" xOffset="0" yOffset="0" priority="-1" />
+			<event name="onInit" params="component, element">
+			  component("spriteName"):SetString("btn_return")
+			  component("sheetName"):SetString("xml_resources/rp_menu.xml")
+			  component("layer"):SetString("PIRATE_MAP_HUD")
+			</event>
+			<event name="onPostSolve" params="component, element">
+			</event>
+		</spriteSheetComponent>		
+
+        <element name="bg">
+          <size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+          <position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+          <orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="-screenHeight()*0.1" priority="3" />
+          <ninesliceComponent name="Sprite">
+            <event name="onInit" params="component, element">
+              <![CDATA[
+								--[[component("yOffset"):SetFloat( -screenHeight()*0.1 );]]
+								
+								component("width"):SetFloat( screenWidth()*0.66 );
+								
+								component("topHeight"):SetFloat( 16 );
+								component("bottomHeight"):SetFloat( 16 );
+								component("leftWidth"):SetFloat( 16 );
+								component("rightWidth"):SetFloat( 16 );
+								
+								component("spriteName"):Set("gfx/menu/popup_bg")
+								
+								component("layer"):SetString("PIRATE_MAP_HUD")
+
+            ]]>
+            </event>
+          </ninesliceComponent>
+
+          <touchComponent name="Touch">
+            <size dependentOnElement="element:name()"/>
+            <event name="onTouchUp" params="component, element">
+              <![CDATA[
+								
+							]]>
+            </event>
+          </touchComponent>
+
+
+        </element>
+
+        <element name="Title">
+          <size dependentOnElement="element:name()" dependentOnComponent="Text" />
+          <position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="TOP" hAnchor="HCENTER" />
+          <orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="-8" priority="-1" />
+          <event name="onPostInit" params="element">
+            --[[element("yOffset"):SetInt(element("yOffset"):GetInt() + element:parent()["bg"]["Sprite"]("height"):GetInt()/2)]]
+          </event>
+          <textComponent name="Text" >
+
+            <event name="onInit" params="component, element" >
+              <![CDATA[
+								component("font"):Set("rp_font_title")
+								component("size"):Set(1.0)
+								component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+								
+								component("red"):SetFloat(1.0)
+								component("green"):SetFloat(1.0)
+								component("blue"):SetFloat(1.0)
+
+								component("text"):SetString("NEWZONE_NOTIFY_TITLE")
+		
+								component("layer"):SetString("PIRATE_MAP_HUD");
+								]]>
+            </event>
+
+          </textComponent>
+        </element>
+
+        <element name="TutorialText">
+          <size dependentOnElement="element:name()" dependentOnComponent="Text" />
+          <position relativeTo="element:parent()[&quot;Title&quot;]" vAnchor="BOTTOM" hAnchor="HCENTER" />
+          <orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+          <event name="onPostInit" params="element">
+            --[[element("yOffset"):SetInt(element("yOffset"):GetInt() + element:parent()["bg"]["Sprite"]("height"):GetInt()/2)]]
+          </event>
+          <textComponent name="Text" >
+            <size w="screenWidth()*0.50" h="0" />
+
+            <event name="onInit" params="component, element" >
+              <![CDATA[
+								component("font"):Set("blue_highway")
+								component("size"):Set(1.0)
+								component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+								
+								component("red"):SetFloat(1.0)
+								component("green"):SetFloat(1.0)
+								component("blue"):SetFloat(1.0)
+
+								component("layer"):SetString("PIRATE_MAP_HUD");
+                
+								]]>
+            </event>
+
+          </textComponent>
+        </element>
+
+        <template type="HudButton" name="MainButton">
+          <templateVar name="$image" equals="btn_long_blue" />
+          <templateVar name="$sheet" equals="rp_menu" />
+          <position relativeTo="element:parent()[&quot;TutorialText&quot;]" vAnchor="BOTTOM" hAnchor="HCENTER" />
+          <orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="5" priority="0" />
+          <event name="onPostInit" params="element">
+            element["UpSprite"]("layer"):SetString("PIRATE_MAP_HUD");
+            element["DownSprite"]("layer"):SetString("PIRATE_MAP_HUD");
+            element("gotostore"):SetInt(1)
+
+          </event>
+
+          <textComponent name="Text" >
+            <position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+            <orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+            <event name="onInit" params="component, element" >
+              <![CDATA[
+								component("font"):Set("rp_font_title")
+								component("size"):Set(1.0)
+								component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+								
+								component("red"):SetFloat(1.0)
+								component("green"):SetFloat(1.0)
+								component("blue"):SetFloat(1.0)
+								
+								component("text"):SetString("FILL_IT_NOW")
+								
+								component("layer"):SetString("PIRATE_MAP_HUD");
+								]]>
+            </event>
+          </textComponent>
+          <touchComponent name="Touch">
+            <size dependentOnElement="element:name()"/>
+            <event name="onTouchUp" params="component, element">
+              <![CDATA[
+								onTouchUp(component, element)
+								
+								menu:popPopUp()
+
+							]]>
+            </event>
+          </touchComponent>
+        </template>
+
+
+      </element>
+    </element>
+
+  </element>
+</menu>
