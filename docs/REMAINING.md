@@ -146,9 +146,12 @@ Names newly implemented in source are listed here and removed from the provision
 - RPMenuHandler 0x4d5798 loads TUT_CHRISTEN_D (0xa636e8), finds first two percent delimiters, replaces with player name, sends localized message. Portable formatter returns the text; native message hookup still pending.
 - Ten new provisional names, not verified build/runtime coverage.
 
+- BattleShipPlacementSprite 0x584bd8 and 0x584c14 check base then attached child; 0x584d00 routes flattened priority by base piece count, 0x58506c propagates scale. Host resolves retained OceanView sprites by raft/component IDs (no stored dangling sprite pointers), flattens graphics pieces and binds actual battle views. Existing Pieces() still denotes raft snapshots for public indexing.
+- ShipPlacementSprite 0x61949c traverses owned sprites, 0x619574 counts pieces, 0x619650 delegates priority by piece count, 0x619764 tests occupied position then child validity, 0x6193f4 resets to object. Portable copied raft/child preview uses catalogue footprints, checked grid translation, original-object reset and explicit graphics submission. Original native Ocean membership, drag flags and child validation callbacks not yet equivalent. Fifteen provisional names added.
+
 ## Remaining method names by class (provisional source review)
 
-566 names from the Pass 33 inventory now have named source implementations through Pass 48 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+581 names from the Pass 33 inventory now have named source implementations through Pass 48 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (20)
 
@@ -157,14 +160,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::BattleModeState` (11)
 
 `PlayBattleAnimations`, `SwapPopup`, `SwapStance`, `ToBattleView`, `ToPositioningView`, `gotMsgBattleInfoDropdown`, `gotMsgBattleInfoRequest`, `gotMsgHighlightHudItem`, `gotMsgQuestRead`, `gotMsgToggleBlockHudItem`, `gotMsgTransitionDone`
-
-### `rp::BattleShipPlacementSprite` (4)
-
-`ContainsGfx`, `HasAccessorySprite`, `SetPriority`, `SetScale`
-
-### `rp::ShipPlacementSprite` (11)
-
-`ContainsGfx`, `OkayToPlace`, `Pieces`, `SetObjectPosition`, `SetPosition`, `SetPositionOfSprites`, `SetPriority`, `SetToObject`, `ShipPlacementSprite`, `Update`, `~ShipPlacementSprite`
 
 ### `rp::PerimeterWallSprite` (10)
 

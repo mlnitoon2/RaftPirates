@@ -33,6 +33,8 @@ namespace rp {
         bool DetachAccessory(int id);
         void Update();
         void SetGeometry(sys::gfx::Vec2 world, float scale);
+        void SetScale(float scale) { SetGeometry(world_, scale); }
+        sys::gfx::Vec2 worldPosition() const { return world_; }
         void SetTime(float time);
         void SetVisible(bool);
         bool GetVisible() const;

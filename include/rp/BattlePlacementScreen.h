@@ -14,6 +14,7 @@ namespace rp {
         bool ContainsGfx(sys::gfx::Gfx* gfx);
         void SetPriority(unsigned index, float priority);
         void BindGfx(unsigned side, unsigned index, sys::gfx::Gfx* gfx);
+        void BindViews(const OceanView* own, const OceanView* enemy);
         bool OkayToPlace() const;
         Cell GetClosestPosition(sys::gfx::Vec2 world) const;
         Cell GetWorldPosition(int side) const;
@@ -24,6 +25,8 @@ namespace rp {
 
       private:
         BattleShipPlacementSprite own_, enemy_;
+        const OceanView* ownView_ = nullptr;
+        const OceanView* enemyView_ = nullptr;
         bool attacker_ = false;
         std::map<unsigned, sys::gfx::Gfx*> ownGfx_, enemyGfx_;
     };

@@ -1,4 +1,5 @@
 #include "rp/BattleShipPlacementSprite.h"
+#include "rp/GridSprite.h"
 #include <algorithm>
 #include <cmath>
 
@@ -34,6 +35,48 @@ namespace rp {
     }
     // Original ARM implementation is a return-only weak hook.
     void BattleShipPlacementSprite::UpdateParticles() {}
+
+    std::vector<GridSprite*> BattleShipPlacementSprite::graphics() const {
+        std::vector<GridSprite*> result;
+        if (!view_) return result;
+        for (const auto& raft : pieces_) {
+            if (auto* sprite = view_->getGridSprite(0, raft.id)) result.push_back(sprite);
+            for (const auto& component : raft.components)
+                if (auto* sprite = view_->getGridSprite(raft.id, component.id)) result.push_back(sprite);
+        }
+        return result;
+    }
+
+    bool BattleShipPlacementSprite::ContainsGfx(const sys::gfx::Gfx* gfx) const {
+        if (!gfx) return false;
+        for (auto* sprite : graphics()) if (sprite->ContainsGfx(gfx)) return true;
+        return false;
+    }
+
+    bool BattleShipPlacementSprite::HasAccessorySprite(int id) const {
+        for (auto* sprite : graphics()) if (sprite->HasAccessorySprite(id)) return true;
+        return false;
+    }
+
+    size_t BattleShipPlacementSprite::GraphicsPieces() const {
+        size_t count = 0;
+        for (auto* sprite : graphics()) count += sprite->Pieces();
+        return count;
+    }
+
+    void BattleShipPlacementSprite::SetPriority(unsigned index, float priority) {
+        if (!std::isfinite(priority)) return;
+        size_t i = index;
+        for (auto* sprite : graphics()) {
+            if (i < sprite->Pieces()) { sprite->SetPriority(static_cast<unsigned>(i), priority); return; }
+            i -= sprite->Pieces();
+        }
+    }
+
+    void BattleShipPlacementSprite::SetScale(float scale) {
+        if (!std::isfinite(scale) || scale <= 0) return;
+        for (auto* sprite : graphics()) sprite->SetScale(scale);
+    }
 
     void BattleShipPlacementSprite::SetObjectPosition(Cell position) {
         offset_ = position;

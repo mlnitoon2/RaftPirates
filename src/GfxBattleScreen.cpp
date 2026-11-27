@@ -10,6 +10,7 @@ namespace rp {
 
     GfxBattleScreen::GfxBattleScreen(std::filesystem::path root)
         : root_(root), ownView_(root), enemyView_(root), effects_(root) {
+        placement_.BindViews(&ownView_, &enemyView_);
         strings_.loadFile(root / "text/en.utf8");
         sheet_ = ResourceSpriteSheet::Create(root / "xml_resources/rp_menu.xml");
         atlas_ = std::make_shared<Image>(loadAssetImage(root / sheet_.imagePath));

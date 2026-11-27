@@ -11,6 +11,8 @@ namespace rp {
         own_ = {};
         enemy_ = {};
         attacker_ = attacker;
+        own_.BindView(ownView_);
+        enemy_.BindView(enemyView_);
         ownGfx_.clear();
         enemyGfx_.clear();
     }
@@ -46,16 +48,30 @@ namespace rp {
 
     bool BattlePlacementScreen::ContainsGfx(sys::gfx::Gfx* gfx) {
         if (!gfx) return false;
+        if (own_.ContainsGfx(gfx)) return true;
         return std::any_of(ownGfx_.begin(), ownGfx_.end(),
                            [&](const auto& entry) { return entry.second == gfx; });
     }
 
     void BattlePlacementScreen::SetPriority(unsigned index, float priority) {
         if (!std::isfinite(priority)) return;
+        if (ownView_ || enemyView_) {
+            const auto count = own_.GraphicsPieces();
+            if (index < count) own_.SetPriority(index, priority);
+            else enemy_.SetPriority(static_cast<unsigned>(index-count), priority);
+            return;
+        }
         const auto count = own_.Pieces();
         auto& sprites = index < count ? ownGfx_ : enemyGfx_;
         auto it = sprites.find(index < count ? index : static_cast<unsigned>(index - count));
         if (it != sprites.end()) it->second->SetPriority(priority);
+    }
+
+    void BattlePlacementScreen::BindViews(const OceanView* own, const OceanView* enemy) {
+        ownView_ = own;
+        enemyView_ = enemy;
+        own_.BindView(own);
+        enemy_.BindView(enemy);
     }
 
     void BattlePlacementScreen::BindGfx(unsigned side, unsigned index, sys::gfx::Gfx* gfx) {
