@@ -4,12 +4,9 @@ namespace rp {
     ItemPlacementSprite::ItemPlacementSprite(const Game& game,const OceanView& view,
         std::shared_ptr<const sys::gfx::Image> image,const sys::res::SpriteCell& valid,
         const sys::res::SpriteCell& invalid)
-        :game_(game),view_(view),image_(std::move(image)),valid_(valid),invalid_(invalid){}
+        :PlacementSprite(game,view),image_(std::move(image)),valid_(valid),invalid_(invalid){}
     ItemPlacementSprite::~ItemPlacementSprite()=default;
-    void ItemPlacementSprite::SetToObject(int object,int parent,int ignoreParent,int ignoreId) {
-        object_=object;parent_=parent;ignoreParent_=ignoreParent;ignoreId_=ignoreId;
-    }
-    void ItemPlacementSprite::SetPosition(Cell position){position_=position;Update();}
+    void ItemPlacementSprite::SetPriorities(){if(footprint_)footprint_->SetPriorities();}
     void ItemPlacementSprite::SetPriority(unsigned piece,float value){
         if(footprint_)footprint_->SetPriority(piece,value);
     }
@@ -29,6 +26,7 @@ namespace rp {
         if(cells.empty())cells.push_back({0,0});
         footprint_=std::make_unique<FootprintSprite>(view_,image_,OkayToPlace()?valid_:invalid_);
         footprint_->Update(position_,cells,parent);
+        SetPriorities();
     }
     void ItemPlacementSprite::Render(sys::gfx::Image& target)const{
         if(footprint_)footprint_->Render(target);

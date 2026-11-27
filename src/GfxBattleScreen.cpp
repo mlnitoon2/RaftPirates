@@ -27,6 +27,10 @@ namespace rp {
             return;
         transition_ = std::clamp(transition_ + (exiting_ ? -1.f : 1.f) * dt * 4, 0.f, 1.f);
         arrow_.tick(dt);
+        for(auto it=explosions_.begin();it!=explosions_.end();){
+            it->second.tick(dt);
+            if(!it->second.active())it=explosions_.erase(it);else ++it;
+        }
         for (auto& hit : damage_)
             hit.tick(dt);
         damage_.erase(std::remove_if(damage_.begin(), damage_.end(),
@@ -52,8 +56,10 @@ namespace rp {
                 int bp = raft.GetBattlePoints();
                 next[raft.id] = bp;
                 auto it = previous.find(raft.id);
-                if (it != previous.end() && bp < it->second)
+                if (it != previous.end() && bp < it->second){
                     damage_.emplace_back(own,raft.id,it->second-bp);
+                    explosions_.insert_or_assign({own,raft.id},ExplosionFXSprite(true));
+                }
             }
             previous = std::move(next);
         };
@@ -77,6 +83,7 @@ namespace rp {
                 ownBP_.clear();
                 enemyBP_.clear();
                 damage_.clear();
+                explosions_.clear();
                 SwoopIn();
             }
             if (net.phase() == Phase::Over)
@@ -228,9 +235,11 @@ namespace rp {
                 auto& view = hit.own ? ownView_ : enemyView_;
                 auto point = view.WorldToScreen({float(raft->x) + .5f, float(raft->y) + .5f});
                 point.x += hit.own ? -160 : 160;
-                if (explosion_ && !explosion_->comps.empty()) {
+                auto fx=explosions_.find({hit.own,hit.raft});
+                if (explosion_ && !explosion_->comps.empty() && fx!=explosions_.end()) {
                     const auto& comp = explosion_->comps.front();
-                    float elapsed = DamageIndicatorSprite::FLOAT_TIME - hit.remaining;
+                    float elapsed = fx->second.elapsed();
+                    if(fx->second.Sparatic()&&comp.duration()>0)elapsed=std::fmod(elapsed,comp.duration());
                     if (comp.duration() > 0 && elapsed < comp.duration())
                         effects_.submit(gfx, *explosion_, comp, elapsed,
                                         Matrix::translation(point.x - comp.width * .35f,

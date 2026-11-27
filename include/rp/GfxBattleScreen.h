@@ -1,6 +1,7 @@
 #pragma once
 #include "rp/BattlePlacementScreen.h"
 #include "rp/DamageIndicatorSprite.h"
+#include "rp/ExplosionFXSprite.h"
 #include "rp/BattleArrowSprite.h"
 #include "sys/gfx/ResourceSpriteFont.h"
 #include "sys/menu_redux/MenuRuntime.h"
@@ -45,6 +46,7 @@ namespace rp {
         std::map<int, int> ownBP_, enemyBP_;
 
         std::vector<DamageIndicatorSprite> damage_;
+        std::map<std::pair<bool,int>,ExplosionFXSprite> explosions_;
         BattleArrowSprite arrow_;
         std::optional<sys::res::ResourceAEAnim> explosion_;
         sys::gfx::AnimationRenderer effects_;

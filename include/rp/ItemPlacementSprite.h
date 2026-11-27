@@ -1,27 +1,22 @@
 #pragma once
-#include "rp/FootprintSprite.h"
+#include "rp/PlacementSprite.h"
 
 namespace rp {
     // Live construction preview using the authoritative Game placement checks.
-    class ItemPlacementSprite {
+    class ItemPlacementSprite : public PlacementSprite {
       public:
         ItemPlacementSprite(const Game& game,const OceanView& view,
                             std::shared_ptr<const sys::gfx::Image> image,
                             const sys::res::SpriteCell& valid,const sys::res::SpriteCell& invalid);
-        virtual ~ItemPlacementSprite();
-        void SetToObject(int object,int parent,int ignoreParent=0,int ignoreId=0);
-        void SetPosition(Cell position);
+        ~ItemPlacementSprite() override;
+        void SetPriorities() override;
         virtual void SetPriority(unsigned piece,float value);
-        bool OkayToPlace()const;
-        void Update();
+        bool OkayToPlace()const override;
+        void Update() override;
         void Render(sys::gfx::Image& target)const;
       private:
-        const Game& game_;
-        const OceanView& view_;
         std::shared_ptr<const sys::gfx::Image> image_;
         sys::res::SpriteCell valid_,invalid_;
-        int object_=0,parent_=0,ignoreParent_=0,ignoreId_=0;
-        Cell position_{};
         std::unique_ptr<FootprintSprite> footprint_;
     };
 }

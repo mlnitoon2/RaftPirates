@@ -532,10 +532,11 @@ namespace rp {
                 auto object = g.objects.find(chosen->second.object);
                 if (object != g.objects.end() && object->second.type == 0) {
                     auto world = ocean_.ScreenToWorld({x, y});
-                    // Tile centre is half a raft down its projected diamond.
-                    Cell pos{int(std::floor(world.x)), int(std::floor(world.y))};
-                    if (g.canBuildRaft(pos)) {
-                        placement_ = pos;
+                    const auto nearest=PlacementSprite::GetClosestPosition(world,g.GetAvailableEdgeGridSpace());
+                    // Snap within one tile, not to an arbitrary remote free edge.
+                    if (nearest && std::abs(world.x-nearest->x-.5f)<=1.f &&
+                        std::abs(world.y-nearest->y-.5f)<=1.f && g.canBuildRaft(*nearest)) {
+                        placement_ = *nearest;
                         placementParent_ = 0;
                         return {};
                     }
