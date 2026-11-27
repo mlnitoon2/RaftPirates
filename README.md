@@ -24,7 +24,7 @@ cmake -S . -B build -G Ninja -DRAFT_DESKTOP=ON -DHYDRA_FETCH_LUA=ON
 cmake --build build --target raftpirates_desktop
 ```
 
-See [desktop instructions](docs/DESKTOP.md) for dependencies and launching. The desktop target currently runs original startup/login menus, not live multiplayer.
+See [desktop instructions](docs/DESKTOP.md) for dependencies and launching. Download the packaged Windows ZIP from Actions for a dependency-free install. Native HTTP, SmartFox TCP and audio are implemented; live server parity remains unverified.
 
 ## Status
 

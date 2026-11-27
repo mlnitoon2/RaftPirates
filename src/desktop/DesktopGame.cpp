@@ -1,7 +1,11 @@
 #include "sys/platform/NativeHost.h"
 #include "sys/platform/Services.h"
+#include "sfs/SFSClient.h"
+#include "DesktopAuth.h"
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
+#include <SDL_mixer.h>
+#include <map>
 #include <algorithm>
 #include <iostream>
 #include <optional>
@@ -14,31 +18,99 @@ namespace {
 
     class DesktopServices final : public Services {
       public:
-        explicit DesktopServices(const fs::path& root)
-            : root_(fs::absolute(root)), host_("Raft Pirates", 640, 400) {
+        explicit DesktopServices(const fs::path& root, bool allowHttp)
+            : root_(fs::absolute(root)), host_("Raft Pirates", 640, 400),
+              allowHttp_(allowHttp), paths_(nativePaths("RaftPirates")) {
             if (!fs::is_directory(root_ / "menus") ||
                 !fs::is_regular_file(root_ / "xml_resources/properties.xml"))
                 throw std::runtime_error("Expected extracted APK assets directory");
+            if (auto* base = SDL_GetBasePath()) {
+                const auto ca = fs::path(base) / "ca-bundle.crt";
+                if (fs::is_regular_file(ca))
+                    caFile_ = ca.string();
+                SDL_free(base);
+            }
+            if (SDL_InitSubSystem(SDL_INIT_AUDIO) == 0) {
+                audioInitialized_ = true;
+                Mix_Init(MIX_INIT_MP3);
+                audioOpen_ = Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0;
+                if (audioOpen_)
+                    Mix_AllocateChannels(24);
+            }
+            if (!audioOpen_)
+                log("Audio device unavailable; continuing without audio");
+        }
+
+        ~DesktopServices() override {
+            client_.disconnect();
+            if (audioOpen_) {
+                Mix_HaltMusic();
+                Mix_HaltChannel(-1);
+                if (music_)
+                    Mix_FreeMusic(music_);
+                for (auto& e : effects_)
+                    Mix_FreeChunk(e.second);
+                Mix_CloseAudio();
+            }
+            if (audioInitialized_) {
+                Mix_Quit();
+                SDL_QuitSubSystem(SDL_INIT_AUDIO);
+            }
         }
 
         fs::path assets(const fs::path&) override {
             return root_;
         }
 
-        // This preview deliberately does not resume a live account session.
         fs::path saveDirectory() override {
-            return {};
+            return paths_.saves;
         }
 
         void present(const sys::gfx::Image& image, int, int) override {
             host_.present(image);
         }
 
-        void music(const std::string&) override {}
+        void music(const std::string& path) override {
+            if (!audioOpen_)
+                return;
+            Mix_HaltMusic();
+            if (music_) {
+                Mix_FreeMusic(music_);
+                music_ = nullptr;
+            }
+            if (path.empty())
+                return;
+            music_ = Mix_LoadMUS((root_ / path).string().c_str());
+            if (!music_ || Mix_PlayMusic(music_, -1) < 0)
+                log("Unable to play music: " + path);
+        }
 
-        void pauseMusic(bool) override {}
+        void pauseMusic(bool paused) override {
+            if (!audioOpen_)
+                return;
+            if (paused) {
+                Mix_PauseMusic();
+                Mix_Pause(-1);
+            } else {
+                Mix_ResumeMusic();
+                Mix_Resume(-1);
+            }
+        }
 
-        void effect(const std::string&) override {}
+        void effect(const std::string& path) override {
+            if (!audioOpen_)
+                return;
+            auto it = effects_.find(path);
+            if (it == effects_.end()) {
+                auto* chunk = Mix_LoadWAV((root_ / path).string().c_str());
+                if (!chunk) {
+                    log("Unable to load sound: " + path);
+                    return;
+                }
+                it = effects_.emplace(path, chunk).first;
+            }
+            Mix_PlayChannel(-1, it->second, 0);
+        }
 
         void showPopup(const std::string& message) override {
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Raft Pirates", message.c_str(),
@@ -53,11 +125,11 @@ namespace {
         }
 
         bool loggedIn() override {
-            return false;
+            return client_.loggedIn();
         }
 
         bool transportConnected() override {
-            return false;
+            return client_.connected();
         }
 
         void keyboard(const std::string& title, const std::string& value, bool password) override {
@@ -66,37 +138,52 @@ namespace {
             updateTitle();
         }
 
-        std::future<AuthResult> authenticate(std::string, std::string, std::string, bool, int,
-                                             std::string) override {
-            std::promise<AuthResult> promise;
-            AuthResult result;
-            result.error = "Desktop SmartFox networking is not implemented yet.";
-            promise.set_value(std::move(result));
-            return promise.get_future();
+        std::future<AuthResult> authenticate(std::string endpoint, std::string email,
+                                             std::string password, bool registration,
+                                             int gameId, std::string version) override {
+            return rp::desktop::authenticate(std::move(endpoint), std::move(email),
+                std::move(password), registration, gameId, std::move(version),
+                caFile_, allowHttp_);
         }
 
-        void connect(const std::string&, int) override {
-            throw std::runtime_error("Desktop SmartFox networking unavailable");
+        void connect(const std::string& host, int port) override {
+            client_.connect(host, port);
         }
 
-        void login(const std::string&, const std::string&, const std::string&,
-                   const sfs::SFSObjectWrapper&) override {
-            throw std::runtime_error("Desktop SmartFox networking unavailable");
+        void login(const std::string& zone, const std::string& user,
+                   const std::string& session, const sfs::SFSObjectWrapper& params) override {
+            client_.login(zone, user, session, params);
         }
 
-        void send(const sfs::Message&) override {
-            throw std::runtime_error("Desktop SmartFox networking unavailable");
+        void send(const sfs::Message& message) override { client_.send(message); }
+        void disconnect() override { client_.disconnect(); }
+        void keepAlive() override { client_.keepAlive(); }
+
+        void networkEvents() {
+            for (const auto& e : client_.poll()) {
+                using E = sfs::ClientEventType;
+                switch (e.type) {
+                case E::Connected: game::onConnection(*this, true); break;
+                case E::ConnectFailed: game::onConnection(*this, false); break;
+                case E::Login: game::onLogin(*this); break;
+                case E::LoginError: game::onLoginError(*this); break;
+                case E::RoomJoin: game::onRoomJoin(*this); break;
+                case E::Extension: game::onExtension(*this, e.command, e.data); break;
+                case E::AdminMessage:
+                    game::onAdminMessage(*this, e.data.getString("message", e.data.getString("m")));
+                    break;
+                case E::Logout: game::onLogout(*this); break;
+                case E::ConnectionLost: game::onConnectionLost(*this); break;
+                }
+            }
         }
-
-        void disconnect() override {}
-
-        void keepAlive() override {}
 
         void log(const std::string& message) override {
             std::cerr << message << '\n';
         }
 
         bool poll() {
+            networkEvents();
             for (const auto& event : host_.poll()) {
                 if (event.type == HostEventType::Quit)
                     return false;
@@ -158,6 +245,13 @@ namespace {
 
         fs::path root_;
         NativeHost host_;
+        bool allowHttp_;
+        NativePaths paths_;
+        std::string caFile_;
+        sfs::SFSClient client_;
+        bool audioInitialized_ = false, audioOpen_ = false;
+        Mix_Music* music_ = nullptr;
+        std::map<std::string, Mix_Chunk*> effects_;
         std::optional<Entry> entry_;
         std::optional<int64_t> pointer_;
 
@@ -180,12 +274,30 @@ namespace {
 int main(int argc, char** argv) {
     SDL_SetMainReady();
     try {
-        if (argc != 2) {
-            std::cerr << "Usage: raftpirates_desktop ASSET_ROOT\n";
+        fs::path root;
+        bool allowHttp = false;
+        for (int i = 1; i < argc; ++i) {
+            if (std::string(argv[i]) == "--allow-insecure-auth")
+                allowHttp = true;
+            else if (root.empty())
+                root = argv[i];
+            else
+                throw std::invalid_argument("Usage: raftpirates_desktop [ASSET_ROOT] [--allow-insecure-auth]");
+        }
+        if (root.empty()) {
+            auto* base = SDL_GetBasePath();
+            if (!base)
+                throw std::runtime_error("Cannot locate executable");
+            root = fs::path(base) / "assets";
+            SDL_free(base);
+        }
+        if (!fs::is_directory(root / "menus")) {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Raft Pirates",
+                "Extract the original APK's assets into the assets folder next to this executable.", nullptr);
             return 1;
         }
-        DesktopServices platform(argv[1]);
-        game::init(platform, argv[1], 640, 400);
+        DesktopServices platform(root, allowHttp);
+        game::init(platform, root, 640, 400);
         if (!game::initialized())
             return 2;
         while (platform.poll()) {
@@ -196,6 +308,7 @@ int main(int argc, char** argv) {
         return 0;
     } catch (const std::exception& ex) {
         std::cerr << ex.what() << '\n';
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Raft Pirates", ex.what(), nullptr);
         return 2;
     }
 }

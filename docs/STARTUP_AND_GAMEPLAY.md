@@ -66,4 +66,4 @@ The legacy SDK expects `rl` in a successful login response to be an array of roo
 
 ## Desktop application
 
-The optional `raftpirates_desktop` target runs the same portable GameRuntime lifecycle as Android, with SDL2 presentation and text input. The current desktop host does not authenticate or connect to live servers; it reports the missing transport instead of synthesizing sessions. A separate native SFS session adapter is still required. DEX files and Java classes are not needed for this executable. See [Desktop](DESKTOP.md).
+The optional `raftpirates_desktop` target runs the same portable GameRuntime lifecycle as Android, with SDL2 presentation and text input. The desktop host now authenticates using native HTTP and connects through Hydra's native TCP SmartFox client. Actual server interoperability and full multiplayer remain unverified. DEX files and Java classes are not needed for this executable. See [Desktop](DESKTOP.md).
