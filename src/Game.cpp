@@ -107,7 +107,8 @@ namespace rp {
 
     void Game::applyExtension(const std::string& cmd, const O& p) {
         status = cmd;
-        if(cmd=="dive_info"||cmd=="dive_fail"||cmd=="gs_error"||cmd=="gs_materials_changed")diveCollectPending=false;
+        if (cmd == "dive_fail" || cmd == "gs_error" || cmd == "gs_player")
+            diveCollectPending = false;
         if (p.get("boss_data")) {
             auto boss = p.getSFSObj("boss_data");
             if (boss && boss->getInt("user_id") > 0)
@@ -277,6 +278,7 @@ namespace rp {
         } else if (cmd == "gs_materials_changed") {
             delta(*this, p);
             if (p.getBool("diver")) {
+                diveCollectPending = false;
                 diveState = {};
                 diveSeconds = 0;
                 diveFraction = 0;
@@ -359,7 +361,10 @@ namespace rp {
                                                           [&](auto& c) { return c.id == id; }),
                                            r.components.end());
         } else if (cmd == "dive_info") {
+            const auto previous = std::make_pair(diveState.parent, diveState.object);
             diveState.initWithSFSObject(p);
+            if (!diveState.Diving() || previous != std::make_pair(diveState.parent, diveState.object))
+                diveCollectPending = false;
             diveSeconds = int(std::ceil(diveState.remaining));
             diveFraction = 0;
         } else if (cmd == "gs_build_complete" || cmd == "gs_use_clock" ||
@@ -484,6 +489,20 @@ namespace rp {
         if (parent)
             p.put("parent_id", int32_t(parent));
         return request("gs_build_remove", p);
+    }
+
+    void Game::requestSendFailed(const std::string& command) {
+        if (command.rfind("gs_battle_", 0) == 0 || command == "gs_encounter_response" ||
+            command == "gs_swap_stance")
+            onlineBattle.sendFailed();
+        else if (command == "ping_sonar") sonarPending = false;
+        else if (command == "daring_advance") daringAdvancePending = false;
+        else if (command == "gs_build_add") pending.reset();
+        else if (command == "gs_build_update") pendingMove.reset();
+        else if (command == "gs_map_move") pendingMap.reset();
+        else if (command == "zone_goto") pendingZone.reset();
+        else if (command == "discovery_goto") pendingDiscovery.reset();
+        else if (command == "dive_collect") diveCollectPending = false;
     }
 
     std::optional<Message> Game::collectDive(){

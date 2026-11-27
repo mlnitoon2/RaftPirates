@@ -15,6 +15,9 @@ int main() {
     check(!game.gotMsgReconnect(false));
     check(game.gotMsgReconnect(true));
     check(!game.gotMsgReconnect(true));
+    game.diveCollectPending = true;
+    game.DoLostConnection(false);
+    check(!game.diveCollectPending);
     game.DoLostConnection(true);
     game.GotMsgOnMenuLoadGlobal("hud");
     check(game.currentMenu() == "hud");

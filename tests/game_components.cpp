@@ -34,6 +34,24 @@ int main() {
             CHECK(!BuildModeState(dive).SendBonusMaterials());
             dive.diveState.remaining=1;CHECK(!dive.collectDive());
             dive.diveState.remaining=0;CHECK(dive.collectDive());CHECK(!dive.collectDive());
+            dive.extension("gs_materials_changed", {});
+            CHECK(dive.diveCollectPending && !dive.collectDive());
+            O info;
+            info.put("parent_id",int32_t(1));info.put("object_id",int32_t(2));
+            info.put("state",int32_t(3));info.put("time_remaining_secs",int32_t(0));
+            dive.extension("dive_info",info);
+            CHECK(dive.diveCollectPending);
+            O result;result.put("diver",true);
+            dive.extension("gs_materials_changed",result);
+            CHECK(!dive.diveCollectPending && !dive.diveState.Diving());
+            dive.pending=PendingBuild{1,2,3,4};
+            dive.pendingZone=3;dive.sonarPending=true;
+            dive.requestSendFailed("ping_sonar");
+            CHECK(!dive.sonarPending && dive.pending && dive.pendingZone);
+            dive.requestSendFailed("gs_build_add");
+            CHECK(!dive.pending && dive.pendingZone);
+            dive.requestSendFailed("zone_goto");
+            CHECK(!dive.pendingZone);
         }
         {
             Game shop;

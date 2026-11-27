@@ -65,6 +65,7 @@ namespace rp {
         pendingZone.reset();
         pendingMap.reset();
         pendingDiscovery.reset();
+        diveCollectPending = false;
         token.clear();
         onlineBattle.reset();
         sonarPending = readyForBattle = daringAdvancePending = false;

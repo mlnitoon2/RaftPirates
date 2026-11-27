@@ -4,14 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - '**.cpp'
-      - '**.h'
-      - '**.inc'
-      - '**/CMakeLists.txt'
-      - 'CMakeLists.txt'
-      - 'build_arm64.py'
-      - '.github/workflows/android.yml'
+    paths-ignore:
+      - libraftpirates.so
 
 permissions:
   contents: write
@@ -61,8 +55,8 @@ jobs:
           set -euo pipefail
           git fetch origin main
           if [[ "$(git rev-parse origin/main)" != "$GITHUB_SHA" ]]; then
-            echo "Main changed during the build; refusing to publish a stale binary."
-            exit 1
+            echo "::notice::Main changed during the build. Artifact retained; the newer revision must publish its own binary."
+            exit 0
           fi
           cp out/lib/arm64-v8a/libraftpirates.so libraftpirates.so
           git add --force libraftpirates.so

@@ -1,3 +1,4 @@
+#include <cmath>
 #include "rp/RaftPirates.h"
 #include "rp/PortView.h"
 #include "rp/Transition.h"
@@ -180,15 +181,7 @@ namespace {
                 if (auto args = msg.payload.getSFSObj("p"))
                     rt.game.autoSafe = args->getBool("is_enabled", rt.game.autoSafe);
         } catch (...) {
-            rt.game.onlineBattle.sendFailed();
-            rt.game.gotMsgReenablePingSonar();
-            rt.game.daringAdvancePending = false;
-            rt.game.pending.reset();
-            rt.game.pendingMove.reset();
-            rt.game.pendingMap.reset();
-            rt.game.pendingZone.reset();
-            rt.game.pendingDiscovery.reset();
-            if(msg.payload.getString("c")=="dive_collect")rt.game.diveCollectPending=false;
+            rt.game.requestSendFailed(msg.payload.getString("c"));
             throw;
         }
         rt.status = "SENT " + msg.payload.getString("c");
@@ -691,7 +684,8 @@ namespace sys::platform::game {
 
     void touchDown(Services& platform, float x, float y) {
         guarded(platform, [&] {
-            if (!rt.initialized || rt.paused || rt.splash || (rt.transition&&rt.transition->blocksInput()))
+            if (!rt.initialized || rt.paused || !std::isfinite(x) || !std::isfinite(y) ||
+                rt.splash || (rt.transition&&rt.transition->blocksInput()))
                 return;
             if (rt.title) {
                 if (!rt.titlePresented)
@@ -720,7 +714,7 @@ namespace sys::platform::game {
 
     void touchUp(Services& platform, float x, float y) {
         guarded(platform, [&] {
-            if (!rt.initialized)
+            if (!rt.initialized || rt.paused || !std::isfinite(x) || !std::isfinite(y))
                 return;
             if (rt.splash) {
                 rt.splash->skip();
@@ -826,7 +820,8 @@ namespace sys::platform::game {
 
     void touchMove(Services& platform, float x, float y) {
         guarded(platform, [&] {
-            if (rt.splash || (rt.transition&&rt.transition->blocksInput()))
+            if (!rt.initialized || rt.paused || !std::isfinite(x) || !std::isfinite(y) ||
+                rt.splash || (rt.transition&&rt.transition->blocksInput()))
                 return;
             if (rt.title) {
                 rt.title->touchDrag(x * 640 / rt.width, y * 400 / rt.height);
@@ -852,12 +847,14 @@ namespace sys::platform::game {
 
     void touchState(Services& platform, const std::vector<float>& x, const std::vector<float>& y) {
         guarded(platform, [&] {
-            if(rt.transition&&rt.transition->blocksInput())return;
+            if (!rt.initialized || rt.paused || rt.width <= 0 || rt.height <= 0 ||
+                (rt.transition && rt.transition->blocksInput())) return;
             auto n = std::min({x.size(), y.size(), size_t(16)});
             sys::msg::MsgTouchState m;
             for (size_t i = 0; i < n; ++i)
-                if (x[i] >= 0 && y[i] >= 0)
-                    m.AddPoint(int(x[i] * 640 / rt.width), int(y[i] * 400 / rt.height), int(i));
+                if (std::isfinite(x[i]) && std::isfinite(y[i]) && x[i] >= 0 && y[i] >= 0 &&
+                    x[i] <= rt.width && y[i] <= rt.height)
+                    m.AddPoint(int(double(x[i]) * 640 / rt.width), int(double(y[i]) * 400 / rt.height), int(i));
             rt.engine.engineReceiver().SendGeneric(m);
         });
     }

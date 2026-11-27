@@ -107,7 +107,7 @@ namespace rp {
 
     std::optional<sfs::Message> BuildModeState::SendBonusMaterials(){
         const auto& dive=game_.diveState;
-        if(!game_.ready||!waiting_.empty()||game_.diveCollectPending||dive.parent<=0||dive.object<=0||dive.collected.empty())return {};
+        if(!game_.ready||!waiting_.empty()||game_.diveCollectPending||!dive.Diving()||dive.parent<=0||dive.object<=0||dive.collected.empty())return {};
         sfs::SFSObjectWrapper p;
         p.put("object_id",int32_t(dive.object));p.put("object_type",int32_t(1));p.put("parent_id",int32_t(dive.parent));
         auto bonus=std::make_shared<sfs::SFSArrayWrapper>();
