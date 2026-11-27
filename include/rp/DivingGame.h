@@ -95,7 +95,7 @@ namespace rp::diving_game {
         sys::gfx::AnimationRenderer renderer_;
         sys::res::ResourceAEAnim robot_;
         std::mt19937 rng_;
-        sys::gfx::GfxText label_;
+        sys::gfx::GfxText label_, timerLabel_;
 
         struct ItemFloater : DivingCollectable {
             ItemFloater(CollectableType, float x, float y);

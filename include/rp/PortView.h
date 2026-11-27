@@ -27,6 +27,7 @@ namespace rp {
         void touchDrag(float x, float y);
         void cancelInput();
         void purchaseCompleted(const Game&, bool success, int blueprint);
+        std::string takeNotice() { auto notice = std::move(notice_); notice_.clear(); return notice; }
 
         bool isDiving() const {
             return bool(diving_);
@@ -68,7 +69,7 @@ namespace rp {
         bool hudEnabled(const Game& game) const;
         MapView mapView_;
         int selectedQuest_ = 0;
-        std::string requestedStoreItem_;
+        std::string requestedStoreItem_, notice_;
         std::optional<int> mapInfoEnemy_;
         float worldTime_ = 0;
         bool scrollVertical_ = false;

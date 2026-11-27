@@ -574,6 +574,8 @@ namespace rp {
                 auto req = moving_ ? build.gotMsgMoveObjectRequest(placementParent_, *placement_)
                                    : build.gotMsgBuildConfirm(selectedBlueprint_, placementParent_,
                                                               *placement_);
+                if (!req)
+                    notice_ = "Cannot place object here. Select a free footprint or wait for construction.";
                 if (req) {
                     moving_ = false;
                     selectedBlueprint_ = selectedComponent_ = selectedParent_ = 0;
@@ -2200,6 +2202,7 @@ namespace rp {
                         }
                     }
                     if (!placement_) {
+                        notice_ = "No free space for this object. Make room or add a raft.";
                         g.status = "No free space for this object";
                         selectedBlueprint_ = 0;
                         return {};
@@ -2211,8 +2214,10 @@ namespace rp {
                     return {};
                 }
                 if (g.owned.count(item)) {
-                    g.status =
-                        "Cannot build: missing materials, invalid object or construction pending";
+                    notice_ = g.pending || g.pendingMove ? "Wait for the previous construction." :
+                        !RPMenuHandler(g).gotMsgHaveMaterialsRequest(item) ? "Not enough materials." :
+                        "This blueprint has no usable grid object.";
+                    g.status = notice_;
                     return {};
                 }
                 if (!g.owned.count(item))
@@ -2225,6 +2230,7 @@ namespace rp {
                             openXml(g, "purchase_confirm_dialog_tabbed");
                             return {};
                         }
+                notice_ = "Blueprint unavailable for purchase or insufficient currency.";
                 return {};
             }
             if (RPMenuHandler(g).canPurchase(item)) {
@@ -2232,6 +2238,8 @@ namespace rp {
                 confirmAction_ = "purchase";
                 panel_ = Panel::Confirm;
                 openXml(g, "purchase_confirm_dialog_tabbed");
+            } else {
+                notice_ = "Item unavailable for purchase or insufficient currency.";
             }
             return {};
         }
@@ -2304,9 +2312,17 @@ namespace rp {
                 return {};
             }
         }
-        // Native tab event scripts are consumed by this host; keep their navigation explicit.
+        // Tab numbering is menu-specific: in tabbed_menu_maps Tab5 is
+        // the selected maps tab and Tab6 opens gold, not diamonds.
+        if (xmlName_ == "tabbed_menu_maps" && name == "Tab5")
+            return {};
+        if (xmlName_ == "tabbed_menu_maps" && name == "Tab6") {
+            panel_ = Panel::Shop;
+            openXml(g, "tabbed_menu_gold");
+            return {};
+        }
         if (xmlName_.rfind("tabbed_menu_", 0) == 0 && name.size() == 4 &&
-            name.rfind("Tab", 0) == 0) {
+            name.rfind("Tab", 0) == 0 && xmlName_ != "tabbed_menu_maps") {
             static const char* menus[] = {"tabbed_menu_blueprints", "tabbed_menu_inventory",
                                           "tabbed_menu_misc",       "tabbed_menu_free",
                                           "tabbed_menu_gold",       "tabbed_menu_diamonds"};
@@ -2321,6 +2337,7 @@ namespace rp {
         static const std::regex push(R"rx(menu:pushPopUp\("(tabbed_menu_[a-z]+)"\))rx");
         std::smatch match;
         if (std::regex_search(script, match, push)) {
+            panel_ = match[1] == "tabbed_menu_maps" ? Panel::Travel : Panel::Shop;
             openXml(g, match[1]);
             return {};
         }

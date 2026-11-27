@@ -36,6 +36,8 @@ namespace rp::diving_game {
                         sys::gfx::ResourceSpriteFont::Create(root_, "rp_font_title")),
                     "", {});
         label_.SetScale(.65f, .65f);
+        timerLabel_.init(std::make_shared<sys::gfx::ResourceSpriteFont>(
+            sys::gfx::ResourceSpriteFont::Create(root_, "rp_font_title")), "", {});
         Reset();
     }
 
@@ -403,10 +405,16 @@ namespace rp::diving_game {
         AutoScaleText(&label_);
         label_.SetPos(298, 31);
         label_.Render(target);
-        label_.changeText(std::to_string(int(std::ceil(std::max(0.f, remaining_)))));
-        label_.SetScale(1.f, 1.f);
-        label_.SetPos(285, 276);
-        label_.Render(target);
+        // Native gotMsgUpdate uses FormatTime_Sec2Str; setPos centers the
+        // separate raster label and aligns it 4.5 px above the panel bottom.
+        const int seconds = int(std::max(0.f, remaining_));
+        auto two = [](int n) { return (n < 10 ? std::string("0") : std::string()) +
+                                      std::to_string(n); };
+        timerLabel_.changeText(two(seconds / 3600) + ":" + two(seconds / 60 % 60) +
+                               ":" + two(seconds % 60));
+        timerLabel_.SetPos(210.f + (220.f - timerLabel_.Width()) * .5f,
+                           22.f + 288.f - 4.5f - timerLabel_.Height());
+        timerLabel_.Render(target);
     }
 } // namespace rp::diving_game
 

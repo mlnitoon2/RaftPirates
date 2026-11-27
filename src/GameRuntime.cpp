@@ -185,6 +185,8 @@ namespace {
                     rt.game.autoSafe = args->getBool("is_enabled", rt.game.autoSafe);
         } catch (...) {
             rt.game.requestSendFailed(msg.payload.getString("c"));
+            if (rt.view && msg.payload.getString("c") == "purchase_item")
+                rt.view->purchaseCompleted(rt.game, false, 0);
             throw;
         }
         rt.status = "SENT " + msg.payload.getString("c");
@@ -833,6 +835,9 @@ namespace sys::platform::game {
             m.y = py;
             rt.engine.engineReceiver().SendGeneric(m);
             auto result = rt.view->touch(rt.game, px, py);
+            auto notice = rt.view->takeNotice();
+            if (!notice.empty())
+                platform.showPopup(notice);
             if (result) {
                 if (!rt.view->isDiving())
                     effect(platform, "audio/sfx/menu_button_down.wav");
@@ -1040,6 +1045,19 @@ namespace sys::platform::game {
                 return;
             }
             rt.status = rt.game.status;
+            if (command == "gs_error" && rt.view)
+                rt.view->purchaseCompleted(rt.game, false, 0);
+            if (command == "lib_go_data") {
+                for (const auto& row : rt.game.objects)
+                    if (row.second.name == "Pain Sprinkler" ||
+                        row.second.asset.find("pain_sprinkler") != std::string::npos) {
+                        std::string cells;
+                        for (const auto& c : row.second.cells)
+                            cells += " (" + std::to_string(c.x) + "," + std::to_string(c.y) + ")";
+                        platform.log("Pain Sprinkler object " + std::to_string(row.first) +
+                                     " server footprint:" + cells);
+                    }
+            }
             if (command == "purchase_response") {
                 const bool accepted = data.getBool("result");
                 platform.log(std::string("purchase_response result=") +
