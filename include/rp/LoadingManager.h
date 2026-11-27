@@ -19,8 +19,10 @@ namespace rp {
         bool assetExists(const char* path, const char* extension = "") const;
         void start();
         void cancel();
+        void reset();
         void update(float dt);
-        void setPercentage(float value);
+        // Native input is a fraction; percentage() exposes the displayed 0–100 value.
+        void setPercentage(float fraction);
 
         float percentage() const {
             return progress_;

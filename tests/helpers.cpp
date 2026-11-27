@@ -163,6 +163,26 @@ int main(int argc, char** argv) {
             layer.tick(.5f);
             CHECK(layer.tiles().front().y == -25.f);
         }
+        {
+            rp::LoadingManager loading(cache);
+            loading.setPercentage(.375f);
+            CHECK(loading.percentage() == 37);
+            loading.addXml("missing.xml");
+            loading.addXml("missing.xml");
+            CHECK(loading.total() == 1);
+            loading.start();
+            CHECK(loading.running() && loading.percentage() == 0);
+            loading.cancel();
+            CHECK(!loading.running() && loading.total() == 1);
+            loading.update(.016f);
+            CHECK(loading.completed() == 0);
+            loading.start();
+            loading.update(.016f);
+            CHECK(!loading.running() && loading.completed() == 1);
+            CHECK(loading.percentage() == 100 && loading.errors().size() == 1);
+            loading.reset();
+            CHECK(loading.total() == 0 && loading.percentage() == 0);
+        }
         if (argc == 2) {
             rp::LoadingManager loading(argv[1]);
             loading.addManifest("xml_bin/game_manifest.bin");
@@ -183,6 +203,8 @@ int main(int argc, char** argv) {
             for (const auto& e : loading.errors())
                 std::cout << e << '\n';
             loading.cancel();
+            CHECK(!loading.running() && loading.total() == 32);
+            loading.reset();
             CHECK(!loading.running() && loading.total() == 0);
             rp::MapView map;
             map.setMapFile(argv[1], "xml_resources/maps/map_big_blue.tmx");

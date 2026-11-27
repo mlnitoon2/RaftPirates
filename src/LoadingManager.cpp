@@ -62,10 +62,12 @@ namespace rp {
 
     void LoadingManager::enqueue(Kind kind, const std::string& path) {
         checked(path);
+        if (seen_.count({kind, path}))
+            return;
         if (jobs_.size() >= 10000)
             throw std::runtime_error("Manifest queue limit");
-        if (seen_.emplace(kind, path).second)
-            jobs_.push_back({kind, path});
+        seen_.emplace(kind, path);
+        jobs_.push_back({kind, path});
     }
 
     void LoadingManager::addXml(const std::string& path) {
@@ -170,17 +172,26 @@ namespace rp {
         cache_.acquire<sys::res::XmlNode>(path, [&] { return sys::res::loadXML(checked(path)); });
     }
 
-    void LoadingManager::setPercentage(float value) {
-        if (std::isfinite(value))
-            progress_ = std::clamp(value, 0.f, 100.f);
+    void LoadingManager::setPercentage(float fraction) {
+        if (std::isfinite(fraction))
+            progress_ = float(int(std::clamp(fraction, 0.f, 1.f) * 100.f));
     }
 
     void LoadingManager::start() {
-        running_ = cursor_ < jobs_.size();
-        setPercentage(jobs_.empty() ? 100.f : 100.f * cursor_ / jobs_.size());
+        if (running_)
+            return;
+        cursor_ = 0;
+        errors_.clear();
+        running_ = !jobs_.empty();
+        setPercentage(running_ ? 0.f : 1.f);
     }
 
     void LoadingManager::cancel() {
+        running_ = false;
+    }
+
+    void LoadingManager::reset() {
+        cancel();
         jobs_.clear();
         seen_.clear();
         errors_.clear();
@@ -227,7 +238,7 @@ namespace rp {
         } catch (const std::exception& e) {
             errors_.push_back(job.path + ": " + e.what());
         }
-        setPercentage(100.f * cursor_ / jobs_.size());
+        setPercentage(float(cursor_) / jobs_.size());
         running_ = cursor_ < jobs_.size();
     }
 } // namespace rp
