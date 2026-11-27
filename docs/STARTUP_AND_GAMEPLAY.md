@@ -81,3 +81,7 @@ The Android publisher strips nonessential symbols from the distribution copy and
 ## Map and quest regression pass
 
 The full 288x384 quest backing is placed at the left screen edge, not at a negative X coordinate. The zone picker renders the original map icons (using the atlas keys rather than the server map filenames), has independent hit testing, and sends zone_goto. The bottom-right travel button and bottom-left sonar button have distinct sprite and touch rectangles. Unhandled map touches reach world-map movement instead of the generic full-screen overlay. The optional original-asset HUD test checks the full quest frame, zone picker, travel acknowledgement and water-tile movement. The reconstructed server must maintain the current zone and use it to gate blueprint purchases.
+
+## Follow-up UI pass
+
+Quest frame and buttons use distinct foreground layers; map choices and tabs are above map backing; safety popup uses bounded text and a full-size background. Zero sonar charges now report a missing server resource rather than opening a shop in the development client (original XML opens the store). Admin HUD visibility is forced for this development reconstruction; server-side permissions remain unchanged. F11 toggles borderless fullscreen on desktop. Android presentation already fills the supplied GL surface; the APK activity controls the surface itself. Revision 1.5 particle source textures are omitted from static animation rendering; this is not a complete particle simulation.

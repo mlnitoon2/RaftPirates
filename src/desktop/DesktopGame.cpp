@@ -226,6 +226,10 @@ namespace {
                     }
                     continue;
                 }
+                if (event.type == HostEventType::KeyDown && event.code == SDLK_F11) {
+                    host_.toggleFullscreen();
+                    continue;
+                }
                 if (event.type == HostEventType::KeyDown && event.code == SDLK_ESCAPE)
                     return false;
                 if (event.type == HostEventType::PointerDown && !pointer_) {

@@ -1,5 +1,4 @@
 #include "rp/Hud.h"
-extern bool isCheatEnabled();
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
@@ -56,7 +55,7 @@ namespace rp {
         menu_.solve();
         // Bind normal HUD touch rectangles to the rendered icons.
         for (auto name : {"QuestMenu", "MainMenu", "PirateMap", "EventNotification", "DaringMeter",
-                          "SafeFlag", "BadZoneFlag"}) {
+                          "SafeFlag", "BadZoneFlag", "CheatMenu"}) {
             auto owner = menu_.find(normal_, name, true);
             if (!owner)
                 continue;
@@ -242,7 +241,7 @@ namespace rp {
     }
 
     void Hud::update(const Game& game) {
-        show("CheatMenu", isCheatEnabled());
+        show("CheatMenu", true); // Development build exposes the debug menu.
         show("SafeFlag", game.safe && !game.badZone);
         show("BadZoneFlag", game.badZone);
         auto set = [&](const char* owner, const char* component, const char* key, Property value) {
