@@ -70,6 +70,11 @@ Names newly implemented in source are listed here and removed from the provision
 - EnemyShipPoints explicit construction and lifetime; ItemFloater owns movement inside the existing diving game. No original minigame mechanics or graphics parity is claimed.
 - Pass 40 ARM64 build passed; Pass 41 uses the updated Hydra source.
 
+## Pass 42 engine dependency update
+
+- Pass 41 final ARM64 build 45930634598 passed and published. Hydra Pass 42 reaches 1263/1263 provisional source-name representations, including aliases and partial adapters; it does not reach full behavior or compiled-symbol equivalence. No new Raft Pirates method names were addressed in this engine-focused pass.
+- This commit triggers the ARM64 workflow against the current HydraLegacy main revision. Pass 42 build and runtime results are not established yet.
+
 ## Priority gaps
 
 - Original menu scripts: complete game/SWIG bindings, message dispatch, dynamic templates, tutorial and quest flows, all popups and transitions.
