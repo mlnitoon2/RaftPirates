@@ -66,6 +66,7 @@ namespace rp {
         std::optional<int> mapInfoEnemy_;
         float worldTime_ = 0;
         bool scrollVertical_ = false;
+        std::optional<float> lastScrollOffset_;
         std::map<std::string, std::shared_ptr<sys::gfx::Image>> tiles_;
         std::map<std::string, std::pair<std::shared_ptr<sys::res::ResourceSpriteSheet>,
                                         std::shared_ptr<sys::gfx::Image>>>

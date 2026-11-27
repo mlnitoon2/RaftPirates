@@ -98,6 +98,9 @@ int main(int argc, char** argv) {
         shop.touchDown(itemBounds.x + itemBounds.w/2, itemBounds.y + itemBounds.h/2);
         shop.touch(g, itemBounds.x + itemBounds.w/2, itemBounds.y + itemBounds.h/2);
         CHECK(shopMenu.isVisible(frame));
+        for(int tab=1;tab<=4;++tab)if(auto id=shopMenu.find(1,"Tab"+std::to_string(tab),true)){
+            const auto b=shopMenu.node(id).bounds;CHECK(b.x>=0&&b.y>=0&&b.x+b.w<=640&&b.h<=50);
+        }
         bounds = hud.bounds("QuestMenu");
         req = view.touch(g, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
         CHECK(req && req->payload.getString("c") == "gs_quest");

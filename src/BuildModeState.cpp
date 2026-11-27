@@ -21,8 +21,8 @@ namespace rp {
         if(!ocean_||!raft)return;
         auto* sprite=ocean_->getGridSprite(0,raft->id);
         if(!sprite)return;
-        if(grid&&!raft->Destroyed()&&!sprite->HasAccessorySprite(16))
-            sprite->AddAccessorySprite(std::make_unique<RaftGridSprite>(ocean_,sprite));
+        // OceanView draws the cell-aligned footprint grid; do not overlay a second, differently anchored grid.
+        if(grid)sprite->RemoveAccessorySprite(16);
         if(!sprite->HasAccessorySprite(6))
             sprite->AddAccessorySprite(std::make_unique<BattlePointsViewSprite>(ocean_,sprite,"",-1));
         for(const auto& c:raft->components)if(auto* part=ocean_->getGridSprite(raft->id,c.id))

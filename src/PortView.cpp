@@ -94,6 +94,8 @@ namespace rp {
         if (!xmlMenu_ || !swipe_)
             return;
         auto offset = xmlMenu_->scrollOffset(swipe_);
+        if(lastScrollOffset_ && *lastScrollOffset_==offset)return;
+        lastScrollOffset_=offset;
         for (auto [id, origin] : scrollOrigins_)
             xmlMenu_->node(id).set(scrollVertical_ ? "yOffset" : "xOffset", origin + offset);
         xmlMenu_->solve();
@@ -654,6 +656,8 @@ namespace rp {
         if (xmlName_ != name)
             shopSelection_ = 0;
         xmlMenu_ = std::make_unique<MenuRuntime>(root_);
+        xmlMenu_->reuseUnchangedLayout=true;
+        lastScrollOffset_.reset();
         xmlName_ = name;
         xmlItems_.clear();
         swipe_ = 0;
@@ -783,6 +787,15 @@ namespace rp {
                 for (auto n : {"PopupDialog", "TutorialArrow"})
                     show(n, false);
                 show("MapActionsIcon", g.mapActionMax > 0);
+                if(auto icon=m.find(1,"MapActionsIcon",true)){
+                    auto& n=m.node(icon);n.set("absoluteX",70.0);n.set("absoluteY",double(m.height()-42));n.set("width",170.0);n.set("height",38.0);
+                    auto place=[&](const char* name,float x,float y){if(auto id=m.find(icon,name)){auto& c=m.node(id);c.set("absoluteX",double(x));c.set("absoluteY",double(y));}};
+                    place("Sprite",70,m.height()-42);place("SpriteBarBG",100,m.height()-27);place("SpriteBarFG",100,m.height()-24);
+                    if(auto ball=m.find(icon,"SpriteBarBallBG"))m.node(ball).set("visible",false);
+                    place("TextRegenLimit",145,m.height()-27);place("TextMoveTimer",145,m.height()-45);
+                    if(auto label=m.find(icon,"TextMoveCount"))m.node(label).set("visible",false);
+                }
+                show("Discoveries",false);show("Zones",false);
                 if (auto e = m.find(1, "AutoSafeWater", true)) {
                     m.node(e).set("xOffset", -3.0);
                     if (auto icon = m.find(e, "Sprite"))
@@ -831,12 +844,16 @@ namespace rp {
                     // SlideInDialog's LEFT end position reveals one quarter of the viewport.
                     const float dialogWidth = m.node(dialog).bounds.w;
                     const float dialogHeight = m.node(dialog).bounds.h;
-                    m.node(dialog).set("absoluteX", double(m.width() / 4 - dialogWidth));
+                    // Keep the visible quest-book page and its buttons inside the viewport.
+                    m.node(dialog).set("absoluteX", 0.0);
+                    m.node(dialog).set("absoluteY", double(std::max(0.f,(m.height()-dialogHeight)*.5f)));
                     m.node(dialog).set("layer", std::string("HUD"));
                     if (auto sprite = m.find(dialog, "DialogSprite"))
                         m.node(sprite).set("hFlip", 1.0);
                     if (auto children = m.find(dialog, "children")) {
-                        m.node(children).set("width", double(dialogWidth));
+                        m.node(children).set("width", double(std::min(dialogWidth,m.width()*.25f)));
+                        m.node(children).set("absoluteX", 0.0);
+                        m.node(children).set("absoluteY", double(std::max(0.f,(m.height()-dialogHeight)*.5f)));
                         m.node(children).set("height", double(dialogHeight));
                         m.node(children).set("clipChildren", true);
                         m.solve();
@@ -844,11 +861,19 @@ namespace rp {
                         for (int quest : RPMenuHandler(g).gotMsgQuestInformationRequest()) {
                             auto el = m.find(children, "quest_" + std::to_string(quest), true);
                             if (!el) continue;
+                            m.node(el).set("xOffset", -8.0);
                             m.node(el).set("yOffset", double(y));
+                            m.node(el).set("priority", -4.0);
+                            if(auto touch=m.find(el,"Touch"))m.node(touch).set("priority",-5.0);
                             m.node(el).set("layer", std::string("HUD"));
                             y += m.node(el).bounds.h + 4;
                         }
                         m.solve();
+                        if(auto touch=m.find(dialog,"Touch")){
+                            m.node(touch).set("width",double(std::min(dialogWidth,m.width()*.25f)));
+                            m.node(touch).set("height",double(dialogHeight));
+                            m.node(touch).set("priority",10.0);
+                        }
                         if ((swipe_ = m.find(dialog, "Swiper"))) {
                             scrollVertical_ = true;
                             m.node(swipe_).set("direction", 1.0);
@@ -869,34 +894,38 @@ namespace rp {
                 show("Frame", false);
                 // Match MenuTab and MenuTabCurrency's original onInit/onPostSolve placement.
                 m.setLayerOrder("TABS", 3);
-                double x = 8;
-                for (int i = 1; i <= 4; ++i)
-                    if (auto id = m.find(1, "Tab" + std::to_string(i), true)) {
-                        m.node(id).set("xOffset", x);
-                        if (auto bg = m.find(id, "bg"))
-                            x += m.node(bg).number("width") + m.node(bg).number("leftWidth") +
-                                 m.node(bg).number("rightWidth") * .5;
-                        m.node(id).set("layer", std::string("TABS"));
+                // The original tab scripts apply dynamic positions after the initial solve.
+                // Reserve a compact strip above the scrolling list, without overlapping touch areas.
+                float listTop=m.height()*.75f;
+                if(auto background=m.find(1,"bgBluePrint",true))listTop=m.node(background).bounds.y;
+                listTop=std::clamp(listTop,m.height()*.65f,m.height()*.8f);
+                float left=8;
+                for(int i=1;i<=7;++i){
+                    auto id=m.find(1,"Tab"+std::to_string(i),true);if(!id)continue;
+                    const float width=i<=4?60.f:124.f;
+                    const float height=42.f;
+                    const float x=i<=4?left:m.width()-8.f-width*(7-i+1);
+                    if(i<=4)left+=width+2;
+                    auto& tab=m.node(id);
+                    tab.set("absoluteX",double(i>=5&&i<=6&&!m.find(1,"Tab7",true)?x+width:x));
+                    tab.set("absoluteY",double(listTop-height));tab.set("width",double(width));tab.set("height",double(height));
+                    tab.set("layer",std::string("TABS"));
+                    if(auto bg=m.find(id,"bg")){
+                        auto& n=m.node(bg);n.set("includeBorder",false);n.set("width",double(width));n.set("height",double(height));
                     }
-                x = m.width() - 4;
-                for (int i = 7; i >= 5; --i)
-                    if (auto id = m.find(1, "Tab" + std::to_string(i), true)) {
-                        m.node(id).set("absoluteX", x - m.node(id).bounds.w);
-                        m.node(id).set("layer", std::string("TABS"));
-                        x -= m.node(id).bounds.w + 2;
-                        if (auto label = m.find(id, "Text"))
-                            m.node(label).set(
-                                "text", std::to_string(g.numOfMaterialPossessed(i == 5 ? 4 : 11)));
+                    if(auto icon=m.find(id,"Icon")){
+                        auto& n=m.node(icon);n.set("relativeAnchorX",i<=4?.5:1.0);n.set("orientationAnchorX",i<=4?.5:1.0);n.set("xOffset",i<=4?0.0:-4.0);n.set("relativeAnchorY",.5);n.set("orientationAnchorY",.5);n.set("yOffset",0.0);
                     }
-                // Original game.setClipping("TABS",0,0,displaySizeX(),displaySizeY()*.75).
-                for (const auto& n : m.nodes())
-                    if (n.text("layer") == "TABS")
-                        m.node(n.id).set("clipScreenHeight", m.height() * .75);
+                    if(auto touch=m.find(id,"Touch")){auto& n=m.node(touch);n.set("width",double(width));n.set("height",double(height));}
+                    if(auto label=m.find(id,"Text"))m.node(label).set("text",std::to_string(g.numOfMaterialPossessed(i==5?4:11)));
+                }
                 if (auto list =
                         m.find(1, name == "tabbed_menu_misc" ? "itemListMisc" : "itemList", true))
                     if ((swipe_ = m.find(list, "Swiper"))) {
                         m.node(list).set("absoluteX", 0.0);
                         m.node(list).set("width", double(m.width()));
+                        m.node(list).set("absoluteY", double(listTop));
+                        m.node(list).set("height", double(m.height()-listTop));
                         m.node(list).set("layer", std::string("HUD"));
                         m.node(list).set("clipChildren", true);
                         if (auto touch = m.find(list, "Touch")) {
@@ -949,13 +978,14 @@ namespace rp {
                         set(element, "itemImage", "sheetName", b.sheet);
                         set(element, "itemImage", "visible", true);
                         set(element, "itemName", "text", strings_.getText(b.name()));
+                        set(element, "itemName", "size", .65);
                         set(element, "itemName", "visible", !g.owned.count(id));
                         set(element, "itemCost", "visible", false);
                         set(element, "currencyIcon", "visible", false);
                         set(element, "selectionOverlay", "visible", false);
                         if (!g.owned.count(id))
                             for (auto c : {"red", "green", "blue"})
-                                set(element, "itemImage", c, 0.0);
+                                set(element, "itemImage", c, .55);
                         else
                             for (auto c : {"red", "green", "blue"})
                                 set(element, "itemImage", c, 1.0);
@@ -1112,6 +1142,7 @@ namespace rp {
         if (name == "piratemap_menu") {
             if (auto icon = xmlMenu_->find(1, "MapActionsIcon", true)) {
                 xmlMenu_->node(icon).set("visible", g.mapActionMax > 0);
+                if(auto fill=xmlMenu_->find(icon,"SpriteBarFG"))xmlMenu_->node(fill).set("barFraction",g.mapActionMax>0?std::clamp(double(g.mapActions)/g.mapActionMax,0.0,1.0):0.0);
                 if (auto label = xmlMenu_->find(icon, "TextRegenLimit"))
                     xmlMenu_->node(label).set("text", std::to_string(g.mapActions));
                 if (auto label = xmlMenu_->find(icon, "TextMoveTimer")) {
@@ -1255,11 +1286,17 @@ namespace rp {
                     m.node(el).set("visible", false);
         }
         prop(frame, "itemTitle", "text", strings_.getText(title));
+        if(blueprint && !sheet.empty() && !image.empty())try{
+            auto atlas=ResourceSpriteSheet::Create(root_/"xml_resources"/std::filesystem::path(sheet).filename());
+            if(atlas.findSpriteByName(image+"_green"))image+="_green";
+        }catch(const std::exception&){}
         prop(frame, "itemImage", "sheetName", sheet);
         prop(frame, "itemImage", "spriteName", image);
         prop(frame, "itemImage", "visible", !image.empty());
         if (btn) {
             bool build = blueprint && g.owned.count(shopSelection_);
+            if(build){prop(btn,"UpSprite","spriteName",std::string("btn_long_green"));prop(btn,"DownSprite","spriteName",std::string("btn_long_green_over"));}
+            else{prop(btn,"UpSprite","spriteName",std::string("btn_long_blue"));prop(btn,"DownSprite","spriteName",std::string("btn_long_blue_over"));}
             prop(btn, "Text", "text", strings_.getText(build ? "BUILD" : "BUY_MENU_BUTTON_PREFIX"));
             prop(btn, "PriceText", "visible", !build && store);
             prop(btn, "currencySprite", "visible", !build && store);
@@ -1274,6 +1311,34 @@ namespace rp {
             if (auto el = m.find(1, key, true))
                 prop(el, "selectionOverlay", "visible", id == shopSelection_);
         m.solve();
+        if(blueprint && btn){
+            const auto b=m.node(frame).bounds;
+            auto place=[&](unsigned id,float x,float y,float w,float h){if(!id)return;auto& n=m.node(id);n.set("absoluteX",double(x));n.set("absoluteY",double(y));if(w>=0)n.set("width",double(w));if(h>=0)n.set("height",double(h));};
+            place(m.find(frame,"itemTitle"),b.x+8,b.y+5,b.w-16,20);
+            prop(frame,"itemTitle","alignment",1.0);prop(frame,"itemTitle","autoScale",true);
+            if(auto icon=m.find(frame,"itemImage")){
+                auto ib=m.node(icon).bounds;float factor=std::min(1.f,50.f/std::max(1.f,std::max(ib.w,ib.h)));
+                place(icon,b.x+(b.w-ib.w*factor)*.5f,b.y+24,ib.w*factor,ib.h*factor);
+            }
+            auto count=std::min<size_t>(4,g.blueprints.at(shopSelection_).recipe.size());
+            const float step=(b.w-20)/float(std::max<size_t>(1,count));
+            for(unsigned i=0;i<count;++i)if(auto material=m.find(frame,"Material"+std::to_string(i+1),true)){
+                const float x=b.x+10+step*i, y=b.y+b.h-76;
+                place(material,x,y,step,36);
+                if(auto icon=m.find(material,"ItemImage",true)){
+                    place(icon,x+(step-24)*.5f,y,24,24);
+                    if(auto sprite=m.find(icon,"Sprite"))place(sprite,x+(step-24)*.5f,y,24,24);
+                }
+                if(auto req=m.find(material,"MaterialReqs",true)){
+                    place(req,x,y+24,step,14);
+                    if(auto label=m.find(req,"Text")){place(label,x,y+24,step,14);auto& n=m.node(label);n.set("alignment",1.0);n.set("multiline",false);n.set("autoScale",true);n.set("size",.55);}
+                }
+            }
+            const auto bb=m.node(btn).bounds;
+            place(btn,b.x+(b.w-bb.w)*.5f,b.y+b.h-bb.h-5,-1,-1);
+            if(auto text=m.find(btn,"Text")){auto& n=m.node(text);n.set("relativeAnchorX",.5);n.set("orientationAnchorX",.5);n.set("xOffset",0.0);n.set("yOffset",0.0);}
+            m.solve();
+        }
     }
 
     std::optional<sfs::Message> PortView::xmlTouch(Game& g, float x, float y, unsigned captured) {

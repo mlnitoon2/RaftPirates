@@ -29,7 +29,9 @@ namespace rp {
         }
         if (parent_->Pieces()) {
             const auto& piece = (*parent_)[0].appearance;
-            text_.SetPos(piece.pos.x, piece.pos.y - 34.f);
+            const auto p=ocean_->WorldToScreen(parent_->worldPosition());
+            auto image=text_.renderedTexture();
+            text_.SetPos(p.x-(image?image->width*text_.scale.x*.5f:0.f),p.y-18.f);
         }
     }
     int BattlePointsViewSprite::submit(sys::gfx::GfxManager& manager,sys::gfx::AnimationRenderer&)const{
