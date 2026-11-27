@@ -241,7 +241,7 @@ namespace rp {
     }
 
     void Hud::update(const Game& game) {
-        show("CheatMenu", true); // Development build exposes the debug menu.
+        show("CheatMenu", admin_);
         show("SafeFlag", game.safe && !game.badZone);
         show("BadZoneFlag", game.badZone);
         auto set = [&](const char* owner, const char* component, const char* key, Property value) {

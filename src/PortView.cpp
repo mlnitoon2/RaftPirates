@@ -6,6 +6,7 @@
 #include "rp/BuildModeState.h"
 #include "rp/GridSprite.h"
 #include "sys/gfx/AssetImage.h"
+#include "sys/EngineConfig.h"
 #include <algorithm>
 #include <cmath>
 #include <cctype>
@@ -37,6 +38,13 @@ namespace rp {
             return zone;
         }
 
+        constexpr const char* cheatCommands[] = {
+            "fast_build", "get_lots_of_stuff", "clear_quests", "start_battle",
+            "repair_all", "attack_me", "all_blueprints", "loaded_dice", "unloaded_dice",
+            "log_out", "reset_everything", "ping_sonar", "player_dup"
+        };
+        constexpr size_t cheatCount = sizeof(cheatCommands) / sizeof(cheatCommands[0]);
+
         struct MapRect {
             int x, y, w, h;
         };
@@ -60,6 +68,10 @@ namespace rp {
         if (std::filesystem::exists(root_ / "menus/hud.xml")) {
             try {
                 hud_ = std::make_unique<Hud>(root_);
+                sys::EngineConfig properties;
+                properties.LoadProperties(root_ / "xml_resources/properties.xml");
+                admin_ = properties.GetPropertyAsBool("admin", false);
+                hud_->setAdmin(admin_);
             } catch (const std::exception&) { /* No substitute controls for missing assets. */
             }
         }
@@ -484,6 +496,26 @@ namespace rp {
     }
 
     std::optional<sfs::Message> PortView::touch(Game& g, float x, float y) {
+        if (panel_ == Panel::Admin) {
+            if (!admin_) { panel_ = Panel::None; xmlMenu_.reset(); return {}; }
+            if (y >= 320 && y <= 368 && x >= 414 && x <= 548) {
+                cheatPage_ = (cheatPage_ + (x < 480 ? cheatCount - 1 : 1)) % cheatCount;
+                openXml(g, "cheatmenu");
+                return {};
+            }
+            if (x >= 360 && x <= 612 && y >= 78 && y < 288) {
+                auto index = size_t((y - 78) / 75);
+                if (index < 3 && y - 78 - index * 75 < 60) {
+                    const std::string command = cheatCommands[(cheatPage_ + index) % cheatCount];
+                    // Local debug interface only; do not bypass server authorization.
+                    if (command == "ping_sonar") return g.pingSonar();
+                    notice_ = "Debug command " + command + " requires an authorized development server handler.";
+                    return {};
+                }
+            }
+            if (x < 340) { panel_ = Panel::None; xmlMenu_.reset(); }
+            return {};
+        }
         if (mapTap_) {
             auto start = *mapTap_;
             mapTap_.reset();
@@ -597,6 +629,8 @@ namespace rp {
             auto action = hud_->touch(x, y);
             switch (action) {
             case Hud::Action::Admin:
+                if (!admin_) return {};
+                cheatPage_ = 0;
                 panel_ = Panel::Admin;
                 openXml(g, "cheatmenu");
                 return {};
@@ -1042,7 +1076,55 @@ namespace rp {
                 if (auto id = m.find(1, name, true))
                     m.node(id).set("visible", visible);
             };
-            if (name == "daring_popup") {
+            if (name == "cheatmenu") {
+                if (!admin_) { xmlMenu_.reset(); return; }
+                m.setLayerOrder("AdminPanel", 10);
+                auto place = [&](unsigned id, float x, float y, float w, float h) {
+                    if (!id) return;
+                    auto& n = m.node(id);
+                    n.set("absoluteX", double(x)); n.set("absoluteY", double(y));
+                    n.set("width", double(w)); n.set("height", double(h));
+                    n.set("layer", std::string("AdminPanel"));
+                    n.set("visible", true);
+                };
+                if (auto dialog = m.find(1, "DialogPopup", true)) {
+                    place(dialog, 340, 8, 292, 384);
+                    place(m.find(dialog, "DialogSprite"), 340, 8, 292, 384);
+                    if (auto children = m.find(dialog, "children")) {
+                        place(children, 350, 12, 272, 376);
+                        auto title = m.find(children, "Title");
+                        place(title, 360, 22, 252, 40);
+                        if (title) m.node(title).set("text", std::string("Cheat Menu"));
+                        for (int i = 0; i < 3; ++i) {
+                            auto id = m.find(children, "Button" + std::to_string(i + 1));
+                            if (!id) continue;
+                            float y = 78.f + i * 75;
+                            place(id, 360, y, 252, 60);
+                            place(m.find(id, "bg"), 360, y, 252, 60);
+                            auto desc = m.find(id, "Description");
+                            place(desc, 370, y + 8, 232, 44);
+                            if (auto label = m.find(desc, "Text")) {
+                                place(label, 370, y + 8, 232, 44);
+                                auto& n = m.node(label);
+                                n.set("text", std::string(cheatCommands[(cheatPage_ + i) % cheatCount]));
+                                n.set("alignment", 1.0); n.set("verticalCenter", true);
+                                n.set("size", .7); n.set("autoScale", true);
+                                n.set("priority", -3.0);
+                            }
+                            place(m.find(id, "Touch"), 360, y, 252, 60);
+                        }
+                        for (auto arrow : {"UpArrow", "DownArrow"}) {
+                            float x = std::string(arrow) == "UpArrow" ? 414 : 500;
+                            auto id = m.find(children, arrow);
+                            place(id, x, 320, 48, 48);
+                            if (id) {
+                                place(m.find(id, "Sprite"), x, 320, 48, 48);
+                                place(m.find(id, "Touch"), x, 320, 48, 48);
+                            }
+                        }
+                    }
+                }
+            } else if (name == "daring_popup") {
                 std::string description = "DARING_METER_DESC";
                 bool locked = g.daringLocked();
                 if (g.safe)
@@ -1195,7 +1277,7 @@ namespace rp {
                             n.set("autoScale", true);
                         }
                     }
-                    place(m.find(popup, "BackSprite"), x - 24, y - 24, 24, 24);
+                    place(m.find(popup, "BackSprite"), x - 40, y - 10, 40, 40);
                 }
             } else if (name == "auto_safe_water_menu") {
                 for (const auto& entry : {std::make_pair("SafeDescrText", g.autoSafe),
@@ -1296,11 +1378,11 @@ namespace rp {
                     m.node(dialog).set("layer", std::string("HUD"));
                     if (auto sprite = m.find(dialog, "DialogSprite")) {
                         auto& n = m.node(sprite);
-                        n.set("hFlip", 1.0);
+                        n.set("hFlip", 0.0);
                         n.set("layer", std::string("QuestFrame"));
                         n.set("useOffsets", false);
                         n.set("visible", true);
-                        n.set("absoluteX", 0.0);
+                        n.set("absoluteX", 12.0);
                         n.set("absoluteY",
                               double(std::max(0.f, (m.height() - dialogHeight) * .5f)));
                         n.set("width", double(dialogWidth));
@@ -1581,6 +1663,18 @@ namespace rp {
                         set(element, "itemImage", "visible", true);
                         set(element, "itemNameSecondary", "text", strings_.getText(key));
                         set(element, "itemNameSecondary", "visible", true);
+                        set(element, "itemNameSecondary", "size", .7);
+                        set(element, "itemNameSecondary", "width", 122.0);
+                        set(element, "itemNameSecondary", "height", 30.0);
+                        set(element, "itemNameSecondary", "autoScale", true);
+                        set(element, "itemNameSecondary", "multiline", true);
+                        set(element, "itemNameSecondary", "clipText", true);
+                        set(element, "itemNameSecondary", "alignment", 1.0);
+                        set(element, "itemNameSecondary", "relativeAnchorX", .5);
+                        set(element, "itemNameSecondary", "orientationAnchorX", .5);
+                        set(element, "itemNameSecondary", "relativeAnchorY", 1.0);
+                        set(element, "itemNameSecondary", "orientationAnchorY", 1.0);
+                        set(element, "itemNameSecondary", "yOffset", -2.0);
                         set(element, "itemName", "visible", false);
                         set(element, "itemCost", "visible", false);
                         set(element, "currencyIcon", "visible", false);

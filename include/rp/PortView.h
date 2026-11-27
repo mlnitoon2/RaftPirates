@@ -114,6 +114,8 @@ namespace rp {
         std::map<std::string, sys::res::ResourceAEAnim> previewBins_;
         std::unique_ptr<sys::gfx::AnimationRenderer> previewRenderer_;
         bool soundEnabled_ = true;
+        bool admin_ = false;
+        size_t cheatPage_ = 0;
         std::string confirmAction_;
         unsigned swipe_ = 0;
         std::map<unsigned, double> scrollOrigins_;
