@@ -5,6 +5,7 @@
 
 namespace rp {
     MapView::EnemyShipPoints::EnemyShipPoints()=default;
+    MapView::EnemyShipPoints::EnemyShipPoints(const EnemyShipPoints&)=default;
     MapView::EnemyShipPoints::EnemyShipPoints(int i,int px,int py,std::string n,int bp,bool enemy)
         :id(i),x(px),y(py),name(std::move(n)),battlePoints(bp),nemesis(enemy){}
     MapView::EnemyShipPoints::~EnemyShipPoints()=default;

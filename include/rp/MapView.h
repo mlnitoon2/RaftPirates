@@ -56,6 +56,8 @@ namespace rp {
 
         struct EnemyShipPoints {
             EnemyShipPoints();
+            EnemyShipPoints(const EnemyShipPoints&);
+            EnemyShipPoints& operator=(const EnemyShipPoints&)=default;
             EnemyShipPoints(int id,int x=0,int y=0,std::string name={},int battlePoints=0,bool nemesis=false);
             ~EnemyShipPoints();
             int id = 0, x = 0, y = 0;

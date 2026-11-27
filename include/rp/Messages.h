@@ -37,6 +37,12 @@ namespace rp {
         StoreItem item;
     };
 
+    struct MsgTabbedItemScrollTo : MsgBase {
+        explicit MsgTabbedItemScrollTo(const std::string&);
+        ~MsgTabbedItemScrollTo() override;
+        std::string item;
+    };
+
     struct MsgAnimateGridSprite : MsgBase {
         ~MsgAnimateGridSprite() override;
         int parent = 0, id = 0; std::vector<std::string> animations;

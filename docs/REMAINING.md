@@ -60,6 +60,9 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Pass 41 source review
 
+- Original ARM32 RaftInfo constructor at 0x413180 reads type_id, battle_points, position_x, position_y (string addresses 0xa60afc, 0xa60468, 0xa60b04, 0xa60b10); the portable record preserves the four integer fields and order. MsgTabbedItemScrollTo at 0x4a05f4 copies a single string, now represented in the message record. Original menu scroll dispatch remains open. EnemyShipPoints additionally exposes the original named copy constructor (0x443244), using portable value semantics.
+- Binary inspection found the DiscoveryGridObject constructor calls setGridObjectData("barnacle_bills") and WaterBucketSprite::tick subtracts dt from a one-second phase and changes scale. These methods remain listed until the corresponding asset/runtime bindings are recovered.
+
 - Raft::Salvage checks eligibility only, preserving existing server-authoritative destruction request and core/connectivity checks. Ocean::initWithSFSObject consumes the supported gs_opponent player_object packet, integrated with battle startup; not a general ocean snapshot reconstruction.
 - Four message types hold existing Quest, StoreItem, purchase/progress fields; two retrieval adapters in RPMenuHandler. Native payload layout and dispatcher wiring remain unverified. The unknown dialog/scroll messages remain listed.
 
@@ -78,7 +81,7 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-351 names from the Pass 33 inventory now have named source implementations through Pass 41 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+354 names from the Pass 33 inventory now have named source implementations through Pass 41 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (29)
 
@@ -292,10 +295,6 @@ Names newly implemented in source are listed here and removed from the provision
 
 `MsgStartDialog`, `~MsgStartDialog`
 
-### `rp::MsgTabbedItemScrollTo` (2)
-
-`MsgTabbedItemScrollTo`, `~MsgTabbedItemScrollTo`
-
 ### `rp::RaftComponent` (1)
 
 `AddedToOcean`
@@ -311,10 +310,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::QuestTypeInfo` (1)
 
 `~QuestTypeInfo`
-
-### `rp::RaftInfo` (1)
-
-`RaftInfo`
 
 ### `rp::diving_game::DivingMaterial` (1)
 

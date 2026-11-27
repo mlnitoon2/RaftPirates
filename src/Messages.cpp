@@ -1,6 +1,8 @@
 #include "rp/Messages.h"
 
 namespace rp {
+    MsgTabbedItemScrollTo::MsgTabbedItemScrollTo(const std::string& value):item(value){}
+    MsgTabbedItemScrollTo::~MsgTabbedItemScrollTo()=default;
     MsgConfirmMaterialPurchaseInfo::MsgConfirmMaterialPurchaseInfo(int material,int count,int gold):materialId(material),amount(count),goldPrice(gold){}
     MsgConfirmMaterialPurchaseInfo::~MsgConfirmMaterialPurchaseInfo()=default;
     MsgQuestData::MsgQuestData(const Quest& value):quest(value){}
