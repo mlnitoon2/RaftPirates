@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:08b9c97c7dd95c0ee57ee69bb927532d$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_mcbarnacle.png" width="256" height="256">
+    <sprite n="mcbarnacle_bucket_robot_01" x="192" y="170" w="40" h="26" oX="27" oY="54" oW="74" oH="80"/>
+    <sprite n="mcbarnacle_bucket_robot_02" x="150" y="162" w="40" h="28" oX="27" oY="52" oW="74" oH="80"/>
+    <sprite n="mcbarnacle_bucket_robot_03" x="52" y="88" w="50" h="60" oX="22" oY="11" oW="74" oH="80"/>
+    <sprite n="mcbarnacle_bucket_robot_04" x="48" y="192" w="42" h="62" oX="29" oY="11" oW="74" oH="80"/>
+    <sprite n="mcbarnacle_bucket_robot_05" x="182" y="0" w="60" h="48" oX="14" oY="11" oW="74" oH="80"/>
+    <sprite n="mcbarnacle_bucket_robot_06" x="110" y="42" w="58" h="48" oX="16" oY="11" oW="74" oH="80"/>
+    <sprite n="mcbarnacle_bucket_water_01" x="52" y="150" w="22" h="34" oX="0" oY="8" oW="74" oH="80"/>
+    <sprite n="mcbarnacle_bucket_water_02" x="224" y="86" w="28" h="32" oX="1" oY="1" oW="74" oH="80"/>
+    <sprite n="mcbarnacle_bucket_water_03" x="224" y="50" w="30" h="34" oX="4" oY="0" oW="74" oH="80"/>
+    <sprite n="mcbarnacle_bucket_water_04" x="76" y="150" w="22" h="32" oX="12" oY="1" oW="74" oH="80"/>
+    <sprite n="mcbarnacle_bucket_water_05" x="234" y="170" w="20" h="28" oX="18" oY="4" oW="74" oH="80"/>
+    <sprite n="mcbarnacle_bucket_water_06" x="244" y="0" w="12" h="16" oX="24" oY="14" oW="74" oH="80"/>
+    <sprite n="mcbarnacle_sea" x="110" y="0" w="70" h="40"/>
+    <sprite n="mcbarnacle_sea_robot" x="170" y="50" w="52" h="62" oX="0" oY="0" oW="56" oH="62"/>
+    <sprite n="mcbarnacle_sea_robot_arm01" x="22" y="240" w="18" h="12" oX="35" oY="30" oW="56" oH="62"/>
+    <sprite n="mcbarnacle_sea_robot_arm02" x="0" y="240" w="20" h="12" oX="36" oY="32" oW="56" oH="62"/>
+    <sprite n="mcbarnacle_ship_01" x="0" y="0" w="108" h="86" oX="3" oY="34" oW="112" oH="120"/>
+    <sprite n="mcbarnacle_ship_02" x="0" y="88" w="50" h="78" oX="22" oY="3" oW="112" oH="120"/>
+    <sprite n="mcbarnacle_ship_03" x="0" y="168" w="46" h="70" oX="35" oY="25" oW="112" oH="120"/>
+    <sprite n="mcbarnacle_ship_04" x="154" y="114" w="48" h="46" oX="43" oY="52" oW="112" oH="120"/>
+    <sprite n="mcbarnacle_ship_05" x="104" y="92" w="48" h="48" oX="45" oY="50" oW="112" oH="120"/>
+    <sprite n="mcbarnacle_ship_06" x="204" y="120" w="44" h="48" oX="47" oY="50" oW="112" oH="120"/>
+    <sprite n="mcbarnacle_ship_07" x="104" y="142" w="44" h="48" oX="47" oY="50" oW="112" oH="120"/>
+</TextureAtlas>
