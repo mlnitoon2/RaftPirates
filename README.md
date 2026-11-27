@@ -1,35 +1,38 @@
 # Raft Pirates
 
-An unofficial C++ reconstruction of Raft Pirates for game preservation, built on [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy). Java code is not distributed here. The root `assets/` directory is staged automatically next to the desktop executable and bundled in Windows CI artifacts; the available collection remains incomplete.
+An unofficial reconstruction of **Raft Pirates**, an older mobile game from Big Blue Bubble and 6waves.
 
-## Build
+The goal is to make the game playable again and preserve its original gameplay, artwork, menus and mechanics. The client is being rebuilt in C++ using [HydraLegacy](https://github.com/mlnitoon2/HydraLegacy), a reconstruction of the engine that powered the original game.
 
-Clone HydraLegacy next to this repository. If the engine is private, use authorized access; CI uses the read-only `HYDRA_REPO_TOKEN` Actions secret.
+## About the game
 
-### Android
+Build and expand your raft, dive for materials and blueprints, explore the ocean, construct weapons and take part in pirate battles.
 
-Install Android SDK, NDK r28c, CMake 3.22.1 and Python 3.
+## Try the Windows build
 
-```sh
-python build_arm64.py --sdk /path/to/android-sdk
-```
+1. Open the [Windows build page](https://github.com/mlnitoon2/RaftPirates/actions/workflows/windows.yml) and select a successful build.
+2. Download the ZIP from its artifacts and extract it.
+3. Run `raftpirates_desktop.exe`.
 
-Output: `out/lib/arm64-v8a/libraftpirates.so`. The APK still needs its compatible Java classes and assets.
+A GitHub account may be needed to download build artifacts. Available original assets are included automatically in Windows packages. The asset collection is still incomplete, so additional files from your own original APK may be needed. A compatible game server is required for online gameplay.
 
-### Windows / Linux
+[Full Windows instructions](docs/DESKTOP.md)
 
-```sh
-python tools/prepare_assets.py /path/to/original.apk
-cmake -S . -B build -G Ninja -DRAFT_DESKTOP=ON -DHYDRA_FETCH_LUA=ON
-cmake --build build --target raftpirates_desktop
-```
+## Current progress
 
-See [desktop instructions](docs/DESKTOP.md) for dependencies and launching. Download the packaged Windows ZIP from Actions for a dependency-free install. Native HTTP, SmartFox TCP and audio are implemented; live server parity remains unverified.
+The client includes reconstructed startup, login, world loading, raft construction, diving, map navigation, shop and combat systems. These are at different stages of development; this is not a finished or fully playable release.
 
-## Status
+[Latest builds](https://github.com/mlnitoon2/RaftPirates/actions) · [Coverage](docs/COVERAGE.md) · [Remaining work](docs/REMAINING.md)
 
-Android startup, authentication, world loading, construction, map, diving, shop and combat are implemented to varying degrees; device/gameplay parity is incomplete. The original endpoint is configurable via local assets' `xml_resources/properties.xml`.
+## For developers
 
-[Coverage](docs/COVERAGE.md) · [Remaining work](docs/REMAINING.md) · [Networking](docs/STARTUP_AND_GAMEPLAY.md) · [Assets](docs/ASSETS.md) · [Tutorial](docs/TUTORIAL.md) · [Native evidence](docs/NATIVE_BEHAVIOR.md) · [CI](https://github.com/mlnitoon2/RaftPirates/actions)
+- [Desktop build instructions](docs/DESKTOP.md)
+- [Android and source builds](docs/BUILDING.md)
+- [Game startup and networking](docs/STARTUP_AND_GAMEPLAY.md)
+- [Asset information](docs/ASSETS.md)
+- [Tutorial reconstruction](docs/TUTORIAL.md)
+- [Original game behavior](docs/NATIVE_BEHAVIOR.md)
 
-Not the original source or a binary-equivalent replacement. No reconstruction license has been selected.
+## About the project
+
+This is an independent game preservation project, not an official release or the original source code. The client, assets and server compatibility are still being reconstructed. No reconstruction license has been selected.
