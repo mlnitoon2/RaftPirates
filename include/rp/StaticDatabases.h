@@ -8,6 +8,9 @@
 namespace rp {
     // Portable static-library caches. Cache files contain SFS objects, not the original XML format.
     struct MaterialInfo {
+        MaterialInfo() = default;
+        MaterialInfo(const MaterialInfo&);
+        MaterialInfo& operator=(const MaterialInfo&) = default;
         int id = 0;
         std::string name, sheet, image;
         std::optional<double> goldCost;

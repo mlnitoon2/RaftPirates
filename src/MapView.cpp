@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 namespace rp {
+    MapView::TreasureMapPoints::~TreasureMapPoints() = default;
     MapView::MapView() = default;
     MapView::~MapView() = default;
 
@@ -128,8 +129,8 @@ namespace rp {
         if (id <= 0 || !isValidIconLocation(float(x), float(y)))
             return;
         auto it = std::find_if(treasure_.begin(), treasure_.end(),
-                               [&](const TreasurePoint& p) { return p.id == id; });
-        TreasurePoint point{id, x, y, moves, maxMoves};
+                               [&](const TreasureMapPoints& p) { return p.id == id; });
+        TreasureMapPoints point{id, x, y, moves, maxMoves};
         if (it == treasure_.end())
             treasure_.push_back(point);
         else
@@ -142,14 +143,14 @@ namespace rp {
         if (a != x || b != y)
             return true;
         return std::any_of(treasure_.begin(), treasure_.end(),
-                           [&](const TreasurePoint& p) { return p.x == x && p.y == y; });
+                           [&](const TreasureMapPoints& p) { return p.x == x && p.y == y; });
     }
 
     void MapView::snapPlayerToTreasureMaps(float& x, float& y) const {
         if (!map_)
             return;
         float nearest = float(map_->tileWidth) * map_->tileWidth;
-        const TreasurePoint* best = nullptr;
+        const TreasureMapPoints* best = nullptr;
         for (const auto& p : treasure_) {
             float dx = p.x - x, dy = p.y - y, d = dx * dx + dy * dy;
             if (d < nearest) {

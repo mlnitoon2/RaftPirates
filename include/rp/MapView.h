@@ -97,11 +97,12 @@ namespace rp {
         std::optional<sys::res::TmxMap> map_;
         std::string path_;
 
-        struct TreasurePoint {
+        struct TreasureMapPoints {
             int id, x, y, moves, maxMoves;
+            ~TreasureMapPoints();
         };
 
-        std::vector<TreasurePoint> treasure_;
+        std::vector<TreasureMapPoints> treasure_;
         std::vector<EnemyShipPoints> enemies_;
         std::optional<EnemyShipPoints> boss_;
         sys::gfx::Vec2 player_{}, destination_{}, target_{};

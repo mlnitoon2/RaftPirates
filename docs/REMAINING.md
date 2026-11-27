@@ -22,6 +22,8 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Pass 37 source review
 
+- Recovered DiscoveryModeState's exact state name (`rp::DiscoveryMode`), made treasure-map point lifetime and MaterialInfo copy construction explicit, and reclassified five already implemented accessor names from the original inventory.
+
 - All 172 attached rp::Msg destructor names have portable source types (81 typed payload adapters, 49 no-argument event adapters, 42 opaque SFS payload holders). These are destructor/name-level additions, NOT original ABI or complete message dispatch. See docs/PASS37_MESSAGES.md.
 - Recovered original gs_quest_reward branches and added authoritative material/blueprint/fastclock/sonar updates, queued typed reward notices and native fallback dialogs. Map-action and treasure-map data still rely on normal server snapshots; original animated reward popup wiring remains open.
 - Remaining four debug handlers now reproduce observed request fields as opt-in loopback-only development request builders; not registered to live gameplay. No server authorization bypass is implemented.
@@ -43,7 +45,7 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-243 names from the Pass 33 inventory now have named source implementations through Pass 37 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+251 names from the Pass 33 inventory now have named source implementations through Pass 37 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (29)
 
@@ -341,21 +343,9 @@ Names newly implemented in source are listed here and removed from the provision
 
 `mapfile`, `name`
 
-### `rp::Blueprint` (1)
-
-`name`
-
 ### `rp::BlueprintInfo` (1)
 
 `~BlueprintInfo`
-
-### `rp::Discovery` (1)
-
-`name`
-
-### `rp::DiscoveryModeState` (1)
-
-`name`
 
 ### `rp::DoStuffExtraData` (1)
 
@@ -365,22 +355,6 @@ Names newly implemented in source are listed here and removed from the provision
 
 `~SpriteFootprint`
 
-### `rp::GridObjectsDB` (1)
-
-`getDataName`
-
-### `rp::MapView::TreasureMapPoints` (1)
-
-`~TreasureMapPoints`
-
-### `rp::Material` (1)
-
-`name`
-
-### `rp::MaterialInfo` (1)
-
-`MaterialInfo`
-
 ### `rp::Ocean` (1)
 
 `initWithSFSObject`
@@ -388,10 +362,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::PerimeterWallSprite::SpriteBalloon` (1)
 
 `~SpriteBalloon`
-
-### `rp::Player` (1)
-
-`getResourceFiles`
 
 ### `rp::QuestTypeInfo` (1)
 

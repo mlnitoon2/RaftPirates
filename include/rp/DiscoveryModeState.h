@@ -13,6 +13,7 @@ namespace rp {
         void GotMsgTransitionDone(Game& game);
         void HandleExtensionResponse(Game& game, const std::string& command,
                                      const sfs::SFSObjectWrapper& data);
+        const char* name() const;
         bool leaving() const;
         const std::string& title() const;
         void render(sys::gfx::Image& out);

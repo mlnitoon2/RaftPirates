@@ -49,6 +49,8 @@ namespace rp {
             leaving_ = true;
     }
 
+    const char* DiscoveryModeState::name() const { return "rp::DiscoveryMode"; }
+
     bool DiscoveryModeState::leaving() const {
         return leaving_;
     }
