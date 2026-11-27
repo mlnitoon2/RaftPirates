@@ -1,4 +1,4 @@
-# Pass 37 message inventory
+# Native message inventory
 
 All 172 originally listed message destructors are now represented by named C++ types in rp/Messages.h and out-of-line default destructors in Messages.cpp. The portable ABI is intentionally different from the original Ref/SWIG layouts. The default destructors release their owned standard-library or SFS values.
 

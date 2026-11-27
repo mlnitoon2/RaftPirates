@@ -1,10 +1,10 @@
-# Pass 23–24: multiplayer and boss battle transport
+# Multiplayer and boss battle transport
 
 `BattleModeState` now owns the reconstructed online path. The reconstruction-only `OnlineBattle` source files were removed. `Game::extension` forwards recognized packets, and the JNI send path uses the existing SmartFox Java SDK. `Ocean` keeps a separate opponent snapshot. Disconnect clears the online encounter and sonar state. Battle presentation loads the original encounter confirmation, positioning HUD, battle HUD, retreat confirmation and battle-over popup XML. The original action bindings are only partially reconstructed. No Offline Play or manual Connect option was reintroduced.
 
 ## Outgoing protocol evidence
 
-The following string references were read from ARM32 instructions in the original Raft Pirates 2013 ELF (SHA-256 in `MATCHING_STATUS.md`). Addresses are reference instruction addresses, not implementation addresses in this port. SFS message controller/action are unchanged from earlier passes.
+The following string references were read from ARM32 instructions in the original Raft Pirates 2013 ELF (SHA-256 in `MATCHING_STATUS.md`). Addresses are reference instruction addresses, not implementation addresses in this port. SFS message controller/action are documented in the transport implementation.
 
 | Command | Parameters | ARM32 references |
 |---|---|---|

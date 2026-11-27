@@ -1,4 +1,6 @@
-# Matching status
+# Historical compiled-symbol measurement
+
+This report is an archived baseline, not a measurement of the current main branch.
 
 Generated from defined function symbols. Name coverage is unique qualified method names, not source-code recovery or instruction matching. Overloads are grouped by name; signature overlap means at least one demangled signature overlaps. Neither metric establishes behavior or ABI equivalence. Binary matching is **not measured** (legacy ARM32 versus host build).
 

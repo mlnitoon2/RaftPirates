@@ -1,6 +1,6 @@
-# Pass 45: behavioral evidence
+# Native behavior evidence
 
-Static original ARM32 library comparison; no emulator differential.
+Historical static comparison against the original ARM32 library; implementation notes describe the revision reviewed, not necessarily the current code. No emulator differential.
 
 | Method / source | Original evidence | Reconstruction and limits |
 |---|---|---|
@@ -10,7 +10,7 @@ Static original ARM32 library comparison; no emulator differential.
 | GridSprite::SetMute | 0x5cd0cc skips diving unit | Portable flag and accessory forwarding; not full audio backend |
 | GridSprite::gotMsgAnimationStarted | 0x5cd014 calls a virtual function | Portable accessory notification only |
 | Barracks::SetConstructionInfo | 0x5398d8 sets remaining float; at zero calls factory | Retains fractional timer and type; factory creation missing |
-| Barracks::AddedToOcean | 0x539ab8 calls base and registers construction TempTick | Attachment flag only; remains in missing inventory |
+| Barracks::AddedToOcean | 0x539ab8 calls base and registers construction TempTick | Attachment flag only; requires further runtime verification |
 | PlacementSprite base Select and OkayToPlace | 0x5d763c and 0x5d7644 return false | Matches base return; actual item subclass validates through Game |
 | ExplosionFXSprite | 0x5b4874 tests raft/boss; 0x5b48a0 returns 1.5 / 0.5 | Recovered predicates and durations; original random spawn schedule not restored |
 | MapView::gotMsgHidePirateMap | 0x443240 tail calls hideMap | Direct adapter used in PortView |
