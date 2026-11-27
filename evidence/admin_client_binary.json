@@ -39,6 +39,12 @@
       "symbol": "gotMsgOnAdminMessage",
       "address": "0x49ff70",
       "observed": "message string at +8, virtual call slot 0x4c with flags 0 and 1"
+    },
+    {
+      "symbol": "gotMsgDebugGatherAllUsers",
+      "address": "0x4ad8ac",
+      "request": "gatherallusers",
+      "fields": []
     }
   ],
   "limitations": [

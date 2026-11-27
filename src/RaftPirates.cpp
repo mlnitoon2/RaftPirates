@@ -628,7 +628,7 @@ namespace rp {
     void RaftPirates::processExtension(const std::string& command,
                                        const sfs::SFSObjectWrapper& data) {
         if (command == "gs_player")
-            serverDevelopmentCommands_ = data.getBool("dev_admin", false);
+            serverDevelopmentCommands_ = false;
         if (command == "gs_quest_reward") {
             checkTutorialCompletion(data.getInt("questid"));
             acceptQuestReward(data);
@@ -639,6 +639,8 @@ namespace rp {
             gotMsgUpdateCurrency(data);
         else
             extension(command, data);
+        if (command == "gs_player")
+            serverDevelopmentCommands_ = data.getBool("dev_admin", false);
         if (command == "gs_quest")
             for (const auto& [id, quest] : quests)
                 if (quest.progress < 100)

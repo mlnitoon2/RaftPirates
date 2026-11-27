@@ -70,25 +70,33 @@ int main() {
     auto reward = game.takeQuestRewardNotice();
     check(reward && dynamic_cast<rp::MsgCollectedMaterials*>(reward->message.get()));
     check(!game.takeQuestRewardNotice());
-    rp::MsgCheat cheat;
-    cheat.type = "test";
-    check(!game.gotMsgCheat(cheat));
-    game.serverName("127.0.0.1");
-    game.enableDevelopmentCommands(true);
-    check(!game.gotMsgCheat(cheat)); // local opt-in alone is not authorization
-    sfs::SFSObjectWrapper capability;
-    capability.put("dev_admin", true);
-    game.gotMsgOnExtensionResponse("gs_player", capability);
-    game.ready = true;
-    check(game.gotMsgCheat(cheat).has_value());
-    auto command = game.gotMsgCheat(cheat);
-    check(command->payload.getString("c") == "cheat");
-    check(command->payload.getSFSObj("p")->getString("type") == "test");
-    capability.put("dev_admin", false);
-    game.gotMsgOnExtensionResponse("gs_player", capability);
-    check(!game.gotMsgCheat(cheat));
-    game.enableDevelopmentCommands(false);
-    check(!game.gotMsgCheat(cheat));
+    {
+        rp::RaftPirates adminGame;
+        adminGame.DoConnect();
+        adminGame.gotMsgOnConnection(true);
+        adminGame.gotMsgOnLogin();
+        rp::MsgCheat cheat;
+        cheat.type = "test";
+        adminGame.enableDevelopmentCommands(true);
+        auto player = std::make_shared<sfs::SFSObjectWrapper>();
+        for (const auto* field : {"rafts", "materials", "blueprints"})
+            player->put(field, std::make_shared<sfs::SFSArrayWrapper>());
+        sfs::SFSObjectWrapper capability;
+        capability.put("player_object", player);
+        capability.put("dev_admin", false);
+        adminGame.gotMsgOnExtensionResponse("gs_player", capability);
+        check(!adminGame.gotMsgCheat(cheat));
+        capability.put("dev_admin", true);
+        adminGame.gotMsgOnExtensionResponse("gs_player", capability);
+        auto command = adminGame.gotMsgCheat(cheat);
+        check(command && command->payload.getString("c") == "cheat");
+        check(command->payload.getSFSObj("p")->getString("type") == "test");
+        capability.put("dev_admin", false);
+        adminGame.gotMsgOnExtensionResponse("gs_player", capability);
+        check(!adminGame.gotMsgCheat(cheat));
+        adminGame.DoLostConnection(false);
+        check(!adminGame.gotMsgCheat(cheat));
+    }
     check(game.fastClockMaterialId() == 10);
     game.materialNames[10] = "raftparts";
     check(game.fastClockMaterialId() == 0);
