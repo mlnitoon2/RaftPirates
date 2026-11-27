@@ -1,0 +1,38 @@
+<menu>
+	<element name="bg">
+		<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+		<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="15" />
+		<ninesliceComponent name="Sprite">
+			<event name="onInit" params="component, element" >
+				component("spriteName"):Set("gfx/menu/menu_overlay")
+				component("width"):SetFloat( screenWidth() );
+				component("height"):SetFloat( screenHeight() );
+				component("layer"):SetString("HUD");
+			</event>
+		</ninesliceComponent>
+		<touchComponent>
+			<size dependentOnElement="element:name()"/>
+			<event name="onTouchUp" params="component, element">
+				menu:popPopUp()
+			</event>
+		</touchComponent>
+	</element>	
+	
+	
+	<element name="PopupBox">
+		<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+		<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="15" />
+		<spriteComponent name="Sprite">
+			<event name="onInit" params="component, element">
+				component("spriteName"):Set("gfx/placeholder/menu/description_popup")
+				component("layer"):SetString("HUD");
+			</event>
+		</spriteComponent>
+		<touchComponent>
+			<size dependentOnElement="element:name()"/>
+			<!-- block tapping on the popup to make the screen disappear, as per GDD -->
+		</touchComponent>
+	</element>
+</menu>

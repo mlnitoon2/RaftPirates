@@ -1,0 +1,43 @@
+<template>
+	<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+	<spriteComponent name="Sprite">
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("$tutorial")
+			component:GetVar("visible"):SetInt(0)
+		</event>
+	</spriteComponent>	
+	
+	<soundComponent name="Sound">
+		<event name="onInit" params="component, element">
+			component:GetVar("soundName"):Set("audio/sfx/zpop.wav")
+		</event>
+	</soundComponent>
+	
+	<event name="onInit" params="component, element">
+		element("active"):SetInt(0)
+		element:GetVar("time"):SetFloat(-1)
+		element:GetVar("hidden"):SetInt(0)
+		element:GetVar("fired"):SetInt(0)
+	</event>			
+	<event name="onTick" params="component, element">
+		if(element:GetVar("time"):GetFloat() >= 0) then
+			element:GetVar("time"):SetFloat(element:GetVar("time"):GetFloat() + dt)
+			local x = element:GetVar("time"):GetFloat()
+			local power = math.pow(x, 2)
+			local scale = (math.sin(x*2*3.14/0.5))/power/32 + 1
+			element:GetComponent("Sprite"):GetVar("size"):SetFloat(scale)
+		end
+	</event>		
+	<function name="FireTutorial">
+		element:GetVar("time"):SetFloat(0)
+		element:GetVar("fired"):SetInt(1)
+		element:GetComponent("Sprite"):GetVar("visible"):SetInt(1)
+		element("active"):SetInt(1)
+		element["Sound"]:DoFunction("Play")
+	</function>
+	<function name="HideTutorial">
+		element:GetVar("hidden"):SetInt(1)
+		element:GetComponent("Sprite"):GetVar("visible"):SetInt(0)
+		element("active"):SetInt(0)
+	</function>	
+</template>	

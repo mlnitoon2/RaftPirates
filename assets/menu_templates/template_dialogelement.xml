@@ -1,0 +1,34 @@
+<template>
+	<position relativeTo="PARENT" vAnchor="TOP" hAnchor="HCENTER" />
+	<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0"/>
+	<size dependentOnElement="element:name()" dependentOnComponent="BG"/>
+	
+	<ninesliceComponent name="BG" >
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="1" />
+		<size w="480" h="90"/>
+		
+		<event name="onInit" params="component, element" >
+			component("topHeight"):SetFloat( 11 );
+			component("bottomHeight"):SetFloat( 18 );
+			component("leftWidth"):SetFloat( 23 );
+			component("rightWidth"):SetFloat( 13 );
+		</event>
+	</ninesliceComponent>
+	
+	<textComponent name="Text" >
+		<position relativeTo="PARENT" vAnchor="TOP" hAnchor="LEFT" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="0" priority="0" />
+		<size dependentOnElement="component:parent():name()" dependentOnComponent="BG"/>
+		
+		<event name="onInit" params="component, element" >
+			component("font"):Set("font_calibri_20")
+			component("size"):SetFloat( 1.0 );
+		</event>
+	</textComponent>
+	
+	<spriteComponent name="Padding">
+		<orientation vAnchor="TOP" hAnchor="VCENTER" xOffset="0" yOffset="28" priority="0" />
+	</spriteComponent>
+	
+</template>

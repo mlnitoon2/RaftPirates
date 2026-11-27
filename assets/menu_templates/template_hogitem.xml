@@ -1,0 +1,41 @@
+<template>
+	<position relativeTo="PARENT" vAnchor="TOP" hAnchor="HCENTER" />
+	<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0"/>
+	<size dependentOnElement="element:name()" dependentOnComponent="ItemBG" />
+	
+	<!-- Bad, using for initial position -->
+	<spriteComponent name="Positioner">
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="7" priority="5" />
+	</spriteComponent>
+	
+	<spriteComponent name="Spacer">
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="-4" priority="5" />
+	</spriteComponent>
+	
+	<ninesliceComponent name="ItemBG" >
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="5" />
+		<size w="140" h="18" />
+		
+		<event name="onInit" params="component, element" >
+			component("topHeight"):SetFloat( 9 );
+			component("bottomHeight"):SetFloat( 7 );
+			component("leftWidth"):SetFloat( 9 );
+			component("rightWidth"):SetFloat( 9 );
+			component("spriteName"):Set("gfx/hogItemHUD/HUD_Item_Holder");
+		</event>
+		
+	</ninesliceComponent>
+	
+	<textComponent name="ItemLabel" >
+		<position relativeTo="PARENT" vAnchor="LEFT" hAnchor="LEFT" />
+		<orientation vAnchor="LEFT" hAnchor="LEFT" xOffset="0" yOffset="0" priority="0" />
+		<size w="140" h="100" />
+		
+		<event name="onInit" params="component, element" >
+			component("font"):Set("font_calibri_20")
+			component("size"):SetFloat( 0.8 );
+		</event>
+	</textComponent>
+	
+</template>

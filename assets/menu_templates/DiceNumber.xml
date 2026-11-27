@@ -1,0 +1,65 @@
+<template>
+	<defaultTemplateVar name="$image" equals="dice_sm_green00" />
+	<defaultTemplateVar name="$blank" equals="dice_sm_blank" />
+	<defaultTemplateVar name="$sheet" equals="rp_menu" />
+	<defaultTemplateVar name="$number" equals="0" />
+	<size dependentOnElement="element:name()" dependentOnComponent="UpSprite" />
+	<event name="onInit" params="element">
+		element("highlighted"):SetInt(0)
+	</event>
+	
+	<event name="greyOut" params="element">
+		element("highlighted"):SetInt(0)
+		element["UpSprite"]:DoStoredScript("greyOut")
+	</event>
+	
+	<event name="ungreyOut" params="element">
+		element("highlighted"):SetInt(1)
+		element["UpSprite"]:DoStoredScript("ungreyOut")
+	</event>
+	
+	<function name="hide" params="element">
+		element["UpSprite"]("visible"):SetInt(0)
+	</function>
+	
+	<function name="show" params="element">
+		element["UpSprite"]("visible"):SetInt(1)
+	</function>
+	
+	<function name="blank" params="element">
+		element["UpSprite"]:DoStoredScript("blank")
+	</function>
+	
+	<function name="unblank" params="element">
+		element["UpSprite"]:DoStoredScript("unblank")
+	</function>
+
+	<spriteSheetComponent name="UpSprite">
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("$image"..$number)	
+			component:GetVar("sheetName"):SetString("xml_resources/$sheet.xml")
+			component:GetVar("visible"):SetInt(1)
+			component:GetVar("layer"):Set("HUD")
+		</event>
+
+		<event name="greyOut" params="component, element">
+			component("red"):SetFloat(0.5)
+			component("green"):SetFloat(0.5)
+			component("blue"):SetFloat(0.5)
+		</event>
+		
+		<event name="ungreyOut" params="component, element">
+			component("red"):SetFloat(1.0)
+			component("green"):SetFloat(1.0)
+			component("blue"):SetFloat(1.0)
+		</event>
+		
+		<event name="blank" params="component, element">
+			component:GetVar("spriteName"):Set("$blank")	
+		</event>
+		
+		<event name="unblank" params="component, element">
+			component:GetVar("spriteName"):Set("$image"..$number)	
+		</event>
+	</spriteSheetComponent>
+</template>

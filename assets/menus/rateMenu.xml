@@ -1,0 +1,44 @@
+<menu>	
+	<element name="TopElement">
+		<element name="Overlay">
+			<position relativeTo="PARENT" vAnchor="TOP" hAnchor="LEFT" />
+			<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="0" priority="150" />
+			<size dependentOnElement="element:name()" dependentOnComponent="blackout"/>
+				
+			<spriteComponent name="blackout">
+				<position relativeTo="PARENT" vAnchor="TOP" hAnchor="LEFT" />
+				<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="0" priority="10" />
+			
+				<event name="onInit" params="component, element">
+					component("spriteName"):Set("gfx/black_bg")
+					component("size"):SetFloat( 3.2 )
+					component("alpha"):SetFloat( 0.66 )
+					component("visible"):SetInt( 0 )
+				</event>
+			</spriteComponent>
+			
+			<spriteComponent name="bg">
+				<position relativeTo="PARENT" vAnchor="TOP" hAnchor="LEFT" />
+				<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="0" priority="5" />
+			</spriteComponent>
+			
+			<touchComponent name="Touch">
+				<size dependentOnElement="element:name()"/>
+			</touchComponent>
+		</element>
+		<template type="template_modal_window" name="RateGame" >
+			<event name="onTick" params="element, time" >
+				onTick(element, time)
+			</event>
+			
+			<event name="onWindowOpen" params="element" >
+				element:parent():GetElement("Overlay"):GetComponent("blackout")("visible"):SetInt( 0 )
+			</event>
+			
+			<event name="onWindowClose" params="element" >
+				element:parent():GetElement("Overlay"):GetComponent("blackout")("visible"):SetInt( 0 )
+				lua_sys.resumeGame()
+			</event>
+		</template>	
+	</element>
+</menu>

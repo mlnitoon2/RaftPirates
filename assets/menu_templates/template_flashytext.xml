@@ -1,0 +1,44 @@
+<template>
+	<size dependentOnElement="element:name()" dependentOnComponent="Text" />
+	<textComponent name="Text">	
+		<position relativeTo="element:name()" component="" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="97" />		
+		<event name="onInit" params="component, element">
+			component:GetVar("alignment"):SetInt(16)
+			component:GetVar("font"):Set("$font")
+			component:GetVar("text"):Set("$text")
+			component:GetVar("size"):SetFloat($scale)
+		</event>
+	</textComponent>
+	<event name="onInit" params="component, element">
+		element:GetVar("active"):SetInt(0)
+		element:GetVar("time"):SetFloat(0.0)
+	</event>			
+	<event name="onTick" params="component, element">
+		if (element:GetComponent("Text"):GetVar("visible"):GetInt() > 0) then
+			local totalTimeLength = 0.75
+			local curTime = element:GetVar("time")
+			local time = curTime:GetFloat()
+			curTime:SetFloat(time  + dt)
+			time = curTime:GetFloat()
+			while(time > totalTimeLength) do
+				curTime:SetFloat(time - totalTimeLength)
+				time = curTime:GetFloat()
+			end
+			if (time > 0) then
+				if (time > totalTimeLength/2) then
+					local t = (time - totalTimeLength/2)/(totalTimeLength/2)
+					menu:SetElementComponentVarFloat(element:name(), "Text", "red", 1.0)
+					menu:SetElementComponentVarFloat(element:name(), "Text", "green", 1.0 - t)
+					menu:SetElementComponentVarFloat(element:name(), "Text", "blue", 1.0 - t)
+				else
+					local t = (time)/(totalTimeLength/2)
+					menu:SetElementComponentVarFloat(element:name(), "Text", "red", 1.0)
+					menu:SetElementComponentVarFloat(element:name(), "Text", "green", t)
+					menu:SetElementComponentVarFloat(element:name(), "Text", "blue", 0)
+				end
+			end
+		end
+		
+	</event>	
+</template>
