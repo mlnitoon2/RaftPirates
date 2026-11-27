@@ -1,0 +1,113 @@
+<menu>
+	<element name="topElement">
+		<size dependentOnElement="element:name()"/>
+		
+		<element name="bg">
+			<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+			<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="16" />
+			<ninesliceComponent name="Sprite">
+				<event name="onInit" params="component, element" >
+					component("spriteName"):Set("gfx/menu/menu_overlay")
+					component("width"):SetFloat( screenWidth() );
+					component("height"):SetFloat( screenHeight() );
+					component("layer"):SetString("PIRATE_MAP_HUD");
+				</event>
+			</ninesliceComponent>
+			<touchComponent name="Touch">
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">
+				</event>
+			</touchComponent>
+		</element>
+		
+		<element name="Dialog">
+		
+			<element name="bg">
+				<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+				<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="-screenHeight()*0.15" priority="2" />
+				<ninesliceComponent name="Sprite">
+					<event name="onInit" params="component, element">
+						
+						component("width"):SetFloat( screenWidth()*0.66 );
+						component("height"):SetFloat( component("width"):GetFloat() * 0.32 );
+						
+						component("topHeight"):SetFloat( 16 );
+						component("bottomHeight"):SetFloat( 16 );
+						component("leftWidth"):SetFloat( 16 );
+						component("rightWidth"):SetFloat( 16);
+						
+						component("spriteName"):Set("gfx/menu/popup_bg")
+						
+						component("layer"):SetString("PIRATE_MAP_HUD")
+					</event>
+				</ninesliceComponent>
+			</element>
+			
+			<template type="HudButton" name="No">
+				<templateVar name="$image" equals="btn_red" />
+				<templateVar name="$sheet" equals="rp_menu" />
+				<size dependentOnElement="element:name()" dependentOnComponent="UpSprite" />
+				<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="BOTTOM" hAnchor="HCENTER" />
+				<orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="0" yOffset="-8" priority="-1" />
+				<spriteSheetComponent name="Sprite">
+					<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+					<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+					<event name="onInit" params="component, element" >
+						component("spriteName"):Set("btn_no")
+						component("sheetName"):Set("xml_resources/rp_menu.xml")
+						component("layer"):SetString("PIRATE_MAP_HUD");
+						
+						element["UpSprite"]("useOffsets"):SetInt(1)
+						element["DownSprite"]("useOffsets"):SetInt(1)
+
+						element["UpSprite"]("layer"):SetString("PIRATE_MAP_HUD")
+						element["DownSprite"]("layer"):SetString("PIRATE_MAP_HUD")
+					</event>
+				</spriteSheetComponent>
+				<touchComponent name="Touch">
+					<size dependentOnElement="element:name()"/>
+					<event name="onTouchUp" params="component, element">
+						onTouchUp(component, element)
+						menu:popPopUp();
+						</event>
+				</touchComponent>
+			</template>	
+			
+			<element name="Face">
+				<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+				<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="TOP" hAnchor="RIGHT" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="10" yOffset="0" priority="-1" />
+				<spriteSheetComponent name="Sprite">
+					<event name="onInit" params="component, element" >
+						component("spriteName"):Set("popup_reward_material")
+						component("sheetName"):Set("xml_resources/rp_menu.xml")
+						component("layer"):SetString("PIRATE_MAP_HUD");
+					</event>
+				</spriteSheetComponent>
+			</element>
+			<element name="ConfirmText">
+				<size dependentOnElement="element:name()" dependentOnComponent="Text" />
+				<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="TOP" hAnchor="HCENTER" />
+				<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-2" />
+				<textComponent name="Text" >
+				<size w="screenWidth()*0.5" h="screenHeight()*0.19" />
+					<event name="onInit" params="component, element" >
+						component("font"):Set("blue_highway")
+						component("size"):Set(1.0)
+						component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+
+						component("red"):SetFloat(1.0)
+						component("green"):SetFloat(1.0)
+						component("blue"):SetFloat(1.0)
+
+						component("text"):SetString("BUILD_LIMIT_REACHED")
+
+						component("layer"):SetString("PIRATE_MAP_HUD");
+					</event>
+				</textComponent>			
+			</element>
+		</element>
+	</element>
+</menu>

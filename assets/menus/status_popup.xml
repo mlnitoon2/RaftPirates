@@ -1,0 +1,106 @@
+<menu>
+
+	<element name="topElement">
+
+		<size dependentOnElement="element:name()"/>
+		<position relativeTo="SCREEN" vAnchor="TOP" hAnchor="LEFT" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="0" priority="50" />
+		
+		<event name="onInit" params="element">
+		  <![CDATA[				 
+				element:SetupGenericListener(game.engineReceiver(),  "rp::MsgSetupStatusPopup", "gotMsgSetupStatusPopup")	
+			]]>
+		</event>
+
+		<event name="gotMsgSetupStatusPopup" params="element, msg">
+		  <![CDATA[
+			
+				element["Text"]("text"):SetString(msg.message)
+				
+				element["bg"]["Sprite"]("height"):SetFloat(  element["Text"]("height"):GetInt() + element["OK"]["UpSprite"]("height"):GetInt() + 6)
+				
+			]]>
+		</event>
+
+				
+		<element name="bg">
+			<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+			<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="5" />
+			<ninesliceComponent name="Sprite">
+				<event name="onInit" params="component, element">
+					component("width"):SetFloat( screenWidth()*0.66 );
+					component("height"):SetFloat( screenHeight() /5 );
+					component("topHeight"):SetFloat( 16 );
+					component("bottomHeight"):SetFloat( 16 );
+					component("leftWidth"):SetFloat( 16 );
+					component("rightWidth"):SetFloat( 16);
+					component("spriteName"):Set("gfx/menu/popup_bg")
+					component("layer"):SetString("LOADING")
+				</event>
+			</ninesliceComponent>
+		</element>
+		
+		<textComponent name="Text" >
+			<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="CENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="0" yOffset="-8" priority="-1" />
+			<size w="screenWidth()/20*10" h="0" />
+			
+			<event name="onInit" params="component, element" >
+				component("font"):Set("blue_highway")
+				component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+				
+				component("red"):SetFloat(1.0)
+				component("green"):SetFloat(1.0)
+				component("blue"):SetFloat(1.0)
+				
+				component("text"):SetString("")
+				component("layer"):SetString("LOADING");				
+			</event>
+									
+		</textComponent>
+				
+		
+		<template type="HudButton" name="OK">
+			<position relativeTo="element:parent()[&quot;Text&quot;]" vAnchor="BOTTOM" hAnchor="HCENTER" />
+			<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="screenHeight()/32" priority="0" />
+			
+			<templateVar name="$image" equals="btn_long_green" />
+			<templateVar name="$sheet" equals="rp_menu" />
+			
+			<event name="onPostInit" params="element">
+					element["UpSprite"]("layer"):SetString("LOADING");
+					element["DownSprite"]("layer"):SetString("LOADING");
+				
+			</event>
+
+			<textComponent name="Text" >
+				<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+				<event name="onInit" params="component, element" >
+					component("font"):Set("rp_font_title")
+					component("size"):Set(1.0)
+					component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+					
+					component("red"):SetFloat(1.0)
+					component("green"):SetFloat(1.0)
+					component("blue"):SetFloat(1.0)
+					
+					component("text"):SetString("OK")
+					
+					component("layer"):SetString("LOADING");
+				</event>
+			</textComponent>
+			
+			<touchComponent name="Touch">
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">
+					onTouchUp(component, element)
+					menu:popPopUp()
+				</event>
+			</touchComponent>
+		</template>	
+		
+	</element>
+  
+</menu>

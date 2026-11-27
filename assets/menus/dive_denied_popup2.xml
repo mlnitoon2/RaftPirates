@@ -1,0 +1,102 @@
+<menu>
+	<element name="diveDeniedPopupTopElement">
+				
+		<element name="bg">
+			<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+			<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="6" />
+			<ninesliceComponent name="Sprite">
+				<event name="onInit" params="component, element" >
+					component("spriteName"):Set("gfx/menu/menu_overlay")
+					component("width"):SetFloat( screenWidth() );
+					component("height"):SetFloat( screenHeight() );
+					component("layer"):SetString("HUD");
+				</event>
+			</ninesliceComponent>
+			<touchComponent name="Touch">
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">					
+					element:parent():GetElement("DialogPopup")["children"]["AnimatedContainer"]:DoStoredScript("hide")					
+				</event>
+			</touchComponent>
+		</element>	
+
+		<element name="DialogPopup">
+			<element name="children">
+				<size dependentOnElement="element:name()" />
+				
+				<template type="AnimatedContainer" name="AnimatedContainer">
+					<templateVar name="$layer" equals="HUD" />
+					<templateVar name="$width" equals="screenWidth()/5*4" />
+					<templateVar name="$height" equals="screenHeight()/4.35" />
+					<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+					<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="5" />
+					<event name="onDoneHide" params="element">
+						menu:popPopUp()
+					</event>
+				</template>
+				
+				<textComponent name="Text" >
+					<position relativeTo="element[&quot;AnimatedContainer&quot;]" vAnchor="TOP" hAnchor="HCENTER" />
+					<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+					<event name="onInit" params="component, element" >
+						component("font"):Set("rp_font_title")
+						component("size"):Set(1.0)
+						component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+						
+						component("red"):SetFloat(1.0)
+						component("green"):SetFloat(1.0)
+						component("blue"):SetFloat(1.0)
+						
+						component("autoScale"):SetInt(1)
+						
+						component("text"):SetString("BUILD_DIVE_BROKEN")
+						
+						component("layer"):SetString("PIRATE_MAP_HUD_CLIPPED");
+					</event>
+					<event name="onPostInit" params="component, element" >
+						component:setSize(Vector2(element["AnimatedContainer"]("targetWidth"):GetFloat(), 0))
+					</event>
+				</textComponent>
+				
+				<template type="HudButton" name="Continue">
+					<templateVar name="$image" equals="btn_long_green" />
+					<templateVar name="$sheet" equals="rp_menu" />
+					<position relativeTo="element:parent()[&quot;AnimatedContainer&quot;]" vAnchor="BOTTOM" hAnchor="HCENTER" />
+					<orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="0" yOffset="16" priority="-1" />
+					<event name="onPostInit" params="element">
+						element["UpSprite"]("layer"):SetString("PIRATE_MAP_HUD_CLIPPED");
+						element["DownSprite"]("layer"):SetString("PIRATE_MAP_HUD_CLIPPED");
+						
+						element("yOffset"):SetInt(element("yOffset"):GetInt()-element["UpSprite"]("height"):GetInt()/3)
+					</event>
+					
+					<textComponent name="ContinueText" >
+						<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+						<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+						<event name="onInit" params="component, element" >
+							component("font"):Set("rp_font_title")
+							component("size"):Set(1.0)
+							component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+							
+							component("red"):SetFloat(1.0)
+							component("green"):SetFloat(1.0)
+							component("blue"):SetFloat(1.0)
+							
+							component("text"):SetString("CONTINUE")
+							
+							component("layer"):SetString("PIRATE_MAP_HUD_CLIPPED");
+						</event>
+					</textComponent>
+					<touchComponent name="Touch">
+						<size dependentOnElement="element:name()"/>
+						<event name="onTouchUp" params="component, element">
+							onTouchUp(component, element)
+							element:parent():parent():GetElement("AnimatedContainer"):DoStoredScript("hide")
+						</event>
+					</touchComponent>
+				</template>
+			</element>
+		</element>
+	</element>
+</menu>

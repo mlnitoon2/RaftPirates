@@ -1,0 +1,149 @@
+<template name="tempName">
+	<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+	<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+	<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="5" />
+	<spriteComponent name="Sprite">
+		<event name="onInit" params="component, element">
+			if lua_game.gameType() == lua_game.TigressJumpMenu then	
+				component:GetVar("spriteName"):Set("gfx/fireworksracing/panda_menu_bg")
+				component:GetVar("spriteName"):Set("gfx/common/logo_black_vertical")
+			elseif lua_game.gameType() == lua_game.JumpKickTrainingMenu then
+				component:GetVar("spriteName"):Set("gfx/common/logo_black_vertical")
+			elseif lua_game.gameType() == lua_game.FireworksRacingMenu then
+				component:GetVar("spriteName"):Set("gfx/common/logo_black_horizontal")
+			elseif lua_game.gameType() == lua_game.MantisCraneMenu then
+				component:GetVar("spriteName"):Set("gfx/common/logo_black_horizontal")
+			elseif lua_game.gameType() == lua_game.RiverBoatJumpMenu then
+				component:GetVar("spriteName"):Set("gfx/common/logo_black_horizontal")
+			end
+			component:GetVar("alpha"):SetFloat(0.5)
+			component:GetVar("visible"):SetInt(0)
+		</event>
+	</spriteComponent>
+	<touchComponent name="bgTouch">
+		<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+		<position component="Sprite" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />		
+		<event name="onTouchUp" params="component, element">
+
+		</event>
+		<event name="onInit" params="component, element">
+			component:GetVar("enabled"):SetInt(0)
+		</event>
+	</touchComponent>
+	
+	<animSpriteComponent name="dialogSprite">
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("MENU_CONFIRM_BG")
+			component:GetVar("visible"):SetInt(0)
+			component:GetVar("frame"):SetInt(0)
+		</event>
+	</animSpriteComponent>
+	<textComponent name="Text">
+		<position relativeTo="dialogSprite" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="-40" priority="-2" />
+		<event name="onInit" params="component, element">
+			component:GetVar("font"):Set(lua_game.getTextFont())
+			component:GetVar("alignment"):SetInt(16)
+			component:GetVar("text"):Set("$dialogText")
+			component:GetVar("visible"):SetInt(0)
+		</event>
+	</textComponent>
+	
+	<animSpriteComponent name="yesSprite">	
+		<position relativeTo="dialogSprite" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="-75" yOffset="50" priority="-3" />		
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("BUTTON_YES")
+			component:GetVar("frame"):SetInt(0)
+			component:GetVar("visible"):SetInt(0)
+		</event>
+	</animSpriteComponent>
+	<touchComponent name="yesTouch">
+		<size dependentOnElement="element:name()" dependentOnComponent="yesSprite" />
+		<position component="yesSprite" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="-75" yOffset="50" priority="-1" />	
+		<event name="onInit" params="component, element">
+			component:GetVar("enabled"):SetInt(0)
+		</event>
+		<event name="onTouchDown" params="component, element">
+			element:GetComponent("yesSprite"):GetVar("frame"):SetInt(1)
+		</event>
+		<event name="onTouchUp" params="component, element">
+			element:DoStoredScript("playSFX")
+			element:GetComponent("yesSprite"):GetVar("frame"):SetInt(0)
+			element:DoStoredScript("fnHideDialog")
+		</event>
+		<event name="onTouchRelease" params="component, element">
+			element:GetComponent("yesSprite"):GetVar("frame"):SetInt(0)
+		</event>			
+	</touchComponent>
+	<soundComponent name="Sound">
+		<event name="onInit" params="component, element">
+			component:GetVar("soundName"):Set("audio/sfx/Battle_Begin.wav")
+		</event>
+	</soundComponent>	
+	
+	<animSpriteComponent name="noSprite">	
+		<position relativeTo="dialogSprite" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="75" yOffset="50" priority="-3" />		
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("BUTTON_NO")
+			component:GetVar("frame"):SetInt(0)
+			component:GetVar("visible"):SetInt(0)
+		</event>
+	</animSpriteComponent>
+	<touchComponent name="noTouch">	
+		<size dependentOnElement="element:name()" dependentOnComponent="noSprite" />
+		<position component="noSprite" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="75" yOffset="50" priority="-1" />	
+		<event name="onInit" params="component, element">
+			component:GetVar("enabled"):SetInt(0)
+		</event>
+		<event name="onTouchDown" params="component, element">
+			element:GetComponent("noSprite"):GetVar("frame"):SetInt(1)
+		</event>
+		<event name="onTouchUp" params="component, element">
+			element:DoStoredScript("playSFX")
+			element:GetComponent("noSprite"):GetVar("frame"):SetInt(0)
+			element:DoStoredScript("fnHideDialog")
+		</event>
+		<event name="onTouchRelease" params="component, element">
+			element:GetComponent("noSprite"):GetVar("frame"):SetInt(0)
+		</event>			
+	</touchComponent>
+	<soundComponent name="Sound">
+		<event name="onInit" params="component, element">
+			component:GetVar("soundName"):Set("audio/sfx/Battle_Begin.wav")
+		</event>
+	</soundComponent>	
+	
+	
+	
+
+	<function name="playSFX">
+		lua_sys.playSoundFx("$sfx")
+	</function>
+	<function name="fnShowDialog">
+		element:GetComponent("Sprite"):GetVar("visible"):SetInt(1)
+		element:GetComponent("dialogSprite"):GetVar("visible"):SetInt(1)
+		element:GetComponent("Text"):GetVar("visible"):SetInt(1)
+		element:GetComponent("yesSprite"):GetVar("visible"):SetInt(1)
+		element:GetComponent("noSprite"):GetVar("visible"):SetInt(1)
+		element:GetComponent("noTouch"):GetVar("enabled"):SetInt(1)
+		element:GetComponent("yesTouch"):GetVar("enabled"):SetInt(1)
+		element:GetComponent("bgTouch"):GetVar("enabled"):SetInt(1)
+	</function>
+	<function name="fnHideDialog">
+		element:GetComponent("Sprite"):GetVar("visible"):SetInt(0)
+		element:GetComponent("dialogSprite"):GetVar("visible"):SetInt(0)
+		element:GetComponent("Text"):GetVar("visible"):SetInt(0)
+		element:GetComponent("yesSprite"):GetVar("visible"):SetInt(0)
+		element:GetComponent("noSprite"):GetVar("visible"):SetInt(0)
+		element:GetComponent("noTouch"):GetVar("enabled"):SetInt(0)
+		element:GetComponent("yesTouch"):GetVar("enabled"):SetInt(0)
+		element:GetComponent("bgTouch"):GetVar("enabled"):SetInt(0)
+	</function>	
+</template>	

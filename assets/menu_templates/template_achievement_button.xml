@@ -1,0 +1,108 @@
+<template>
+	<defaultTemplateVar name="$topY" equals="220.0" />
+	<defaultTemplateVar name="$bottomY" equals="560.0" />
+	<defaultTemplateVar name="$moveDist" equals="75.0" />
+	
+	<position relativeTo="SCREEN" vAnchor="TOP" hAnchor="LEFT" />
+	<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+	<size dependentOnElement="element:name()" dependentOnComponent="bg"/>
+	
+	<event name="onPostSolve" params="element" >
+		element:DoStoredScript("onPositionChanged")
+	</event>
+	
+	<event name="shiftUp" params="element" >
+		local y = element:absY()
+		y = y + $moveDist
+		
+		element:setPosition( lua_sys.Vector2( element:absX(), y ) )
+	</event>
+	
+	<event name="shiftDown" params="element" >
+		local y = element:absY()
+		y = y - $moveDist
+		
+		element:setPosition( lua_sys.Vector2( element:absX(), y ) )
+	</event>
+	
+	<event name="onPositionChanged" params="element" >
+		local y = element:absY()
+			
+		if( y &gt; $bottomY or y &lt; $topY ) then
+			element:GetElement("bg"):DoStoredScript("onDisable")
+			element:GetComponent("achievementImage")( "visible" ):SetInt( 0 )
+			element:GetComponent("facebookImage")( "visible" ):SetInt( 0 )
+			element:GetComponent("title")( "visible" ):SetInt( 0 )
+		else
+			element:GetElement("bg"):DoStoredScript("onEnable")
+			element:GetComponent("achievementImage")( "visible" ):SetInt( 1 )
+			if( lua_sys.isAchievementOnFacebook( element:GetComponent("title")( "text" ):GetString() ) ) then
+				element:GetComponent("facebookImage")( "visible" ):SetInt( 1 )
+			end
+			element:GetComponent("title")( "visible" ):SetInt( 1 )
+		end
+	</event>
+	
+	<template type="template_button" name="bg">
+		<position relativeTo="PARENT" vAnchor="LEFT" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="25" />
+			
+		<templateVar name="$imageUp" equals="[[gfx/menu/Achievement_holder]]" />
+		<templateVar name="$imageDown" equals="[[gfx/menu/Achievement_holder]]" />
+		
+		<touchComponent name="Touch">
+			<size dependentOnElement="element:name()"/>
+			<event name="onTouchUp" params="component, element">
+				lua_sys.pushAchievementPopup( "$titleText" )
+				onTouchUp( component, element )
+			</event>
+			
+			<event name="onTouchDown" params="component, element, x, y">
+				onTouchDown(component, element)
+			</event>
+		</touchComponent>
+	</template>
+	
+	<spriteComponent name="achievementImage" >
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="LEFT" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="-150" yOffset="-37" priority="24" />
+		
+		<event name="onInit" params="component, element" >
+			if ( lua_sys.isAchievementUnlocked( "$titleText" ) ) then
+				component("spriteName"):Set("$completeImageName")
+			else
+				component("spriteName"):Set("$incompleteImageName")
+			end
+		</event>
+	</spriteComponent>
+	
+	<spriteComponent name="facebookImage" >
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="LEFT" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="-170" yOffset="0" priority="24" />
+		
+		<event name="onInit" params="component, element" >
+			component("spriteName"):SetString("gfx/facebook")
+			component("size"):SetFloat( 0.6 )
+			if( lua_sys.isAchievementOnFacebook( element:GetComponent("title")( "text" ):GetString() ) ) then
+				component("visible"):SetInt( 1 )
+			else
+				component("visible"):SetInt( 0 )
+			end
+		</event>
+	</spriteComponent>
+	
+	<textComponent name="title" >
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="50" yOffset="-20" priority="20" />
+		
+		<event name="onInit" params="component, element" >
+			component("font"):SetString("$f")
+			component("text"):SetString("$titleText")
+			component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+								
+			component("red"):SetFloat(0.31)
+			component("green"):SetFloat(0.80)
+			component("blue"):SetFloat(0.93)
+		</event>
+	</textComponent>
+</template>

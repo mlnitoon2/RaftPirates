@@ -1,0 +1,112 @@
+<template name="template_menutab">
+
+	<defaultTemplateVar name="$label" equals="0" />
+	<defaultTemplateVar name="$spriteName" equals="'shop_tab_gold'" />
+	<defaultTemplateVar name="$sheetName" equals="'xml_resources/rp_menu.xml'" />
+	<defaultTemplateVar name="$tabWidth" equals="screenWidth()*0.19" />
+	<defaultTemplateVar name="$tabHeight" equals="screenHeight()*0.22" />
+	<defaultTemplateVar name="$currencyId" equals="4" />
+	<defaultTemplateVar name="$layer" equals="'TABS'" />
+	<defaultTemplateVar name="$touchHeight" equals="50" />
+	
+	<size dependentOnElement="element:name()" dependentOnComponent="bg" />
+	
+	<ninesliceComponent name="bg">
+		<event name="onInit" params="component, element">
+				
+				component("includeBorder"):SetInt(1)
+				
+				component("width"):SetFloat( $tabWidth );
+				component("height"):SetFloat( $tabHeight );
+				
+				component("topHeight"):SetFloat( 16 );
+				component("bottomHeight"):SetFloat( 16 );
+				component("leftWidth"):SetFloat( 16 );
+				component("rightWidth"):SetFloat( 16);
+				
+				component("spriteName"):Set("gfx/menu/popup_bg")
+				
+				component("layer"):SetString("$layer")
+				
+				
+			</event>
+	</ninesliceComponent>
+	
+	<spriteSheetComponent name="Icon">
+		<position relativeTo="element:name()" vAnchor="TOP" hAnchor="RIGHT" />
+		<orientation vAnchor="TOP" hAnchor="RIGHT" xOffset="8" yOffset="3" priorityOffset="-1" />
+		<event name="onInit" params="component, element">
+			component("spriteName"):SetString("$spriteName")
+			component("sheetName"):SetString("$sheetName")
+			component("layer"):SetString("$layer")
+		</event>
+	</spriteSheetComponent>
+	
+	<textComponent name="Text">
+		<size w="screenWidth()*0.07" />
+		<position relativeTo="element:name()" component="Icon" vAnchor="VCENTER" hAnchor="LEFT" />
+		<orientation vAnchor="VCENTER" hAnchor="RIGHT" xOffset="3" yOffset="0" priorityOffset="0" />
+		<event name="onInit" params="component, element">
+			component("multiline"):SetInt(0)
+			component("font"):Set("blue_highway")	
+			component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+			
+			component("red"):SetFloat(1.0)
+			component("green"):SetFloat(1.0)
+			component("blue"):SetFloat(1.0)
+			
+			component("autoScale"):SetInt(1)
+			
+			component("layer"):SetString("TABS")
+		</event>
+	</textComponent>
+	
+	<touchComponent name="Touch">
+		<size w="90" h="50" />
+		<position relativeTo="element:name()" vAnchor="TOP" hAnchor="LEFT" />
+		<orientation vAnchor="TOP" hAnchor="LEFT" xOffset="0" yOffset="0" priorityOffset="0" />
+		<event name="onInit" params="component, element">
+			--[[print("tab touched")]]
+			component:setSize(Vector2(90, $touchHeight ))
+			component("layer"):SetString("$layer")
+		</event>
+	</touchComponent>
+		
+	<!--<textComponent name="Label">
+		<position relativeTo="element:name()" vAnchor="TOP" hAnchor="HCENTER" />
+		<orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="0" yOffset="0" priorityOffset="0" />
+		<event name="onInit" params="component, element">
+			component("font"):Set("rp_font_title")	
+			component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_LEFT_ALIGNED)
+			
+			component("text"):SetString("$label")
+			
+			component("red"):SetFloat(1.0)
+			component("green"):SetFloat(1.0)
+			component("blue"):SetFloat(1.0)
+			
+			component("layer"):SetString("TABS")
+		</event>
+	</textComponent>-->
+	
+	<event name="onInit" params="element">
+		<![CDATA[
+		--[[print("start init")]]
+		element:SetupGenericListener(game.engineReceiver(), "rp::MsgUpdateCurrency", "updateCurrency")
+		element:SetupGenericListener(element:GetReceiver(), "rp::MsgSpecificMaterialAvailAmountResponse", "gotMaterialAmount")
+
+		game.engineReceiver():Send( game.MsgSpecificMaterialAvailAmountRequest(element:GetReceiver(), $currencyId) )
+		--[[print("end init")]]
+		]]>
+	</event>
+	
+	<event name="updateCurrency" params="element, msg">
+		game.engineReceiver():Send( game.MsgSpecificMaterialAvailAmountRequest(element:GetReceiver(), $currencyId) )
+	</event>
+	
+	<event name="gotMaterialAmount" params="element, msg">
+		--[[print("gotMaterialAmount")]]
+		element["Text"]("text"):SetString(msg.materialAmount)
+	</event>
+	
+</template>

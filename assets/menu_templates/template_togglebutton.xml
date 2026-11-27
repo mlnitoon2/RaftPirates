@@ -1,0 +1,185 @@
+<template>
+	<defaultTemplateVar name="$cacheImages" equals="0" />
+	
+	<defaultTemplateVar name="$fontName" equals="'font_calibri_20'" />
+	<defaultTemplateVar name="$fontScale" equals="1.0" />
+	<defaultTemplateVar name="$text" equals="" />
+	
+	<defaultTemplateVar name="$downR" equals="255" />
+	<defaultTemplateVar name="$downG" equals="255" />
+	<defaultTemplateVar name="$downB" equals="255" />
+	<defaultTemplateVar name="$downA" equals="255" />
+	
+	<defaultTemplateVar name="$upR" equals="255" />
+	<defaultTemplateVar name="$upG" equals="255" />
+	<defaultTemplateVar name="$upB" equals="255" />
+	<defaultTemplateVar name="$upA" equals="255" />
+	
+	<defaultTemplateVar name="$disabledR" equals="255" />
+	<defaultTemplateVar name="$disabledG" equals="255" />
+	<defaultTemplateVar name="$disabledB" equals="255" />
+	<defaultTemplateVar name="$disabledA" equals="255" />
+	
+	<defaultTemplateVar name="$imageDisabled" equals="" />
+			
+	<size dependentOnElement="element:name()" dependentOnComponent="SpriteUp" />
+	
+	<event name="onInit" params="element" >
+		element("enabled"):SetInt(1)
+		element("toggle"):SetInt(0)
+	</event>
+	
+	<event name="onPostInit" params="element" >
+		element:DoStoredScript( "onUpEvent" )
+	</event>
+	
+	<event name="onUpEvent" params="element">
+		element:GetComponent("Label")("red"):SetFloat( $upR / 255.0 )
+		element:GetComponent("Label")("green"):SetFloat( $upG / 255.0 )
+		element:GetComponent("Label")("blue"):SetFloat( $upB / 255.0 )
+		element:GetComponent("Label")("alpha"):SetFloat( $upA / 255.0 )
+		
+		element:GetComponent("SpriteUp")("visible"):SetInt(1)
+		element:GetComponent("SpriteDown")("visible"):SetInt(0)
+	</event>
+	
+	<event name="onDownEvent" params="element">
+		element:GetComponent("Label")("red"):SetFloat( $downR / 255.0 )
+		element:GetComponent("Label")("green"):SetFloat( $downG / 255.0 )
+		element:GetComponent("Label")("blue"):SetFloat( $downB / 255.0 )
+		element:GetComponent("Label")("alpha"):SetFloat( $downA / 255.0 )
+		
+		element:GetComponent("SpriteUp")("visible"):SetInt(0)
+		element:GetComponent("SpriteDown")("visible"):SetInt(1)
+	</event>
+	
+	<event name="onEnable" params="element">
+		element("enabled"):SetInt(1)
+		element:GetComponent("SpriteUp")("visible"):SetInt(1)
+		element:GetComponent("SpriteDown")("visible"):SetInt(0)
+		element:GetComponent("SpriteDisabled")("visible"):SetInt(0)
+	</event>
+	
+	<event name="onDisable" params="element">
+		element("enabled"):SetInt(0)
+		element:GetComponent("Touch")("downInside"):SetInt(0)
+		element:GetComponent("SpriteUp")("visible"):SetInt(0)
+		element:GetComponent("SpriteDown")("visible"):SetInt(0)
+		element:GetComponent("SpriteDisabled")("visible"):SetInt(1)
+		
+		element:GetComponent("Label")("red"):SetFloat( $disabledR / 255.0 )
+		element:GetComponent("Label")("green"):SetFloat( $disabledG / 255.0 )
+		element:GetComponent("Label")("blue"):SetFloat( $disabledB / 255.0 )
+		element:GetComponent("Label")("alpha"):SetFloat( $disabledA / 255.0 )
+	</event>
+	
+	<event name="onToggle" params="element">
+		if ( element("enabled"):GetInt() == 0 ) then
+			return
+		end
+		
+		if ( element("toggle"):GetInt() ~= 0 ) then
+			element:DoStoredScript( "onUpEvent" )
+			element("toggle"):SetInt(0)
+		else
+			element:DoStoredScript( "onDownEvent" )
+			element("toggle"):SetInt(1)
+		end
+	</event>
+	
+	<spriteComponent name="SpriteUp">
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="1" />
+		<event name="onInit" params="component, element">
+			component("spriteName"):Set("$imageUp")
+			if ( $cacheImages ~= 0 ) then
+				lua_sys.cacheSprite( component )
+			end
+		</event>
+	</spriteComponent>
+	<spriteComponent name="SpriteDown">
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="1" />
+		<event name="onInit" params="component, element">
+			component("spriteName"):Set("$imageDown")
+			component("visible"):SetInt(0)
+			if ( $cacheImages ~= 0 ) then
+				lua_sys.cacheSprite( component )
+			end
+		</event>
+	</spriteComponent>
+	<spriteComponent name="SpriteDisabled">
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="1" />
+		<event name="onInit" params="component, element">
+			component("spriteName"):Set("$imageDisabled")
+			component("visible"):SetInt(0)
+			if ( $cacheImages ~= 0 ) then
+				lua_sys.cacheSprite( component )
+			end
+		</event>
+	</spriteComponent>
+	
+	<textComponent name="Label" >
+		<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />
+		<event name="onInit" params="component, element" >
+			component("round"):SetInt(1)
+			component("font"):SetString("$fontName")
+			component("size"):SetFloat($fontScale)
+			component("text"):SetString("$text")
+			component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+			
+			element:DoStoredScript( "onUpEvent" )
+		</event>
+	</textComponent>
+	
+	<touchComponent name="Touch">
+		<size dependentOnElement="element:name()"/>
+		
+		<event name="onInit" params="component, element" >
+			component("downInside"):SetInt(0)
+		</event>
+		
+		<event name="onTouchUp" params="component, element, x, y, relX, relY">
+			if ( element("enabled"):GetInt() == 0 ) then
+				return
+			end
+			
+			if ( component("downInside"):GetInt() ~= 0 ) then
+				element:DoStoredScript( "onToggle" )
+			end
+			
+			component("downInside"):SetInt(0)
+		</event>
+				
+		<event name="onTouchDown" params="component, element, x, y, relX, relY">
+			if ( element("enabled"):GetInt() == 0 ) then
+				return
+			end
+			
+			component("downInside"):SetInt(1)
+		</event>
+		
+		<event name="onTouchRelease" params="component, element, x, y, relX, relY">
+			if ( element("enabled"):GetInt() == 0 ) then
+				return
+			end
+			
+			component("downInside"):SetInt(0)
+		</event>
+		
+		<event name="onTouchDrag" params="component, element, x, y, relX, relY">
+			if ( element("enabled"):GetInt() == 0 ) then
+				return
+			end
+			
+			local width = component("width"):GetFloat()
+			local height = component("height"):GetFloat()
+			
+			if not ( ( relX &gt;= 0 ) and ( relX &lt;= width ) and ( relY &gt;= 0 ) and ( relY &lt;= height ) ) then
+				component("downInside"):SetInt(0)
+			end
+		</event>
+	</touchComponent>
+</template>

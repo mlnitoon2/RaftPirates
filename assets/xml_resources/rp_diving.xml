@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:a026e158cb1f8c42f109a730ab9c86e2$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/menu/rp_diving.png" width="512" height="512">
+    <sprite n="diving_arrow" x="480" y="222" w="23" h="25" oX="1" oY="0" oW="25" oH="25"/>
+    <sprite n="diving_arrow_over" x="480" y="248" w="23" h="25" oX="1" oY="0" oW="25" oH="25"/>
+    <sprite n="diving_bg" x="1" y="1" w="202" h="248" oX="9" oY="7" oW="220" oH="288"/>
+    <sprite n="diving_bone" x="474" y="386" w="37" h="35" oX="3" oY="0" oW="43" oH="37"/>
+    <sprite n="diving_bubble" x="298" y="388" w="8" h="8"/>
+    <sprite n="diving_copper" x="377" y="467" w="39" h="31" oX="2" oY="0" oW="43" oH="37"/>
+    <sprite n="diving_explosion001" x="480" y="274" w="24" h="24" oX="39" oY="37" oW="100" oH="100"/>
+    <sprite n="diving_explosion002" x="200" y="467" w="42" h="40" oX="30" oY="29" oW="100" oH="100"/>
+    <sprite n="diving_explosion003" x="403" y="222" w="76" h="74" oX="11" oY="13" oW="100" oH="100"/>
+    <sprite n="diving_explosion004" x="307" y="344" w="82" h="74" oX="7" oY="11" oW="100" oH="100"/>
+    <sprite n="diving_explosion005" x="213" y="388" w="84" h="78" oX="4" oY="7" oW="100" oH="100"/>
+    <sprite n="diving_explosion006" x="307" y="259" w="84" h="84" oX="5" oY="4" oW="100" oH="100"/>
+    <sprite n="diving_explosion007" x="298" y="419" w="78" h="74" oX="6" oY="1" oW="100" oH="100"/>
+    <sprite n="diving_frame_bottom" x="403" y="1" w="52" h="220" oX="0" oY="236" oW="220" oH="288" r="y"/>
+    <sprite n="diving_frame_left" x="200" y="259" w="12" h="206" oX="0" oY="30" oW="220" oH="288"/>
+    <sprite n="diving_frame_right" x="489" y="1" w="12" h="206" oX="208" oY="30" oW="220" oH="288"/>
+    <sprite n="diving_frame_top" x="456" y="1" w="32" h="220" oX="0" oY="0" oW="220" oH="288" r="y"/>
+    <sprite n="diving_gear" x="476" y="299" w="19" h="21"/>
+    <sprite n="diving_gold" x="377" y="433" w="39" h="33" oX="2" oY="0" oW="43" oH="37"/>
+    <sprite n="diving_layer001_01" x="260" y="259" w="46" h="128" oX="11" oY="0" oW="220" oH="128"/>
+    <sprite n="diving_layer001_02" x="213" y="259" w="46" h="128" oX="11" oY="0" oW="220" oH="128"/>
+    <sprite n="diving_layer002_01" x="204" y="130" w="198" h="128" oX="11" oY="0" oW="220" oH="128"/>
+    <sprite n="diving_layer002_02" x="1" y="379" w="198" h="128" oX="11" oY="0" oW="220" oH="128"/>
+    <sprite n="diving_layer003_01" x="204" y="1" w="198" h="128" oX="11" oY="0" oW="220" oH="128"/>
+    <sprite n="diving_layer003_02" x="1" y="250" w="198" h="128" oX="11" oY="0" oW="220" oH="128"/>
+    <sprite n="diving_metal" x="470" y="352" w="41" h="33" oX="0" oY="0" oW="43" oH="37"/>
+    <sprite n="diving_mine" x="243" y="467" w="40" h="40"/>
+    <sprite n="diving_mine_glow" x="457" y="437" w="14" h="14" oX="13" oY="12" oW="40" oH="40"/>
+    <sprite n="diving_raft" x="390" y="399" w="43" h="33" oX="0" oY="0" oW="43" oH="37"/>
+    <sprite n="diving_rope" x="502" y="1" w="6" h="109" oX="6" oY="0" oW="34" oH="141"/>
+    <sprite n="diving_rubber" x="417" y="471" w="39" h="31" oX="2" oY="0" oW="43" oH="37"/>
+    <sprite n="diving_scrap" x="434" y="399" w="39" h="37" oX="2" oY="0" oW="43" oH="37"/>
+    <sprite n="diving_stone" x="417" y="437" w="39" h="33" oX="2" oY="0" oW="43" oH="37"/>
+    <sprite n="diving_wood" x="474" y="422" w="37" h="33" oX="2" oY="0" oW="43" oH="37"/>
+    <sprite n="rp_diving_robot_001" x="392" y="297" w="48" h="50" oX="0" oY="5" oW="50" oH="56"/>
+    <sprite n="rp_diving_robot_002" x="390" y="348" w="42" h="50" oX="5" oY="4" oW="50" oH="56"/>
+    <sprite n="rp_diving_robot_003" x="441" y="297" w="34" h="54" oX="11" oY="0" oW="50" oH="56"/>
+    <sprite n="rp_diving_robot_004" x="433" y="352" w="36" h="46" oX="13" oY="6" oW="50" oH="56"/>
+</TextureAtlas>
