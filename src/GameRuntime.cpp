@@ -370,7 +370,8 @@ namespace sys::platform::game {
             rt.assets = root;
             sys::EngineConfig properties;
             try {
-                properties.LoadProperties(root / "xml_resources/properties.xml");
+                if (!properties.LoadProperties((root / "xml_resources/properties.xml").string()))
+                    platform.log("Could not load properties.xml");
             } catch (const std::exception& ex) {
                 platform.log(std::string("Could not load properties.xml: ") + ex.what());
             }
