@@ -10,6 +10,10 @@ namespace rp {
         void Update(const Player& own, const Player& enemy);
         void SetPosition(Cell position);
         void SetToObject();
+        void CheckBossCoreRafts();
+        bool ContainsGfx(sys::gfx::Gfx* gfx);
+        void SetPriority(unsigned index, float priority);
+        void BindGfx(unsigned side, unsigned index, sys::gfx::Gfx* gfx);
         bool OkayToPlace() const;
         Cell GetClosestPosition(sys::gfx::Vec2 world) const;
         Cell GetWorldPosition(int side) const;
@@ -21,5 +25,6 @@ namespace rp {
       private:
         BattleShipPlacementSprite own_, enemy_;
         bool attacker_ = false;
+        std::map<unsigned, sys::gfx::Gfx*> ownGfx_, enemyGfx_;
     };
 } // namespace rp

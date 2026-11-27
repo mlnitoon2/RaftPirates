@@ -1,4 +1,5 @@
 #include "rp/GfxBattleScreen.h"
+#include "rp/GridSprite.h"
 #include "sys/gfx/AssetImage.h"
 #include <algorithm>
 #include <cmath>
@@ -21,6 +22,45 @@ namespace rp {
     }
 
     GfxBattleScreen::~GfxBattleScreen() = default;
+
+    bool GfxBattleScreen::AddAccessory(bool own, int parent, int id,
+                                       std::unique_ptr<AccessorySprite> accessory) {
+        auto* sprite = (own ? ownView_ : enemyView_).getGridSprite(parent, id);
+        return sprite && sprite->AddAccessorySprite(std::move(accessory));
+    }
+
+    void GfxBattleScreen::SetObjectMute(bool own, const GridObject& object, bool mute, int parent) {
+        auto& view = own ? ownView_ : enemyView_;
+        if (dynamic_cast<const Raft*>(&object)) view.SetRaftMute(object.id, mute);
+        else if (auto* sprite = view.getGridSprite(parent, object.id)) sprite->SetMute(mute);
+    }
+
+    void GfxBattleScreen::SetObjectVisible(bool own, const GridObject& object, float opacity, int parent) {
+        if (!std::isfinite(opacity)) return;
+        auto& view = own ? ownView_ : enemyView_;
+        int focus = own ? focusedOwn_ : focusedEnemy_;
+        if (focus && (parent == focus || (!parent && object.id == focus))) opacity = 1;
+        opacity = std::clamp(opacity, 0.f, 1.f);
+        if (dynamic_cast<const Raft*>(&object)) view.SetRaftTransparent(object.id, opacity);
+        else if (auto* sprite = view.getGridSprite(parent, object.id)) {
+            sprite->SetVisible(opacity > 0);
+            sprite->SetColour(255, 255, 255, static_cast<uint8_t>(255 * opacity));
+        }
+    }
+
+    void GfxBattleScreen::SetPlayerRaft(bool own, const Raft& raft, bool animate) {
+        auto& view = own ? ownView_ : enemyView_;
+        auto& focus = own ? focusedOwn_ : focusedEnemy_;
+        if (focus && focus != raft.id) view.SetRaftMute(focus, true);
+        focus = raft.id;
+        view.SetRaftMute(focus, false);
+        view.SetRaftTransparent(focus, 1);
+        if (animate) SwoopIn();
+    }
+
+    void GfxBattleScreen::SetPlayerRaftsVisible(bool own, const Player& player, float opacity) {
+        for (const auto& raft : player.rafts) SetObjectVisible(own, raft, opacity);
+    }
 
     void GfxBattleScreen::tick(float dt) {
         if (!std::isfinite(dt) || dt < 0)
@@ -74,6 +114,7 @@ namespace rp {
             net.phase() == Phase::Starting) {
             placement_.Reset(net.attacker());
             positionChosen_ = false;
+            focusedOwn_ = focusedEnemy_ = 0;
             dice_ = 1;
             retreatConfirm_ = false;
         }
@@ -91,8 +132,15 @@ namespace rp {
         }
         lastPhase_ = net.phase();
         lastAttacker_ = net.attacker();
-        if (net.hasOpponent())
+        if (net.hasOpponent()) {
             placement_.Update(game, net.opponent());
+            if (net.phase() == Phase::Fighting) {
+                if (const auto* raft = game.GetRaftByID(net.ownRaftId()))
+                    if (focusedOwn_ != raft->id) SetPlayerRaft(true, *raft, false);
+                if (const auto* raft = net.opponent().GetRaftByID(net.enemyRaftId()))
+                    if (focusedEnemy_ != raft->id) SetPlayerRaft(false, *raft, false);
+            }
+        }
     }
 
     void GfxBattleScreen::submitSprite(GfxManager& gfx, const std::string& name, float x, float y,
@@ -382,8 +430,12 @@ namespace rp {
                 auto previous = placement_.GetWorldPosition(0);
                 placement_.SetPosition(cell);
                 if (positionChosen_ && cell.x == previous.x && cell.y == previous.y &&
-                    placement_.OkayToPlace())
-                    return net.gotMsgBattleScreenRaftsSelected(cell.x, cell.y);
+                    placement_.OkayToPlace()) {
+                    if (net.isBoss()) placement_.CheckBossCoreRafts();
+                    const auto checked = placement_.GetWorldPosition(0);
+                    if (checked.x == cell.x && checked.y == cell.y)
+                        return net.gotMsgBattleScreenRaftsSelected(cell.x, cell.y);
+                }
                 positionChosen_ = true;
             } else if (net.hasOpponent()) {
                 bool own = x < 320;

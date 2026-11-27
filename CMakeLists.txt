@@ -69,6 +69,7 @@ add_library(raftpirates_game STATIC
     src/BattlePlacementScreen.cpp
     src/BattleShipPlacementSprite.cpp
     src/GfxBattleScreen.cpp
+    src/GfxShipPreviewScreen.cpp
     src/DiscoveryModeState.cpp
     src/StaticDatabases.cpp
     src/StoreDB.cpp

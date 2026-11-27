@@ -3,6 +3,7 @@
 #include "rp/DamageIndicatorSprite.h"
 #include "rp/ExplosionFXSprite.h"
 #include "rp/BattleArrowSprite.h"
+#include "rp/AccessorySprite.h"
 #include "sys/gfx/ResourceSpriteFont.h"
 #include "sys/menu_redux/MenuRuntime.h"
 #include "sys/localization/LocalizationManager.h"
@@ -14,6 +15,11 @@ namespace rp {
         ~GfxBattleScreen();
         sys::gfx::Image Render(const Game& game, float time);
         std::optional<sfs::Message> Select(Game& game, float x, float y);
+        bool AddAccessory(bool own, int parent, int id, std::unique_ptr<AccessorySprite>);
+        void SetObjectMute(bool own, const GridObject& object, bool mute, int parent = 0);
+        void SetObjectVisible(bool own, const GridObject& object, float opacity, int parent = 0);
+        void SetPlayerRaft(bool own, const Raft& raft, bool animate);
+        void SetPlayerRaftsVisible(bool own, const Player& player, float opacity);
 
       private:
         void prepare(const Game& game);
@@ -43,6 +49,7 @@ namespace rp {
         BattleModeState::Phase lastPhase_ = BattleModeState::Phase::Idle;
         bool lastAttacker_ = false, retreatConfirm_ = false;
         int dice_ = 1;
+        int focusedOwn_ = 0, focusedEnemy_ = 0;
         std::map<int, int> ownBP_, enemyBP_;
 
         std::vector<DamageIndicatorSprite> damage_;

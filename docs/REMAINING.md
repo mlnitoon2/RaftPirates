@@ -126,9 +126,15 @@ Names newly implemented in source are listed here and removed from the provision
 
 - Added six provisional grid/component names: temporary tick registration, duplicate suppression, completion removal and construction registration. Parent-grid propagation, lifetime ownership and native construction messages are not restored; caller must manage object lifetimes.
 
+## Pass 47 battle display and placement
+
+- Added five GfxBattleScreen adapters: accessory attachment, object visibility and mute, selected-raft focus and fleet opacity. Original 0x3f0e20 preserves visibility of the selected raft and children; 0x3f1adc recursively mutes; 0x3f1b8c updates selection and mute. Portable host has two views rather than one. Component opacity is not persistent across every snapshot update, and animated camera transition is approximate.
+- Added three placement methods: original 0x572814 checks opposing boss cores and reverts the first ship, 0x572338 checks the first ship only, 0x5722e0 routes priority indices by piece count. Host graphics association is explicit; original scene construction still missing.
+- Added ship preview constructor, destructor and tick forwarding (0x412e60); host renders RaftInfo snapshots without original menu scene assembly. Eleven new names provisionally; no compiled or runtime measurement.
+
 ## Remaining method names by class (provisional source review)
 
-523 names from the Pass 33 inventory now have named source implementations through Pass 46 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+534 names from the Pass 33 inventory now have named source implementations through Pass 47 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (20)
 
@@ -214,10 +220,6 @@ Names newly implemented in source are listed here and removed from the provision
 
 `GfxBattleInfoDropDown`, `Hide`, `Show`, `aTickMethodThatsNotCalledTick`, `~GfxBattleInfoDropDown`
 
-### `rp::GfxBattleScreen` (5)
-
-`AddAccessory`, `SetObjectMute`, `SetObjectVisible`, `SetPlayerRaft`, `SetPlayerRaftsVisible`
-
 ### `rp::RaftAttackSprite` (5)
 
 `Init`, `RaftAttackSprite`, `Update`, `tick`, `~RaftAttackSprite`
@@ -225,14 +227,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::BattlePointsViewSprite` (4)
 
 `BattlePointsViewSprite`, `SetColour`, `tick`, `~BattlePointsViewSprite`
-
-### `rp::BattlePlacementScreen` (3)
-
-`CheckBossCoreRafts`, `ContainsGfx`, `SetPriority`
-
-### `rp::GfxShipPreviewScreen` (3)
-
-`GfxShipPreviewScreen`, `aTickMethodThatsNotCalledTick`, `~GfxShipPreviewScreen`
 
 ### `rp::MovementArrowSprite` (3)
 
