@@ -128,8 +128,14 @@ def main():
     candidates = list((ndk / "toolchains/llvm/prebuilt").glob("*/bin/" + name))
     if len(candidates) != 1:
         raise RuntimeError("Could not locate the NDK llvm-nm tool.")
+    # Keep the build-tree ELF for debugging; publish a stripped copy.
+    output.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(library, output)
+    strip = candidates[0].with_name("llvm-strip.exe" if WIN else "llvm-strip")
+    run(strip, "--strip-unneeded", output)
+    print(f"ELF size: {library.stat().st_size:,} -> {output.stat().st_size:,} bytes")
     exports = subprocess.check_output(
-        [str(candidates[0]), "-D", "--defined-only", str(library)], text=True
+        [str(candidates[0]), "-D", "--defined-only", str(output)], text=True
     )
     exported_names = {line.split()[-1] for line in exports.splitlines() if line.split()}
     inventory = json.loads((ROOT / "evidence/jni_inventory.json").read_text(encoding="utf-8"))
@@ -139,8 +145,6 @@ def main():
         raise RuntimeError("Missing JNI exports: " + ", ".join(sorted(missing)))
     print(f"Verified {len(required)} JNI export names.")
 
-    output.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(library, output)
     print(
         f"{args.abi} shared library:",
         output,

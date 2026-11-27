@@ -100,8 +100,9 @@ namespace rp {
         pressed_ = false;
     }
 
-    sys::gfx::Image TitleScreen::render() {
-        sys::gfx::Image image(640, 400, {36, 133, 168, 255});
+    sys::gfx::Image TitleScreen::render(const sys::gfx::Image* background) {
+        auto image = background && background->width == 640 && background->height == 400
+            ? *background : sys::gfx::Image(640, 400, {36, 133, 168, 255});
         sys::gfx::GfxManager gfx;
         menu_.submit(gfx);
         gfx.RenderScreen(image);

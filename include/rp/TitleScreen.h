@@ -15,7 +15,7 @@ namespace rp {
             return started_;
         }
 
-        sys::gfx::Image render();
+        sys::gfx::Image render(const sys::gfx::Image* background = nullptr);
 
       private:
         sys::localization::LocalizationManager strings_;

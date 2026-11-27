@@ -614,7 +614,7 @@ namespace sys::platform::game {
                     (!rt.startupResources || !rt.startupResources->running())) {
                     try {
                         rt.view = std::make_unique<rp::PortView>(rt.assets);
-                        rt.lastImage = rt.view->render(rt.game, rt.time, rt.status);
+                        rt.lastImage = rt.view->renderTitleBackground(rt.game, rt.time);
                     } catch (...) {
                         loginError(platform, "Unable to load the game. Please try again.");
                         return;
@@ -637,7 +637,8 @@ namespace sys::platform::game {
                     try {
                         rt.login->tick(dt);
                         if (!rt.login->finished()) {
-                            platform.present(rt.login->render(), rt.width, rt.height);
+                            platform.present(rt.login->render(rt.endingLoading ? &rt.lastImage : nullptr),
+                                             rt.width, rt.height);
                             return;
                         }
                     } catch (const std::exception& ex) {
@@ -658,7 +659,12 @@ namespace sys::platform::game {
             }
             if (rt.title) {
                 music(platform, "audio/music/theme.mp3");
-                platform.present(rt.title->render(), rt.width, rt.height);
+                if (rt.view && (rt.lastImage.pixels.empty() ||
+                    now - rt.lastFrame >= std::chrono::milliseconds(33))) {
+                    rt.lastFrame = now;
+                    rt.lastImage = rt.view->renderTitleBackground(rt.game, rt.time);
+                }
+                platform.present(rt.title->render(&rt.lastImage), rt.width, rt.height);
                 rt.titlePresented = true;
                 return;
             }

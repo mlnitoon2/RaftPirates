@@ -18,6 +18,7 @@ namespace rp {
       public:
         explicit PortView(std::filesystem::path root);
         sys::gfx::Image render(const Game&, float time, const std::string& status);
+        sys::gfx::Image renderTitleBackground(const Game&, float time);
         std::optional<sfs::Message> touch(Game&, float x, float y);
         void tick(float dt);
         std::optional<sfs::Message> takePendingRequest(Game&);

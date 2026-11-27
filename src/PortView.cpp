@@ -188,6 +188,10 @@ namespace rp {
             touchControls_.touchDrag({x, y});
     }
 
+    Image PortView::renderTitleBackground(const Game& g, float time) {
+        return ocean_.render(g, time, false);
+    }
+
     Image PortView::render(const Game& g, float time, const std::string& status) {
         worldTime_ = time;
         Image out(640, 400, {36, 133, 168, 255});

@@ -268,8 +268,9 @@ namespace rp {
         show("status_popup");
     }
 
-    sys::gfx::Image LoginScreen::render() {
-        sys::gfx::Image im(640, 400, {0, 0, 0, 255});
+    sys::gfx::Image LoginScreen::render(const sys::gfx::Image* background) {
+        auto im = finishing_ && background && background->width == 640 && background->height == 400
+            ? *background : sys::gfx::Image(640, 400, {0, 0, 0, 255});
         sys::gfx::GfxManager g;
         loading_.submit(g);
         g.RenderScreen(im);

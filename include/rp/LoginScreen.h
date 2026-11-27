@@ -46,7 +46,7 @@ namespace rp {
         }
 
         void error(std::string);
-        sys::gfx::Image render();
+        sys::gfx::Image render(const sys::gfx::Image* background = nullptr);
         sys::menu_redux::Rect bounds(const std::string&) const;
 
         std::string screen() const {
