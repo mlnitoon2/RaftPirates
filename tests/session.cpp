@@ -12,6 +12,22 @@ namespace {
 
 int main() {
     rp::RaftPirates game;
+    check(!game.gotMsgReconnect(false));
+    check(game.gotMsgReconnect(true));
+    check(!game.gotMsgReconnect(true));
+    game.DoLostConnection(true);
+    game.GotMsgOnMenuLoadGlobal("hud");
+    check(game.currentMenu() == "hud");
+    game.gotMsgPopupTextResult(false);
+    check(game.takePopupResult() == std::optional<bool>(false) && !game.takePopupResult());
+    sfs::SFSObjectWrapper rewards;
+    auto changes = std::make_shared<sfs::SFSArrayWrapper>();
+    auto material = std::make_shared<sfs::SFSObjectWrapper>();
+    material->put("id", int32_t(2));
+    material->put("amt", int32_t(7));
+    changes->values.push_back(material);
+    rewards.put("materials_changed", changes);
+    check(game.QuestRewards(rewards).at(2) == 7 && game.numOfMaterialPossessed(2u) == 0);
     game.gotMsgOnAdminMessage("stale");
     check(game.adminMessage().empty());
     game.DoConnect();

@@ -22,6 +22,8 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Pass 37 source review
 
+- RaftPirates: menu-load state/dispatch, startup saved-session reconnect guard, popup result state and display-only material reward summary. Existing known-travel query methods are reclassified from stale missing-name entries. The actual quest-reward wire format, full original menu triggers and arbitrary reconnect flows are not recovered. Debug/cheat methods remain unresolved rather than inventing privileged requests.
+
 - OceanView: added remaining six named adapters: tick registration/cleanup, layer access, boss water tint, mute state and diver load indicator. Boss tint and load indicator are portable approximations; actual per-raft audio playback and original boss gradient are not implemented. Mute state is available but not connected to an audio emitter. Tick registration controls slack updates, not the original accessory tick ABI.
 - Added explicit GridSprite::SpritePiece and TouchControls destruction.
 - Pass 36 ARM64 build passed (45926117694).
@@ -37,11 +39,11 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-60 names from the Pass 33 inventory now have named source implementations through Pass 37 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+67 names from the Pass 33 inventory now have named source implementations through Pass 37 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
-### `rp::RaftPirates` (11)
+### `rp::RaftPirates` (4)
 
-`GotMsgOnMenuLoadGlobal`, `QuestRewards`, `gotMsgCheat`, `gotMsgCheatDuplicatePlayer`, `gotMsgCheatStartBattle`, `gotMsgDebugGatherAllUsers`, `gotMsgDiscoveryGetAllKnownRequest`, `gotMsgPopupTextResult`, `gotMsgQuickTravelGetAllKnownRequest`, `gotMsgReconnect`, `gotMsgZoneGetAllKnownRequest`
+`gotMsgCheat`, `gotMsgCheatDuplicatePlayer`, `gotMsgCheatStartBattle`, `gotMsgDebugGatherAllUsers`
 
 ### `rp::BuildModeState` (29)
 

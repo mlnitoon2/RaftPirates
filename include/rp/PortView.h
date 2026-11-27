@@ -20,6 +20,7 @@ namespace rp {
         sys::gfx::Image render(const Game&, float time, const std::string& status);
         std::optional<sfs::Message> touch(Game&, float x, float y);
         void tick(float dt);
+        std::string activeMenu() const;
         void touchDown(float x, float y);
         void touchDrag(float x, float y);
 

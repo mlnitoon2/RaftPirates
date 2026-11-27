@@ -27,6 +27,8 @@ namespace rp {
         processing_ = true;
         transitionVisible_ = false;
         namingShip_ = battleMode_ = false;
+        currentMenu_.clear();
+        popupResult_.reset();
         startedTutorials_.clear();
         completedTutorials_.clear();
         queued_.clear();
@@ -51,6 +53,8 @@ namespace rp {
         connected_ = connecting_ = roomJoined_ = ready = false;
         transitionVisible_ = false;
         namingShip_ = battleMode_ = false;
+        currentMenu_.clear();
+        popupResult_.reset();
         processing_ = true;
         pending.reset();
         pendingMove.reset();
@@ -235,6 +239,45 @@ namespace rp {
     std::vector<int> RaftPirates::GotMsgShowStore() const {
         return ready ? RPMenuHandler(*this).gotMsgGetAvailStoreItemRequest()
                      : std::vector<int>{};
+    }
+
+    void RaftPirates::GotMsgOnMenuLoadGlobal(const std::string& menu) {
+        if (menu.size() <= 128)
+            currentMenu_ = menu;
+    }
+
+    const std::string& RaftPirates::currentMenu() const { return currentMenu_; }
+
+    bool RaftPirates::gotMsgReconnect(bool savedSessionAvailable) {
+        if (connected_ || connecting_ || !savedSessionAvailable)
+            return false;
+        DoConnect();
+        return true;
+    }
+
+    void RaftPirates::gotMsgPopupTextResult(bool accepted) { popupResult_ = accepted; }
+
+    std::optional<bool> RaftPirates::takePopupResult() {
+        auto value = popupResult_;
+        popupResult_.reset();
+        return value;
+    }
+
+    std::map<int, int> RaftPirates::QuestRewards(const sfs::SFSObjectWrapper& packet) const {
+        // Display-only summary of the already supported material-delta payload.
+        // Never mint a reward based on local quest progress.
+        std::map<int, int> out;
+        if (auto entries = packet.getSFSArray("materials_changed"))
+            for (const auto& value : entries->values)
+                if (auto row = std::get_if<std::shared_ptr<sfs::SFSObjectWrapper>>(&value); row && *row) {
+                    const int id = (*row)->getInt("id", (*row)->getInt("material"));
+                    const int amount = (*row)->getInt("amt", (*row)->getInt("amount"));
+                    if (id > 0 && amount > 0) {
+                        const auto sum = static_cast<long long>(out[id]) + amount;
+                        out[id] = int(std::min(sum, static_cast<long long>(std::numeric_limits<int>::max())));
+                    }
+                }
+        return out;
     }
 
     bool RaftPirates::gotMsgNameShip() {

@@ -48,6 +48,12 @@ namespace rp {
         const std::string& debugMessage() const;
         void gotMsgBoughtCurrency(const sfs::SFSObjectWrapper& packet);
         bool gotMsgNameShip();
+        void GotMsgOnMenuLoadGlobal(const std::string& menu);
+        const std::string& currentMenu() const;
+        bool gotMsgReconnect(bool savedSessionAvailable);
+        void gotMsgPopupTextResult(bool accepted);
+        std::optional<bool> takePopupResult();
+        std::map<int, int> QuestRewards(const sfs::SFSObjectWrapper& rewardPacket) const;
         std::optional<sfs::Message> gotMsgKeyboardEntryResult(const std::string& name,
                                                               bool cancelled);
         std::optional<sfs::Message> gotMsgConfirmMaterialPurchase(int material, int amount,
@@ -120,6 +126,8 @@ namespace rp {
         bool processing_ = true, paused_ = false, transitionVisible_ = false;
         float load_ = 0;
         bool namingShip_ = false, battleMode_ = false;
+        std::string currentMenu_;
+        std::optional<bool> popupResult_;
         std::set<int> startedTutorials_, completedTutorials_;
         std::deque<sfs::Message> queued_;
         std::string adminMessage_, serverName_, debugMessage_;

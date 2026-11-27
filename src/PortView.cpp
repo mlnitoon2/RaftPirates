@@ -97,6 +97,10 @@ namespace rp {
         xmlMenu_->solve();
     }
 
+    std::string PortView::activeMenu() const {
+        return xmlMenu_ ? xmlName_ : std::string("hud");
+    }
+
     void PortView::tick(float dt) {
         loader_.update(dt);
         touchControls_.tick(dt);

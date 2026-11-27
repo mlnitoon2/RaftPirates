@@ -362,6 +362,7 @@ namespace sys::platform::game {
             rt.savedPath.clear();
             try {
                 auto dir = platform.saveDirectory();
+                sys::File::setSaveDir(dir.string());
                 if (!dir.empty())
                     rt.savedPath = dir / "raftpirates-session.dat";
             } catch (...) {
@@ -461,6 +462,13 @@ namespace sys::platform::game {
             if (rt.view && !rt.login) {
                 rt.game.tick(dt);
                 rt.view->tick(dt);
+                const auto menu = rt.view->activeMenu();
+                if (menu != rt.game.currentMenu()) {
+                    rt.game.GotMsgOnMenuLoadGlobal(menu);
+                    sys::msg::MsgOnMenuLoadGlobal event;
+                    event.name = menu;
+                    rt.engine.engineReceiver().SendGeneric(event);
+                }
             }
             if (rt.splash) {
                 try {
@@ -478,11 +486,10 @@ namespace sys::platform::game {
             if (!rt.startupFinished) {
                 rt.startupFinished = true;
                 rt.login = std::make_unique<rp::LoginScreen>(rt.assets);
-                if (loadSession()) {
+                if (loadSession() && rt.game.gotMsgReconnect(true)) {
                     rt.login->busy(true);
                     rt.resumeAttempt = true;
                     rt.connecting = true;
-                    rt.game.DoConnect();
                     rt.connectStarted = now;
                     platform.log("Resuming saved login session during startup");
                     try {
@@ -819,6 +826,7 @@ namespace sys::platform::game {
         guarded(platform, [&] {
             sys::msg::MsgPopupTextResult m;
             m.accepted = accepted;
+            rt.game.gotMsgPopupTextResult(accepted);
             rt.engine.engineReceiver().SendGeneric(m);
         });
     }
