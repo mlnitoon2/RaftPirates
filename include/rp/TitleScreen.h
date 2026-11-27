@@ -9,6 +9,7 @@ namespace rp {
         void touchDown(float x, float y);
         void touchUp(float x, float y);
         void touchDrag(float x, float y);
+        void cancelTouch();
 
         bool started() const {
             return started_;

@@ -1,17 +1,124 @@
 #include "rp/LoginScreen.h"
+#include "rp/TitleScreen.h"
+#include "sys/platform/Services.h"
 #include <cstring>
 #include <iostream>
 #include <stdexcept>
 #define CHECK(x)                                                                                   \
     do {                                                                                           \
         if (!(x))                                                                                  \
-            throw std::runtime_error(#x);                                                          \
+            throw std::runtime_error(std::string(#x) + " at " + std::to_string(__LINE__));         \
     } while (false)
+
+namespace {
+    using namespace sys::platform;
+
+    struct StartupPlatform : Services {
+        std::filesystem::path root;
+        sys::gfx::Image frame;
+        unsigned connects = 0, auths = 0;
+
+        explicit StartupPlatform(std::filesystem::path p) : root(std::move(p)) {}
+
+        std::filesystem::path assets(const std::filesystem::path&) override {
+            return root;
+        }
+
+        std::filesystem::path saveDirectory() override {
+            return {};
+        }
+
+        void present(const sys::gfx::Image& image, int, int) override {
+            frame = image;
+        }
+
+        void music(const std::string&) override {}
+
+        void pauseMusic(bool) override {}
+
+        void effect(const std::string&) override {}
+
+        void showPopup(const std::string&) override {}
+
+        void openWebPage(const std::string&) override {}
+
+        bool loggedIn() override {
+            return false;
+        }
+
+        bool transportConnected() override {
+            return false;
+        }
+
+        void keyboard(const std::string&, const std::string&, bool) override {}
+
+        std::future<AuthResult> authenticate(std::string, std::string, std::string, bool, int,
+                                             std::string) override {
+            ++auths;
+            return {};
+        }
+
+        void connect(const std::string&, int) override {
+            ++connects;
+        }
+
+        void login(const std::string&, const std::string&, const std::string&,
+                   const sfs::SFSObjectWrapper&) override {}
+
+        void send(const sfs::Message&) override {}
+
+        void disconnect() override {}
+
+        void keepAlive() override {}
+
+        void log(const std::string&) override {}
+    };
+
+    bool sameImage(const sys::gfx::Image& a, const sys::gfx::Image& b) {
+        return a.width == b.width && a.height == b.height && a.pixels.size() == b.pixels.size() &&
+               std::memcmp(a.pixels.data(), b.pixels.data(),
+                           a.pixels.size() * sizeof(a.pixels[0])) == 0;
+    }
+
+    void startup(const std::filesystem::path& root) {
+        StartupPlatform platform(root);
+        const auto expected = rp::TitleScreen(root).render();
+        game::init(platform, "test.apk", 1280, 800);
+        game::touchDown(platform, 640, 730);
+        game::touchUp(platform, 640, 730);
+        game::tick(platform);
+        CHECK(sameImage(expected, platform.frame));
+        game::touchUp(platform, 640, 730);
+        game::tick(platform);
+        CHECK(sameImage(expected, platform.frame));
+        game::touchDown(platform, 640, 730);
+        game::pause(platform, true);
+        game::pause(platform, false);
+        game::touchUp(platform, 640, 730);
+        game::tick(platform);
+        CHECK(sameImage(expected, platform.frame));
+        for (int i = 0; i < 10; ++i)
+            game::tick(platform);
+        CHECK(sameImage(expected, platform.frame));
+        CHECK(platform.connects == 0 && platform.auths == 0);
+        game::touchDown(platform, 640, 730);
+        game::touchUp(platform, 640, 730);
+        game::tick(platform);
+        CHECK(!sameImage(expected, platform.frame));
+        game::kill(platform);
+        game::init(platform, "test.apk", 1280, 800);
+        game::touchUp(platform, 640, 730);
+        game::tick(platform);
+        CHECK(sameImage(expected, platform.frame));
+        game::kill(platform);
+    }
+} // namespace
 
 int main(int argc, char** argv) {
     if (argc != 2)
         return 2;
     try {
+        startup(argv[1]);
         using A = rp::LoginScreen::Action;
         rp::LoginScreen login(argv[1]);
         for (int i = 0; i < 100; ++i)

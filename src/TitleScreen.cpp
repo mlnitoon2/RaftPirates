@@ -56,7 +56,8 @@ namespace rp {
             return true;
         }
         if (parentName == "Start" && n.name == "Touch") {
-            if (name == "onTouchDown" || name == "onTouchUp" || name == "onTouchRelease") {
+            if (name == "onTouchDown" || name == "onTouchUp" || name == "onTouchRelease" ||
+                name == "onTouchCancel") {
                 bool down = name == "onTouchDown";
                 if (auto up = menu_.find(owner, "UpSprite"))
                     menu_.node(up).set("visible", !down);
@@ -85,6 +86,18 @@ namespace rp {
 
     void TitleScreen::touchDrag(float x, float y) {
         menu_.touchDrag(x, y);
+    }
+
+    void TitleScreen::cancelTouch() {
+        menu_.touchCancel();
+        if (auto start = menu_.find(menu_.root(), "Start", true)) {
+            if (auto up = menu_.find(start, "UpSprite"))
+                menu_.node(up).set("visible", true);
+            if (auto down = menu_.find(start, "DownSprite"))
+                menu_.node(down).set("visible", false);
+            menu_.solve();
+        }
+        pressed_ = false;
     }
 
     sys::gfx::Image TitleScreen::render() {

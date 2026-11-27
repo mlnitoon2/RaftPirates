@@ -38,7 +38,8 @@ namespace {
         bool initialized = false, paused = false, connected = false, connecting = false;
         bool admin = false;
         std::string host, user, session, status, music, authEndpoint;
-        bool loginSent = false;
+        bool loginSent = false, snapshotReceived = false, loggedTransportWait = false;
+        bool titleTouchArmed = false;
         int lastGears = 0;
         bool lastDiveFinished = false, audioFailed = false;
         float time = 0;
@@ -187,6 +188,8 @@ namespace {
         rt.connecting = false;
         rt.game.DoLostConnection(true);
         rt.loginSent = false;
+        rt.snapshotReceived = false;
+        rt.loggedTransportWait = false;
         rt.view.reset();
         rt.lastImage = {};
         rt.user.clear();
@@ -223,6 +226,41 @@ namespace {
         }
         rt.login->clearPassword();
         rt.login->error(message);
+    }
+
+    void acceptGameSession(Services& platform) {
+        if (!rt.connecting || !rt.loginSent || !rt.login || rt.title || rt.splash)
+            return;
+        rt.connected = true;
+        rt.connecting = false;
+        rt.status = "LOADING PLAYER";
+        rt.lastPing = rt.connectStarted = Clock::now();
+        try {
+            rt.game.gotMsgOnLogin();
+            if (rt.game.ready)
+                platform.log("Player snapshot accepted");
+        } catch (const std::exception& ex) {
+            platform.log(std::string("Initial world rejected: ") + ex.what());
+            loginError(platform, "Unable to load the game. Please try again.");
+        }
+    }
+
+    // Some preservation servers acknowledge login by sending the initial world, but
+    // the old Java SDK never emits its native login event. Do not fabricate a Java user
+    // or skip authentication: require the current login request, a connected transport,
+    // and both validated application responses from that connection.
+    void completeInitialWorld(Services& platform) {
+        if (!rt.connecting || !rt.loginSent || !rt.snapshotReceived || !rt.oceanReceived)
+            return;
+        if (!platform.transportConnected()) {
+            if (!rt.loggedTransportWait) {
+                platform.log("Initial world received; SDK transport is not connected");
+                rt.loggedTransportWait = true;
+            }
+            return;
+        }
+        platform.log("Pass 29: server supplied initial player and ocean; accepting game session");
+        acceptGameSession(platform);
     }
 
     void pollAuth(Services& platform) {
@@ -301,6 +339,9 @@ namespace sys::platform::game {
             rt.pendingAdminNotice.clear();
             rt.resumeAttempt = false;
             rt.titlePresented = false;
+            rt.titleTouchArmed = false;
+            rt.snapshotReceived = false;
+            rt.loggedTransportWait = false;
             rt.oceanReceived = false;
             rt.time = 0;
             rt.archivePath = apk;
@@ -342,7 +383,7 @@ namespace sys::platform::game {
             rt.initialized = true;
             rt.status.clear();
             rt.last = Clock::now();
-            platform.log("Raft Pirates startup: title initialized; property endpoint " +
+            platform.log("Raft Pirates Pass 29 startup: title initialized; property endpoint " +
                          std::string(rt.authEndpoint.empty() ? "missing" : "configured"));
         });
     }
@@ -355,6 +396,9 @@ namespace sys::platform::game {
     void pause(Services& platform, bool value) {
         guarded(platform, [&] {
             rt.paused = value;
+            rt.titleTouchArmed = false;
+            if (rt.title)
+                rt.title->cancelTouch();
             rt.game.Pause(value);
             if (!rt.music.empty())
                 audio(platform, [&] { platform.pauseMusic(value); });
@@ -427,6 +471,8 @@ namespace sys::platform::game {
                         platform.log(
                             "SmartFox SDK confirms login; recovering missing native login event");
                         sys::platform::game::onLogin(platform);
+                    } else {
+                        completeInitialWorld(platform);
                     }
                 } catch (const std::exception& ex) {
                     platform.log(std::string("SmartFox login state unavailable: ") + ex.what());
@@ -535,11 +581,12 @@ namespace sys::platform::game {
 
     void touchDown(Services& platform, float x, float y) {
         guarded(platform, [&] {
-            if (rt.splash)
+            if (!rt.initialized || rt.paused || rt.splash)
                 return;
             if (rt.title) {
                 if (!rt.titlePresented)
                     return;
+                rt.titleTouchArmed = true;
                 rt.title->touchDown(x * 640 / rt.width, y * 400 / rt.height);
                 return;
             }
@@ -568,10 +615,12 @@ namespace sys::platform::game {
             }
             float px = x * 640 / rt.width, py = y * 400 / rt.height;
             if (rt.title) {
-                if (!rt.titlePresented)
+                if (!rt.titlePresented || !rt.titleTouchArmed || rt.paused)
                     return;
+                rt.titleTouchArmed = false;
                 rt.title->touchUp(px, py);
                 if (rt.title->started()) {
+                    platform.log("Pass 29: Set Sail pressed; leaving title");
                     effect(platform, "audio/sfx/menu_button_down.wav");
                     rt.login = std::make_unique<rp::LoginScreen>(rt.assets);
                     rt.title.reset();
@@ -766,6 +815,7 @@ namespace sys::platform::game {
             rt.connectStarted = Clock::now();
             rt.status = "LOGGING IN";
             rt.loginSent = true;
+            platform.log("Pass 29: SmartFox login request sent");
             try {
                 platform.login("RaftPirates", rt.user, rt.session, *p);
             } catch (...) {
@@ -778,27 +828,17 @@ namespace sys::platform::game {
 
     void onLogin(Services& platform) {
         guarded(platform, [&] {
-            if (!rt.connecting || !rt.loginSent)
+            if ((!rt.connecting && !rt.connected) || !rt.loginSent)
                 return;
-            rt.connected = true;
-            rt.connecting = false;
-            rt.status = "LOADING PLAYER";
-            rt.lastPing = rt.connectStarted = Clock::now();
-            try {
-                rt.game.gotMsgOnLogin();
-                platform.log("SmartFox login accepted; queued extensions processed");
-                if (rt.game.ready)
-                    platform.log("Player snapshot accepted");
-            } catch (...) {
-                loginError(platform, "Unable to load the game. Please try again.");
-            }
+            platform.log("SmartFox login accepted");
+            acceptGameSession(platform);
         });
     }
 
     void onLoginError(Services& platform) {
         guarded(platform, [&] {
-            if (rt.connecting && rt.loginSent)
-                loginError(platform, "Game server rejected the login.");
+            if ((rt.connecting || rt.connected) && rt.loginSent)
+                loginError(platform, "Login failed. Please try again.");
         });
     }
 
@@ -837,10 +877,21 @@ namespace sys::platform::game {
     void onExtension(Services& platform, const std::string& command,
                      const sfs::SFSObjectWrapper& data) {
         guarded(platform, [&] {
-            if (!rt.connected && !rt.connecting)
+            if ((!rt.connected && !rt.connecting) || !rt.loginSent)
                 return;
             platform.log("NET: " + command);
             try {
+                if (command == "gs_player" && !rt.connected) {
+                    auto player = data.getSFSObj("player_object");
+                    if (!player || player->getInt("user_id") <= 0 ||
+                        !player->getSFSArray("rafts") || !player->getSFSArray("materials") ||
+                        !player->getSFSArray("blueprints"))
+                        throw std::runtime_error("Incomplete initial player snapshot");
+                    rt.snapshotReceived = true;
+                    platform.log("Pass 29: initial player packet validated");
+                }
+                if (command == "gs_ocean" && !rt.connected && !data.getSFSObj("ocean_state"))
+                    throw std::runtime_error("Incomplete initial ocean snapshot");
                 rt.game.gotMsgOnExtensionResponse(command, data);
             } catch (const std::exception& ex) {
                 platform.log("Rejected " + command + ": " + ex.what());
@@ -852,10 +903,12 @@ namespace sys::platform::game {
             if (command == "gs_ocean") {
                 rt.oceanReceived = true;
                 if (!rt.game.ready)
-                    platform.log("Ocean received while awaiting player snapshot or login event");
+                    platform.log("Initial ocean received; checking game session readiness");
             }
             if (command == "gs_player" && rt.game.ready)
                 platform.log("Player snapshot accepted");
+            if (command == "gs_player" || command == "gs_ocean")
+                completeInitialWorld(platform);
         });
     }
 
