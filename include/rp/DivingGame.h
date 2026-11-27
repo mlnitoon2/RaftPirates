@@ -30,6 +30,7 @@ namespace rp::diving_game {
         void tick(float dt);
         void moveDiver(DiverMoveDirection direction, float seconds);
         void moveTo(float x, float y, float duration);
+        void setPos(float x,float y);
         void touchDown(const sys::gfx::Vec2& point);
         void touchDrag(const sys::gfx::Vec2& point);
         void touchUp(const sys::gfx::Vec2& point);

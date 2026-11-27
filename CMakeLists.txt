@@ -28,6 +28,9 @@ add_library(raftpirates_game STATIC
     src/RaftComponent.cpp
     src/Raft.cpp
     src/OceanView.cpp
+    src/GfxOceanGradient.cpp
+    src/GfxOceanGrid.cpp
+    src/MsgQueuer.cpp
     src/PortView.cpp
     src/SplashScreen.cpp
     src/TitleScreen.cpp

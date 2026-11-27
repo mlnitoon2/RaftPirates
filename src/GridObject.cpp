@@ -76,6 +76,8 @@ namespace rp {
         state = value;
     }
 
+    bool GridObject::TempTick(float) { return true; } // ARM 0x3dbf28 returns 1.
+
     bool GridObject::Destroyed() const {
         return state == 2;
     }

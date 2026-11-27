@@ -30,6 +30,7 @@ namespace rp {
         virtual int GetUserObjectID() const;
         virtual int GetBattlePoints() const;
         virtual void SetState(int value);
+        virtual bool TempTick(float dt);
         bool Destroyed() const;
         void SetBattlePoints(int value, int maxPoints);
         void Repair(int value, int maxPoints);

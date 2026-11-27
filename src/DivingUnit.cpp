@@ -22,6 +22,19 @@ namespace rp {
         }
     } // namespace
 
+    DivingUnit::DivingUnit() = default;
+    DivingUnit DivingUnit::Duplicate() const { return *this; }
+    bool DivingUnit::RequestDive() const { return OkayToDive(); }
+    void DivingUnit::UseClock(float seconds) {
+        if(Diving() && std::isfinite(seconds) && seconds>0) TempTick(seconds);
+    }
+    std::pair<std::vector<std::string>,float> DivingUnit::PlayAnimations() const {
+        if(!Diving())return {{},0.f};
+        const float elapsed=std::max(0.f,float(totalSeconds)-remaining);
+        if(elapsed<2.0167f)return {{"drop"},elapsed};
+        if(remaining<=0)return {{"return"},.68f};
+        return {{"diving"},elapsed-2.0167f};
+    }
     bool DivingUnit::Diving() const {
         return state == 3;
     }

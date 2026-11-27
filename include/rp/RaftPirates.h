@@ -1,6 +1,7 @@
 #pragma once
 #include "rp/Game.h"
 #include "rp/Messages.h"
+#include "rp/MsgQueuer.h"
 #include <deque>
 
 namespace rp {
@@ -145,7 +146,7 @@ namespace rp {
         bool developmentAllowed() const;
         void acceptQuestReward(const sfs::SFSObjectWrapper&);
         std::set<int> startedTutorials_, completedTutorials_;
-        std::deque<sfs::Message> queued_;
+        MsgQueuer queued_;
         std::string adminMessage_, serverName_, debugMessage_;
         std::filesystem::path libraryFile_;
         std::string librarySource_;

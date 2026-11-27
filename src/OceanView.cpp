@@ -1,5 +1,7 @@
 #include "rp/Game.h"
 #include "rp/GridSprite.h"
+#include "rp/GfxOceanGradient.h"
+#include "rp/GfxOceanGrid.h"
 #include "sys/gfx/AssetImage.h"
 #include <cmath>
 #include <algorithm>
@@ -9,28 +11,6 @@
 namespace rp {
     using namespace sys::gfx;
     using namespace sys::res;
-
-    namespace {
-        void line(Image& out, int x, int y, int x2, int y2, Color c) {
-            int dx = std::abs(x2 - x), dy = -std::abs(y2 - y), sx = x < x2 ? 1 : -1,
-                sy = y < y2 ? 1 : -1, err = dx + dy;
-            while (true) {
-                if (x >= 0 && y >= 0 && x < out.width && y < out.height)
-                    out.at(x, y) = c;
-                if (x == x2 && y == y2)
-                    break;
-                int e = 2 * err;
-                if (e >= dy) {
-                    err += dy;
-                    x += sx;
-                }
-                if (e <= dx) {
-                    err += dx;
-                    y += sy;
-                }
-            }
-        }
-    } // namespace
 
     struct OceanView::VisualEntry {
         GridObject object;
@@ -43,7 +23,7 @@ namespace rp {
     };
 
     OceanView::OceanView(std::filesystem::path root)
-        : root_(std::move(root)), animations_(root_) {}
+        : root_(std::move(root)), animations_(root_), gradient_(std::make_unique<GfxOceanGradient>(this,root_)) {}
 
     OceanView::~OceanView() = default;
 
@@ -357,6 +337,7 @@ namespace rp {
         if (!std::isfinite(dt) || dt < 0)
             return;
         animationClock_ += dt;
+        gradient_->tick(dt);
         for (const auto& key : ticking_) {
             auto& e = *sprites_.at(key);
             e.slack = std::max(0.f, e.slack - dt);
@@ -549,8 +530,10 @@ namespace rp {
                                      dive->GetMaxLoad());
         else
             diveLoadKey_.reset();
-        // Portable boss-water tint, not the original gradient asset.
-        Image out(640, 400, bossOcean_ ? Color{30, 75, 105, 255} : Color{36, 133, 168, 255});
+        Image out(640,400);
+        gradient_->SetZone(bossOcean_ ? GfxOceanGradient::GradientZone::Boss :
+                           game.safe ? GfxOceanGradient::GradientZone::Safe : GfxOceanGradient::GradientZone::Open);
+        gradient_->Render(out);
         GfxManager mgr;
         mgr.setLayerOffset(Layer());
         auto base = [this](const Raft& r) { return WorldToScreen({float(r.x), float(r.y)}); };
@@ -565,15 +548,11 @@ namespace rp {
         mgr.RenderScreen(out);
         for (auto& r : game.rafts) {
             auto b = base(r);
-            if (grid)
-                for (int x = 0; x <= 6; ++x) {
-                    line(out, int(b.x + x * 32 * zoom_), int(b.y + x * 16 * zoom_),
-                         int(b.x + (x - 6) * 32 * zoom_), int(b.y + (x + 6) * 16 * zoom_),
-                         {225, 236, 216, 255});
-                    line(out, int(b.x - x * 32 * zoom_), int(b.y + x * 16 * zoom_),
-                         int(b.x + (6 - x) * 32 * zoom_), int(b.y + (6 + x) * 16 * zoom_),
-                         {225, 236, 216, 255});
-                }
+            if (grid) {
+                GfxOceanGrid overlay(this,Unit());
+                overlay.SetPosition(b);
+                overlay.Render(out);
+            }
             for (auto& c : r.components) {
                 auto it = game.objects.find(c.type);
                 if (it == game.objects.end())
@@ -582,17 +561,9 @@ namespace rp {
                 std::vector<std::string> names;
                 float animTime = std::max(0.f, time);
                 if (diving && dive->parent == r.id && dive->object == c.id) {
-                    float elapsed = std::max(0.f, float(dive->totalSeconds) - dive->remaining);
-                    if (elapsed < 2.0167f) {
-                        names = {"drop"};
-                        animTime = elapsed;
-                    } else if (dive->remaining <= 0) {
-                        names = {"return"};
-                        animTime = .68f;
-                    } else {
-                        names = {"diving"};
-                        animTime = elapsed - 2.0167f;
-                    }
+                    auto pose=dive->PlayAnimations();
+                    names=std::move(pose.first);
+                    animTime=pose.second;
                 } else if (r.id == lastDiveParent_ && c.id == lastDiveObject_ &&
                            time - returnStart_ < .6833f && time >= returnStart_) {
                     names = {"return"};

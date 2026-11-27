@@ -120,9 +120,7 @@ namespace rp {
         if (!connected_ && !connecting_)
             return;
         if (!processing_ || !connected_) {
-            if (queued_.size() >= 1024)
-                throw std::runtime_error("Network queue limit");
-            queued_.push_back(Game::request(command, data));
+            queued_.add(Game::request(command,data));
             return;
         }
         gotMsgOnExtensionResponse2(command, data);
@@ -640,9 +638,8 @@ namespace rp {
 
     void RaftPirates::setNetworkMsgProcessingEnabled(bool enabled) {
         processing_ = enabled;
-        while (connected_ && processing_ && !queued_.empty()) {
-            auto packet = std::move(queued_.front());
-            queued_.pop_front();
+        while (connected_ && processing_ && queued_.numQueued()) {
+            auto packet = std::move(*queued_.processOne());
             try {
                 auto data = packet.payload.getSFSObj("p");
                 if (data)

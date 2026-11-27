@@ -26,8 +26,7 @@ namespace rp::diving_game {
 
     void DivingGame::Reset() {
         items_.clear();
-        x_ = targetX_ = 320;
-        y_ = 270;
+        setPos(320,270);
         gears_ = 0;
         level_ = 1;
         shape_ = 0;
@@ -95,6 +94,12 @@ namespace rp::diving_game {
         targetX_ = std::clamp(targetX_ + (direction == DiverMoveDirection::Left ? -1.f : 1.f) *
                                              180 * seconds,
                               238.f, 402.f);
+    }
+
+    void DivingGame::setPos(float x,float y) {
+        if (!std::isfinite(x)||!std::isfinite(y))return;
+        x_=targetX_=std::clamp(x,238.f,402.f);
+        y_=std::clamp(y,180.f,285.f);
     }
 
     void DivingGame::moveTo(float x, float y, float) {

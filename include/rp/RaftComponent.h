@@ -20,7 +20,7 @@ namespace rp {
         void Repair(int battlePoints, int maxBattlePoints);
         int GetTotalBattlePoints(int staticBattlePoints) const override;
         // True when no further construction countdown is needed. Server owns state changes.
-        bool TempTick(float dt);
+        bool TempTick(float dt) override;
         std::vector<std::string>
         getAvailableActions(const GridObjectInfo* definition) const override;
         std::unique_ptr<GridObject> Duplicate() const override;

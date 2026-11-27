@@ -94,6 +94,7 @@ namespace rp {
     };
 
     class GridSprite;
+    class GfxOceanGradient;
     class OceanView {
       public:
         using SpriteKey = std::pair<int, int>; // parent raft, object ID (parent=0 for raft)
@@ -193,6 +194,7 @@ namespace rp {
         bool lastDiving_ = false;
         float returnStart_ = -10;
         sys::gfx::AnimationRenderer animations_;
+        std::unique_ptr<GfxOceanGradient> gradient_;
         std::map<std::string, std::shared_ptr<sys::gfx::Image>> images_;
         std::map<std::string, sys::res::ResourceAEAnim> bins_;
     };

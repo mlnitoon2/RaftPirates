@@ -34,6 +34,15 @@ Names newly implemented in source are listed here and removed from the provision
 - Added explicit GridSprite::SpritePiece and TouchControls destruction.
 - Pass 36 ARM64 build passed (45926117694).
 
+## Pass 38 source review
+
+- GfxOceanGradient: six RGB colors recovered from original ARM32 GRADIENTCOLOURS (0xa60a74), original anim_water_peak.bin path recovered. Integrated gradient and waves into OceanView; original zone ordering, wave placements, interpolation and timing are not established.
+- GfxOceanGrid uses the OceanView transform, original truncating FloatMod equivalent and raft cell line rendering. Integrated in OceanView in place of hardcoded 192-pixel grid geometry.
+- MsgQueuer owns SFS packet copies and drains the existing session queue in order; original polymorphic clone ABI is not recreated.
+- DivingUnit constructor/copy, eligibility, local clock update and animation selection; animation selection integrated into OceanView. RequestDive checks eligibility rather than sending its own packet; authoritative Game::dive requests remain unchanged. GridObject::TempTick returns true as the original ARM32 method does. DivingGame::setPos is used by Reset.
+- Reclassified already-present action/accessor methods (GridObject, Raft, RaftComponent, DivingUnit, Zone).
+- Original binary has no source-file debug table; new files use recovered class names, existing paths preserved. Pass 37 final ARM64 build passed (45927489860).
+
 ## Priority gaps
 
 - Original menu scripts: complete game/SWIG bindings, message dispatch, dynamic templates, tutorial and quest flows, all popups and transitions.
@@ -45,7 +54,7 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-251 names from the Pass 33 inventory now have named source implementations through Pass 37 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+284 names from the Pass 33 inventory now have named source implementations through Pass 38 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (29)
 
@@ -107,17 +116,13 @@ Names newly implemented in source are listed here and removed from the provision
 
 `Transition`, `changeType`, `disableAllInput`, `gotMsgAnimationFinished`, `hide`, `show`, `tick`, `~Transition`
 
-### `rp::DivingUnit` (7)
+### `rp::DivingUnit` (1)
 
-`AddedToOcean`, `DivingUnit`, `Duplicate`, `PlayAnimations`, `RequestDive`, `UseClock`, `getAvailableActions`
+`AddedToOcean`
 
 ### `rp::FootprintSprite` (7)
 
 `FootprintSprite`, `Init`, `SetColour`, `SetPriorities`, `SetPriority`, `Update`, `~FootprintSprite`
-
-### `rp::GfxOceanGradient` (7)
-
-`ComputeWorldState`, `GfxOceanGradient`, `InitWaves`, `Render`, `SetZone`, `tick`, `~GfxOceanGradient`
 
 ### `rp::ItemPlacementSprite` (7)
 
@@ -147,17 +152,9 @@ Names newly implemented in source are listed here and removed from the provision
 
 `FloatMod`, `GfxOceanCheckerBoard`, `Render`, `SetPosition`, `SetUnitSize`, `~GfxOceanCheckerBoard`
 
-### `rp::GfxOceanGrid` (6)
+### `rp::GridObject` (3)
 
-`FloatMod`, `GfxOceanGrid`, `Render`, `SetPosition`, `SetUnitSize`, `~GfxOceanGrid`
-
-### `rp::GridObject` (6)
-
-`AddedToOcean`, `Salvage`, `TempTick`, `getAvailableActions`, `getName`, `setGridObjectData`
-
-### `rp::MsgQueuer` (6)
-
-`MsgQueuer`, `add`, `clear`, `numQueued`, `processOne`, `~MsgQueuer`
+`AddedToOcean`, `Salvage`, `setGridObjectData`
 
 ### `rp::RaftGridSprite` (6)
 
@@ -323,13 +320,13 @@ Names newly implemented in source are listed here and removed from the provision
 
 `MsgTabbedItemScrollTo`, `~MsgTabbedItemScrollTo`
 
-### `rp::Raft` (2)
+### `rp::Raft` (1)
 
-`Salvage`, `getAvailableActions`
+`Salvage`
 
-### `rp::RaftComponent` (2)
+### `rp::RaftComponent` (1)
 
-`AddedToOcean`, `getAvailableActions`
+`AddedToOcean`
 
 ### `rp::RaftComponentFactory` (2)
 
@@ -338,10 +335,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::RaftFactory` (2)
 
 `Build`, `RegistryAllClasses`
-
-### `rp::Zone` (2)
-
-`mapfile`, `name`
 
 ### `rp::BlueprintInfo` (1)
 
@@ -374,10 +367,6 @@ Names newly implemented in source are listed here and removed from the provision
 ### `rp::Transition::MsgDone` (1)
 
 `~MsgDone`
-
-### `rp::diving_game::DivingGame` (1)
-
-`setPos`
 
 ### `rp::diving_game::DivingMaterial` (1)
 
