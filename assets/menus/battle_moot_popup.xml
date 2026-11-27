@@ -1,0 +1,145 @@
+<menu>
+	<element name="BattleOverPopupTopElement">
+		<element name="bg">
+			<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+			<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="6" />
+			<ninesliceComponent name="Sprite">
+				<event name="onInit" params="component, element" >
+					component("spriteName"):Set("gfx/menu/menu_overlay")
+					component("width"):SetFloat( screenWidth() );
+					component("height"):SetFloat( screenHeight() );
+					component("layer"):SetString("PIRATE_MAP_HUD");
+				</event>
+			</ninesliceComponent>
+			<touchComponent name="Touch">
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">
+					menu:popPopUp()
+					game.engineReceiver():Send(game.MsgBattleOverConfirm())
+				</event>
+			</touchComponent>
+		</element>	
+
+		<element name="DialogPopup">
+			<element name="children">
+			
+				<spriteSheetComponent name="BackSprite">
+					<position relativeTo="element[&quot;bg&quot;]" vAnchor="TOP" hAnchor="LEFT" />
+					<orientation vAnchor="BOTTOM" hAnchor="RIGHT" xOffset="0" yOffset="0" priority="-1" />
+					<event name="onInit" params="component, element">
+					  component("spriteName"):SetString("btn_return")
+					  component("sheetName"):SetString("xml_resources/rp_menu.xml")
+					  component("layer"):SetString("PIRATE_MAP_HUD")
+					</event>
+					<event name="onPostSolve" params="component, element">
+					</event>
+				</spriteSheetComponent>			
+				
+				<element name="bg">
+					<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+					<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+					<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="-screenHeight()*0.1" priority="5" />
+					<ninesliceComponent name="Sprite">
+						<event name="onInit" params="component, element">
+							component("width"):SetFloat( screenWidth()*0.66 );
+							
+							component("topHeight"):SetFloat( 16 );
+							component("bottomHeight"):SetFloat( 16 );
+							component("leftWidth"):SetFloat( 16 );
+							component("rightWidth"):SetFloat( 16);
+
+							component("spriteName"):Set("gfx/menu/popup_bg")
+
+							component("layer"):SetString("PIRATE_MAP_HUD")
+						</event>
+						<event name="onPostInit" params="component, element">
+							print(element:parent()["Continue"]["UpSprite"]("height"):GetInt())
+							print(element:parent()["BattleOverText"]["Text"]("height"):GetInt())
+							component("height"):SetFloat( element:parent()["Continue"]["UpSprite"]("height"):GetInt() + element:parent()["BattleOverText"]["Text"]("height"):GetInt() );
+						</event>
+
+					</ninesliceComponent>
+				</element>
+
+				<element name="BattleOverText">
+					<size dependentOnElement="element:name()" dependentOnComponent="Text" />
+					<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor= "TOP" hAnchor="HCENTER" />
+					<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="9" priority="-1" />
+					<textComponent name="Text" >
+						<size w="screenWidth()*0.48" h="screenWidth()*0.18" />
+						<event name="onInit" params="component, element" >
+							component("font"):Set("rp_font_title")
+							component("size"):Set(1.0)
+							component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+
+							component("red"):SetFloat(1.0)
+							component("green"):SetFloat(1.0)
+							component("blue"):SetFloat(1.0)
+							
+							component("autoScale"):SetInt(0)
+							component("multiline"):SetInt(1)
+
+							component("text"):SetString("BATTLE_MOOT")
+
+							component("layer"):SetString("PIRATE_MAP_HUD");
+						</event>
+					</textComponent>
+				</element>
+
+				<element name="Bird">
+				  <size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+				  <position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="TOP" hAnchor="RIGHT" />
+				  <orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="10" yOffset="0" priority="-1" />
+				  <spriteSheetComponent name="Sprite">
+					<event name="onInit" params="component, element" >
+					  component("spriteName"):Set("tutorial_bird")
+					  component("sheetName"):Set("xml_resources/rp_menu.xml")
+					  component("layer"):SetString("PIRATE_MAP_HUD");
+					</event>
+				  </spriteSheetComponent>
+				</element>
+
+				<template type="HudButton" name="Continue">
+					<templateVar name="$image" equals="btn_long_green" />
+					<templateVar name="$sheet" equals="rp_menu" />
+					<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="BOTTOM" hAnchor="HCENTER" />
+					<orientation vAnchor="BOTTOM" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+					<event name="onPostInit" params="element">
+						element["UpSprite"]("layer"):SetString("PIRATE_MAP_HUD");
+						element["DownSprite"]("layer"):SetString("PIRATE_MAP_HUD");
+						
+						element("yOffset"):SetInt(element("yOffset"):GetInt()-element["UpSprite"]("height"):GetInt()/3)
+					</event>
+					
+					<textComponent name="Text" >
+						<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+						<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+						<event name="onInit" params="component, element" >
+							component("font"):Set("rp_font_title")
+							component("size"):Set(1.0)
+							component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+							
+							component("red"):SetFloat(1.0)
+							component("green"):SetFloat(1.0)
+							component("blue"):SetFloat(1.0)
+							
+							component("text"):SetString("BATTLE_MOOT_BUTTON")
+							
+							component("layer"):SetString("PIRATE_MAP_HUD");
+						</event>
+					</textComponent>
+					<touchComponent name="Touch">
+						<size dependentOnElement="element:name()"/>
+						<event name="onTouchUp" params="component, element">
+							onTouchUp(component, element)
+							menu:popPopUp()
+							game.engineReceiver():Send(game.MsgBattleOverConfirm())
+						</event>
+					</touchComponent>
+				</template>
+				
+			</element>
+		</element>
+	</element>
+</menu>

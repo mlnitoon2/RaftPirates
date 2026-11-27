@@ -1,0 +1,187 @@
+<menu>
+	<element name="topElement">
+		<size dependentOnElement="element:name()"/>
+		<event name="onInit" params="element">
+			element("blueprintId"):SetInt(-1)
+			element("goldCost"):SetInt(-1)
+			element("goldPossessed"):SetInt(0)
+		</event>
+		<event name="onPostInit" params="element">
+			element:SetupGenericListener(game.engineReceiver(), "rp::MsgHaveMaterialsResponse", "gotHaveMaterialsAnswer")
+			element:SetupGenericListener(element:GetReceiver(), "rp::MsgSpecificMaterialAvailAmountResponse", "gotMaterialAmount")
+			
+			game.engineReceiver():Send( game.MsgSpecificMaterialAvailAmountRequest(element:GetReceiver(), 4) )
+		</event>
+		
+		<event name="gotMaterialAmount" params="element, msg">
+			if(msg.materialId == 4) then
+				element("goldPossessed"):SetInt(msg.materialAmount)
+			end
+		</event>
+		
+		<event name="gotHaveMaterialsAnswer" params="element, msg">
+			element("blueprintId"):SetInt(msg.blueprintId)
+			element("goldCost"):SetInt(msg.goldCost)
+			
+			local txt = game.getLocalizedText("PURCHASE_ALL_MATS_FOR_BUILD")
+			txt = select(1, txt:gsub("%%price%%", element("goldCost"):GetInt()))
+			txt = select(1, txt:gsub("%%currency%%", game.getLocalizedText("MATERIAL_GOLD")))
+			print(txt)
+			
+			element["Dialog"]["ConfirmText"]["Text"]("text"):SetString(txt)
+			element["Dialog"]["bg"]["Sprite"]("height"):SetFloat(element["Dialog"]["ConfirmText"]["Text"]("height"):GetInt() + element["Dialog"]["No"]["UpSprite"]("height"):GetInt()+5)
+		</event>
+		
+		<element name="bg">
+			<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+			<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="2" />
+			<ninesliceComponent name="Sprite">
+				<event name="onInit" params="component, element" >
+					component("spriteName"):Set("gfx/menu/menu_overlay")
+					component("width"):SetFloat( screenWidth() );
+					component("height"):SetFloat( screenHeight() );
+					component("layer"):SetString("PIRATE_MAP_HUD");
+				</event>
+			</ninesliceComponent>
+			<touchComponent name="Touch">
+				<size dependentOnElement="element:name()"/>
+				<event name="onTouchUp" params="component, element">
+					print("hello!")
+				</event>
+			</touchComponent>
+		</element>
+		
+		<element name="Dialog">
+		
+			<element name="bg">
+				<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+				<position relativeTo="SCREEN" vAnchor="VCENTER" hAnchor="HCENTER" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="-screenHeight()*0.15" priority="2" />
+				<ninesliceComponent name="Sprite">
+					<event name="onInit" params="component, element">
+						
+						component("width"):SetFloat( screenWidth()*0.66 );
+						component("height"):SetFloat( component("width"):GetFloat() * 0.32 );
+						
+						component("topHeight"):SetFloat( 16 );
+						component("bottomHeight"):SetFloat( 16 );
+						component("leftWidth"):SetFloat( 16 );
+						component("rightWidth"):SetFloat( 16);
+						
+						component("spriteName"):Set("gfx/menu/popup_bg")
+						
+						component("layer"):SetString("PIRATE_MAP_HUD")
+					</event>
+				</ninesliceComponent>
+			</element>
+			
+			<template type="HudButton" name="No">
+				<templateVar name="$image" equals="btn_red" />
+				<templateVar name="$sheet" equals="rp_menu" />
+				<size dependentOnElement="element:name()" dependentOnComponent="UpSprite" />
+				<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="BOTTOM" hAnchor="HCENTER" />
+				<orientation vAnchor="BOTTOM" hAnchor="RIGHT" xOffset="16" yOffset="-8" priority="-1" />
+				<spriteSheetComponent name="Sprite">
+					<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+					<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+					<event name="onInit" params="component, element" >
+						component("spriteName"):Set("btn_no")
+						component("sheetName"):Set("xml_resources/rp_menu.xml")
+						component("layer"):SetString("PIRATE_MAP_HUD");
+						
+						element["UpSprite"]("useOffsets"):SetInt(1)
+						element["DownSprite"]("useOffsets"):SetInt(1)
+
+						element["UpSprite"]("layer"):SetString("PIRATE_MAP_HUD")
+						element["DownSprite"]("layer"):SetString("PIRATE_MAP_HUD")
+					</event>
+				</spriteSheetComponent>
+				<touchComponent name="Touch">
+					<size dependentOnElement="element:name()"/>
+					<event name="onTouchUp" params="component, element">
+						onTouchUp(component, element)
+						menu:popPopUp();
+						</event>
+				</touchComponent>
+			</template>	
+			
+			<template type="HudButton" name="Yes">
+				<templateVar name="$image" equals="btn_green" />
+				<templateVar name="$sheet" equals="rp_menu" />
+				<size dependentOnElement="element:name()" dependentOnComponent="UpSprite" />
+				<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="BOTTOM" hAnchor="HCENTER" />
+				<orientation vAnchor="BOTTOM" hAnchor="LEFT" xOffset="16" yOffset="-8" priority="-1" />
+				<spriteSheetComponent name="Sprite">
+					<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+					<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-1" />
+					<event name="onInit" params="component, element" >
+						component("spriteName"):Set("btn_yes")
+						component("sheetName"):Set("xml_resources/rp_menu.xml")
+						component("layer"):SetString("PIRATE_MAP_HUD");
+						
+						element["UpSprite"]("useOffsets"):SetInt(1)
+						element["DownSprite"]("useOffsets"):SetInt(1)
+						
+						element["UpSprite"]("layer"):SetString("PIRATE_MAP_HUD")
+						element["DownSprite"]("layer"):SetString("PIRATE_MAP_HUD")
+					</event>
+				</spriteSheetComponent>
+				<touchComponent name="Touch">
+					<size dependentOnElement="element:name()"/>
+					<event name="onTouchUp" params="component, element">
+					<![CDATA[
+						onTouchUp(component, element)
+						
+						menu:popPopUp();
+						
+						local goldPrice = element:parent():parent()("goldCost"):GetInt()
+						
+						if(element:parent():parent()("goldPossessed"):GetInt() >= goldPrice ) then
+							print "SendConfirm"
+							game.engineReceiver():Send(game.MsgConfirmBlueprintMaterialsPurchase(element:parent():parent()("blueprintId"):GetInt(), goldPrice))
+						else
+							menu:popPopUp();
+							menu:pushPopUp("tabbed_menu_gold")
+						end
+					]]>
+					</event>
+				</touchComponent>
+			</template>		
+      
+			<element name="Face">
+				<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+				<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="TOP" hAnchor="RIGHT" />
+				<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="10" yOffset="0" priority="-1" />
+				<spriteSheetComponent name="Sprite">
+					<event name="onInit" params="component, element" >
+						component("spriteName"):Set("popup_reward_shop")
+						component("sheetName"):Set("xml_resources/rp_menu.xml")
+						component("layer"):SetString("PIRATE_MAP_HUD");
+					</event>
+				</spriteSheetComponent>
+			</element>
+			<element name="ConfirmText">
+				<size dependentOnElement="element:name()" dependentOnComponent="Text" />
+				<position relativeTo="element:parent()[&quot;bg&quot;]" vAnchor="TOP" hAnchor="HCENTER" />
+				<orientation vAnchor="TOP" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="-2" />
+				<textComponent name="Text" >
+				<size w="screenWidth()*0.5" h="0" />
+					<event name="onInit" params="component, element" >
+						component("font"):Set("blue_highway")
+						component("size"):Set(1.0)
+						component("alignment"):SetInt(lua_sys.MenuTextComponent_TEXT_HCENTER_ALIGNED)
+
+						component("red"):SetFloat(1.0)
+						component("green"):SetFloat(1.0)
+						component("blue"):SetFloat(1.0)
+
+						component("text"):SetString("PURCHASE_CONFIRM")
+
+						component("layer"):SetString("PIRATE_MAP_HUD");
+					</event>
+				</textComponent>			
+			</element>
+		</element>
+	</element>
+</menu>
