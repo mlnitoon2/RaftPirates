@@ -49,7 +49,9 @@ namespace {
         bool loginSent = false;
         bool titleTouchArmed = false;
         int lastGears = 0;
-        bool lastDiveFinished = false, audioFailed = false;
+        bool lastDiveFinished = false;
+        std::string failedMusic;
+        Clock::time_point audioRetry{};
         float time = 0;
         Clock::time_point last = Clock::now(), lastFrame{}, lastPing{};
     };
@@ -69,14 +71,13 @@ namespace {
         }
     }
 
-    template <class F> void callAudio(Services& platform, F callback) {
-        if (rt.audioFailed)
-            return;
+    template <class F> bool callAudio(Services& platform, F callback) {
         try {
             callback();
+            return true;
         } catch (const std::exception& ex) {
-            rt.audioFailed = true;
-            platform.log(std::string("Audio unavailable: ") + ex.what());
+            platform.log(std::string("Audio playback failed: ") + ex.what());
+            return false;
         }
     }
 
@@ -84,8 +85,17 @@ namespace {
         const auto desired = rt.view && !rt.view->soundEnabled() ? std::string{} : path;
         if (rt.music == desired)
             return;
-        callAudio(platform, [&] { platform.music(desired); });
-        rt.music = desired;
+        const auto now=Clock::now();
+        if(rt.failedMusic==desired&&now<rt.audioRetry)return;
+        if(callAudio(platform,[&]{platform.music(desired);})) {
+            rt.music=desired;
+            rt.failedMusic.clear();
+            rt.audioRetry={};
+        } else {
+            rt.music.clear();
+            rt.failedMusic=desired;
+            rt.audioRetry=now+std::chrono::seconds(3);
+        }
     }
 
     void effect(Services& platform, const char* path) {
@@ -353,7 +363,8 @@ namespace sys::platform::game {
             rt.oceanReceived = false;
             rt.time = 0;
             rt.archivePath = apk;
-            rt.audioFailed = false;
+            rt.failedMusic.clear();
+            rt.audioRetry={};
             rt.music.clear();
             rt.lastGears = 0;
             rt.lastDiveFinished = false;
@@ -423,8 +434,7 @@ namespace sys::platform::game {
             rt.game.Pause(value);
             if (!value)
                 rt.engine.Resume();
-            if (!rt.music.empty())
-                callAudio(platform, [&] { platform.pauseMusic(value); });
+            callAudio(platform, [&] { platform.pauseMusic(value); });
             rt.last = Clock::now();
         });
     }
@@ -437,7 +447,8 @@ namespace sys::platform::game {
                 } catch (...) {
                 }
             }
-            music(platform, "");
+            callAudio(platform, [&] { platform.music(""); });
+            rt.music.clear();
             lost();
             rt.splash.reset();
             rt.title.reset();
@@ -782,10 +793,13 @@ namespace sys::platform::game {
                         rt.login->busy(true);
                     }
                 } else if (action == Action::Register) {
-                    if (rt.login->email().empty() || rt.login->password().empty())
+                    if (rt.login->email().empty() || rt.login->password().empty()) {
+                        effect(platform,"audio/sfx/Sound31_deadmans_tale.wav");
                         rt.login->error("Enter your email and password.");
-                    else if (rt.login->password() != rt.login->confirmation())
+                    } else if (rt.login->password() != rt.login->confirmation()) {
+                        effect(platform,"audio/sfx/Sound31_deadmans_tale.wav");
                         rt.login->error("Passwords do not match.");
+                    }
                     else if (rt.authEndpoint.empty())
                         rt.login->error("Unable to connect. Please try again.");
                     else {
