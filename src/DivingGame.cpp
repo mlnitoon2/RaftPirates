@@ -283,18 +283,26 @@ namespace rp::diving_game {
         sprite(target, "diving_bg", 210, 22, 1);
         {
             GfxManager background;
-            background.setScreenClip(std::array<float,4>{210,22,430,310});
+            background.setScreenClip(std::array<float,4>{219,29,421,277});
             for(const auto& layer:scrolling_)for(const auto& tile:layer.tiles())
                 if(auto c=atlas_->findSpriteByName(tile.name)){
                     GfxSprite s;s.cell=*c;s.image=image_;s.SetPos(210,22+tile.y);background.submit(s);
                 }
             background.RenderScreen(target);
         }
-        for (auto& i : items_)
-            sprite(target,
-                   i.type == DivingCollectable::CollectableType::Mine ? "diving_mine"
-                                                                      : "diving_gear",
-                   i.x - 10, i.y - 10);
+        {
+            GfxManager items;
+            items.setScreenClip(std::array<float,4>{219,29,421,277});
+            for (auto& i : items_) {
+                auto cell = atlas_->findSpriteByName(
+                    i.type == DivingCollectable::CollectableType::Mine ? "diving_mine" : "diving_gear");
+                if (!cell) continue;
+                GfxSprite s; s.cell = *cell; s.image = image_;
+                s.SetPos(i.x - cell->ow * .5f, i.y - cell->oh * .5f);
+                items.submit(s);
+            }
+            items.RenderScreen(target);
+        }
         if (!robot_.comps.empty()) {
             const auto* composition =
                 robot_.find(finished_                                     ? "end"
@@ -302,6 +310,7 @@ namespace rp::diving_game {
                                                                           : "idle");
             const auto& c = composition ? *composition : robot_.comps.front();
             GfxManager m;
+            m.setScreenClip(std::array<float,4>{219,29,421,277});
             renderer_.submit(m, robot_, c, c.duration() > 0 ? std::fmod(elapsed_, c.duration()) : 0,
                              Matrix::translation(x_, y_) * Matrix::scale(.65f, .65f) *
                                  Matrix::translation(-c.width / 2.f, -c.height / 2.f));
@@ -315,7 +324,7 @@ namespace rp::diving_game {
         sprite(target, "diving_gear", 307, 350, 1.2f);
         label_.changeText(std::to_string(gears_));
         AutoScaleText(&label_);
-        label_.SetPos(20, 50);
+        label_.SetPos(298, 31);
         label_.Render(target);
     }
 } // namespace rp::diving_game

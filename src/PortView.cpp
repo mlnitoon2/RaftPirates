@@ -352,7 +352,7 @@ namespace rp {
             updateScroll();
             if (!old || old != hit || xmlMenu_->node(old).number("suppressClick", 0))
                 return {};
-            return xmlTouch(g, x, y);
+            return xmlTouch(g, x, y, old);
         }
         if (oceanGesture_) {
             oceanGesture_ = false;
@@ -739,7 +739,7 @@ namespace rp {
                             continue;
                         auto key = "quest_" + std::to_string(id);
                         xmlItems_[key] = id;
-                        add(*list, "QuestButton", key, -50, 48 + int(i++) * 55, "children", "TOP",
+                        add(*list, "QuestButton", key, -16, 48 + int(i++) * 55, "children", "TOP",
                             "RIGHT");
                     }
                 }
@@ -828,10 +828,27 @@ namespace rp {
                                                                       : "SAFE_WATER_DISABLED"));
             } else if (name == "quest_log") {
                 if (auto dialog = m.find(1, "DialogPopup", true)) {
-                    m.node(dialog).set("absoluteX", 0.0);
+                    // SlideInDialog's LEFT end position reveals one quarter of the viewport.
+                    const float dialogWidth = m.node(dialog).bounds.w;
+                    const float dialogHeight = m.node(dialog).bounds.h;
+                    m.node(dialog).set("absoluteX", double(m.width() / 4 - dialogWidth));
+                    m.node(dialog).set("layer", std::string("HUD"));
                     if (auto sprite = m.find(dialog, "DialogSprite"))
                         m.node(sprite).set("hFlip", 1.0);
                     if (auto children = m.find(dialog, "children")) {
+                        m.node(children).set("width", double(dialogWidth));
+                        m.node(children).set("height", double(dialogHeight));
+                        m.node(children).set("clipChildren", true);
+                        m.solve();
+                        float y = m.height() * .12f;
+                        for (int quest : RPMenuHandler(g).gotMsgQuestInformationRequest()) {
+                            auto el = m.find(children, "quest_" + std::to_string(quest), true);
+                            if (!el) continue;
+                            m.node(el).set("yOffset", double(y));
+                            m.node(el).set("layer", std::string("HUD"));
+                            y += m.node(el).bounds.h + 4;
+                        }
+                        m.solve();
                         if ((swipe_ = m.find(dialog, "Swiper"))) {
                             scrollVertical_ = true;
                             m.node(swipe_).set("direction", 1.0);
@@ -839,8 +856,7 @@ namespace rp {
                             m.listenToTouches(swipe_, dialog);
                             m.setWindowSize(swipe_, m.node(dialog).bounds.h);
                             m.setScrollSize(swipe_,
-                                            std::max(0.f, 48.f + float(xmlItems_.size()) * 55.f -
-                                                              m.node(dialog).bounds.h));
+                                            std::max(0.f, y - m.node(dialog).bounds.h));
                             for (auto& [key, item] : xmlItems_)
                                 if (auto el = m.find(children, key, true))
                                     scrollOrigins_[el] = m.node(el).number("yOffset", 48);
@@ -852,18 +868,21 @@ namespace rp {
                 // uninitialized template.
                 show("Frame", false);
                 // Match MenuTab and MenuTabCurrency's original onInit/onPostSolve placement.
-                double x = 40;
+                m.setLayerOrder("TABS", 3);
+                double x = 8;
                 for (int i = 1; i <= 4; ++i)
                     if (auto id = m.find(1, "Tab" + std::to_string(i), true)) {
                         m.node(id).set("xOffset", x);
                         if (auto bg = m.find(id, "bg"))
                             x += m.node(bg).number("width") + m.node(bg).number("leftWidth") +
                                  m.node(bg).number("rightWidth") * .5;
+                        m.node(id).set("layer", std::string("TABS"));
                     }
-                x = -36;
+                x = m.width() - 4;
                 for (int i = 7; i >= 5; --i)
                     if (auto id = m.find(1, "Tab" + std::to_string(i), true)) {
-                        m.node(id).set("xOffset", x);
+                        m.node(id).set("absoluteX", x - m.node(id).bounds.w);
+                        m.node(id).set("layer", std::string("TABS"));
                         x -= m.node(id).bounds.w + 2;
                         if (auto label = m.find(id, "Text"))
                             m.node(label).set(
@@ -876,7 +895,16 @@ namespace rp {
                 if (auto list =
                         m.find(1, name == "tabbed_menu_misc" ? "itemListMisc" : "itemList", true))
                     if ((swipe_ = m.find(list, "Swiper"))) {
+                        m.node(list).set("absoluteX", 0.0);
+                        m.node(list).set("width", double(m.width()));
+                        m.node(list).set("layer", std::string("HUD"));
                         m.node(list).set("clipChildren", true);
+                        if (auto touch = m.find(list, "Touch")) {
+                            m.node(touch).set("width", double(m.width()));
+                            m.node(touch).set("height", double(m.node(list).bounds.h));
+                            m.node(touch).set("layer", std::string("HUD"));
+                        }
+                        m.solve();
                         m.node(swipe_).set("direction", 0.0);
                         m.node(swipe_).set("mode", 1.0);
                         m.listenToTouches(swipe_, list);
@@ -886,8 +914,8 @@ namespace rp {
                         for (auto& [key, id] : xmlItems_)
                             if (auto el = m.find(list, key, true)) {
                                 auto index = std::stoi(key.substr(10));
-                                scrollOrigins_[el] =
-                                    index * m.width() * .2;
+                                m.node(el).set("layer", std::string("HUD"));
+                                scrollOrigins_[el] = 12 + index * m.width() * .2;
                             }
                     }
             }
@@ -928,7 +956,11 @@ namespace rp {
                         if (!g.owned.count(id))
                             for (auto c : {"red", "green", "blue"})
                                 set(element, "itemImage", c, 0.0);
-                        else if (!RPMenuHandler(g).gotMsgHaveMaterialsRequest(id))
+                        else
+                            for (auto c : {"red", "green", "blue"})
+                                set(element, "itemImage", c, 1.0);
+                        set(element, "itemImageSecondaryCentered", "visible", false);
+                        if (g.owned.count(id) && !RPMenuHandler(g).gotMsgHaveMaterialsRequest(id))
                             set(element, "itemImage", "alpha", .4);
                     } else if (name == "quest_log") {
                         const auto& q = g.quests.at(id);
@@ -1036,6 +1068,9 @@ namespace rp {
                     }
                 }
                 requestedStoreItem_.clear();
+                if (!shopSelection_ && xmlName_ != "tabbed_menu_maps")
+                    if (auto first = xmlItems_.find("tabbedItem0"); first != xmlItems_.end())
+                        shopSelection_ = first->second;
                 updateShopFrame(g);
                 m.solve();
             }
@@ -1241,11 +1276,11 @@ namespace rp {
         m.solve();
     }
 
-    std::optional<sfs::Message> PortView::xmlTouch(Game& g, float x, float y) {
+    std::optional<sfs::Message> PortView::xmlTouch(Game& g, float x, float y, unsigned captured) {
         if (!xmlMenu_)
             return {};
         auto& m = *xmlMenu_;
-        auto hit = m.hitTest(x, y);
+        auto hit = captured ? captured : m.hitTest(x, y);
         if (!hit)
             return {};
         auto owner = m.owner(hit);

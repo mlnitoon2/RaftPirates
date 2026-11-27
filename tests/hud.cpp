@@ -88,6 +88,16 @@ int main(int argc, char** argv) {
         auto price = shopMenu.find(frame, "PriceText");
         CHECK(price && shopMenu.node(price).text("text") == "10");
         shop.render(g, 0, "");
+        auto item = shopMenu.find(1, "tabbedItem0", true);
+        CHECK(item);
+        auto itemTouch = shopMenu.find(item, "Touch");
+        auto itemBounds = shopMenu.node(itemTouch).bounds;
+        CHECK(itemBounds.w > 0 && itemBounds.h > 0);
+        CHECK(shopMenu.hitTest(itemBounds.x + itemBounds.w/2,
+                               itemBounds.y + itemBounds.h/2) == itemTouch);
+        shop.touchDown(itemBounds.x + itemBounds.w/2, itemBounds.y + itemBounds.h/2);
+        shop.touch(g, itemBounds.x + itemBounds.w/2, itemBounds.y + itemBounds.h/2);
+        CHECK(shopMenu.isVisible(frame));
         bounds = hud.bounds("QuestMenu");
         req = view.touch(g, bounds.x + bounds.w / 2, bounds.y + bounds.h / 2);
         CHECK(req && req->payload.getString("c") == "gs_quest");

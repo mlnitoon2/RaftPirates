@@ -106,7 +106,7 @@ namespace rp {
         sys::localization::LocalizationManager strings_;
         void openXml(const Game&, const std::string&);
         void renderXml(sys::gfx::Image&, const Game&, const std::string&);
-        std::optional<sfs::Message> xmlTouch(Game&, float, float);
+        std::optional<sfs::Message> xmlTouch(Game&, float, float, unsigned captured = 0);
         void renderPanel(sys::gfx::Image&, const Game&);
         void loadMap(const Game&);
     };
