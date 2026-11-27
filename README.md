@@ -16,22 +16,17 @@ Build and expand your raft, dive for materials and blueprints, explore the ocean
 
 A GitHub account may be needed to download build artifacts. Available original assets are included automatically in Windows packages. The asset collection is still incomplete, so additional files from your own original APK may be needed. A compatible game server is required for online gameplay.
 
-[Full Windows instructions](docs/DESKTOP.md)
+[Full Windows instructions](docs/BUILDING.md)
 
 ## Current progress
 
 The client includes reconstructed startup, login, world loading, raft construction, diving, map navigation, shop and combat systems. These are at different stages of development; this is not a finished or fully playable release.
 
-[Latest builds](https://github.com/mlnitoon2/RaftPirates/actions) · [Coverage](docs/COVERAGE.md) · [Remaining work](docs/REMAINING.md)
+[Latest builds](https://github.com/mlnitoon2/RaftPirates/actions)
 
-## For developers
+## Building Raft Pirates
 
-- [Desktop build instructions](docs/DESKTOP.md)
-- [Android and source builds](docs/BUILDING.md)
-- [Game startup and networking](docs/STARTUP_AND_GAMEPLAY.md)
-- [Asset information](docs/ASSETS.md)
-- [Tutorial reconstruction](docs/TUTORIAL.md)
-- [Original game behavior](docs/NATIVE_BEHAVIOR.md)
+See the [build guide](docs/BUILDING.md) for Windows, Linux, Android and asset setup.
 
 ## About the project
 

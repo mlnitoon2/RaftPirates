@@ -1,3 +1,0 @@
-# Raft class reconstruction
-
-Original `rp::GridObject::Destroyed()` at `0x41d850` compares state to 2. `GetBattlePoints` at `0x41dcf4` returns current points, and `GetTotalBattlePoints` at `0x41d844` reads the static definition. `rp::Raft::GetBattlePoints` at `0x558cc0` adds component current points and a separate integer at offset 0x54. Its exact meaning is unknown; the reconstruction calls it `bonusBattlePoints` and initializes it to zero. `GetTotalBattlePoints` at `0x558d14` adds static hull and component totals; `GetHealth` at `0x558c4c` divides hull plus component current points (excluding the extra integer) by the total. A zero denominator returns zero in the reconstruction. The original inheritance hierarchy and layout are not recovered.

@@ -40,7 +40,7 @@ jobs:
         if: always()
         run: |
           if [ -f build/libraftpirates_game.a ]; then
-            python3 RaftPirates/tools/progress_page.py --archive build/libraftpirates_game.a --historical RaftPirates/docs/MATCHING_STATUS.md --namespace rp --output progress-site --tests "${{ steps.host_tests.outcome }}"
+            python3 RaftPirates/tools/progress_page.py --archive build/libraftpirates_game.a --historical RaftPirates/evidence/matching_status.txt --namespace rp --output progress-site --tests "${{ steps.host_tests.outcome }}"
           fi
       - name: Upload verification dashboard
         if: always() && hashFiles('progress-site/index.html') != ''
