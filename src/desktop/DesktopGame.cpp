@@ -8,6 +8,7 @@
 #include <map>
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 #include <optional>
 #include <stdexcept>
 #ifdef _WIN32
@@ -36,13 +37,16 @@ namespace {
             }
             if (SDL_InitSubSystem(SDL_INIT_AUDIO) == 0) {
                 audioInitialized_ = true;
-                Mix_Init(MIX_INIT_MP3);
+                if((Mix_Init(MIX_INIT_MP3)&MIX_INIT_MP3)==0)
+                    log(std::string("MP3 decoder unavailable: ")+Mix_GetError());
                 audioOpen_ = Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0;
                 if (audioOpen_)
                     Mix_AllocateChannels(24);
             }
             if (!audioOpen_)
-                log("Audio device unavailable; continuing without audio");
+                log(std::string("Audio device unavailable: ")+Mix_GetError());
+            for(const auto* path:{"audio/music/theme.mp3","audio/sfx/menu_button_down.wav"})
+                if(!fs::is_regular_file(root_/path))log(std::string("Missing original audio asset: ")+path);
         }
 
         ~DesktopServices() override {
@@ -86,7 +90,7 @@ namespace {
                 return;
             music_ = Mix_LoadMUS((root_ / path).string().c_str());
             if (!music_ || Mix_PlayMusic(music_, -1) < 0)
-                log("Unable to play music: " + path);
+                log("Unable to play music: " + path + ": " + Mix_GetError());
         }
 
         void pauseMusic(bool paused) override {
@@ -108,7 +112,7 @@ namespace {
             if (it == effects_.end()) {
                 auto* chunk = Mix_LoadWAV((root_ / path).string().c_str());
                 if (!chunk) {
-                    log("Unable to load sound: " + path);
+                    log("Unable to load sound: " + path + ": " + Mix_GetError());
                     return;
                 }
                 it = effects_.emplace(path, chunk).first;
@@ -194,6 +198,11 @@ namespace {
 
         void log(const std::string& message) override {
             std::cerr << message << '\n';
+            // GUI-subsystem Windows executables have no console by default.
+            std::error_code ec;
+            fs::create_directories(paths_.saves,ec);
+            std::ofstream file(paths_.saves/"desktop.log",std::ios::app);
+            if(file)file<<message<<'\n';
         }
 
         bool poll() {

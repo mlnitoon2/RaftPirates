@@ -1,4 +1,5 @@
 #include "DesktopAuth.h"
+#include "AuthEndpoint.h"
 #include "sys/net/HttpClient.h"
 #include <nlohmann/json.hpp>
 #include <stdexcept>
@@ -45,15 +46,10 @@ namespace rp::desktop {
                        const std::string& version, const std::string& caFile, bool allowHttp) {
             if (endpoint.empty() || endpoint.find_first_of("?#@\\ \r\n\t") != std::string::npos)
                 return fail("Authentication server not configured.");
-            const bool local = endpoint.rfind("http://127.0.0.1/", 0) == 0 ||
-                endpoint.rfind("http://127.0.0.1:", 0) == 0 ||
-                endpoint.rfind("http://localhost/", 0) == 0 ||
-                endpoint.rfind("http://localhost:", 0) == 0 ||
-                endpoint.rfind("http://[::1]/", 0) == 0 ||
-                endpoint.rfind("http://[::1]:", 0) == 0;
+            const bool local = privateHttpEndpoint(endpoint);
             if (endpoint.rfind("https://", 0) != 0 &&
                 !(endpoint.rfind("http://", 0) == 0 && (local || allowHttp)))
-                return fail("Authentication requires HTTPS (except local test servers).");
+                return fail("Authentication requires HTTPS for public servers.");
             auto u = encode(email), p = encode(password);
             // Retain the original Raft Pirates auth endpoint's Android compatibility tag.
             auto address = endpoint + "?u=" + u +

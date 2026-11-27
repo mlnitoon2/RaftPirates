@@ -51,6 +51,10 @@ def package(exe, prefix, output, status, revision, hydra_revision):
         "xml_bin/game_manifest.bin", "gfx/menu/menu_overlay.pvr",
         "font/rp_font_title.font", "font/rp_font_title.alphabet",
         "gfx/font/rp_font_title.png", "text/en.utf8",
+        "audio/music/theme.mp3", "audio/music/ambient.mp3",
+        "audio/music/battle.mp3", "audio/music/underwater.mp3",
+        "audio/sfx/menu_button_down.wav", "audio/sfx/diving_game_collect.wav",
+        "audio/sfx/diving_game_end.wav",
     )
     missing = [path for path in required_assets if not (asset_source / path).is_file()]
     bundled_assets = not missing and len(verified) == len(inventory)

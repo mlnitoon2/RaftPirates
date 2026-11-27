@@ -1,5 +1,6 @@
 #include "sys/platform/Services.h"
 #include "sys/android/Auth.h"
+#include "sys/android/Sound.h"
 #include "sys/android/Jni.h"
 #include "sys/android/Presenter.h"
 #include "sys/res/Archive.h"
@@ -401,10 +402,12 @@ extern "C" JNIEXPORT void JNICALL HY(init)(JNIEnv*, jobject) {
 }
 
 extern "C" JNIEXPORT void JNICALL HY(sendMsgMusicFinished)(JNIEnv* e, jobject obj) {
+    sys::android::queueMusicFinished();
     dispatch(e, obj, [&](auto& p) { game::musicFinished(p); });
 }
 
 extern "C" JNIEXPORT void JNICALL HY(sendMsgSoundFinished)(JNIEnv* e, jobject obj, jint id) {
+    sys::android::queueSoundFinished(id);
     dispatch(e, obj, [&](auto& p) { game::soundFinished(p, id); });
 }
 
