@@ -22,6 +22,14 @@ int main() {
         Game game;
         loadPlayerFixture(game);
         {
+            Game dive;dive.ready=true;dive.diveState.parent=1;dive.diveState.object=2;
+            BuildModeState first(dive),second(dive);
+            CHECK(first.SendBonusMaterials().has_value());
+            CHECK(!second.SendBonusMaterials());
+            dive.extension("gs_error",{});
+            CHECK(second.SendBonusMaterials().has_value());
+        }
+        {
             Game shop;
             StoreItem gold;gold.id=1;gold.name="gold_test";gold.group="gold";
             StoreItem diamond;diamond.id=2;diamond.name="diamond_test";diamond.group="diamond";

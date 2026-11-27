@@ -60,7 +60,8 @@ namespace rp {
         void setConstructionTime(float time) { constructionTime_=time; }
         float constructionTime() const { return constructionTime_; }
         int objectState() const { return object_.state; }
-        int battlePoints() const { return object_.GetBattlePoints(); }
+        int battlePoints() const { return visualBattlePoints_.value_or(object_.GetBattlePoints()); }
+        void setBattlePoints(int points) { visualBattlePoints_=points; }
         void Attack();
         virtual int submit(sys::gfx::GfxManager&, std::map<std::string, std::shared_ptr<sys::gfx::Image>>&,
                    std::map<std::string, sys::res::ResourceAEAnim>&, sys::gfx::AnimationRenderer&,
@@ -69,6 +70,7 @@ namespace rp {
       private:
         const OceanView& ocean_;
         const GridObject& object_;
+        std::optional<int> visualBattlePoints_;
         const GridObjectInfo& definition_;
         sys::gfx::Vec2 world_;
         float scale_ = 1, time_ = 0, slack_ = 0, constructionTime_=0;

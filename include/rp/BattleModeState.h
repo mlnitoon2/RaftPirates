@@ -65,7 +65,10 @@ namespace rp {
         bool swapPopupVisible()const{return swapPopupVisible_;}
         int dropdownType()const{return dropdownType_;}
         bool hudBlocked(const std::string& item)const{return blockedHud_.count(item)!=0;}
-        bool shouldSendClientReady()const{return phase_==Phase::Fighting&&needReady_&&!waiting()&&!dicePaused_&&animationRemaining_<=0&&!swapPopupVisible_;}
+        bool shouldSendClientReady()const{return phase_==Phase::Fighting&&needReady_&&!waiting()&&!dicePaused_&&animationRemaining_<=0&&!swapPopupVisible_&&!pendingSwap_;}
+        unsigned resultSequence() const { return resultSequence_; }
+        bool resultAttacker() const { return resultAttacker_; }
+        int resultAttackRaft() const { return resultAttackRaft_; }
         void cancelSwapPopup(){swapPopupVisible_=false;}
         std::optional<sfs::Message> RaftSelect(int own,int enemy,const Player&);
         std::optional<sfs::Message> endBattleAndPlunder();
@@ -109,7 +112,7 @@ namespace rp {
         }
 
         bool readyForDice() const {
-            return phase_ == Phase::Fighting && !waiting() && !needReady_ && !dicePaused_ && animationRemaining_<=0 && !swapPopupVisible_;
+            return phase_ == Phase::Fighting && !waiting() && !needReady_ && !dicePaused_ && animationRemaining_<=0 && !swapPopupVisible_ && !pendingSwap_;
         }
 
         bool attacker() const {
@@ -168,6 +171,9 @@ namespace rp {
         float animationRemaining_=0, introRemaining_=0;
         bool dicePaused_=false,battleView_=false,swapPopupVisible_=false;
         int dropdownType_=-1;
+        unsigned resultSequence_=0;
+        bool resultAttacker_=false;
+        int resultAttackRaft_=0;
         std::optional<sfs::Message> action(const std::string& command,
                                            sfs::SFSObjectWrapper data = {}, bool withSync = true);
     };

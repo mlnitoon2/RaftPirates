@@ -65,6 +65,7 @@ namespace rp {
         sfs::SFSObjectWrapper gameVars;
         std::shared_ptr<sfs::SFSArrayWrapper> treasureMaps;
         float diveFraction = 0;
+        bool diveCollectPending = false;
         float daringFraction = 0;
         void accept(const sfs::Message&);
         void extension(const std::string&, const sfs::SFSObjectWrapper&);

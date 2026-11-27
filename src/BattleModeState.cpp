@@ -25,7 +25,7 @@ namespace rp {
         }
         introRemaining_=std::max(0.f,introRemaining_-dt);
         if(!dicePaused_)animationRemaining_=std::max(0.f,animationRemaining_-dt);
-        if(pendingSwap_&&!dicePaused_&&animationRemaining_<=0)SwapPopup();
+        if(pendingSwap_&&!waiting()&&!dicePaused_&&animationRemaining_<=0)SwapPopup();
     }
     void BattleModeState::gotMsgBattleConfirmSwapStance(){
         confirmSwap_=true;swapPopupVisible_=false;
@@ -189,7 +189,7 @@ namespace rp {
     }
 
     std::optional<sfs::Message> BattleModeState::SendClientReady(bool confirmSwap) {
-        if (phase_ != Phase::Fighting || !needReady_ || waiting() || animationRemaining_>0 || dicePaused_)
+        if (phase_ != Phase::Fighting || !needReady_ || waiting() || pendingSwap_ || animationRemaining_>0 || dicePaused_)
             return {};
         if(swapPopupVisible_){confirmSwap_=true;swapPopupVisible_=false;}
         O p;
@@ -296,6 +296,9 @@ namespace rp {
         if (c == "gs_battle_over") {
             if (phase_ != Phase::Over) {
                 phase_ = Phase::Over;
+                pendingSwap_.reset();
+                swapPopupVisible_=false;
+                dicePaused_=false;
                 lastResult_ = p;
                 pending_.clear();
             }
@@ -376,6 +379,9 @@ namespace rp {
             own->HandleBattleOutcome(results.get(), player.objects);
             enemy->HandleBattleOutcome(results.get(), opponent_->objects);
             lastResult_ = p;
+            resultAttacker_=attacker_;
+            resultAttackRaft_=attacker_?ownRaft_:enemyRaft_;
+            ++resultSequence_;
             PlayBattleAnimations();
             ++sync_;
             needReady_ = true;
@@ -391,13 +397,13 @@ namespace rp {
             swap_ = false;
             confirmSwap_=false;swapPopupVisible_=false;HideDropdown();
         } else if (c == "gs_swap_stance") {
-            if (p.get("sync_counter")&&!pendingSwap_) {
+            if ((phase_==Phase::Fighting||phase_==Phase::Positioning)&&p.get("sync_counter")&&!pendingSwap_) {
                 pendingSwap_=p;
-                if(animationRemaining_<=0&&!dicePaused_)SwapPopup();
+                if(!waiting()&&animationRemaining_<=0&&!dicePaused_)SwapPopup();
             }
         }
-        if (pending_ == c || c == "gs_battle_attack" || c == "gs_battle_defend" ||
-            c == "gs_swap_stance")
+        if (pending_ == c || ((c == "gs_battle_attack" || c == "gs_battle_defend") &&
+            (pending_ == "gs_battle_attack" || pending_ == "gs_battle_defend")))
             pending_.clear();
         return true;
     }

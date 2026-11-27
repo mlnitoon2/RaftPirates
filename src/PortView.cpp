@@ -179,8 +179,10 @@ namespace rp {
             renderXml(out, g, "piratemap_menu");
             return out;
         }
-        if (g.diveState.state != 3)
+        if (g.diveState.state != 3){
             diveSeen_ = false;
+            if(!g.diveState.Diving())diving_.reset();
+        }
         if (diveStarted_ && g.diveState.state == 3 && !diveSeen_ &&
             (g.diveState.remaining <= 0 ||
              g.diveState.totalSeconds - g.diveState.remaining >=
@@ -467,7 +469,8 @@ namespace rp {
                 if (g.diveState.Diving()) {
                     if (g.diveSeconds > 0)
                         diveStarted_ = true;
-                    return g.dive(g.diveSeconds > 0 ? "dive_info" : "dive_collect");
+                    if(g.diveSeconds>0)return g.dive("dive_info");
+                    return BuildModeState(g).SendBonusMaterials();
                 }
                 diveStarted_ = true;
                 return g.dive("dive_start");

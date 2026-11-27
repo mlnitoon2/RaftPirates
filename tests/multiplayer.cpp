@@ -128,10 +128,14 @@ int main(int argc, char** argv) {
     check(battle.syncCounter() == 3, "duplicate result ignored");
     check(battle.battleRolls().size()==1&&battle.animationRemaining()==2.5f,"original dice animation timing");
     check(!battle.SendClientReady(),"wait until dice animation finishes");
-    battle.tick(2.5f);
+    check(battle.resultSequence()==1&&battle.resultAttackRaft()==1&&battle.resultAttacker(),"result source identity");
     O swap;
     swap.put("sync_counter", int32_t(3));
     game.extension("gs_swap_stance", swap);
+    game.extension("gs_swap_stance", swap);
+    check(battle.attacker()&&!battle.shouldSendClientReady(),"defer duplicate swap during animation");
+    battle.tick(2.5f);
+    check(battle.syncCounter()==4,"deferred swap applied once");
     check(!battle.attacker(), "stance swap");
     check(
         payload(battle.SendClientReady(), "gs_battle_client_ready").getBool("confirm_swap_stance"),

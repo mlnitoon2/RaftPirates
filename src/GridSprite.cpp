@@ -31,6 +31,7 @@ namespace rp {
         accessory->SetVisible(visible_);
         accessory->SetPriorities();
         accessory->AddToTick();
+        accessory->tick(0);
         const int id = accessory->GetID();
         accessories_.emplace(id, std::move(accessory));
         return true;

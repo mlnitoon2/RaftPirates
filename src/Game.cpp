@@ -107,6 +107,7 @@ namespace rp {
 
     void Game::applyExtension(const std::string& cmd, const O& p) {
         status = cmd;
+        if(cmd=="dive_info"||cmd=="dive_fail"||cmd=="gs_error"||cmd=="gs_materials_changed")diveCollectPending=false;
         if (p.get("boss_data")) {
             auto boss = p.getSFSObj("boss_data");
             if (boss && boss->getInt("user_id") > 0)

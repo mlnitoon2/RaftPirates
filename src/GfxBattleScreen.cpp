@@ -133,10 +133,19 @@ namespace rp {
             if (net.phase() == Phase::Over)
                 SwoopOut();
         }
+        if(lastPhase_==Phase::Idle||net.phase()==Phase::Starting)lastResultSequence_=0;
         lastPhase_ = net.phase();
         lastAttacker_ = net.attacker();
         if (net.hasOpponent()) {
             placement_.Update(game, net.opponent());
+            if(net.resultSequence()!=lastResultSequence_){
+                lastResultSequence_=net.resultSequence();
+                if(net.animationRemaining()>0&&net.resultAttackRaft()>0){
+                    auto& view=net.resultAttacker()?ownView_:enemyView_;
+                    view.gotMsgUpdateOceanView(net.resultAttacker()?static_cast<const Player&>(game):net.opponent());
+                    view.PlayRaftAttackAnims(net.resultAttackRaft(),0);
+                }
+            }
             if (net.phase() == Phase::Fighting) {
                 if (const auto* raft = game.GetRaftByID(net.ownRaftId()))
                     if (focusedOwn_ != raft->id) SetPlayerRaft(true, *raft, false);
@@ -199,6 +208,7 @@ namespace rp {
     int GfxBattleScreen::pick(const Player& player, const OceanView& view, float x, float y,
                               int left) const {
         auto world = view.ScreenToWorld({x - left + 160, y});
+        if(!std::isfinite(world.x)||!std::isfinite(world.y)||double(world.x)<INT32_MIN||double(world.x)>INT32_MAX||double(world.y)<INT32_MIN||double(world.y)>INT32_MAX)return 0;
         auto r = player.GetRaftAtPosition({int(std::floor(world.x)), int(std::floor(world.y))});
         return r && !r->Destroyed() && r->bp > 0 ? r->id : 0;
     }
@@ -242,7 +252,7 @@ namespace rp {
                 const auto& row=rolls[i];
                 for(unsigned side=0;side<2;++side){
                     const bool attack=side==0;
-                    const bool own=(attack==net.attacker());
+                    const bool own=(attack==net.resultAttacker());
                     const int value=attack?row.attack:row.defense;
                     const bool won=attack?row.attack>row.defense:row.defense>row.attack;
                     const bool win=elapsed>=1.25f&&won;

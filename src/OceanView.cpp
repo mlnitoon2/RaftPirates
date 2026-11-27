@@ -91,6 +91,7 @@ namespace rp {
         e->definition = definition;
         e->world = world;
         e->sprite = std::make_unique<GridSprite>(*this, e->object, e->definition, world, zoom_);
+        e->sprite->setBattlePoints(object.GetBattlePoints());
         if (const auto* c=dynamic_cast<const RaftComponent*>(&object)) e->sprite->setConstructionTime(c->GetRemainingTime());
         if(e->sprite->constructionTime()>0) e->sprite->AddAccessorySprite(std::make_unique<PerimeterWallSprite>(this,e->sprite.get()));
         appearance(*e, parent ? parent : object.id);
@@ -109,6 +110,7 @@ namespace rp {
         }
         auto& e = *it->second;
         e.object = object;
+        e.sprite->setBattlePoints(object.GetBattlePoints());
         e.definition = definition;
         e.world = world;
         if (const auto* c=dynamic_cast<const RaftComponent*>(&object)) e.sprite->setConstructionTime(c->GetRemainingTime());
@@ -545,6 +547,13 @@ namespace rp {
             }
         };
         const bool diving = dive && dive->Diving();
+        const bool changed=diving&&(lastDiveParent_!=dive->parent||lastDiveObject_!=dive->object);
+        if(lastDiving_&&(!diving||changed)){
+            if(auto* previous=getGridSprite(lastDiveParent_,lastDiveObject_)){
+                previous->RemoveAccessorySprite(2);previous->RemoveAccessorySprite(8);
+            }
+            diveLoadKey_.reset();
+        }
         if (lastDiving_ && !diving)
             returnStart_ = time;
         if (diving) {

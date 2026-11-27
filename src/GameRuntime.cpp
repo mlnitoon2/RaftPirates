@@ -188,6 +188,7 @@ namespace {
             rt.game.pendingMap.reset();
             rt.game.pendingZone.reset();
             rt.game.pendingDiscovery.reset();
+            if(msg.payload.getString("c")=="dive_collect")rt.game.diveCollectPending=false;
             throw;
         }
         rt.status = "SENT " + msg.payload.getString("c");
@@ -275,7 +276,7 @@ namespace {
             }
             return;
         }
-        platform.log("Pass 29: server supplied initial player and ocean; accepting game session");
+        platform.log("server supplied initial player and ocean; accepting game session");
         acceptGameSession(platform);
     }
 
@@ -410,7 +411,7 @@ namespace sys::platform::game {
             rt.initialized = true;
             rt.status.clear();
             rt.last = Clock::now();
-            platform.log("Raft Pirates Pass 32 startup: loading initialized; property endpoint " +
+            platform.log("Raft Pirates startup: loading initialized; property endpoint " +
                          std::string(rt.authEndpoint.empty() ? "missing" : "configured"));
         });
     }
@@ -930,7 +931,7 @@ namespace sys::platform::game {
             rt.connectStarted = Clock::now();
             rt.status = "LOGGING IN";
             rt.loginSent = true;
-            platform.log("Pass 29: SmartFox login request sent");
+            platform.log("SmartFox login request sent");
             try {
                 platform.login("RaftPirates", rt.user, rt.session, *p);
             } catch (...) {
@@ -1003,7 +1004,7 @@ namespace sys::platform::game {
                         !player->getSFSArray("blueprints"))
                         throw std::runtime_error("Incomplete initial player snapshot");
                     rt.snapshotReceived = true;
-                    platform.log("Pass 29: initial player packet validated");
+                    platform.log("initial player packet validated");
                 }
                 if (command == "gs_ocean" && !rt.connected && !data.getSFSObj("ocean_state"))
                     throw std::runtime_error("Incomplete initial ocean snapshot");

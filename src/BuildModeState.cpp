@@ -107,7 +107,7 @@ namespace rp {
 
     std::optional<sfs::Message> BuildModeState::SendBonusMaterials(){
         const auto& dive=game_.diveState;
-        if(!game_.ready||!waiting_.empty()||dive.parent<=0||dive.object<=0)return {};
+        if(!game_.ready||!waiting_.empty()||game_.diveCollectPending||dive.parent<=0||dive.object<=0)return {};
         sfs::SFSObjectWrapper p;
         p.put("object_id",int32_t(dive.object));p.put("object_type",int32_t(1));p.put("parent_id",int32_t(dive.parent));
         auto bonus=std::make_shared<sfs::SFSArrayWrapper>();
@@ -117,7 +117,7 @@ namespace rp {
             auto item=std::make_shared<sfs::SFSObjectWrapper>();
             item->put("id",int32_t(id));item->put("amt",int32_t(amount));bonus->values.emplace_back(item);
         }
-        p.put("bonus_items",bonus);StartWaiting("gs_materials_changed");
+        p.put("bonus_items",bonus);StartWaiting("gs_materials_changed");game_.diveCollectPending=true;
         return Game::request("dive_collect",p);
     }
     bool BuildModeState::gotMsgDivingGameShow(const MsgDivingGameShow&){
