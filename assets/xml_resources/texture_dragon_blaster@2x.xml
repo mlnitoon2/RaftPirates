@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:513298ab7a34ee4790928d7795862480$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_dragon_blaster@2x.png" width="256" height="256">
+    <sprite n="dragon_blaster" x="2" y="2" w="192" h="168"/>
+    <sprite n="thunder_puff" x="196" y="2" w="18" h="18" oX="1" oY="1" oW="20" oH="20"/>
+</TextureAtlas>

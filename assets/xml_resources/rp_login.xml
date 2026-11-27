@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:12c34678524113c6891f89670dff80c7$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/menu/rp_login.png" width="256" height="256">
+    <sprite n="login_logo" x="1" y="148" w="129" h="99"/>
+    <sprite n="login_question" x="175" y="1" w="22" h="22"/>
+    <sprite n="login_robot" x="1" y="30" w="109" h="117"/>
+    <sprite n="login_textbox" x="1" y="1" w="173" h="28"/>
+</TextureAtlas>

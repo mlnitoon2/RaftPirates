@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:5d95c17e00c5d588b7b5f42bff3d381d$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_cauldron_cannon.png" width="128" height="128">
+    <sprite n="culdron_cannon_01" x="2" y="2" w="96" h="78" oX="0" oY="10" oW="96" oH="96"/>
+    <sprite n="culdron_cannon_02" x="2" y="82" w="32" h="30" oX="0" oY="2" oW="32" oH="32"/>
+</TextureAtlas>
