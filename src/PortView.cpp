@@ -930,6 +930,8 @@ namespace rp {
                         set(element, "itemName", "visible", true);
                     } else {
                         const auto& item = g.storeItems.at(id);
+                        // Original gotStoreItemInfo sets the template's Layer to HUD.
+                        m.node(element).set("layer",std::string("HUD"));
                         set(element, "itemImage", "spriteName", item.image);
                         set(element, "itemImage", "sheetName", item.sheet);
                         const bool cashTab=name=="tabbed_menu_gold"||name=="tabbed_menu_diamonds";

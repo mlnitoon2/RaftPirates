@@ -15,6 +15,8 @@ namespace rp {
 
     void BattleShipPlacementSprite::Update(const Player& player) {
         pieces_ = player.rafts;
+        bossCores_.clear();adjacentBossCores_.clear();
+        for(const auto& raft:pieces_)if(!raft.Destroyed()&&raft.getName(player.objects)=="BossCoreRaft")bossCores_.push_back(raft.id);
         SelectRaft(selected_);
         if (!selected_) {
             auto it = std::find_if(pieces_.begin(), pieces_.end(),
@@ -41,9 +43,11 @@ namespace rp {
         SetObjectPosition(position);
     }
 
+    std::vector<int> BattleShipPlacementSprite::BossCoreRaftsInMe()const{return bossCores_;}
+    const std::vector<int>& BattleShipPlacementSprite::BossCoreRaftsByMe()const{return adjacentBossCores_;}
     void BattleShipPlacementSprite::Revert() {
         offset_ = {};
-        highlighted_.clear();
+        highlighted_.clear();adjacentBossCores_.clear();
     }
 
     bool BattleShipPlacementSprite::OkayToPlace(const BattleShipPlacementSprite& other) const {
@@ -95,7 +99,9 @@ namespace rp {
     }
 
     void BattleShipPlacementSprite::HighlightRaftsNextTo(const BattleShipPlacementSprite& other) {
-        highlighted_.clear();
+        highlighted_.clear();adjacentBossCores_.clear();
+        for(const auto& b:other.pieces_)if(std::find(other.bossCores_.begin(),other.bossCores_.end(),b.id)!=other.bossCores_.end())
+            for(const auto& a:pieces_)if(!a.Destroyed()&&distance(a,offset_,b,other.offset_)==1){adjacentBossCores_.push_back(b.id);break;}
         for (const auto& a : pieces_)
             if (!a.Destroyed())
                 for (const auto& b : other.pieces_)

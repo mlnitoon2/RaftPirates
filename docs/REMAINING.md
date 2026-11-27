@@ -100,6 +100,17 @@ Names newly implemented in source are listed here and removed from the provision
 - ARM64 build 45933481659 passed for the loader/geometry/battle/diving batch, using the preceding Hydra revision. Later changes and combined build need verification. Regression fixtures added but host tests and device visual parity are not yet established.
 - 46 requested names provisionally addressed; 20 requested names remain. No new compiled original-symbol measurement.
 
+## Pass 45 behavior and inventory review
+
+- 47 requested names have provisional source representations, including adapters and two existing menu query methods. 27 requested names remain. Barracks::AddedToOcean was added only as an attachment flag; keep it in the remaining list until native-equivalent construction tick registration is integrated. No fresh compiled-symbol measurement.
+- GridSprite animation slack is now added to elapsed time and consumed once, matching ARM32 0x5cd068. Accessory ownership, animation callbacks, piece updates and mute state are wired to the existing visual path; actual audio and particle backends are incomplete. AccessorySprite formats countdowns using the native %02d:%02d:%02d (0xa61708).
+- MapView uses server snapshots with interpolated marker movement; show/hide and confirmed movement adapters are used by PortView. Tutorial and HUD-block handlers retain only portable state, not full native message parity.
+- PlacementSprite shares base behavior with ItemPlacementSprite. Original base Select/OkayToPlace return false (0x5d763c/0x5d7644); nearest eligible edge and distance cutoff are portable choices. ShipPlacementSprite and PerimeterWallSprite are still open.
+- ExplosionFXSprite uses 1.5 seconds for raft and 0.5 seconds for non-raft from native GetTime 0x5b48a0, with native Sparatic predicate (raft or boss weapon). Portable renderer uses an effect timer and existing animation, not original random burst generation.
+- BossCoreRaftsInMe uses recovered name BossCoreRaft (0xa5f574) and excludes destroyed rafts; ByMe returns cached adjacent core IDs, not original raw raft pointers. No boss battle rule changes.
+- Menu status/category/popups/quest adapters retain server authority; original Lua message response schema is incomplete. Original misc shop XML sets the item layer to HUD; portable item nodes now receive this value. Cross-sell is intentionally not revived.
+- Pass 44 final ARM64 compile and 94 JNI exports passed; publication refused a stale revision because docs moved main. Pass 45 source commits not yet runtime tested. See PASS45_PARITY.md for evidence and limitations.
+
 ## Priority gaps
 
 - Original menu scripts: complete game/SWIG bindings, message dispatch, dynamic templates, tutorial and quest flows, all popups and transitions.
@@ -111,7 +122,7 @@ Names newly implemented in source are listed here and removed from the provision
 
 ## Remaining method names by class (provisional source review)
 
-455 names from the Pass 33 inventory now have named source implementations through Pass 44 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
+502 names from the Pass 33 inventory now have named source implementations through Pass 45 and have been removed from the provisional list below. This is not a compiled coverage increase; signatures and complete behavior remain unverified. The historical compiled measurements in MATCHING_STATUS.md and the README are unchanged.
 
 ### `rp::BuildModeState` (20)
 
@@ -125,45 +136,25 @@ Names newly implemented in source are listed here and removed from the provision
 
 `Pieces`, `RegisterAllClasses`, `Repair`, `Salvage`, `getAvailableActions`
 
-### `rp::AccessorySprite` (1)
+### `rp::Barracks` (1)
 
-`GetTimeString`
+`AddedToOcean`
 
-### `rp::Barracks` (2)
+### `rp::BattleShipPlacementSprite` (4)
 
-`AddedToOcean`, `SetConstructionInfo`
-
-### `rp::BattleShipPlacementSprite` (6)
-
-`BossCoreRaftsByMe`, `BossCoreRaftsInMe`, `ContainsGfx`, `HasAccessorySprite`, `SetPriority`, `SetScale`
+`ContainsGfx`, `HasAccessorySprite`, `SetPriority`, `SetScale`
 
 ### `rp::ShipPlacementSprite` (11)
 
 `ContainsGfx`, `OkayToPlace`, `Pieces`, `SetObjectPosition`, `SetPosition`, `SetPositionOfSprites`, `SetPriority`, `SetToObject`, `ShipPlacementSprite`, `Update`, `~ShipPlacementSprite`
 
-### `rp::GridSprite` (10)
-
-`AddAccessorySprite`, `BuildPiece`, `GetAccessorySprite`, `HasAccessorySprite`, `ListenForAnimation`, `RemoveAccessorySprite`, `SetMute`, `UpdateParticles`, `UpdatePiece`, `gotMsgAnimationStarted`
-
 ### `rp::PerimeterWallSprite` (10)
 
 `AddBalloons`, `Init`, `PerimeterWallSprite`, `RemoveFromTick`, `SetPriorities`, `SetPriority`, `SetVisible`, `Update`, `tick`, `~PerimeterWallSprite`
 
-### `rp::MapView` (9)
+### `rp::RPMenuHandler` (1)
 
-`gotMsgAnimationFinished`, `gotMsgConfirmMapMovement`, `gotMsgHidePirateMap`, `gotMsgShowPirateMap`, `gotMsgToggleBlockHudItem`, `gotMsgTutorialStartBattleMove`, `setPlayer`, `tutorialBattleStartShipMove`, `updatePlayerInfo`
-
-### `rp::PlacementSprite` (9)
-
-`GetClosestPosition`, `OkayToPlace`, `PlacementSprite`, `Select`, `SetPosition`, `SetPriorities`, `SetToObject`, `Update`, `~PlacementSprite`
-
-### `rp::ExplosionFXSprite` (8)
-
-`ExplosionFXSprite`, `GetTime`, `Init`, `RemoveFromTick`, `Sparatic`, `Update`, `tick`, `~ExplosionFXSprite`
-
-### `rp::RPMenuHandler` (8)
-
-`gotMsgPopPopUpGlobal`, `gotMsgQuestRead`, `gotMsgRequestLocalizedChristeningText`, `gotMsgStartDialog`, `gotMsgStoreCategoryRequest`, `gotMsgStoreDisplayStatus`, `gotSimpleRequest`, `topPopUp`
+`gotMsgRequestLocalizedChristeningText`
 
 ### `rp::DivingUnit` (1)
 

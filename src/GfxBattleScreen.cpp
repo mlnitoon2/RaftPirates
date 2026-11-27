@@ -226,6 +226,7 @@ namespace rp {
         submitSprite(gfx, "battle_vs", 295, 9, 50, 50);
         if (net.isBoss())
             submitSprite(gfx, "battle_boss_token", 596, 61, 34, 34);
+        std::set<std::pair<bool,int>> drawnExplosions;
         if (!moving && net.hasOpponent())
             for (const auto& hit : damage_) {
                 const auto& player = hit.own ? static_cast<const Player&>(game) : net.opponent();
@@ -236,7 +237,7 @@ namespace rp {
                 auto point = view.WorldToScreen({float(raft->x) + .5f, float(raft->y) + .5f});
                 point.x += hit.own ? -160 : 160;
                 auto fx=explosions_.find({hit.own,hit.raft});
-                if (explosion_ && !explosion_->comps.empty() && fx!=explosions_.end()) {
+                if (explosion_ && !explosion_->comps.empty() && fx!=explosions_.end() && drawnExplosions.emplace(hit.own,hit.raft).second) {
                     const auto& comp = explosion_->comps.front();
                     float elapsed = fx->second.elapsed();
                     if(fx->second.Sparatic()&&comp.duration()>0)elapsed=std::fmod(elapsed,comp.duration());

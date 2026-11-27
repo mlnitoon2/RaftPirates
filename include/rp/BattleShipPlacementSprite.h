@@ -12,6 +12,8 @@ namespace rp {
         bool Select(int id);
         void HighlightAttackRafts(const BattleShipPlacementSprite& other);
         void UpdateParticles();
+        std::vector<int> BossCoreRaftsInMe()const;
+        const std::vector<int>& BossCoreRaftsByMe()const;
         void SetObjectPosition(Cell position);
         void SetPositionOfSprites(Cell position);
         void Revert();
@@ -38,7 +40,7 @@ namespace rp {
 
       private:
         std::vector<Raft> pieces_;
-        std::vector<int> highlighted_;
+        std::vector<int> highlighted_,bossCores_,adjacentBossCores_;
         Cell offset_{};
         int selected_ = 0;
     };
