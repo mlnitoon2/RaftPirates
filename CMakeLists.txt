@@ -104,7 +104,7 @@ add_library(raftpirates_game STATIC
 target_include_directories(raftpirates_game PUBLIC include)
 target_link_libraries(raftpirates_game PUBLIC hydra sfs_legacy)
 if(ANDROID OR HYDRA_DESKTOP_JNI)
-  add_library(raftpirates SHARED $<TARGET_OBJECTS:hydra_android_game>)
+  add_library(raftpirates SHARED src/android/LegacyGameBridge.cpp ${HYDRA_LEGACY_DIR}/src/android/Auth.cpp)
   target_link_libraries(raftpirates PRIVATE raftpirates_game hydra_java sfs_java)
   if(ANDROID)
     target_link_options(raftpirates PRIVATE "-Wl,--no-undefined" "-Wl,-z,max-page-size=16384")
