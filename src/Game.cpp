@@ -301,7 +301,7 @@ namespace rp {
             delta(*this, p);
             if (p.getBool("diver")) {
                 diveCollectPending = false;
-                diveState = {};
+                diveState.FinishDive();
                 diveSeconds = 0;
                 diveFraction = 0;
             }
@@ -410,8 +410,16 @@ namespace rp {
                             c.SetState(num(p, "state", c.state));
                             c.Repair(num(p, "current_bp", num(p, "battle_points", c.bp)),
                                      objects.count(c.type) ? objects.at(c.type).bp : c.bp);
-                            if (p.get("time_remaining_secs"))
-                                c.SetRemainingTime(num(p, "time_remaining_secs"));
+                            if (p.get("time_remaining_secs")) {
+                                const float remaining = float(num(p, "time_remaining_secs"));
+                                if (cmd == "gs_use_clock" && remaining >= 0 &&
+                                    remaining < c.GetRemainingTime())
+                                    c.UseClock(remaining);
+                                else {
+                                    c.clock = {};
+                                    c.SetRemainingTime(remaining);
+                                }
+                            }
                         }
             }
         } else if (cmd == "build_limit_update")
@@ -546,7 +554,8 @@ namespace rp {
     }
 
     std::optional<Message> Game::collectDive() {
-        if (!ready || diveCollectPending || !diveState.Diving() || diveState.remaining > 0 ||
+        if (!ready || diveCollectPending || !diveState.Diving() || diveState.Returning() ||
+            diveState.remaining > 0 ||
             diveState.parent <= 0 || diveState.object <= 0)
             return {};
         if (!diveState.collected.empty())
@@ -687,7 +696,7 @@ namespace rp {
         }
         for (auto& raft : rafts)
             for (auto& component : raft.components)
-                if (component.Building() ||
+                if (component.clock.active() || component.Building() ||
                     (component.state == 4 && IsBarracks(&component, objects)))
                     component.TempTick(dt);
     }

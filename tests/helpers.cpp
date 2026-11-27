@@ -141,9 +141,14 @@ int main(int argc, char** argv) {
         part.SetRemainingTime(5.25f);
         CHECK(part.GetRemainingTime() == 5.25f);
         part.SetRemainingTime(5);
-        part.UseClock(2.25f);
-        CHECK(part.GetRemainingTime() == 2.75f);
-        part.UseClock(9);
+        part.UseClock(0);
+        CHECK(part.GetRemainingTime() == 5);
+        part.TempTick(.025f);
+        CHECK(part.GetRemainingTime() == 5);
+        part.TempTick(.025f);
+        CHECK(part.GetRemainingTime() == 4);
+        for (int i = 0; i < 4; ++i)
+            part.TempTick(.05f);
         CHECK(part.GetRemainingTime() == 0 && part.Building());
         {
             rp::LoaderImage image("gfx/rafts/raft_core");

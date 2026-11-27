@@ -175,6 +175,17 @@ int main() {
         timer.SetState(0);
         CHECK(!timer.Diving() && timer.totalSeconds == 0 && timer.remaining == 0);
         CHECK(timer.GetDiveTime() == 0);
+        timer.StartDive(80, 80);
+        timer.UseClock(0);
+        CHECK(timer.remaining == 80);
+        timer.TempTick(.05f);
+        CHECK(timer.remaining == 78);
+        timer.FinishDive();
+        CHECK(timer.Diving() && timer.Returning() && timer.GetDiveTime() == 1);
+        CHECK(timer.PlayAnimations().first.front() == "return");
+        timer.TempTick(3.f);
+        CHECK(timer.Returning() && timer.PlayAnimations().first.front() == "up");
+        CHECK(timer.TempTick(.5f) && !timer.Diving());
         game.diveState.bonus[2] = 3;
         game.diveState.collected[2] = 2;
         CHECK(game.diveState.numAvailableBonusMaterials() == 3 &&

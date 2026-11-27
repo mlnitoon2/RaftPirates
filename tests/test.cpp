@@ -155,6 +155,8 @@ int main() {
         g.extension("discovery_goto_result", result);
         CHECK(g.discovery == 1 && !g.pendingDiscovery);
         O dive;
+        dive.put("state", int32_t(3));
+        dive.put("time_total_secs", int32_t(3));
         dive.put("time_remaining_secs", int32_t(3));
         g.extension("dive_info", dive);
         g.tick(.5);

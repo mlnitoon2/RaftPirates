@@ -348,6 +348,11 @@ namespace rp {
             renderXml(out, g, "piratemap_menu");
             return out;
         }
+        if (g.diveState.Returning()) {
+            diving_.reset();
+            diveStarted_ = false;
+            diveClosing_ = false;
+        }
         if (g.diveState.state != 3) {
             diveSeen_ = false;
             if (!g.diveState.Diving()) {
@@ -360,10 +365,8 @@ namespace rp {
             diveClosing_ = false;
             diveSeen_ = false;
         }
-        if (diveStarted_ && g.diveState.state == 3 && !diveSeen_ &&
-            (g.diveState.remaining <= 0 ||
-             g.diveState.totalSeconds - g.diveState.remaining >=
-                 std::min(2.0167f, float(g.diveState.totalSeconds) * .5f))) {
+        if (diveStarted_ && g.diveState.Diving() && !g.diveState.Returning() && !diveSeen_ &&
+            g.diveState.introTime <= 0) {
             diveSeen_ = true;
             diveStarted_ = false;
             try {

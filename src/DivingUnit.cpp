@@ -56,18 +56,22 @@ namespace rp {
     }
 
     void DivingUnit::UseClock(float seconds) {
-        if (Diving() && std::isfinite(seconds) && seconds > 0)
-            TempTick(seconds);
+        if (Diving() && !Returning() && std::isfinite(seconds) && seconds >= 0 &&
+            seconds < remaining)
+            clock.begin(remaining, seconds);
     }
 
     std::pair<std::vector<std::string>, float> DivingUnit::PlayAnimations() const {
+        const std::string idle = load > 0 ? "idle item" : "idle";
         if (!Diving())
-            return {{}, 0.f};
-        const float elapsed = std::max(0.f, float(totalSeconds) - remaining);
+            return {{idle}, 0.f};
+        if (returnTime > 0)
+            return {{"return"}, 3.f - returnTime};
+        if (settleTime > 0)
+            return {{"up", idle}, .5f - settleTime};
+        const float elapsed = std::max(0.f, totalSeconds - remaining);
         if (elapsed < 2.0167f)
-            return {{"drop"}, elapsed};
-        if (remaining <= 0)
-            return {{"return"}, .68f};
+            return {{"drop", "diving"}, elapsed};
         return {{"diving"}, elapsed - 2.0167f};
     }
 
@@ -76,7 +80,9 @@ namespace rp {
     }
 
     float DivingUnit::GetDiveTime() const {
-        return totalSeconds > 0 ? std::clamp(1.f - remaining / totalSeconds, 0.f, 1.f) : 0.f;
+        if (returnTime != 0)
+            return returnTime / 3.f;
+        return totalSeconds != 0 ? 1.f - remaining / totalSeconds : 0.f;
     }
 
     int DivingUnit::GetLoadValue() const {
@@ -108,6 +114,8 @@ namespace rp {
         if (Diving() && value == 0) {
             totalSeconds = 0;
             remaining = 0;
+            returnTime = settleTime = introTime = 0;
+            clock = {};
         }
         state = value;
     }
@@ -123,21 +131,50 @@ namespace rp {
         // Native StartDive tolerates up to two seconds of difference before
         // using the server's remaining countdown.
         remaining = std::max(0.f, seconds > left + 2.f ? left : seconds);
+        returnTime = settleTime = 0;
+        clock = {};
+        if (state == 0)
+            introTime = 1.f;
         SetState(3);
     }
 
     void DivingUnit::FinishDive() {
-        remaining = 0;
-        state = 0;
-        load = 0;
-        bonus.clear();
-        collected.clear();
+        if (totalSeconds > 0) {
+            totalSeconds = remaining = 0;
+            returnTime = 3.f;
+            introTime = settleTime = 0;
+            clock = {};
+        } else if (!Returning()) {
+            SetState(0);
+            load = 0;
+            bonus.clear();
+            collected.clear();
+        }
     }
 
     bool DivingUnit::TempTick(float dt) {
-        if (Diving() && std::isfinite(dt) && dt > 0)
-            remaining = std::max(0.f, remaining - dt);
-        return remaining <= 0;
+        if (!Diving())
+            return true;
+        if (!std::isfinite(dt) || dt <= 0)
+            return false;
+        if (introTime > 0) {
+            introTime = std::max(0.f, introTime - dt);
+        } else if (returnTime > 0) {
+            returnTime = std::max(0.f, returnTime - dt);
+            if (returnTime == 0)
+                settleTime = .5f;
+        } else if (settleTime > 0) {
+            settleTime = std::max(0.f, settleTime - dt);
+            if (settleTime == 0) {
+                SetState(0);
+                load = 0;
+                bonus.clear();
+                collected.clear();
+                return true;
+            }
+        }
+        clock.tick(remaining, dt);
+        return false;
     }
 
     void DivingUnit::initWithSFSObject(const sfs::SFSObjectWrapper& p) {
@@ -162,6 +199,9 @@ namespace rp {
             }
         }
         if (Diving() && next.Diving() && parent == next.parent && object == next.object) {
+            if (Returning())
+                return;
+            next.introTime = introTime;
             if (!p.get("bonus_items"))
                 next.bonus = bonus;
             for (const auto& [id, amount] : collected) {
@@ -174,6 +214,8 @@ namespace rp {
     }
 
     std::vector<std::string> DivingUnit::getAvailableActions() const {
+        if (Returning())
+            return {};
         if (Diving())
             return remaining <= 0 ? std::vector<std::string>{"collect"}
                                   : std::vector<std::string>{"info"};

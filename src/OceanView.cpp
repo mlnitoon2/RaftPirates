@@ -660,10 +660,6 @@ namespace rp {
                     auto pose = dive->PlayAnimations();
                     names = std::move(pose.first);
                     animTime = pose.second;
-                } else if (r.id == lastDiveParent_ && c.id == lastDiveObject_ &&
-                           time - returnStart_ < .6833f && time >= returnStart_) {
-                    names = {"return"};
-                    animTime = time - returnStart_;
                 }
                 animate(e, animTime, names);
                 e.sprite->submit(mgr, images_, bins_, animations_, root_, false);

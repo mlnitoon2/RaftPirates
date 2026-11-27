@@ -1,5 +1,6 @@
 #pragma once
 #include "sfs/SFSObjectWrapper.h"
+#include "rp/RaftComponent.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -17,6 +18,9 @@ namespace rp {
         std::pair<std::vector<std::string>, float> PlayAnimations() const;
         int parent = 0, object = 0, state = 0, lootLevel = 0, depth = 0, maxDepth = 0, richZone = 0;
         float totalSeconds = 0, remaining = 0;
+        float introTime = 0, returnTime = 0, settleTime = 0;
+        FastClockCountdown clock;
+        bool Returning() const { return returnTime > 0 || settleTime > 0; }
         int load = 0;
         std::map<int, int> bonus, collected;
         bool Diving() const;

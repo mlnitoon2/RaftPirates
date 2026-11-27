@@ -5,6 +5,36 @@
 #include <limits>
 
 namespace rp {
+    void FastClockCountdown::begin(float remaining, float targetRemaining) {
+        target = targetRemaining;
+        step = std::max(MIN_TIME_FRACTION, (remaining - target) / CLOCK_FRAME_COUNT);
+        delay = CLOCK_DELAY_TIME;
+    }
+
+    void FastClockCountdown::tick(float& remaining, float dt) {
+        if (remaining <= 0)
+            return;
+        if (delay <= 0) {
+            remaining -= dt;
+        } else {
+            delay -= dt;
+            if (delay <= 0) {
+                remaining -= step;
+                delay += CLOCK_DELAY_TIME;
+                if (target > 0)
+                    target = std::max(0.f, target - dt);
+                if (remaining <= target) {
+                    remaining = target;
+                    delay = 0;
+                }
+            }
+        }
+        if (remaining <= 0) {
+            remaining = 0;
+            delay = 0;
+        }
+    }
+
     RaftComponent::RaftComponent(int user, int object, int px, int py, int points, int objectState,
                                  int seconds)
         : GridObject(user, object, px, py, points, objectState) {
@@ -39,9 +69,9 @@ namespace rp {
     }
 
     void RaftComponent::UseClock(float seconds) {
-        if (!Building() || !std::isfinite(seconds) || seconds <= 0)
+        if (!std::isfinite(seconds) || seconds < 0 || seconds >= GetRemainingTime())
             return;
-        TempTick(seconds);
+        clock.begin(GetRemainingTime(), seconds);
     }
 
     void RaftComponent::SetState(int value) {
@@ -64,16 +94,9 @@ namespace rp {
     bool RaftComponent::TempTick(float dt) {
         if (!std::isfinite(dt) || dt < 0)
             return state != 1 || remaining <= 0;
-        if (remaining > 0) {
-            const double elapsed = remainingFraction + dt;
-            if (elapsed >= remaining) {
-                SetRemainingTime(0);
-            } else {
-                const int seconds = static_cast<int>(elapsed);
-                remaining -= seconds;
-                remainingFraction = elapsed - seconds;
-            }
-        }
+        float value = GetRemainingTime();
+        clock.tick(value, dt);
+        SetRemainingTime(value);
         return state != 1 || remaining <= 0;
     }
 
