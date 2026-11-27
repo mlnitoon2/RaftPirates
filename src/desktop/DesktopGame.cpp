@@ -10,6 +10,10 @@
 #include <iostream>
 #include <optional>
 #include <stdexcept>
+#ifdef _WIN32
+#include <windows.h>
+#endif
+namespace sys::platform::game { void keyboardPreview(Services&, const std::string&); }
 
 namespace {
     using namespace sys::platform;
@@ -133,7 +137,7 @@ namespace {
         }
 
         void keyboard(const std::string& title, const std::string& value, bool password) override {
-            entry_ = Entry{title, value, password};
+            entry_ = Entry{title, value, password, value};
             host_.textInput(true);
             updateTitle();
         }
@@ -224,6 +228,11 @@ namespace {
                             updateTitle();
                         }
                     }
+                    if (event.type == HostEventType::PointerDown) {
+                        finishEntry(false);
+                        pointer_ = event.id;
+                        game::touchDown(*this, event.x, event.y);
+                    }
                     continue;
                 }
                 if (event.type == HostEventType::KeyDown && event.code == SDLK_F11) {
@@ -255,6 +264,7 @@ namespace {
         struct Entry {
             std::string title, value;
             bool password;
+            std::string original;
         };
 
         fs::path root_;
@@ -270,12 +280,11 @@ namespace {
         std::optional<int64_t> pointer_;
 
         void updateTitle() {
-            const auto& e = *entry_;
-            auto text = e.password ? std::string(e.value.size(), '*') : e.value;
-            host_.setTitle(e.title + ": " + text + " [Enter to confirm / Esc to cancel]");
+            game::keyboardPreview(*this, entry_->value);
         }
 
         void finishEntry(bool cancelled) {
+            if (cancelled) game::keyboardPreview(*this, entry_->original);
             auto value = cancelled ? std::string{} : std::move(entry_->value);
             entry_.reset();
             host_.textInput(false);
@@ -285,7 +294,7 @@ namespace {
     };
 } // namespace
 
-int main(int argc, char** argv) {
+static int runGame(int argc, char** argv) {
     SDL_SetMainReady();
     if (argc == 2 && std::string(argv[1]) == "--version") {
         std::cout << "Raft Pirates desktop reconstruction\n";
@@ -330,3 +339,11 @@ int main(int argc, char** argv) {
         return 2;
     }
 }
+
+#ifdef _WIN32
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+    return runGame(__argc, __argv);
+}
+#else
+int main(int argc, char** argv) { return runGame(argc, argv); }
+#endif

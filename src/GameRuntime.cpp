@@ -920,6 +920,13 @@ namespace sys::platform::game {
         });
     }
 
+    void keyboardPreview(Services& platform, const std::string& value) {
+        guarded(platform, [&] {
+            if (rt.login && rt.entry != rp::LoginScreen::Action::None)
+                rt.login->setInput(rt.entry, value);
+        });
+    }
+
     void keyboardResult(Services& platform, std::string value, bool cancelled) {
         guarded(platform, [&] {
             auto entry = rt.entry;

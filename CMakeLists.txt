@@ -130,6 +130,11 @@ if(RAFT_DESKTOP AND NOT ANDROID AND NOT CMAKE_CROSSCOMPILING)
   find_package(nlohmann_json CONFIG REQUIRED)
   add_executable(raftpirates_desktop
       src/desktop/DesktopGame.cpp src/desktop/DesktopAuth.cpp)
+  if(WIN32)
+    enable_language(RC)
+    set_target_properties(raftpirates_desktop PROPERTIES WIN32_EXECUTABLE TRUE)
+    target_sources(raftpirates_desktop PRIVATE src/desktop/RaftPirates.rc)
+  endif()
   target_link_libraries(raftpirates_desktop PRIVATE raftpirates_game hydra_native_host
       sfs_native hydra_http SDL2_mixer::SDL2_mixer nlohmann_json::nlohmann_json)
 endif()
