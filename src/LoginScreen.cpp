@@ -182,6 +182,12 @@ namespace rp {
             popup_->touchDown(x, y);
     }
 
+    void LoginScreen::cancelInput() {
+        if (popup_)
+            popup_->touchCancel();
+        action_ = Action::None;
+    }
+
     void LoginScreen::touchDrag(float x, float y) {
         if (popup_ && !busy_)
             popup_->touchDrag(x, y);

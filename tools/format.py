@@ -17,8 +17,10 @@ def main():
     root = Path(__file__).resolve().parents[1]
     suffixes = {".c", ".cc", ".cpp", ".h", ".hpp", ".inc"}
     folders = ("include", "src", "android", "tests", "examples", "tools", "sfs")
-    files = sorted(p for folder in folders for p in (root / folder).rglob("*")
-                   if p.is_file() and p.suffix in suffixes)
+    tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=root).split(b"\0")
+    files = sorted(root / p for raw in tracked if raw
+                   for p in [Path(raw.decode("utf-8"))]
+                   if p.parts[0] in folders and p.suffix in suffixes)
     options = ["--dry-run", "--Werror"] if args.check else ["-i"]
     for path in files:
         subprocess.run([executable, "--style=file", *options, str(path)], check=True)

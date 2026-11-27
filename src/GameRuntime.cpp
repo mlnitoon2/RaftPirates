@@ -421,6 +421,10 @@ namespace sys::platform::game {
             rt.titleTouchArmed = false;
             if (rt.title)
                 rt.title->cancelTouch();
+            if (rt.login)
+                rt.login->cancelInput();
+            if (rt.view)
+                rt.view->cancelInput();
             rt.game.Pause(value);
             if (!value)
                 rt.engine.Resume();

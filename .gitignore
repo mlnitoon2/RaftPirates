@@ -6,6 +6,12 @@ __pycache__/
 *.jks
 *.keystore
 /assets_local/
+/.vs/
+/.idea/
+/CMakeUserPresets.json
+*.exe
+*.dll
+*.pdb
 
 # Verified ARM64 library published by CI.
 !/libraftpirates.so

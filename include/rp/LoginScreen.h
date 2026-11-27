@@ -20,6 +20,7 @@ namespace rp {
         void tick(float dt);
         void touchDown(float x, float y);
         void touchDrag(float x, float y);
+        void cancelInput();
         Action touchUp(float x, float y);
         void setInput(Action, std::string);
 

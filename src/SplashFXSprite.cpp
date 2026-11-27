@@ -13,7 +13,7 @@ void SplashFXSprite::Init(){
     splashes_.clear();elapsed_=0;finished_=true;
     if(!ocean_||!parent_||seconds_<=0)return;
     try{
-        resource_=std::make_shared<sys::res::ResourceAEAnim>(sys::res::ResourceAEAnim::Create(ocean_->assetRoot()/"xml_bin/anim_water_splash.bin",sys::res::AEFormat::RaftPirates2013));
+        resource_=std::make_shared<sys::res::ResourceAEAnim>(sys::res::ResourceAEAnim::Create(ocean_->assetRoot()/"xml_bin/anim_water_splash.bin",sys::res::AEFormat::Rev1_5));
         if(!resource_->find("splash"))return;
         // Native iterates raft piece cells. Host uses each reconstructed visual piece's world position.
         for(unsigned i=0;i<parent_->Pieces();++i){
