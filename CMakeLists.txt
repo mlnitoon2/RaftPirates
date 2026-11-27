@@ -35,6 +35,9 @@ add_library(raftpirates_game STATIC
     src/GridObjectInfo.cpp
     src/GridSprite.cpp
     src/AccessorySprite.cpp
+    src/RaftAttackSprite.cpp
+    src/MovementArrowSprite.cpp
+    src/BattlePointsViewSprite.cpp
     src/Player.cpp
     src/Material.cpp
     src/Blueprint.cpp

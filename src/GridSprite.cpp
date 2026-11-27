@@ -1,4 +1,5 @@
 #include "rp/GridSprite.h"
+#include "rp/RaftAttackSprite.h"
 #include "rp/GridObjectHelpers.h"
 #include "sys/gfx/AssetImage.h"
 #include <algorithm>
@@ -198,6 +199,13 @@ namespace rp {
             time_ += dt + slack_;
             slack_ = 0;
             for (auto& entry : accessories_) if (entry.second->ticking()) entry.second->tick(dt);
+            // Defer removal until after callbacks; deleting an accessory during its tick
+            // invalidates the iterator and destroys the executing object.
+            for (auto it = accessories_.begin(); it != accessories_.end();) {
+                auto* attack = dynamic_cast<RaftAttackSprite*>(it->second.get());
+                if (attack && attack->finished()) it = accessories_.erase(it);
+                else ++it;
+            }
             UpdateParticles();
         }
     }
@@ -290,6 +298,9 @@ namespace rp {
             } catch (const std::exception&) {
             }
         }
+        for (const auto& entry : accessories_)
+            if (const auto* attack = dynamic_cast<const RaftAttackSprite*>(entry.second.get()))
+                drawn += attack->submit(manager, renderer);
         return drawn;
     }
 } // namespace rp

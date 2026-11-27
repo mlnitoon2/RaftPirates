@@ -53,6 +53,8 @@ namespace rp {
         void UpdateAnimations(float);
         void SetAnimation(std::vector<std::string> names);
         bool HasAttack() const;
+        const std::string& definitionName() const { return definition_.name; }
+        int battlePoints() const { return object_.GetBattlePoints(); }
         void Attack();
         int submit(sys::gfx::GfxManager&, std::map<std::string, std::shared_ptr<sys::gfx::Image>>&,
                    std::map<std::string, sys::res::ResourceAEAnim>&, sys::gfx::AnimationRenderer&,

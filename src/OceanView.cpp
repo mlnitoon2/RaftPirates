@@ -1,5 +1,6 @@
 #include "rp/Game.h"
 #include "rp/GridSprite.h"
+#include "rp/RaftAttackSprite.h"
 #include "rp/WaterBucketSprite.h"
 #include "rp/ThrobingIndicatorSprite.h"
 #include "rp/UnitHealthBarSprite.h"
@@ -224,6 +225,15 @@ namespace rp {
     void OceanView::PlayRaftAttackAnims(int raft, float delay) {
         if (!std::isfinite(delay) || delay < 0)
             return;
+        if (auto* sprite = getGridSprite(0, raft)) {
+            try {
+                auto resource = std::make_shared<sys::res::ResourceAEAnim>(
+                    sys::res::ResourceAEAnim::Create(root_ / "xml_bin/raft_cannons_anim.bin",
+                                                      sys::res::AEFormat::RaftPirates2013));
+                sprite->RemoveAccessorySprite(15);
+                sprite->AddAccessorySprite(std::make_unique<RaftAttackSprite>(this, sprite, resource, delay));
+            } catch (const std::exception&) {}
+        }
         for (auto& [key, e] : sprites_) {
             if (key.first != raft && !(key.first == 0 && key.second == raft))
                 continue;
