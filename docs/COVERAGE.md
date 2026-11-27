@@ -15,3 +15,5 @@ Android ARM64 CI built source revision [6a24086](https://github.com/mlnitoon2/Ra
 The [host regression workflow](../.github/workflows/host.yml) builds the C++ tests against HydraLegacy and runs CTest independently of Android library publication. Its results are available in [Actions](https://github.com/mlnitoon2/RaftPirates/actions).
 
 The previously published Android build is [65f1afa](https://github.com/mlnitoon2/RaftPirates/commit/65f1afa8a62c10c5adc6424fe79e1a3cdc2a53cc). Device testing of that build identified remaining visual and interaction defects. Original-assets HUD tests are opt-in with `-DRAFT_ASSET_ROOT=/path/to/extracted/assets`; the default green host CI does not establish that those tests or actual Android menu interactions pass.
+
+Device feedback after the subsequent build confirmed splash centering, map layout, blueprint selection and basic diving motion. Full gameplay parity remains unverified.

@@ -19,3 +19,5 @@ Detailed historical reconstruction notes and superseded reports remain available
 ## Current device-reported issues
 
 The latest Android feedback reports unresolved splash glow alignment, quest book content, material inventory, settings, auto-safe-water text, map HUD placement, blueprint selection stalls and diving gameplay. Native changes address these areas, but require another device test before closing them. Blueprint paging is an interim alternative to the original continuous scroll. Diving movement and rope composition are provisional until checked against the original game. The public host CI does not execute the original-assets tests unless `RAFT_ASSET_ROOT` is supplied.
+
+Device feedback: splash, map and basic diving motion are now confirmed working; blueprint selection no longer freezes. Still verify quest data and display, construction placement/confirmation, automatic dive exit, enlarged recipe icons, safety close button and settings labels. A single quest icon may reflect the server's quest response rather than layout; do not synthesize missing quests.

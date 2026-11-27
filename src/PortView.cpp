@@ -112,8 +112,14 @@ namespace rp {
         mapView_.tick(dt);
         if (discovery_)
             discovery_->tick(dt);
-        if (diving_)
+        if (diving_) {
             diving_->tick(dt);
+            if(diving_->finished()&&!diveClosing_&&!diving_->moving()){
+                diving_->ConfirmDiveFinish();
+                diveClosing_=true;
+                diving_->moveTo(850,22,1.f);
+            }
+        }
         if (xmlMenu_) {
             xmlMenu_->tick(dt);
             updateScroll();
@@ -372,13 +378,18 @@ namespace rp {
             else if(std::abs(y-start.y)<20&&y>=blueprintListTop_&&y<400)selectBlueprintSlot(g,x);
             return {};
         }
+        if(xmlMenu_&&panel_==Panel::Safety&&xmlName_=="auto_safe_water_menu"){
+            if(auto back=xmlMenu_->find(1,"BackSprite")){
+                if(xmlMenu_->node(back).bounds.contains(x,y)){cancelInput();panel_=Panel::None;xmlMenu_.reset();return {};}
+            }
+        }
         if (xmlCaptured_ && xmlMenu_) {
             xmlCaptured_ = false;
             auto old = xmlMenu_->captured(0);
-            auto hit = xmlMenu_->hitTest(x, y);
+            const bool inside=old&&xmlMenu_->node(old).bounds.contains(x,y);
             xmlMenu_->touchUp(x, y);
             updateScroll();
-            if (!old || old != hit || xmlMenu_->node(old).number("suppressClick", 0))
+            if (!inside || !old || xmlMenu_->node(old).number("suppressClick", 0))
                 return {};
             return xmlTouch(g, x, y, old);
         }
@@ -938,6 +949,9 @@ namespace rp {
                     placeText("UnsafeDescrText",.8f,77);
                     auto& n=m.node(bg);n.set("absoluteX",double(left));n.set("absoluteY",30.0);n.set("width",double(width));n.set("height",double(std::min(m.height()-48,y-20)));
                     if(auto sprite=m.find(bg,"Sprite")){auto& s=m.node(sprite);s.set("absoluteX",double(left));s.set("absoluteY",30.0);s.set("width",double(width));s.set("height",n.number("height"));s.set("includeBorder",false);}
+                    if(auto back=m.find(children,"BackSprite")){
+                        auto& n=m.node(back);n.set("absoluteX",double(left-24));n.set("absoluteY",8.0);n.set("width",24.0);n.set("height",24.0);n.set("useOffsets",false);
+                    }
                 }
             } else if (name == "quest_log") {
                 if (auto dialog = m.find(1, "DialogPopup", true)) {
@@ -972,8 +986,12 @@ namespace rp {
                                 if(std::string(part)=="Touch"){n.set("width",64.0);n.set("height",64.0);n.set("enabled",true);}
                             }
                             m.node(el).set("yOffset", double(y));
-                            m.node(el).set("priority", -4.0);
-                            if(auto touch=m.find(el,"Touch"))m.node(touch).set("priority",-5.0);
+                            m.node(el).set("priority", -24.0);
+                            if(auto touch=m.find(el,"Touch"))m.node(touch).set("priority",-35.0);
+                            if(auto bg=m.find(el,"bg")){m.node(bg).set("priority",-24.0);m.node(bg).set("width",56.0);m.node(bg).set("height",56.0);m.node(bg).set("useOffsets",false);}
+                            if(auto icon=m.find(el,"ItemImage")){m.node(icon).set("priority",-26.0);m.node(icon).set("width",36.0);m.node(icon).set("height",36.0);m.node(icon).set("useOffsets",false);}
+                            if(auto badge=m.find(el,"NewQuest")){m.node(badge).set("priority",-28.0);m.node(badge).set("width",20.0);m.node(badge).set("height",20.0);}
+                            if(auto text=m.find(el,"ProgressText"))m.node(text).set("priority",-29.0);
                             m.node(el).set("layer", std::string("HUD"));
                             y += 68;
                         }
@@ -1100,6 +1118,8 @@ namespace rp {
                             set(element, "itemImage", "alpha", .4);
                     } else if (name == "quest_log") {
                         const auto& q = g.quests.at(id);
+                        set(element,"bg","spriteName",std::string("btn_yellow"));
+                        set(element,"bg","sheetName",std::string("xml_resources/rp_menu.xml"));
                         set(element,"bg","visible",true);
                         set(element,"ItemImage","visible",true);
                         set(element,"Touch","enabled",true);
@@ -1469,6 +1489,12 @@ namespace rp {
             else{prop(btn,"UpSprite","spriteName",std::string("btn_long_blue"));prop(btn,"DownSprite","spriteName",std::string("btn_long_blue_over"));}
             prop(btn, "Text", "text", strings_.getText(local?(shopSelection_==-2?(soundEnabled_?"SOUND_ON":"SOUND_OFF"):shopSelection_==-1?"VIEW_HELP":"VIEW_LOGOUT"):(build ? "BUILD" : "BUY_MENU_BUTTON_PREFIX")));
             prop(btn,"Touch","enabled",!local||shopSelection_==-2);
+            if(local){
+                prop(btn,"Text","text",std::string(shopSelection_==-2?(soundEnabled_?"SOUND ON":"SOUND OFF"):shopSelection_==-1?"HELP":"LOGOUT"));
+                prop(btn,"Text","font",std::string("rp_font_title"));
+                prop(btn,"Text","visible",true);
+                prop(btn,"Text","size",.8);
+            }
             prop(btn, "PriceText", "visible", !build && store);
             prop(btn, "currencySprite", "visible", !build && store);
             if (store && !build) {
@@ -1495,15 +1521,19 @@ namespace rp {
             auto count=std::min<size_t>(4,g.blueprints.at(shopSelection_).recipe.size());
             const float step=(b.w-20)/float(std::max<size_t>(1,count));
             for(unsigned i=0;i<count;++i)if(auto material=m.find(frame,"Material"+std::to_string(i+1),true)){
-                const float x=b.x+10+step*i, y=b.y+b.h-76;
-                place(material,x,y,step,36);
+                const float x=b.x+10+step*i, y=b.y+b.h-91;
+                place(material,x,y,step,51);
                 if(auto icon=m.find(material,"ItemImage",true)){
-                    place(icon,x+(step-24)*.5f,y,24,24);
-                    if(auto sprite=m.find(icon,"Sprite"))place(sprite,x+(step-24)*.5f,y,24,24);
+                    const float side=38;
+                    place(icon,x+(step-side)*.5f,y,side,side);
+                    for(auto child:m.node(icon).children)if(m.node(child).type=="spriteSheetComponent"){
+                        auto& n=m.node(child);n.set("useOffsets",false);n.set("scaleX",1.0);n.set("scaleY",1.0);n.set("size",1.0);
+                        place(child,x+(step-side)*.5f,y,side,side);
+                    }
                 }
                 if(auto req=m.find(material,"MaterialReqs",true)){
-                    place(req,x,y+24,step,14);
-                    if(auto label=m.find(req,"Text")){place(label,x,y+24,step,14);auto& n=m.node(label);n.set("alignment",1.0);n.set("multiline",false);n.set("autoScale",true);n.set("size",.55);}
+                    place(req,x,y+38,step,14);
+                    if(auto label=m.find(req,"Text")){place(label,x,y+38,step,14);auto& n=m.node(label);n.set("alignment",1.0);n.set("multiline",false);n.set("autoScale",true);n.set("size",.55);}
                 }
             }
             const auto bb=m.node(btn).bounds;
@@ -1520,6 +1550,8 @@ namespace rp {
             place(m.find(frame,"itemImage"),b.x+b.w-80,b.y+45,68,68);
             place(btn,b.x+(b.w-180)*.5f,b.y+b.h-42,180,36);
             if(auto touch=m.find(btn,"Touch"))place(touch,b.x+(b.w-180)*.5f,b.y+b.h-42,180,36);
+            if(auto text=m.find(btn,"Text")){place(text,b.x+(b.w-180)*.5f,b.y+b.h-37,180,26);m.node(text).set("alignment",1.0);m.node(text).set("priority",-20.0);}
+            if(auto sprite=m.find(btn,"UpSprite"))place(sprite,b.x+(b.w-180)*.5f,b.y+b.h-42,180,36);
             prop(frame,"itemDesc","clipText",true);
             m.solve();
         }
@@ -1534,6 +1566,12 @@ namespace rp {
             return {};
         auto owner = m.owner(hit);
         auto name = m.node(owner).name;
+        if(xmlName_.rfind("tabbed_menu_",0)==0){
+            if(auto button=m.find(1,"buyBtn",true);button&&m.isVisible(button)){
+                if(auto visual=m.find(button,"UpSprite");visual&&m.node(visual).bounds.contains(x,y))
+                    name="buyBtn";
+            }
+        }
         auto body = m.node(hit).events.find("onTouchUp");
         std::string script = body == m.node(hit).events.end() ? "" : body->second.source;
         if (panel_ == Panel::Daring && name == "MainButton") {
@@ -1554,6 +1592,11 @@ namespace rp {
             xmlMenu_.reset();
             return Game::request("set_auto_safe_enabled", packet);
         }
+        if(xmlName_=="tabbed_menu_free"&&name=="option_soundtoggle"){
+            soundEnabled_=!soundEnabled_;
+            if(auto icon=m.find(owner,"UpSprite"))m.node(icon).set("spriteName",std::string(soundEnabled_?"btn_green":"btn_red"));
+            updateShopFrame(g);return {};
+        }
         if(name=="buyBtn"&&xmlName_=="tabbed_menu_free"&&shopSelection_<0){
             if(shopSelection_==-2){
                 soundEnabled_=!soundEnabled_;
@@ -1571,10 +1614,26 @@ namespace rp {
                     selectedBlueprint_ = item;
                     selectedComponent_ = selectedParent_ = 0;
                     placement_.reset();
+                    placementParent_=0;
+                    const auto& def=g.objects.at(g.blueprints.at(item).object);
+                    if(def.type==0){
+                        auto edges=g.GetAvailableEdgeGridSpace();
+                        if(!edges.empty())placement_=edges.front();
+                    }else{
+                        for(const auto& raft:g.rafts){
+                            for(int cy=0;cy<6&&!placement_;++cy)for(int cx=0;cx<6&&!placement_;++cx)
+                                if(g.canPlaceComponent(def.id,raft.id,cx,cy)){placement_=Cell{cx,cy};placementParent_=raft.id;}
+                            if(placement_)break;
+                        }
+                    }
                     grid = true;
                     map = false;
                     panel_ = Panel::None;
                     xmlMenu_.reset();
+                    return {};
+                }
+                if(g.owned.count(item)){
+                    g.status="Cannot build: missing materials, invalid object or construction pending";
                     return {};
                 }
                 if (!g.owned.count(item))
