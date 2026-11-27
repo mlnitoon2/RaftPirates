@@ -1,0 +1,123 @@
+
+body {
+	font-family: Arial, Helvetica, Verdana, sans-serif;
+	margin: 0px;
+	padding: 0px;
+	background-color: transparent;
+}
+
+a, a:visited {
+	text-decoration: none;
+	color: #ffffff;
+}
+
+#frame {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-top: -250px;
+	margin-left: -400px;
+	width: 800px;
+	height: 500px;
+	-moz-border-radius: 15px;
+	border-radius: 10px;
+	background-color: #000000;
+}
+
+#title {
+	position: relative;
+	color: #FFFFFF;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 100px;
+	margin-bottom: 20px;
+	font-size: 2.5em;
+	text-align:center;
+	font-weight: bold;
+}	
+
+.customButton {
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	width: 348px;
+	height: 58px;
+	margin: 10px auto;
+	background-image: url('../assets/rp_button.png');
+	background-repeat: no-repeat;
+
+	transform: scale(1,1);
+	-ms-transform: scale(1,1); /* IE 9 */
+	-webkit-transform: scale(1,1); /* Safari and Chrome */
+	-o-transform: scale(1,1); /* Opera */
+	-moz-transform: scale(1,1); /* Firefox */
+
+}
+
+.customButton p {
+	position: absolute;
+	padding: 10px 0px;
+	margin: 5px;
+	width: 348px;
+	height: 58px;
+	text-align: center;
+	font-size: 1.4em;
+	font-weight: bold;
+}
+
+.customInput {
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	width: 348px;
+}
+
+.customInput p {
+	position: relative;
+	color: #ffffff;
+	font-size: 1.2em;
+	margin: 0px;
+	margin-top: 15px;
+	margin-bottom: 5px;
+}
+
+.customInput input{
+	position: relative;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	width: 348px;
+	font-size: 1.2em;
+	border: none;
+	padding: 5px 5px;
+}
+
+img#background {
+	position:fixed;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+}
+
+img#back {
+	position: absolute;
+	bottom: 20px;
+	left: 20px;
+}
+
+/*** iPad styling ***/ 
+@media only screen and (min-device-width: 768px) and (max-device-width: 3024px) {
+	
+}
+
+/*** iPhone styling ***/
+@media only screen and (max-width: 767px) {
+	#frame {
+		transform: scale(.55,.55);
+		-ms-transform: scale(.55,.55); /* IE 9 */
+		-webkit-transform: scale(.55,.55); /* Safari and Chrome */
+		-o-transform: scale(.55,.55); /* Opera */
+		-moz-transform: scale(.55,.55); /* Firefox */
+	}
+}
+

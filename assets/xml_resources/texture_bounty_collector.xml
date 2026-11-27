@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:9d3d466a94b5492aaf2364922206a9a2$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_bounty_collector.png" width="128" height="256">
+    <sprite n="bounty_collector_01" x="0" y="0" w="104" h="52"/>
+    <sprite n="bounty_collector_02" x="0" y="53" w="98" h="46" oX="0" oY="0" oW="98" oH="48"/>
+    <sprite n="bounty_collector_03" x="0" y="100" w="80" h="44" oX="0" oY="0" oW="82" oH="44"/>
+    <sprite n="bounty_collector_04" x="0" y="145" w="62" h="46" oX="0" oY="1" oW="62" oH="48"/>
+    <sprite n="bounty_collector_05" x="81" y="143" w="38" h="48" oX="1" oY="0" oW="40" oH="48"/>
+    <sprite n="bounty_collector_06" x="81" y="100" w="42" h="42" oX="1" oY="1" oW="44" oH="44"/>
+    <sprite n="bounty_collector_07" x="104" y="238" w="24" h="14" oX="5" oY="8" oW="32" oH="32"/>
+    <sprite n="bounty_collector_08" x="99" y="64" w="28" h="16" oX="2" oY="9" oW="32" oH="32"/>
+    <sprite n="bounty_collector_09" x="63" y="193" w="16" h="18" oX="8" oY="8" oW="32" oH="32"/>
+    <sprite n="bounty_collector_10" x="99" y="81" w="26" h="18" oX="6" oY="10" oW="32" oH="32"/>
+    <sprite n="bounty_collector_11" x="21" y="193" w="18" h="18" oX="6" oY="5" oW="32" oH="32"/>
+    <sprite n="bounty_collector_12" x="63" y="172" w="16" h="20" oX="8" oY="5" oW="32" oH="32"/>
+    <sprite n="bounty_collector_13" x="0" y="193" w="20" h="18" oX="7" oY="11" oW="32" oH="32"/>
+    <sprite n="bounty_collector_14" x="0" y="213" w="24" h="30" oX="5" oY="0" oW="32" oH="32"/>
+    <sprite n="bounty_collector_15" x="79" y="213" w="24" h="26" oX="4" oY="3" oW="32" oH="32"/>
+    <sprite n="bounty_collector_16" x="105" y="33" w="22" h="30" oX="5" oY="0" oW="32" oH="32"/>
+    <sprite n="bounty_collector_17" x="25" y="221" w="30" h="28" oX="1" oY="3" oW="32" oH="32"/>
+    <sprite n="bounty_collector_18" x="63" y="145" w="16" h="26" oX="9" oY="3" oW="32" oH="32"/>
+    <sprite n="bounty_collector_19" x="105" y="0" w="22" h="32" oX="9" oY="0" oW="32" oH="32"/>
+    <sprite n="bounty_collector_20" x="56" y="221" w="22" h="28" oX="5" oY="3" oW="32" oH="32"/>
+    <sprite n="bounty_collector_21" x="40" y="192" w="22" h="28" oX="7" oY="2" oW="32" oH="32"/>
+    <sprite n="bounty_collector_22" x="104" y="213" w="24" h="24" oX="5" oY="6" oW="32" oH="32"/>
+    <sprite n="bounty_collector_23" x="80" y="192" w="36" h="20" oX="0" oY="4" oW="38" oH="24"/>
+</TextureAtlas>

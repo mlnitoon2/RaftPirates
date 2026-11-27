@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:669cbddc934024f10965945231f2b840$ -->
+<!--Format:
+n  => name of the sprite
+x  => sprite x pos in texture
+y  => sprite y pos in texture
+w  => sprite width (may be trimmed)
+h  => sprite height (may be trimmed)
+oX => sprite's x-corner offset (only available if trimmed)
+oY => sprite's y-corner offset (only available if trimmed)
+oW => sprite's original width (only available if trimmed)
+oH => sprite's original height (only available if trimmed)
+r => 'y' only set if sprite is rotated
+-->
+<TextureAtlas imagePath="gfx/raft_items/texture_robot.png" width="128" height="256">
+    <sprite n="robo_shadow" x="52" y="240" w="32" h="16"/>
+    <sprite n="robot_01" x="76" y="150" w="40" h="48" oX="41" oY="56" oW="104" oH="136"/>
+    <sprite n="robot_02" x="78" y="82" w="42" h="48" oX="38" oY="51" oW="104" oH="136"/>
+    <sprite n="robot_03" x="87" y="0" w="40" h="50" oX="38" oY="56" oW="104" oH="136"/>
+    <sprite n="robot_arm_01" x="59" y="66" w="18" h="24" oX="65" oY="79" oW="104" oH="136"/>
+    <sprite n="robot_arm_02" x="21" y="188" w="16" h="28" oX="64" oY="78" oW="104" oH="136"/>
+    <sprite n="robot_arm_03" x="73" y="199" w="26" h="18" oX="74" oY="59" oW="104" oH="136"/>
+    <sprite n="robot_arm_04" x="21" y="242" w="28" h="14" oX="62" oY="82" oW="104" oH="136"/>
+    <sprite n="robot_arm_sword_01" x="0" y="155" w="38" h="32" oX="7" oY="68" oW="104" oH="136"/>
+    <sprite n="robot_arm_sword_02" x="0" y="188" w="20" h="64" oX="32" oY="3" oW="104" oH="136"/>
+    <sprite n="robot_arm_sword_03" x="59" y="91" w="16" h="64" oX="29" oY="3" oW="104" oH="136"/>
+    <sprite n="robot_arm_sword_04" x="0" y="66" w="58" h="88" oX="36" oY="21" oW="104" oH="136"/>
+    <sprite n="robot_arm_sword_05" x="79" y="51" w="48" h="30" oX="49" oY="80" oW="104" oH="136"/>
+    <sprite n="robot_arm_sword_06" x="0" y="33" w="78" h="32" oX="2" oY="76" oW="104" oH="136"/>
+    <sprite n="robot_arm_sword_07" x="76" y="131" w="42" h="18" oX="0" oY="76" oW="104" oH="136"/>
+    <sprite n="robot_arm_sword_08" x="0" y="0" w="86" h="32" oX="8" oY="79" oW="104" oH="136"/>
+    <sprite n="robot_feet_01" x="52" y="219" w="34" h="20" oX="41" oY="96" oW="104" oH="136"/>
+    <sprite n="robot_feet_02" x="38" y="198" w="34" h="20" oX="41" oY="96" oW="104" oH="136"/>
+    <sprite n="robot_feet_03" x="39" y="177" w="34" h="20" oX="41" oY="96" oW="104" oH="136"/>
+    <sprite n="robot_feet_04" x="39" y="156" w="34" h="20" oX="41" oY="96" oW="104" oH="136"/>
+    <sprite n="robot_feet_05" x="21" y="219" w="30" h="22" oX="41" oY="93" oW="104" oH="136"/>
+</TextureAtlas>
