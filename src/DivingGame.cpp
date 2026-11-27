@@ -310,7 +310,8 @@ namespace rp::diving_game {
                                                                           : "idle");
             const auto& c = composition ? *composition : robot_.comps.front();
             GfxManager m;
-            m.setScreenClip(std::array<float,4>{219,29,421,277});
+            // Robot animation includes the rope; let it reach the inner top/bottom frame edges.
+            m.setScreenClip(std::array<float,4>{219,22,421,310});
             renderer_.submit(m, robot_, c, c.duration() > 0 ? std::fmod(elapsed_, c.duration()) : 0,
                              Matrix::translation(x_, y_) * Matrix::scale(.65f, .65f) *
                                  Matrix::translation(-c.width / 2.f, -c.height / 2.f));

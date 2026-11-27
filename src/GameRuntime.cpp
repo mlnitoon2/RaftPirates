@@ -80,14 +80,15 @@ namespace {
     }
 
     void music(Services& platform, const std::string& path) {
-        if (rt.music == path)
+        const auto desired=rt.view&&!rt.view->soundEnabled()?std::string{}:path;
+        if (rt.music == desired)
             return;
-        audio(platform, [&] { platform.music(path); });
-        rt.music = path;
+        audio(platform, [&] { platform.music(desired); });
+        rt.music = desired;
     }
 
     void effect(Services& platform, const char* path) {
-        audio(platform, [&] { platform.effect(path); });
+        if(!rt.view||rt.view->soundEnabled())audio(platform, [&] { platform.effect(path); });
     }
 
     void prompt(Services& platform, const char* title, const std::string& value) {

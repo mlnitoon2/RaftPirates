@@ -39,6 +39,7 @@ namespace rp {
         }
 
         bool grid = false, map = false;
+        bool soundEnabled()const{return soundEnabled_;}
 
       private:
         friend struct PortViewTestAccess;
@@ -93,6 +94,14 @@ namespace rp {
         int placementParent_ = 0;
         int selectedStore_ = 0, shopSelection_ = 0;
         void updateShopFrame(const Game&);
+        std::vector<int> menuItemIds(const Game&, const std::string&)const;
+        std::string blueprintIcon(const std::string&, const std::string&);
+        std::map<std::pair<std::string,std::string>,std::string> blueprintIcons_;
+        std::map<std::string,std::shared_ptr<sys::res::ResourceSpriteSheet>> blueprintSheets_;
+        std::map<std::string,std::shared_ptr<sys::gfx::Image>> previewImages_;
+        std::map<std::string,sys::res::ResourceAEAnim> previewBins_;
+        std::unique_ptr<sys::gfx::AnimationRenderer> previewRenderer_;
+        bool soundEnabled_=true;
         std::string confirmAction_;
         unsigned swipe_ = 0;
         std::map<unsigned, double> scrollOrigins_;
