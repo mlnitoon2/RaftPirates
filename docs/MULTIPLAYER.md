@@ -22,13 +22,13 @@ The following string references were read from ARM32 instructions in the origina
 
 Recognized commands include `gs_encounter`, `gs_start_battle`, `gs_opponent`, `gs_battle_position`, `gs_battle_select_raft`, `gs_battle_client_ready`, `gs_battle_attack`, `gs_battle_defend`, `gs_swap_stance`, `gs_battle_opponent_time`, `gs_battle_over`, `gs_battle_retreat` and `gs_battle_plunder`. The reference `BattleModeState::HandleExtensionResponse` starts at `0x389b3c`. Opponent data is initialized from `player_object`, and the client retains authoritative battle result packets. It never simulates online damage or grants gold locally. The position and selection counter advancement are based on reference paths at `0x38a9b4` and `0x3887b4`. Older counters are ignored, newer unexpected counters mark the state desynchronized. Duplicate local sends are prevented while waiting.
 
-## Pass 24: result application and boss handling
+## result application and boss handling
 
 The original `gotMsgBattleScreenRaftsSelected` sends `gs_battle_position` with integer coordinates. `SendRaftSelection` selects intact rafts and accepts authoritative selected IDs. Battle attack responses carry `results`; `BattleModeState::tick` in the reference advances the counter near `0x38e800`. The host reconstruction applies results once to both selected rafts using `Raft::HandleBattleOutcome`, rejects ambiguous overlapping fleet-local IDs, advances the counter, and requires another ready acknowledgement. Stance changes use `gs_swap_stance` and `confirm_swap_stance`. The opponent is rendered separately with the existing ocean asset renderer.
 
 `gs_opponent.is_boss` marks a boss encounter. The map's `boss_data` object (`0x44a934`) contains `user_id`, `display_name`, `battle_points`, `zone`, and `raft_info`; the client retains this record and shows the boss name and BP when its zone matches. Exact boss map position and encounter initiation are not yet recovered. No fake boss coordinates, AI, damage or loot are generated.
 
-## Pass 25: battle presentation and map encounters
+## battle presentation and map encounters
 
 `BattlePlacementScreen`, `BattleShipPlacementSprite` and `GfxBattleScreen` implement selection, shared-world placement previews, adjacency and collision feedback, opponent and player fleet views, original atlas-backed BP meters, dice selection and retreat confirmation. `GridSprite` draws all pieces of a grid object rather than just the first asset. Visual priorities, camera motion and asset placement remain approximations. Changes to authoritative raft BP trigger a floating damage amount and the original explosion animation; no damage is computed locally for online battles.
 

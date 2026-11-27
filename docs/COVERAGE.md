@@ -11,3 +11,5 @@
 The [historical symbol report](MATCHING_STATUS.md) identifies the original ELF and measured baseline. The source-name inventory is not a completion score. A matching name does not establish signature, behavior, layout, or ABI equivalence.
 
 Android ARM64 CI built source revision [6a24086](https://github.com/mlnitoon2/RaftPirates/commit/6a24086ec8ffd1f8f1efbee172dab724b5cd013b) and published [660e7f4](https://github.com/mlnitoon2/RaftPirates/commit/660e7f4e945a62de641a2fed8ea0ff081f12d862). Host regressions and device gameplay need independent verification. See [remaining work](REMAINING.md).
+
+The [host regression workflow](../.github/workflows/host.yml) builds the C++ tests against HydraLegacy and runs CTest independently of Android library publication. Its results are available in [Actions](https://github.com/mlnitoon2/RaftPirates/actions).

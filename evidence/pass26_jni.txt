@@ -1,4 +1,0 @@
-HydraLegacy: APK assets extracted: 710
-Original JNI mock lifecycle, login, SFS response and request passed
-Local HTTP fixture: properties.xml endpoint, email/password URL encoding and BBB auth handoff passed
-94 JNI declarations matched exported names

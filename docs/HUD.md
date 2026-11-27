@@ -37,14 +37,14 @@ To render the title-screen preview:
 
 ## XML panels
 
-The normal HUD, map, shop, inventory, quest and battle views use original menu XML and template controls. PortView no longer renders debug text buttons or their coordinate hitboxes. Selected literal initialization assignments are evaluated by Hydra; native callbacks bind a subset of actions to server requests. Dynamic templates are populated from server data. Pass 31 adds selected native purchase confirmation and object action bindings, scroll capture and clipping, viewport arithmetic, and original placement footprint rendering. Full Lua/SWIG callbacks, repair/salvage cost presentation, selection animations, scroll behavior and transitions remain incomplete. Unbound controls are not evidence of working features.
+The normal HUD, map, shop, inventory, quest and battle views use original menu XML and template controls. PortView no longer renders debug text buttons or their coordinate hitboxes. Selected literal initialization assignments are evaluated by Hydra; native callbacks bind a subset of actions to server requests. Dynamic templates are populated from server data. The implementation includes selected native purchase confirmation and object action bindings, scroll capture and clipping, viewport arithmetic, and original placement footprint rendering. Full Lua/SWIG callbacks, repair/salvage cost presentation, selection animations, scroll behavior and transitions remain incomplete. Unbound controls are not evidence of working features.
 
-## Pass 32
+## Additional HUD bindings
 
 Quest buttons open the original quest dialog and the list uses vertical swipe capture. Shop item textures use server atlas/sprite identifiers, with the original green blueprint sprite when present. The map uses the same aspect-fit geometry for drawing and touch, requests map-action state on open, and exposes available action counts and timer data. These are selected native bindings, not complete original scripts. Exact layout and live server behavior are not verified.
 
 Diving can be requested from the actual structure: alpha-based sprite picking supplements the grid footprint. The structure selects the original idle/drop/diving/return compositions from server dive state, and the minigame selects idle/moving/end robot compositions. Requests use the selected server object identifiers. Actual animation and diving flow on Android remain unverified.
 
-### Pass 33
+### Placement and interaction
 
 The miscellaneous shop uses its original `itemListMisc` element (not the blueprint shop's `itemList`). Item selection opens the original `Frame` template with item title, image, price or blueprint material requirements; Buy/Build is a separate action. Daring's Fill It Now opens the miscellaneous shop and selects the `daring` item when supplied by the server. Quest layout and icon fallback are improved, but original script-driven layout and transitions remain partial. The map occupies the full logical viewport (640×400), with shared drawing/picking coordinates. Enemy markers use the original sonar sprite, center the cropped image and reveal the original name/BP popup on selection. A second selection after dismissal requests movement. Exact original strength-bar rendering remains incomplete. The original auto-safe dialog uses `set_auto_safe_enabled` with a boolean `is_enabled` recovered from the ARM32 library. The backend remains authoritative; missing catalogue items or quest records cannot be populated by the client.

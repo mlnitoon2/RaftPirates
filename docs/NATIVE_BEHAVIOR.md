@@ -26,3 +26,9 @@ Coverage represents source names, not fully verified original behavior. The 47-n
 - 0x243174/0x243190/0x2431e4 return static identifiers AE/SS/XMLDATA. 0x243288 returns true. 0x2434b8, 0x24352c, 0x2435a0 call XML, atlas and AE creation respectively. 0x24f700 reads AE dependencies; 0x250320 reads the atlas image. Host preparation uses the existing parsers instead of duplicating the original binary reader.
 
 - 0x4ee794 calls virtual TempTick and erases completed objects; 0x4ee8e8 suppresses duplicates and propagates to parent grids. 0x4ee864 walks parent links; portable flat membership is not equivalent. 0x54b8f4 registers building components and broadcasts a message; only registration is restored.
+
+## Diving panel and collection lifecycle
+
+Original ARM32 instructions at `0x51a284` store panel start and destination coordinates and transition duration; they do not move the robot. The show handler at `0x3c1668` uses HUD mode 2 and a one-second entrance, the exit handler at `0x3ac28c` initiates a one-second move, and `0x3c2398` submits bonus collection after the move. The reconstruction separates panel motion from robot motion and delays outgoing requests until the exit completes. Panel compositing and material pickup mechanics still require visual and gameplay comparison.
+
+The material parser at `0x45d54c` uses `material_id` and `amt`; the dive response handler at `0x3c541c` reads `bonus_items`. The client now reads these server-provided rows, preserves valid collected quantities on same-unit updates and does not invent rewards.
