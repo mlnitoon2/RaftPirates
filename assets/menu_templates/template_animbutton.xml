@@ -1,0 +1,24 @@
+<template>
+	<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+	<!--<size w="100" h="100" />-->
+	<animSpriteComponent name="Sprite">
+		<event name="onInit" params="component, element">
+			component:GetVar("spriteName"):Set("$animation")
+			component:GetVar("frame"):SetInt(1)
+		</event>
+	</animSpriteComponent>
+	<touchComponent name="Touch">
+		<position relativeTo="element:name()" vAnchor="VCENTER" hAnchor="HCENTER" />
+		<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priority="0" />		
+		<size dependentOnElement="element:name()" dependentOnComponent="Sprite" />
+		<event name="onTouchDown" params="component, element">
+			element:GetComponent("Sprite"):GetVar("frame"):SetInt(0)				
+		</event>
+		<event name="onTouchUp" params="component, element">
+			element:GetComponent("Sprite"):GetVar("frame"):SetInt(1)
+		</event>			
+		<event name="onTouchRelease" params="component, element">
+			element:GetComponent("Sprite"):GetVar("frame"):SetInt(1)
+		</event>					
+	</touchComponent>
+</template>	

@@ -1,0 +1,24 @@
+<menu>	
+	<element name="TopElement">
+		<template type="template_achievement" name="AchievementUnlocked_1" >
+			<event name="onInit" params="element" >
+				onInit( element )
+				element("yOffset"):SetFloat( 0 )
+				element("startY"):SetFloat( element("yOffset"):GetFloat() )
+			</event>
+			<event name="onTick" params="element, time" >
+				onTick(element, time)
+			</event>
+		</template>	
+		<template type="template_achievement" name="AchievementUnlocked_2" >
+			<event name="onInit" params="element" >
+				onInit( element )
+				element("yOffset"):SetFloat( 65 )
+				element("startY"):SetFloat( element("yOffset"):GetFloat() )
+			</event>
+			<event name="onTick" params="element, time" >
+				onTick(element, time)
+			</event>
+		</template>	
+	</element>
+</menu>

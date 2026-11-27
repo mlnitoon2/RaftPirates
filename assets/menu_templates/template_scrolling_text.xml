@@ -1,0 +1,27 @@
+<template>		
+	<size dependentOnElement="element:name()" dependentOnComponent="Text" />
+
+		<textComponent name="Text">
+			<size w="300" h="40" />
+			<position relativeTo="PARENT" vAnchor="VCENTER" hAnchor="HCENTER" />
+			<orientation vAnchor="VCENTER" hAnchor="HCENTER" xOffset="0" yOffset="0" priorityOffset="0" />
+			<event name="onInit" params="component, element">
+				component:GetVar("alignment"):SetInt(16)
+				component:GetVar("font"):SetString("$f")
+				component:GetVar("text"):SetString("$text")
+				component:GetVar("size"):SetFloat($scale)
+			</event>
+		</textComponent>
+		<event name="onInit" params="element">
+			element:GetVar("scrollSpeed"):SetInt(30)
+		</event>
+		<event name="onTick" params="element, dt">
+			if( $header == 1 ) then
+				element:GetVar("yOffset"):SetFloat(element:GetVar("yOffset"):GetFloat() - dt*element:GetVar("scrollSpeed"):GetInt())
+			elseif ( 0 > element:absY() ) then 
+				if( $header == 0 ) then
+					element("active"):SetInt(0)
+				end
+			end
+		</event>
+</template>	
