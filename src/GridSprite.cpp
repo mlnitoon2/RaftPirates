@@ -93,8 +93,16 @@ namespace rp {
     }
 
     void GridSprite::UpdatePiece(unsigned index) {
-        auto base = ocean_.WorldToScreen(world_);
         auto& piece = pieces_.at(index);
+        // Native UpdatePiece projects GridShapePiece::GetWorldSpace(0).
+        auto world = world_;
+        if (!piece.definition.cells.empty()) {
+            const auto first = piece.definition.cells.front();
+            const float step = definition_.type == 1 ? 1.f / 6.f : 1.f;
+            world.x += first.x * step;
+            world.y += first.y * step;
+        }
+        auto base = ocean_.WorldToScreen(world);
         piece.appearance.SetPos(base.x + piece.definition.offsetX * scale_,
                                 base.y + piece.definition.offsetY * scale_);
         piece.appearance.SetScale(scale_, scale_);
@@ -234,9 +242,7 @@ namespace rp {
 
     Vec2 GridSprite::GetWorldPosition(int i) const {
         auto& piece = pieces_.at(unsigned(i));
-        auto base = ocean_.WorldToScreen(world_);
-        return ocean_.ScreenToWorld({base.x + piece.definition.offsetX * scale_,
-                                     base.y + piece.definition.offsetY * scale_});
+        return ocean_.ScreenToWorld(piece.appearance.pos);
     }
 
     void GridSprite::AddAnimSlack(float dt) {
@@ -276,6 +282,29 @@ namespace rp {
         return hasAttack_;
     }
 
+    float GridSprite::animationDuration(const std::vector<std::string>& names,
+        std::map<std::string, ResourceAEAnim>& bins, const std::filesystem::path& root) const {
+        float duration = 0.f;
+        for (const auto& p : pieces_) {
+            const auto& path = p.definition.asset;
+            if (std::filesystem::path(path).extension() != ".bin")
+                continue;
+            try {
+                auto a = bins.find(path);
+                if (a == bins.end())
+                    a = bins.emplace(path, ResourceAEAnim::Create(root / path,
+                        AEFormat::Rev1_5)).first;
+                for (const auto& name : names)
+                    if (const auto* comp = a->second.find(name)) {
+                        duration = std::max(duration, comp->duration());
+                        break;
+                    }
+            } catch (const std::exception&) {
+            }
+        }
+        return duration;
+    }
+
     void GridSprite::Attack() {
         SetAnimation({"attack", "Attack"});
     }
@@ -308,10 +337,13 @@ namespace rp {
                     for (const auto& name : animations_)
                         if ((comp = bin.find(name)))
                             break;
+                    // Prefer the exact idle state over variant compositions
+                    // such as idle back/front/full when no named state matches.
+                    if (!comp) comp = bin.find("idle");
+                    if (!comp) comp = bin.find("Idle");
                     if (!comp)
                         for (const auto& candidate : bin.comps)
-                            if (candidate.name == "idle" || candidate.name == "Idle" ||
-                                candidate.name.find("idle") != std::string::npos) {
+                            if (candidate.name.find("idle") != std::string::npos) {
                                 comp = &candidate;
                                 break;
                             }

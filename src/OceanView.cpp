@@ -24,6 +24,7 @@ namespace rp {
         std::unique_ptr<GridSprite> sprite;
         std::vector<std::string> animation;
         float animationStart = 0, animationDelay = 0, slack = 0;
+        float animationDuration = 0;
         bool customAnimation = false;
         WaterBucketSprite bucket;
         ThrobingIndicatorSprite indicator;
@@ -247,8 +248,10 @@ namespace rp {
         e.animation = std::move(names);
         e.animationStart = animationClock_;
         e.animationDelay = 0;
-        e.customAnimation = !e.animation.empty();
-        e.sprite->SetAnimation(e.animation);
+        e.animationDuration = e.sprite->animationDuration(e.animation, bins_, root_);
+        e.customAnimation = !e.animation.empty() && e.animationDuration > 0;
+        // Rendering starts the requested composition only after its delay.
+        // Do not start/reset the accessory animation early.
     }
 
     void OceanView::PlayRaftAttackAnims(int raft, float delay) {
@@ -586,14 +589,14 @@ namespace rp {
             lastRenderTime_ = time;
         }
         auto animate = [&](VisualEntry& e, float fallback, const std::vector<std::string>& names) {
-            if (e.customAnimation && animationClock_ >= e.animationStart + e.animationDelay &&
-                animationClock_ - e.animationStart - e.animationDelay <= 3.f) {
+            const float elapsed = animationClock_ - e.animationStart - e.animationDelay;
+            if (e.customAnimation && elapsed >= 0 &&
+                elapsed <= e.animationDuration) {
                 e.sprite->SetAnimation(e.animation);
                 e.sprite->SetTime(
-                    std::max(0.f, animationClock_ - e.animationStart - e.animationDelay - e.slack));
+                    std::max(0.f, elapsed - e.slack));
             } else {
-                if (e.customAnimation &&
-                    animationClock_ - e.animationStart - e.animationDelay > 3.f)
+                if (e.customAnimation && elapsed > e.animationDuration)
                     e.customAnimation = false;
                 e.sprite->SetAnimation(names);
                 e.sprite->SetTime(std::max(0.f, fallback - e.slack));

@@ -66,6 +66,10 @@ namespace rp {
         void UpdateAnimations(float);
         void SetAnimation(std::vector<std::string> names);
         bool HasAttack() const;
+        // Duration of the selected named compositions across all visual pieces.
+        float animationDuration(const std::vector<std::string>& names,
+            std::map<std::string, sys::res::ResourceAEAnim>& bins,
+            const std::filesystem::path& root) const;
 
         const std::string& definitionName() const {
             return definition_.name;
