@@ -59,7 +59,8 @@ namespace rp {
             auto owner = menu_.find(normal_, name, true);
             if (!owner)
                 continue;
-            auto visual = menu_.find(owner, "Sprite");
+            auto visual = menu_.find(owner, std::string(name) == "EventNotification"
+                                                ? "ViewToggleSprite" : "Sprite");
             auto touch = menu_.find(owner, "Touch");
             if (!visual || !touch)
                 continue;
@@ -183,7 +184,17 @@ namespace rp {
         auto options = menu_.find(1, "ObjectSelectionOptions", true);
         if (!options)
             return;
-        menu_.node(normal_).set("visible", actions.empty());
+        // The view toggle is required in both normal and footprint views,
+        // including while an object is selected. Hide the other normal
+        // controls while the selection strip owns the bottom of the screen.
+        menu_.node(normal_).set("visible", true);
+        for (const auto* name : {"QuestMenu", "MainMenu", "PirateMap", "DaringMeter"})
+            show(name, actions.empty());
+        if (!actions.empty()) {
+            show("SafeFlag", false);
+            show("BadZoneFlag", false);
+            show("CheatMenu", false);
+        }
         menu_.node(options).set("visible", !actions.empty());
         if (actions.empty())
             return;

@@ -319,12 +319,25 @@ namespace rp {
                         comp = &bin.comps.front();
                     if (!comp || comp->width <= 0 || comp->height <= 0)
                         continue;
-                    float time = comp->duration() > 0 ? std::fmod(time_, comp->duration()) : 0;
+                    const float duration = comp->duration();
+                    float time = std::min(time_, duration);
+                    // Respect the BIN's one-shot versus marker-loop distinction.
+                    // Every piece samples the same object clock; short attack
+                    // pieces must not restart while other pieces are finishing.
+                    if (duration > 0 && time_ >= duration && comp->marker >= 0) {
+                        const float marker = std::clamp(comp->marker, 0.f, duration);
+                        const float span = duration - marker;
+                        time = span > 0 ? marker + std::fmod(time_ - duration, span) : duration;
+                    }
                     float scale = raft ? scale_ * ocean_.Unit() / 192.f : scale_ * .5f;
                     auto point = p.appearance.pos;
+                    // Piece offsets use asset pixels, not screen pixels. Apply
+                    // the same scale as the composition to preserve split art.
+                    point.x += p.definition.offsetX * (scale - scale_);
+                    point.y += p.definition.offsetY * (scale - scale_);
                     if (!raft) {
-                        point.x -= definition_.offsetX * scale_;
-                        point.y -= definition_.offsetY * scale_;
+                        point.x -= definition_.offsetX * scale;
+                        point.y -= definition_.offsetY * scale;
                     }
                     auto matrix = Matrix::translation(point.x - comp->width * scale / 2,
                                                       point.y - comp->height * scale * .5f -

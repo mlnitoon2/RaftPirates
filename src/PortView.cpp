@@ -1731,6 +1731,22 @@ namespace rp {
                     }
                     if (auto icon = m.find(id, "Icon")) {
                         auto& n = m.node(icon);
+                        // These names are the original MenuTab template variables.
+                        // Bind explicitly: template script evaluation can leave the
+                        // Free/Settings tab without a drawable icon.
+                        static const char* icons[] = {"shop_tab_blueprints",
+                            "shop_tab_inventory", "shop_tab_misc", "shop_tab_free",
+                            "shop_tab_gold", "shop_tab_diamond"};
+                        if (i <= 6) {
+                            const char* iconName = icons[i - 1];
+                            if (name == "tabbed_menu_maps") {
+                                if (i == 1 || i == 5) iconName = "btn_map";
+                                if (i == 6) iconName = "shop_tab_gold";
+                            }
+                            n.set("sheetName", std::string("xml_resources/rp_menu.xml"));
+                            n.set("spriteName", std::string(iconName));
+                            n.set("visible", true);
+                        }
                         n.set("relativeAnchorX", i <= 4 ? .5 : 1.0);
                         n.set("orientationAnchorX", i <= 4 ? .5 : 1.0);
                         n.set("xOffset", i <= 4 ? 0.0 : -4.0);
@@ -1740,6 +1756,7 @@ namespace rp {
                     }
                     if (auto touch = m.find(id, "Touch")) {
                         auto& n = m.node(touch);
+                        n.set("enabled", true);
                         n.set("width", double(width));
                         n.set("height", double(height));
                     }

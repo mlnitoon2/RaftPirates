@@ -67,6 +67,9 @@ int main(int argc, char** argv) {
         test("EventNotification", rp::Hud::Action::ToggleView);
         test("MainMenu", rp::Hud::Action::Shop);
         test("PirateMap", rp::Hud::Action::Map);
+        hud.setSelectedActions({"move", "destroy"}, 0);
+        test("EventNotification", rp::Hud::Action::ToggleView);
+        hud.setSelectedActions({}, 0);
         g.safe = false;
         g.badZone = true;
         hud.update(g);
