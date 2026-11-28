@@ -237,6 +237,32 @@ int main() {
         auto inverse = ocean.ScreenToWorld(ocean.WorldToScreen({2, 3}));
         CHECK(std::abs(inverse.x - 2) < .001f && std::abs(inverse.y - 3) < .001f);
         ocean.SetUnitSize(192);
+        {
+            // Multi-piece catalogue entries use each first footprint cell.
+            auto def = GridObjectInfo::parse(
+                "1;back.bin 0 0 0,0;front.bin 0 0 1,0;", 100);
+            GridObject obj(123, 7, 0, 0, 100, 0);
+            GridSprite sprite(ocean, obj, def, {2, 3}, 1);
+            CHECK(sprite.Pieces() == 2);
+            auto back = sprite.GetWorldPosition(0), front = sprite.GetWorldPosition(1);
+            CHECK(std::abs(back.x - 2.f) < .001f &&
+                  std::abs(front.x - (2.f + 1.f / 6.f)) < .001f);
+            CHECK(std::abs(back.y - front.y) < .001f);
+            using namespace sys::res;
+            std::map<std::string, ResourceAEAnim> bins;
+            AEComp attack;
+            attack.name = "attack";
+            AELayer layer;
+            AEFrame frame;
+            frame.time = 1.25f;
+            layer.frames.push_back(frame);
+            attack.layers.push_back(layer);
+            bins["back.bin"].comps.push_back(attack);
+            attack.layers[0].frames[0].time = 4.5f;
+            bins["front.bin"].comps.push_back(attack);
+            CHECK(sprite.animationDuration({"attack", "Attack"}, bins, {}) == 4.5f);
+            CHECK(sprite.animationDuration({"absent"}, bins, {}) == 0.f);
+        }
         TouchControls touch(&ocean);
         touch.SetZoomLimits(.5f, 2.f, true);
         touch.touchDown({100, 100});
